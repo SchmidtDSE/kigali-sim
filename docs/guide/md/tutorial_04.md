@@ -2,6 +2,8 @@
 
 Adding economic growth projections and import flows to create more nuanced business-as-usual scenarios.
 
+**Note that this is the conventional version of this tutorial.** An AI-assisted alternative is available at [Tutorial 4a](https://kigalisim.org/guide/tutorial_04a.html).
+
 ## Motivation
 
 Let's say ABC has economic growth forecasts and data on equipment imports. In this tutorial, we will add growth patterns and import flows to our multi-application model from Tutorial 3, creating a more nuanced business-as-usual baseline to help aid policy analysis. In addition to adding more sophistication to our model, this also demonstrates use of multiple sales streams.
@@ -24,11 +26,11 @@ Our tutorial later will expand this further but this gives us a good starting po
 
 In addition to trade, let's also add in economic growth. For example, these projections might come from industry surveys or from outside modeling efforts. Let's start with HFC-134a:
 
-- Click **edit** for HFC-134a if you alreday clicked finish.
+- Click **edit** for HFC-134a if you already clicked finish.
 - Go to **Change** tab, add a change record of **+6%** (or equivalently **+6% current**) from 2025 to 2030 for all sales as this will apply to both imports and domestic manufacturing.
 - Add a change record of **+4%** from 2031 to 2035 for all sales.
 
-Note: You can use `% current` instead of `%` for growth rates to make it explicit that the percentage applies to the current year's value.
+Note: You can use `% current` instead of `%` for growth rates to make it explicit that the percentage applies to the current year's value. The system supports three percentage formats: `%` (equivalent to `% current`) applies the percentage to the current year's value, `% current` explicitly applies to the current year's value, and `% prior year` applies the percentage to the previous year's value. This flexibility allows you to match your data source's reference year convention. This could come up in simulations with multiple change directives due to complex economic modeling.
 
 <video src="/webm/tutorial_04_02.webm" autoplay loop muted playsinline style="width: 500px; border: 2px solid #505050; border-radius: 3px;">Your browser does not support the video tag. Please upgrade to a modern browser.</video>
 

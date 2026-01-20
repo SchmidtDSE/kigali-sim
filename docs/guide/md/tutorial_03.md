@@ -2,6 +2,8 @@
 
 Expanding to multiple sectors and refrigerants.
 
+**Note that this is the conventional version of this tutorial.** An AI-assisted alternative is available at [Tutorial 3a](https://kigalisim.org/guide/tutorial_03a.html).
+
 ## Motivation
 
 In ABC, we have more than just domestic refrigeration! In this tutorial, we'll expand our model to capture more of the broader national profile, helping us understand where policy may put its focus. Specifically, this tutorial builds directly on our Tutorial 2 Domestic Refrigeration model, adding Domestic AC. We'll also introduce multiple refrigerant substances with different Global Warming Potentials (GWPs), demonstrating how volume and climate impact interact.

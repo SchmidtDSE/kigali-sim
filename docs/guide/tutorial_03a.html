@@ -1,0 +1,202 @@
+<html lang="en-GB">
+  <head>
+    <title>Tutorial 3a: Multiple Substances with AI</title>
+    <link href="/guide/guide.css?v=EPOCH" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+    <a href="#main" class="skip-link">Skip to main content</a>
+    <header>
+      This tutorial is part of the <a href="/guide">guide</a> for the
+      <a href="/">Kigali Sim</a>.
+    </header>
+    <main id="main">
+      <h1>Tutorial 3a: Multiple Substances with AI</h1>
+
+      Expanding to multiple sectors and refrigerants using AI.
+
+      <p>
+        <strong>Note that this is the AI version of this tutorial.</strong> You can find a version of this tutorial without AI at <a href="/guide/tutorial_03.html">Tutorial 3</a>.
+      </p>
+
+      <details>
+        <summary>Contents</summary>
+        <ul>
+          <li><a href="#motivation">Motivation</a></li>
+          <li><a href="#preparing-for-ai">Preparing for AI</a></li>
+          <li><a href="#add-a-new-substance">Add a new substance</a></li>
+          <li><a href="#check-the-work">Check the work</a></li>
+          <li><a href="#adding-multiple-substances">Adding multiple substances</a></li>
+          <li><a href="#interpreting-multi-application-results">Interpreting Multi-Application Results</a></li>
+          <li><a href="#conclusion">Conclusion</a></li>
+          <li><a href="#next-steps">Next Steps</a></li>
+        </ul>
+      </details>
+
+      <section id="motivation">
+        <h2>Motivation</h2>
+
+        <p>
+          In ABC, we have more than just domestic refrigeration! In this tutorial, we'll expand our model to capture more of the broader national profile, helping us understand where policy may put its focus. Specifically, this tutorial builds directly on our Tutorial 2 Domestic Refrigeration model, adding Domestic AC. We'll also introduce multiple refrigerant substances with different Global Warming Potentials (GWPs), demonstrating how volume and climate impact interact.
+        </p>
+
+        <p>
+          All that said, all of this can take quite a bit of clicking. So, we will see if AI can help us out to speed up the process. Specifically, we will demonstrate the loop of giving AI a task and checking its output.
+        </p>
+      </section>
+
+      <section id="preparing-for-ai">
+        <h2>Preparing for AI</h2>
+
+        <p>
+          In this tutorial series, we have used <a href="https://claude.ai/">Claude</a>. However, in practice, most AI assistants can help with Kigali Sim using a standard called <a href="https://llmstxt.org/">llms.txt</a>. So, to get AI ready to go, please create a new chat session. Then, give it your Tutorial 2 file by going to the Save File button at the top of the screen and adding it to the chat as an attachment. Finally, tell it to look up information about Kigali Sim through a message like this:
+        </p>
+
+        <pre><code>Hello! I would like help with the attached Kigali Sim simulation. Please read  https://kigalisim.org/llms-full.txt?v=20251226 to learn more. Please stick to only features compatible with the UI editor.</code></pre>
+
+        <p>
+          Need a little cheat? <a href="tutorial_02.qta" download>Download the Tutorial 2</a> file here.
+        </p>
+
+        <p>
+          For more capable assistants like Claude, this is enough. However, some assistants cannot access the full internet or won't know how to work with this kind of file out of the box. If your assistant is having issues, instead, attach the <a href="https://kigalisim.org/llms-full.txt?v=20251226">Kigali Sim llms-full.txt</a> file as an attachment!
+        </p>
+
+        <p>
+          Note that we are telling the AI assistant to avoid advanced features which require programming. More details about this are available in <a href="https://kigalisim.org/guide/tutorial_11.html">Tutorial 11</a>.
+        </p>
+      </section>
+
+      <section id="add-a-new-substance">
+        <h2>Add a new substance</h2>
+
+        <p>
+          Let's start with one new substance record. Here's a prompt:
+        </p>
+
+        <pre><code>Please add R-600a to the simulation. It will be in domestic refrigeration like HFC-134a with a GWP of 3 kgCO2e / kg and initial charge of 0.07 kg / unit. Please use retirement of 5% / year and 10% recharged per year at 0.07 kg / unit. Please have 100000 units of prior equipment and 2 mt / year of domestic manufacture. Thanks!</code></pre>
+
+        <p>
+          After the AI is done, download the resulting file and click "Load File" in the UI and upload the AI output. If you are comfortable, you can also copy from the AI assistant chat into the editor tab.
+        </p>
+      </section>
+
+      <section id="check-the-work">
+        <h2>Check the work</h2>
+
+        <p>
+          Using what you learned in <a href="/guide/tutorial_02.html">Tutorial 2</a>, go ahead and click on edit next to the new consumption record. Is it what you expected? These kinds of simple prompts are almost always successful with more capable AI assistants like Claude but be careful to double check the output of any AI.
+        </p>
+
+        <p>
+          Note that, if Kigali Sim reports that a simulation requires use of the code editor, see <a href="/guide/tutorial_07.html">Tutorial 7</a> or remind the AI assistant to only stick to UI editor compatible features.
+        </p>
+      </section>
+
+      <section id="adding-multiple-substances">
+        <h2>Adding multiple substances</h2>
+
+        <p>
+          This is a great start but let's try to be more brief in our next message:
+        </p>
+
+        <pre><code>Great! Let's add two more substances...
+
+HFC-32:
+
+ - Application: Domestic AC
+ - GWP: 675 kgCO2e / kg
+ - Initial Charge: 0.85 kg / unit
+ - Retirement: 7%
+ - Recharge: 15% at 0.85 kg / unit
+ - Prior Equipment: 40000 units
+ - Domestic Manufacture: 15 mt / yr
+
+R-410A:
+
+ - Application: Domestic AC
+ - GWP: 2088 kgCO2e / kg
+ - Initial Charge: 1.00 kg / unit
+ - Retirement: 7%
+ - Recharge: 15% at 1.00 kg / unit
+ - Prior Equipment: 20000 units
+ - Domestic Manufacture: 5 mt / yr</code></pre>
+
+        <p>
+          Don't get lazy! Again, please double check the AI's work after loading its resulting simulation into Kigali Sim.
+        </p>
+      </section>
+
+      <section id="interpreting-multi-application-results">
+        <h2>Interpreting Multi-Application Results</h2>
+
+        <p>As you work, the simulation will update automatically.</p>
+
+        <p>
+          Examine the results to understand how multiple applications and substances add together. You can do this by looking at results by selecting the <strong>Application</strong> or <strong>Substances</strong> radio buttons. To get a complete picture with the <strong>Emissions</strong> radio button, try clicking <strong>"configure custom"</strong> under emissions and combining both end-of-life and recharge emissions. This represents the total leakage throughout the equipment lifetime.
+        </p>
+
+        <p id="tutorial-gif-3a-1" class="tutorial-gif-holder">
+          <video
+            src="/webm/tutorial_03_02.webm"
+            loop
+            muted
+            playsinline
+            controls
+            style="width: 500px; border: 2px solid #505050; border-radius: 3px;"
+          >
+            Your browser does not support the video tag. Please upgrade to a modern browser.
+          </video>
+        </p>
+
+        <p>
+          Before concluding, let's also pause to understand if these results make sense. First, the custom emissions which combines both end of life and recharge emissions is higher than either alone. Second, consider that the HFC-134a has higher volume and higher GWP than R-600a. Therefore, focusing on HFC-134a, we notice that these two factors intersect through a larger gap to R-600a in emissions relative to consumption when we have selected the <strong>Substances</strong> radio button.
+        </p>
+
+        <p id="tutorial-gif-3a-2" class="tutorial-gif-holder">
+          <video
+            src="/webm/tutorial_03_03.webm"
+            loop
+            muted
+            playsinline
+            controls
+            style="width: 500px; border: 2px solid #505050; border-radius: 3px;"
+          >
+            Your browser does not support the video tag. Please upgrade to a modern browser.
+          </video>
+        </p>
+      </section>
+
+      <section id="conclusion">
+        <h2>Conclusion</h2>
+
+        <p>You've successfully expanded ABC Country's model to include multiple applications and substances! To get there, AI helped speed up the process quite a bit. All that said, we considered:</p>
+
+        <ul>
+          <li><strong>Multi-application modeling</strong>: Different sectors with distinct equipment characteristics and service patterns.</li>
+          <li><strong>Multi-substance analysis</strong>: Comparing different refrigerants within and across applications.</li>
+          <li><strong>GWP diversity</strong>: Understanding how different substances have varying climate impacts.</li>
+          <li><strong>Equipment population dynamics</strong>: How different applications scale and behave over time.</li>
+        </ul>
+
+        <p>The model now provides a foundation for understanding how substance choice and application type interact to determine overall consumption and climate impact patterns.</p>
+      </section>
+
+      <section id="next-steps">
+        <h2>Next Steps</h2>
+
+        <p>
+          <a href="/guide/tutorial_04a.html">Tutorial 4a</a> will add economic growth projections and business-as-usual forecasting to your multi-application model. You'll learn to model how economic expansion drives consumption changes over time, creating realistic baseline scenarios for policy comparison.
+        </p>
+
+        <p>
+          <a href="/guide/tutorial_02.html">Previous: Tutorial 2</a> |
+          <a href="/guide">Return to Guide Index</a> |
+          <a href="/guide/tutorial_04a.html">Next: Tutorial 4a</a>
+        </p>
+      </section>
+
+      <hr />
+      <p><em>This tutorial is part of the ABC Country case study series demonstrating progressive HFC policy analysis using Kigali Sim.</em></p>
+    </main>
+  </body>
+</html>

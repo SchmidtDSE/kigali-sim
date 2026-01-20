@@ -14,6 +14,14 @@ Finally, we want to again express our gratitude for your feedback and time.
 
 The following changes have been adopted and released.
 
+### Alphabetical sorting in UI lists
+
+**Status**: Released January 20, 2026
+
+**Classification**: Enhancement
+
+Added alphabetical sorting to all UI-based editor lists and checkboxes. Applications, substances (consumptions), policies, and simulations are now displayed in alphabetical order in their respective list views. Policy checkboxes in the simulation dialog are also sorted alphabetically, and when policies are selected and converted to a simulation stanza via `policy-check-label`, they now appear in alphabetical order in the generated code.
+
 ### Displacement options
 
 **Status**: Released December 30, 2025
