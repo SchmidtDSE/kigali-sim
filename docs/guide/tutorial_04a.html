@@ -1,0 +1,213 @@
+<html lang="en-GB">
+  <head>
+    <title>Tutorial 4a: Growth and Trade with AI</title>
+    <link href="/guide/guide.css?v=EPOCH" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+    <a href="#main" class="skip-link">Skip to main content</a>
+    <header>
+      This tutorial is part of the <a href="/guide">guide</a> for the
+      <a href="/">Kigali Sim</a>.
+    </header>
+    <main id="main">
+      <h1>Tutorial 4a: Growth and Trade with AI</h1>
+
+      <p>
+        Adding economic growth projections and import flows to create more nuanced business-as-usual scenarios, aided by AI.
+      </p>
+
+      <p>
+        <strong>Note that this is the AI version of this tutorial.</strong> You can find a version of this tutorial without AI at <a href="/guide/tutorial_04.html">Tutorial 4</a>.
+      </p>
+
+      <details>
+        <summary>Contents</summary>
+        <ul>
+          <li><a href="#motivation">Motivation</a></li>
+          <li><a href="#preparing-for-ai">Preparing for AI</a></li>
+          <li><a href="#adding-imports-for-hfc-134a">Adding imports for HFC-134a</a></li>
+          <li><a href="#first-economic-growth">First Economic Growth</a></li>
+          <li><a href="#expanding-the-growth">Expanding the Growth</a></li>
+          <li><a href="#results">Results</a></li>
+          <li><a href="#conclusion">Conclusion</a></li>
+          <li><a href="#next-steps">Next Steps</a></li>
+        </ul>
+      </details>
+
+      <section id="motivation">
+        <h2>Motivation</h2>
+
+        <p>
+          Let's say ABC has economic growth forecasts and data on equipment imports. In this tutorial, we will add growth patterns and import flows to our multi-application model from Tutorial 3, creating a more nuanced business-as-usual baseline to help aid policy analysis. In addition to adding more sophistication to our model, this also demonstrates use of multiple sales streams.
+        </p>
+
+        <p>
+          As before, all of this can take quite a bit of clicking. So, we will see if AI can help us out to speed up the process! This can show how AI can help us not just add new things to our simulations but modify our existing work as well.
+        </p>
+      </section>
+
+      <section id="preparing-for-ai">
+        <h2>Preparing for AI</h2>
+
+        <p>
+          If you did the AI version of Tutorial 3, you probably are already familiar with this process. However, just to cover everything, let's step through this again. Most AI assistants can help with Kigali Sim using a standard called <a href="https://llmstxt.org/">llms.txt</a>.
+        </p>
+
+        <p>
+          <strong>If you did Tutorial 3 with AI</strong> and the output from your assistant looked good, just continue your same chat session! Continue with <a href="#adding-imports-for-hfc-134a">Adding imports for HFC-134a</a> section.
+        </p>
+
+        <p>
+          <strong>If you are new to the AI</strong> or just want to start fresh, create a new chat session and then give it your Tutorial 3 file by going to the Save File button at the top of the screen before adding it to the chat as an attachment. Finally, tell it to look up information about Kigali Sim through a message like this:
+        </p>
+
+        <pre><code>Hello! I would like help with the attached Kigali Sim simulation. Please read  https://kigalisim.org/llms-full.txt?v=20251226 to learn more. Please stick to only features compatible with the UI editor.</code></pre>
+
+        <p>
+          Need a little cheat? <a href="tutorial_03.qta" download>Download the Tutorial 3</a> file here.
+        </p>
+
+        <p>
+          For more capable assistants like Claude, this is enough. However, some assistants cannot access the full internet or won't know how to work with this kind of file out of the box. If your assistant is having issues, instead, attach the <a href="https://kigalisim.org/llms-full.txt?v=20251226">Kigali Sim llms-full.txt</a> file as an attachment!
+        </p>
+
+        <p>
+          Note that we are telling the AI assistant to avoid advanced features which require programming. More details about this are available in <a href="/guide/tutorial_11.html">Tutorial 11</a>.
+        </p>
+      </section>
+
+      <section id="adding-imports-for-hfc-134a">
+        <h2>Adding imports for HFC-134a</h2>
+
+        <p>
+          Before we add in growth rates, let's consider trade. Specifically, for brevity, let's have just one substance with imports.
+        </p>
+
+        <p>
+          Let's say that ABC imports some but not all of their HFC-134a. Therefore, for <strong>Domestic Refrigeration</strong>, modify your <strong>HFC-134a</strong> consumption record with a prompt like this:
+        </p>
+
+        <pre><code>Please modify HFC-134a to enable imports in addition to the domestic manufacture already present. For charge, let's use 0.2 kg / unit for import. Then, let's reduce domestic to 13 mt / year for this substance in 2025. However, also add 11 mt / year in year 2025. Thanks!</code></pre>
+
+        <p>
+          When the AI is done, check its work by downloading the file it creates and using the Load File button in Kigali Sim. You should see changes when you click "edit" next to HFC-134a (domestic refrigeration).
+        </p>
+      </section>
+
+      <section id="first-economic-growth">
+        <h2>First Economic Growth</h2>
+
+        <p>
+          In addition to trade, let's also add in economic growth. For example, these projections might come from industry surveys or from outside modeling efforts. Let's continue with HFC-134a:
+        </p>
+
+        <pre><code>Great! Let's continue with HFC-134a. Next, please expect growth +6% of current for all sales (domestic manufacture and import) from 2025 to 2030. Then, have this decrease to +4% of current for all sales from 2031 to 2035.</code></pre>
+
+        <p>
+          Note: You can use <code>% current</code> instead of <code>%</code> for growth rates to make it explicit that the percentage applies to the current year's value. This distinction doesn't matter in this simulation but we say % of current year so that the AI knows for sure we mean % of current year's value though Claude would just use the default % if we didn't specify. This could come up in simulations with multiple change directives due to complex economic modeling.
+        </p>
+
+        <p>
+          Regardless, be sure to open the resulting simulation again and see how the AI's edits translate to changes in the configuration seen in the editor. You'll want to open up the "change" tab after clicking "edit" next to HFC-134a again.
+        </p>
+      </section>
+
+      <section id="expanding-the-growth">
+        <h2>Expanding the Growth</h2>
+
+        <p>
+          Let's continue by applying these growth rates to other substances.
+        </p>
+
+        <pre><code>Great! Let's continue with change statements. Using HFC-134a as an example, please ensure the following:
+
+HFC-134a (domestic refrigeration):
+
+ - +6% (2025-2030) domestic
+ - +4% (2031-2035) domestic
+ - +6% (2025-2030) import
+ - +4% (2031-2035) import
+
+R-600a (domestic refrigeration):
+
+ - +5% (2025-2030) domestic
+ - +3% (2031-2035) domestic
+
+HFC-32 (domestic AC): +10% (2025-2035)
+
+R-410A (domestic AC): +6% (2025-2035)</code></pre>
+
+        <p>
+          You could choose to say just <code>%</code> instead of <code>% of current</code> and the result should be the same. Once more, be sure to load the resulting simulation into Kigali Sim to double check the work.
+        </p>
+
+        <p>
+          Note: If Kigali Sim reports that a simulation requires use of the code editor, see <a href="/guide/tutorial_07.html">Tutorial 7</a> or remind the AI assistant to only stick to UI editor compatible features.
+        </p>
+      </section>
+
+      <section id="results">
+        <h2>Results</h2>
+
+        <p>
+          Note that the drop down menu under the Consumption radio button which can flip between domestic and imports. Just as we did with the custom metric under emissions before, we can click configure custom to combine imports and domestic together.
+        </p>
+
+        <p>
+          Does the imports part of HFC-134a seem small? It's important to note that, by default, initial charge for new equipment is attributed to the exporting country. We can temporarily change this behavior to get a fuller picture of our global consumption by checking <strong>Attribute initial charge to importer</strong>. However, to stay consistent with Montreal Protocol standards, uncheck it to review treaty-aligned numbers. When authoring simulations, often it helps to consider both perspectives.
+        </p>
+
+        <p>
+          Zooming out, we should see the acceleration in HFC-134a and HFC-32. With the <strong>Emissions</strong> radio button, things still remain quite dominated by HFC-134a. In contrast, the two are closer when selecting the <strong>Consumption</strong> radio button as that 10% increase compounds over time for HFC-32.
+        </p>
+
+        <p id="tutorial-gif-4-4" class="tutorial-gif-holder">
+          <video
+            src="/webm/tutorial_04_04.webm"
+            autoplay
+            loop
+            muted
+            playsinline
+            controls
+            style="width: 500px; border: 2px solid #505050; border-radius: 3px;"
+          >
+            Your browser does not support the video tag. Please upgrade to a modern browser.
+          </video>
+        </p>
+      </section>
+
+      <section id="conclusion">
+        <h2>Conclusion</h2>
+
+        <p>
+          You now have ABC Country's realistic business-as-usual scenario incorporating economic growth, trade flows, and technology transitions. You even sped this up through AI! Anyway, this foundation shows how consumption evolves without intervention. Later, we will try out different policies on this of this baseline.
+        </p>
+
+        <p>
+          Note that, for those with <strong>local assembly</strong>, domestic can be used to model in-country initial charge. In other words, for substance which is equipment and then initial charged within the country, you can move the "sales" of that substance from import to domestic and the correct trade attribution will apply.
+        </p>
+
+        <p>
+          <strong>Download the completed tutorial</strong>: <a href="tutorial_04.qta" download>tutorial_04.qta</a> - this contains the complete model with economic growth and trade flows
+        </p>
+      </section>
+
+      <section id="next-steps">
+        <h2>Next Steps</h2>
+
+        <p>
+          <a href="/guide/tutorial_05.html">Tutorial 5</a> will start to add new sophistication by modeling policies. You'll learn to create sales permitting systems that progressively reduce HFC consumption while managing market displacement to lower-GWP alternatives.
+        </p>
+
+        <p>
+          <a href="/guide/tutorial_03a.html">Previous: Tutorial 3a</a> |
+          <a href="/guide">Return to Guide Index</a> |
+          <a href="/guide/tutorial_05.html">Next: Tutorial 5</a>
+        </p>
+      </section>
+
+      <hr />
+      <p><em>This tutorial is part of the ABC Country case study series demonstrating progressive HFC policy analysis using Kigali Sim.</em></p>
+    </main>
+  </body>
+</html>
