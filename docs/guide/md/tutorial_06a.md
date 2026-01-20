@@ -14,7 +14,9 @@ If you did the AI version of Tutorial 3 or 4, you probably are already familiar 
 In this case, let's create a new chat session and then give it your Tutorial 5 file by going to the Save File button at the top of the screen before adding it to the chat as an attachment. Finally, tell it to look up information about Kigali Sim through a message like this:
 
 ```
-Hello! I would like help with the attached Kigali Sim simulation. Please read  https://kigalisim.org/llms-full.txt?v=20251226 to learn more. Please stick to only features compatible with the UI editor.
+Hello! I would like help with the attached Kigali Sim simulation. Please
+read https://kigalisim.org/llms-full.txt?v=20251226 to learn more. Please
+stick to only features compatible with the UI editor.
 ```
 
 Need a little cheat? [Download the Tutorial 5](tutorial_05.qta) file here.
@@ -27,7 +29,9 @@ Note that we are telling the AI assistant to avoid advanced features which requi
 There's quite a few parameters to specify for recycling. So, let's actually start this time by asking the AI assistant for help. Here's an example prompt:
 
 ```
-I want to add a recycling intervention for HFC-134a. Can you please tell me what each of the parameters are that are required for a recycling policy?
+I want to add a recycling intervention for HFC-134a. Can you please tell
+me what each of the parameters are that are required for a recycling
+policy?
 ```
 
 Let's follow up to its response in a moment.
@@ -54,7 +58,8 @@ Let's take a look at what the AI produced by opening up the resulting file in Ki
 Let's finish this off by asking for a combined simulation which both recycles and applies the sales permit.
 
 ```
-Fantastic! Please next add a Combined simulation scenario which applies domestic recycling then also sales permit.
+Fantastic! Please next add a Combined simulation scenario which applies
+domestic recycling then also sales permit.
 ```
 
 Pay close attention to how this is reflected in the UI-based editor after opening the new file. Note that we asked for domestic recycling to be applied prior to the sales permit. This means that induced demand is applied but then the sales permit ensures that the limits are still respected. In many cases, the ordering of policies does not matter but we will see policy stack ordering in a later tutorial.
