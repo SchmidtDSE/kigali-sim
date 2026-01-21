@@ -56,6 +56,18 @@ const SUPPORTED_EQUALS_UNITS = [
 ];
 
 /**
+ * Stream target selectors used throughout the application for updating dropdown states.
+ * @constant {Array<string>}
+ */
+const STREAM_TARGET_SELECTORS = [
+  ".set-target-input",
+  ".change-target-input",
+  ".limit-target-input",
+  ".replace-target-input",
+  ".displacing-input",
+];
+
+/**
  * Valid QubecTalk year keywords that should not trigger validation warnings.
  * @constant {Array<string>}
  */
@@ -65,6 +77,7 @@ export {
   ALWAYS_ON_STREAMS,
   COMMAND_COMPATIBILITIES,
   ENABLEABLE_STREAMS,
+  STREAM_TARGET_SELECTORS,
   SUPPORTED_EQUALS_UNITS,
   VALID_YEAR_KEYWORDS,
 };
