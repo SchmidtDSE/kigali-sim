@@ -4,6 +4,17 @@
  * Entry point for presenter and logic for the UI-based authoring experience,
  * delegating to ui_editor_* as appropriate. See UIEditorPresenter.
  *
+ * The ui_editor_* files provide specialized functionality:
+ * - ui_editor_action.js: Presenters for managing consumption and policy stanzas
+ *   via the UI editor (locations where action commands are held).
+ * - ui_editor_app.js: Presenter for managing the applications list in the UI
+ *   editor.
+ * - ui_editor_const.js: Constants for UI-based authoring experience.
+ * - ui_editor_sim.js: Presenter for managing the simulations list in the UI
+ *   editor.
+ * - ui_editor_strategy.js: Strategies for initing and setting UI elements.
+ * - ui_editor_util.js: Utility functions for UI-based authoring experience.
+ *
  * @license BSD, see LICENSE.md.
  */
 import {DuplicateEntityPresenter} from "duplicate_util";
