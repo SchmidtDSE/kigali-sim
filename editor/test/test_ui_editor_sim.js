@@ -410,6 +410,7 @@ function buildUiEditorSimTests() {
         _dialog: dialogElement,
         _policyOrderArray: ["Policy A", "Policy B", "Policy C"],
         _isExplicitOrdering: true,
+        _movePolicy: SimulationListPresenter.prototype._movePolicy,
         _movePolicyUp: SimulationListPresenter.prototype._movePolicyUp,
         _renderPolicyCheckboxes: function () {
           // Mock render - we're testing array manipulation, not rendering
@@ -428,6 +429,7 @@ function buildUiEditorSimTests() {
     QUnit.test("_movePolicyUp does nothing when policy is first", function (assert) {
       const mockPresenter = {
         _policyOrderArray: ["Policy A", "Policy B", "Policy C"],
+        _movePolicy: SimulationListPresenter.prototype._movePolicy,
         _movePolicyUp: SimulationListPresenter.prototype._movePolicyUp,
         _renderPolicyCheckboxes: function () {},
       };
@@ -452,6 +454,7 @@ function buildUiEditorSimTests() {
         _dialog: dialogElement,
         _policyOrderArray: ["Policy A", "Policy B", "Policy C"],
         _isExplicitOrdering: true,
+        _movePolicy: SimulationListPresenter.prototype._movePolicy,
         _movePolicyDown: SimulationListPresenter.prototype._movePolicyDown,
         _renderPolicyCheckboxes: function () {
           // Mock render - we're testing array manipulation, not rendering
@@ -470,6 +473,7 @@ function buildUiEditorSimTests() {
     QUnit.test("_movePolicyDown does nothing when policy is last", function (assert) {
       const mockPresenter = {
         _policyOrderArray: ["Policy A", "Policy B", "Policy C"],
+        _movePolicy: SimulationListPresenter.prototype._movePolicy,
         _movePolicyDown: SimulationListPresenter.prototype._movePolicyDown,
         _renderPolicyCheckboxes: function () {},
       };
@@ -486,6 +490,7 @@ function buildUiEditorSimTests() {
     QUnit.test("_movePolicyUp handles non-existent policy gracefully", function (assert) {
       const mockPresenter = {
         _policyOrderArray: ["Policy A", "Policy B"],
+        _movePolicy: SimulationListPresenter.prototype._movePolicy,
         _movePolicyUp: SimulationListPresenter.prototype._movePolicyUp,
         _renderPolicyCheckboxes: function () {},
       };
