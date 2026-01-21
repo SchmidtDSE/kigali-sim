@@ -61,9 +61,22 @@ import {
 
 /**
  * Manages stream selection availability based on context.
+ *
+ * This class is responsible for updating the availability of stream options in
+ * select dropdowns based on which streams are enabled in the current context.
+ * It handles both consumption context (where streams are determined by checkboxes)
+ * and policy context (where streams are determined by existing code).
  */
 class StreamSelectionAvailabilityUpdater {
-  constructor(container = document, context = null) {
+  /**
+   * Creates a new StreamSelectionAvailabilityUpdater.
+   *
+   * @param {HTMLElement|Document} container - The DOM container element to
+   *   search within for stream controls.
+   * @param {string|null} context - The context for stream availability
+   *   ('consumption' or 'policy').
+   */
+  constructor(container, context) {
     const self = this;
     self._container = container;
     self._context = context;
@@ -71,9 +84,11 @@ class StreamSelectionAvailabilityUpdater {
 
   /**
    * Gets enabled streams for the current context.
+   *
    * @param {Object} codeObj - The code object containing substances data.
    * @param {string} substanceName - The name of the substance to check.
-   * @param {string} context - Optional context override ('consumption' or 'policy').
+   * @param {string} context - Optional context override. If not provided, uses
+   *   the context provided at construction.
    * @returns {Array<string>} Array of enabled stream names.
    */
   getEnabledStreamsForCurrentContext(codeObj, substanceName, context = null) {
@@ -160,18 +175,17 @@ class StreamSelectionAvailabilityUpdater {
       throw new Error(`Substance "${substanceName}" not found`);
     }
 
-    if (typeof substance.getEnables === "function") {
-      const enableCommands = substance.getEnables();
-      return enableCommands
-        .map((cmd) => cmd.getTarget())
-        .filter((x) => ENABLEABLE_STREAMS.includes(x));
-    } else {
-      return [];
-    }
+    const enableCommands = substance.getEnables();
+    return enableCommands
+      .map((cmd) => cmd.getTarget())
+      .filter((x) => ENABLEABLE_STREAMS.includes(x));
   }
 
   /**
    * Get currently enabled streams from checkboxes.
+   *
+   * This method is only called in consumption context where the enable
+   * checkboxes are guaranteed to be present in the dialog structure.
    *
    * @returns {Array<string>} Array of enabled stream names.
    * @private
@@ -184,13 +198,13 @@ class StreamSelectionAvailabilityUpdater {
     const enableImport = container.querySelector(".enable-import-checkbox");
     const enableExport = container.querySelector(".enable-export-checkbox");
 
-    if (enableDomestic && enableDomestic.checked) {
+    if (enableDomestic.checked) {
       enabledStreams.push("domestic");
     }
-    if (enableImport && enableImport.checked) {
+    if (enableImport.checked) {
       enabledStreams.push("import");
     }
-    if (enableExport && enableExport.checked) {
+    if (enableExport.checked) {
       enabledStreams.push("export");
     }
 
@@ -213,12 +227,25 @@ class StreamSelectionAvailabilityUpdater {
 
     const firstName = policySubstanceInput.options[0].value;
     const policySubstanceNameCandidate = policySubstanceInput.value;
-    const noneSelected = !policySubstanceNameCandidate &&
-      policySubstanceInput.options &&
-      policySubstanceInput.options.length > 0;
+    const noneSelected = this._hasNoSubstanceSelected(policySubstanceInput);
 
     const policySubstanceName = noneSelected ? firstName : policySubstanceNameCandidate;
     return this._getEnabledStreamsForSubstance(codeObj, policySubstanceName);
+  }
+
+  /**
+   * Determines if a select element has no value selected but has options available.
+   *
+   * This occurs in the initial dialog state before user interaction, when the
+   * select element has options but no value has been explicitly chosen. In such
+   * cases, we need to default to the first option for stream availability calculation.
+   *
+   * @param {HTMLSelectElement} selectElement - The select element to check.
+   * @returns {boolean} True if no selection with available options, false otherwise.
+   * @private
+   */
+  _hasNoSubstanceSelected(selectElement) {
+    return !selectElement.value && selectElement.options && selectElement.options.length > 0;
   }
 }
 
