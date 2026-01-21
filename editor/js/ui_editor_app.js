@@ -64,7 +64,10 @@ class ApplicationsListPresenter {
     const itemList = d3.select(self._root).select(".item-list");
 
     itemList.html("");
-    const newItems = itemList.selectAll("li").data(appNames).enter().append("li");
+    const newItems = itemList.selectAll("li")
+      .data(appNames)
+      .enter()
+      .append("li");
 
     newItems.attr("aria-label", (x) => x);
 
