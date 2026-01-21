@@ -1,5 +1,5 @@
 /**
- * Standalone command initialization and reading functions for UI editor.
+ * Strategies for initing and setting UI elements.
  *
  * @license BSD, see LICENSE.md.
  */

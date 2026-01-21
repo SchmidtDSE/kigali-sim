@@ -1,14 +1,14 @@
 /**
- * Tests for ui_editor_support.js functions.
+ * Tests for ui_editor_strategy.js functions.
  *
  * @license BSD, see LICENSE.md.
  */
-import {validateInductionInput, readDurationUi} from "ui_editor_support";
+import {validateInductionInput, readDurationUi} from "ui_editor_strategy";
 import {EngineNumber} from "engine_number";
 import {ParsedYear} from "duration";
 
-function buildUiEditorSupportTests() {
-  QUnit.module("ui_editor_support", function (hooks) {
+function buildUiEditorStrategyTests() {
+  QUnit.module("ui_editor_strategy", function (hooks) {
     QUnit.module("validateInductionInput", function () {
       QUnit.test("accepts valid numeric values", function (assert) {
         const result0 = validateInductionInput("0");
@@ -240,4 +240,4 @@ function buildUiEditorSupportTests() {
   });
 }
 
-export {buildUiEditorSupportTests};
+export {buildUiEditorStrategyTests};
