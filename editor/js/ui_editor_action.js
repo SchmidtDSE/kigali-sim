@@ -1518,6 +1518,32 @@ class PolicyListPresenter {
   }
 
   /**
+   * Creates a listener function for substance input changes.
+   *
+   * Returns a function that updates stream target dropdowns when the substance
+   * selection changes. The listener retrieves enabled streams for the selected
+   * substance and updates all stream target dropdowns in the policy dialog to
+   * reflect which streams are available.
+   *
+   * @param {HTMLSelectElement} substanceInput - The substance selection input element.
+   * @returns {Function} Event listener function for the change event.
+   * @private
+   */
+  _createSubstanceInputListener(substanceInput) {
+    const self = this;
+    return () => {
+      const selectedSubstance = substanceInput.value;
+      const codeObj = self._getCodeObj();
+      const enabledStreams = self._streamUpdater._getEnabledStreamsForSubstance(
+        codeObj,
+        selectedSubstance,
+      );
+
+      self._streamUpdater.updateAllStreamTargetDropdowns(enabledStreams);
+    };
+  }
+
+  /**
    * Sets up the dialog for adding/editing policies.
    *
    * Sets up the dialog for adding/editing policies, initializing tabs and
@@ -1564,18 +1590,8 @@ class PolicyListPresenter {
     };
     const setupListButton = buildSetupListButton(updateHints);
 
-    // Add event listener for substance selection changes to update stream target dropdowns
     const substanceInput = self._dialog.querySelector(".edit-policy-substance-input");
-    substanceInput.addEventListener("change", () => {
-      const selectedSubstance = substanceInput.value;
-      const codeObj = self._getCodeObj();
-      const enabledStreams = self._streamUpdater._getEnabledStreamsForSubstance(
-        codeObj, selectedSubstance,
-      );
-
-      // Update all stream target dropdowns in the policy dialog
-      self._streamUpdater.updateAllStreamTargetDropdowns(enabledStreams);
-    });
+    substanceInput.addEventListener("change", self._createSubstanceInputListener(substanceInput));
 
     const addRecyclingButton = self._root.querySelector(".add-recycling-button");
     const recyclingList = self._root.querySelector(".recycling-list");
@@ -1874,24 +1890,21 @@ class PolicyListPresenter {
   _save() {
     const self = this;
 
-    // Validate numeric inputs and get user confirmation for potentially invalid values
     if (!validateNumericInputs(self._dialog, "policy")) {
-      return false; // User cancelled, stop save operation
+      return false;
     }
     let policy = self._parseObj();
 
-    // Handle duplicate name resolution for new policies
-    if (self._editingName === null) {
+    const newPolicy = self._editingName === null;
+    if (newPolicy) {
       const baseName = policy.getName();
       const priorNames = new Set(self._getPolicyNames());
       const resolution = resolveNameConflict(baseName, priorNames);
 
-      // Update the input field if the name was changed
       if (resolution.getNameChanged()) {
         const nameInput = self._dialog.querySelector(".edit-policy-name-input");
         nameInput.value = resolution.getNewName();
 
-        // Need to re-parse with the updated name
         policy = self._parseObj();
       }
     }
