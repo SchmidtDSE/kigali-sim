@@ -181,15 +181,16 @@ class SimulationListPresenter {
   _handleMoveLinkClick(event) {
     const self = this;
     const target = event.target;
+    const hasClass = (className) => target.classList.contains(className);
 
-    if (target.classList.contains("move-policy-up-link")) {
+    if (hasClass("move-policy-up-link")) {
       event.preventDefault();
       const policyName = target.getAttribute("data-policy-name");
       self._movePolicyUp(policyName);
       return;
     }
 
-    if (target.classList.contains("move-policy-down-link")) {
+    if (hasClass("move-policy-down-link")) {
       event.preventDefault();
       const policyName = target.getAttribute("data-policy-name");
       self._movePolicyDown(policyName);
@@ -504,7 +505,8 @@ class SimulationListPresenter {
    */
   _movePolicy(index, advance) {
     const self = this;
-    const targetIndex = advance ? index + 1 : index - 1;
+    const offset = advance ? 1 : -1;
+    const targetIndex = index + offset;
 
     const temp = self._policyOrderArray[targetIndex];
     self._policyOrderArray[targetIndex] = self._policyOrderArray[index];
