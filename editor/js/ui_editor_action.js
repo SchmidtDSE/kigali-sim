@@ -62,9 +62,21 @@ import {
 } from "ui_editor_strategy";
 
 /**
+ * Regular expression for matching consumption/policy object identifiers.
+ * Matches format: "substance" for "application"
+ */
+const OBJ_IDENTIFIER_REGEX = /"([^"]+)" for "([^"]+)"/;
+
+/**
+ * Regular expression for matching resolved substance names with optional suffix.
+ * Matches format: "substance" for "application" (optional suffix)
+ */
+const RESOLVED_FULL_NAME_REGEX = /^"([^"]+)" for "[^"]+"(\s*\([^)]+\))?$/;
+
+/**
  * Manages stream selection availability based on context.
  *
- * This class is responsible for updating the availability of stream options in
+ * This sub-presenter is responsible for updating the availability of stream options in
  * select dropdowns based on which streams are enabled in the current context.
  * It handles both consumption context (where streams are determined by checkboxes)
  * and policy context (where streams are determined by existing code).
@@ -190,9 +202,6 @@ class StreamSelectionAvailabilityUpdater {
   /**
    * Get currently enabled streams from checkboxes.
    *
-   * This method is only called in consumption context where the enable
-   * checkboxes are guaranteed to be present in the dialog structure.
-   *
    * @returns {Array<string>} Array of enabled stream names.
    * @private
    */
@@ -204,15 +213,15 @@ class StreamSelectionAvailabilityUpdater {
     const enableImport = container.querySelector(".enable-import-checkbox");
     const enableExport = container.querySelector(".enable-export-checkbox");
 
-    if (enableDomestic.checked) {
-      enabledStreams.push("domestic");
-    }
-    if (enableImport.checked) {
-      enabledStreams.push("import");
-    }
-    if (enableExport.checked) {
-      enabledStreams.push("export");
-    }
+    const addToEnabledIfChecked = (checkbox, streamName) => {
+      if (checkbox.checked) {
+        enabledStreams.push(streamName);
+      }
+    };
+
+    addToEnabledIfChecked(enableDomestic, "domestic");
+    addToEnabledIfChecked(enableImport, "import");
+    addToEnabledIfChecked(enableExport, "export");
 
     return enabledStreams;
   }
@@ -251,7 +260,18 @@ class StreamSelectionAvailabilityUpdater {
    * @private
    */
   _hasNoSubstanceSelected(selectElement) {
-    return !selectElement.value && selectElement.options && selectElement.options.length > 0;
+    const valueSelected = selectElement.value;
+    if (valueSelected) {
+      return false;
+    }
+
+    const optionsEnabled = selectElement.options;
+    if (!optionsEnabled) {
+      return false;
+    }
+
+    const atLeastOneOption = selectElement.options.length > 0;
+    return atLeastOneOption;
   }
 }
 
@@ -481,8 +501,7 @@ class ConsumptionListPresenter {
     }
 
     const codeObj = self._getCodeObj();
-    const objIdentifierRegex = /\"([^\"]+)\" for \"([^\"]+)\"/;
-    const match = consumptionName.match(objIdentifierRegex);
+    const match = consumptionName.match(OBJ_IDENTIFIER_REGEX);
     const substance = match[1];
     const application = match[2];
     codeObj.deleteSubstance(application, substance);
@@ -728,7 +747,8 @@ class ConsumptionListPresenter {
    * @private
    */
   _getValueOrDefault(target, fallback) {
-    return target === null ? fallback : target.getValue();
+    const needDefault = target === null;
+    return needDefault ? fallback : target.getValue();
   }
 
   /**
@@ -756,8 +776,7 @@ class ConsumptionListPresenter {
       if (name === null) {
         return {obj: null, application: ""};
       }
-      const objIdentifierRegex = /\"([^\"]+)\" for \"([^\"]+)\"/;
-      const match = name.match(objIdentifierRegex);
+      const match = name.match(OBJ_IDENTIFIER_REGEX);
       const substance = match[1];
       const application = match[2];
       const substanceObj = codeObj.getApplication(application).getSubstance(substance);
@@ -1165,7 +1184,7 @@ class ConsumptionListPresenter {
   _saveNewConflict(substance, applicationName, resolution) {
     const self = this;
     const resolvedFullName = resolution.getNewName();
-    const fullNameMatch = resolvedFullName.match(/^"([^"]+)" for "[^"]+"(\s*\([^)]+\))?$/);
+    const fullNameMatch = resolvedFullName.match(RESOLVED_FULL_NAME_REGEX);
     if (fullNameMatch) {
       const baseSubstanceName = fullNameMatch[1];
       const suffix = fullNameMatch[2] || "";
@@ -1223,8 +1242,7 @@ class ConsumptionListPresenter {
    */
   _saveUpdate(substance, codeObj) {
     const self = this;
-    const objIdentifierRegex = /\"([^\"]+)\" for \"([^\"]+)\"/;
-    const match = self._editingName.match(objIdentifierRegex);
+    const match = self._editingName.match(OBJ_IDENTIFIER_REGEX);
     const oldSubstanceName = match[1];
     const oldApplicationName = match[2];
     const newApplicationName = getFieldValue(
