@@ -57,7 +57,7 @@ import {
   initReplaceCommandUi,
   readReplaceCommandUi,
   readDurationUi,
-} from "ui_editor_support";
+} from "ui_editor_strategy";
 
 /**
  * Manages stream selection availability based on context.
