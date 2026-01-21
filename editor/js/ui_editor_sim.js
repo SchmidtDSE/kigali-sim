@@ -85,19 +85,20 @@ class SimulationListPresenter {
     const itemList = d3.select(self._root).select(".item-list");
 
     itemList.html("");
-    const newItems = itemList.selectAll("li").data(simulationNames).enter().append("li");
+    const newItems = itemList.selectAll("li")
+      .data(simulationNames)
+      .enter()
+      .append("li");
 
     newItems.attr("aria-label", (x) => x);
 
     const buttonsPane = newItems.append("div").classed("list-buttons", true);
 
-    newItems
-      .append("div")
+    newItems.append("div")
       .classed("list-label", true)
       .text((x) => x);
 
-    buttonsPane
-      .append("a")
+    buttonsPane.append("a")
       .attr("href", "#")
       .on("click", (event, x) => {
         event.preventDefault();
@@ -108,8 +109,7 @@ class SimulationListPresenter {
 
     buttonsPane.append("span").text(" | ");
 
-    buttonsPane
-      .append("a")
+    buttonsPane.append("a")
       .attr("href", "#")
       .on("click", (event, x) => {
         event.preventDefault();
@@ -163,26 +163,38 @@ class SimulationListPresenter {
       self._showForExplicitOrdering();
     });
 
-    // Add click delegation for move up/down links
     self._dialog.addEventListener("click", (event) => {
-      const target = event.target;
-
-      // Handle move up (move before)
-      if (target.classList.contains("move-policy-up-link")) {
-        event.preventDefault();
-        const policyName = target.getAttribute("data-policy-name");
-        self._movePolicyUp(policyName);
-        return;
-      }
-
-      // Handle move down (move after)
-      if (target.classList.contains("move-policy-down-link")) {
-        event.preventDefault();
-        const policyName = target.getAttribute("data-policy-name");
-        self._movePolicyDown(policyName);
-        return;
-      }
+      self._handleMoveLinkClick(event);
     });
+  }
+
+  /**
+   * Handles click events for move up/down links within the policy list.
+   *
+   * Uses event delegation to handle clicks on move policy links. When a move
+   * up link is clicked, moves the policy before the previous policy. When a
+   * move down link is clicked, moves the policy after the next policy.
+   *
+   * @param {Event} event - The click event.
+   * @private
+   */
+  _handleMoveLinkClick(event) {
+    const self = this;
+    const target = event.target;
+
+    if (target.classList.contains("move-policy-up-link")) {
+      event.preventDefault();
+      const policyName = target.getAttribute("data-policy-name");
+      self._movePolicyUp(policyName);
+      return;
+    }
+
+    if (target.classList.contains("move-policy-down-link")) {
+      event.preventDefault();
+      const policyName = target.getAttribute("data-policy-name");
+      self._movePolicyDown(policyName);
+      return;
+    }
   }
 
   /**
@@ -219,9 +231,7 @@ class SimulationListPresenter {
       x.getYearEnd(),
     );
 
-    // Get all available policies
-    const allPolicyNames = self
-      ._getCodeObj()
+    const allPolicyNames = self._getCodeObj()
       .getPolicies()
       .map((x) => x.getName());
 
@@ -255,12 +265,12 @@ class SimulationListPresenter {
   /**
    * Determines whether to use simple or explicit ordering mode.
    *
-   * Simple ordering mode is used if any of these conditions are true:
-   * - No policies are selected
-   * - Only one policy is selected
-   * - Selected policies are in ascending alphabetical order
+   * Uses simple ordering mode if any of these rules are true:
+   * 1. No policies are selected
+   * 2. Only one policy is selected
+   * 3. Selected policies are in ascending alphabetical order
    *
-   * Otherwise, explicit ordering mode is used.
+   * Otherwise, uses explicit ordering mode.
    *
    * @param {string[]} policiesSelected - Array of selected policy names in their current order.
    * @param {string[]} allPolicies - Array of all available policy names.
@@ -270,35 +280,27 @@ class SimulationListPresenter {
   _determineOrderingMode(policiesSelected, allPolicies) {
     const self = this;
 
-    // Rule 1: No policies selected -> simple mode
     if (policiesSelected.length === 0) {
       return false;
     }
 
-    // Rule 2: Only one policy selected -> simple mode
     if (policiesSelected.length === 1) {
       return false;
     }
 
-    // Rule 3: Check if selected policies are in ascending alphabetical order
     const sortedSelected = [...policiesSelected].sort();
     const isAlphabetical = policiesSelected.every(
       (policy, index) => policy === sortedSelected[index],
     );
 
-    if (isAlphabetical) {
-      return false; // Simple mode
-    }
-
-    // None of the simple mode conditions met -> explicit mode
-    return true;
+    return !isAlphabetical;
   }
 
   /**
    * Determines the order in which policies should be rendered in the dialog.
    *
-   * In simple mode: All policies sorted alphabetically.
-   * In explicit mode: Checked policies in their original order, followed by
+   * Simple mode: All policies sorted alphabetically.
+   * Explicit mode: Checked policies in their original order, followed by
    * unchecked policies alphabetically.
    *
    * @param {string[]} policiesSelectedRaw - Array of selected policy names in
@@ -313,12 +315,11 @@ class SimulationListPresenter {
   _determinePolicyRenderOrder(policiesSelectedRaw, allPolicies, isExplicitMode) {
     const self = this;
 
-    if (!isExplicitMode) {
-      // Simple mode: All policies alphabetically
+    const isSimpleMode = !isExplicitMode;
+    if (isSimpleMode) {
       return [...allPolicies].sort();
     }
 
-    // Explicit mode: Selected policies in QTA order, then unselected alphabetically
     const selectedSet = new Set(policiesSelectedRaw);
     const unselectedPolicies = allPolicies.filter((policy) => !selectedSet.has(policy)).sort();
 
@@ -337,13 +338,11 @@ class SimulationListPresenter {
   _showForSimpleOrdering() {
     const self = this;
 
-    // Show the enable ordering link holder
     const enableHolder = self._dialog.querySelector(".enable-policy-order-holder");
     if (enableHolder) {
       enableHolder.style.display = "inline";
     }
 
-    // Hide all move policy controls
     const moveControls = self._dialog.querySelectorAll(".move-policy-control");
     moveControls.forEach((control) => {
       control.style.display = "none";
@@ -362,13 +361,11 @@ class SimulationListPresenter {
   _showForExplicitOrdering() {
     const self = this;
 
-    // Hide the enable ordering link holder
     const enableHolder = self._dialog.querySelector(".enable-policy-order-holder");
     if (enableHolder) {
       enableHolder.style.display = "none";
     }
 
-    // Show all move policy controls
     const moveControls = self._dialog.querySelectorAll(".move-policy-control");
     moveControls.forEach((control) => {
       control.style.display = "inline";
@@ -469,9 +466,8 @@ class SimulationListPresenter {
       checkedStates[checkbox.value] = checkbox.checked;
     });
 
-    // Render policy checkboxes in current order
-    const newLabels = d3
-      .select(self._dialog.querySelector(".policy-sim-list"))
+    const policySimList = self._dialog.querySelector(".policy-sim-list");
+    const newLabels = d3.select(policySimList)
       .html("")
       .selectAll(".policy-check-label")
       .data(self._policyOrderArray)
@@ -480,8 +476,7 @@ class SimulationListPresenter {
       .classed("policy-check-label", true)
       .append("label");
 
-    newLabels
-      .append("input")
+    newLabels.append("input")
       .attr("type", "checkbox")
       .classed("policy-check", true)
       .attr("value", (x) => x)
@@ -491,14 +486,12 @@ class SimulationListPresenter {
 
     newLabels.append("span").html((policyName) => self._renderOrderControls(policyName));
 
-    // Apply visibility based on ordering mode
     if (self._isExplicitOrdering) {
       self._showForExplicitOrdering();
     } else {
       self._showForSimpleOrdering();
     }
 
-    // Update individual move control visibility based on position
     self._updateMoveControlVisibility();
   }
 
@@ -543,18 +536,17 @@ class SimulationListPresenter {
     const self = this;
 
     const currentIndex = self._policyOrderArray.indexOf(policyName);
+    const outside = currentIndex === -1;
+    const atEnd = currentIndex >= self._policyOrderArray.length - 1;
 
-    // Cannot move down if not found or already at the bottom
-    if (currentIndex === -1 || currentIndex >= self._policyOrderArray.length - 1) {
+    if (outside || atEnd) {
       return;
     }
 
-    // Swap with next element
     const temp = self._policyOrderArray[currentIndex + 1];
     self._policyOrderArray[currentIndex + 1] = self._policyOrderArray[currentIndex];
     self._policyOrderArray[currentIndex] = temp;
 
-    // Re-render to reflect the new order
     self._renderPolicyCheckboxes();
   }
 
@@ -572,11 +564,11 @@ class SimulationListPresenter {
   _updateMoveControlVisibility() {
     const self = this;
 
-    // Get all policy checkbox labels in DOM order
     const policyLabels = self._dialog.querySelectorAll(".policy-check-label");
+    const noPoliciesToUpdate = policyLabels.length === 0;
 
-    if (policyLabels.length === 0) {
-      return; // No policies to update
+    if (noPoliciesToUpdate) {
+      return;
     }
 
     policyLabels.forEach((label, index) => {
@@ -587,17 +579,14 @@ class SimulationListPresenter {
       const moveDownLink = label.querySelector(".move-policy-down-link");
       const separator = label.querySelector(".move-policy-sep");
 
-      // Hide "move before" link for first policy
       if (moveUpLink) {
         moveUpLink.style.display = isFirst ? "none" : "inline";
       }
 
-      // Hide "move after" link for last policy
       if (moveDownLink) {
         moveDownLink.style.display = isLast ? "none" : "inline";
       }
 
-      // Hide separator if first or last policy (one of the links is hidden)
       if (separator) {
         separator.style.display = isFirst || isLast ? "none" : "inline";
       }
