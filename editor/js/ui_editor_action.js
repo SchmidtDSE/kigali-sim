@@ -24,24 +24,26 @@ import {
   resolveSubstanceNameConflict,
   DuplicateEntityPresenter,
 } from "duplicate_util";
-import {ENABLEABLE_STREAMS} from "ui_editor_const";
-import {ALWAYS_ON_STREAMS} from "ui_editor_const";
 import {
+  ALWAYS_ON_STREAMS,
+  ENABLEABLE_STREAMS,
   STREAM_TARGET_SELECTORS,
-  updateDurationSelector,
-  setupDurationSelector,
+} from "ui_editor_const";
+import {
   buildSetupListButton,
-  setFieldValue,
-  getFieldValue,
-  getSanitizedFieldValue,
-  setListInput,
-  getListInput,
-  setEngineNumberValue,
-  getEngineNumberValue,
-  validateNumericInputs,
-  setDuring,
   buildUpdateCount,
+  getEngineNumberValue,
+  getFieldValue,
+  getListInput,
+  getSanitizedFieldValue,
+  setDuring,
+  setEngineNumberValue,
+  setFieldValue,
+  setListInput,
   setupDialogInternalLinks,
+  setupDurationSelector,
+  updateDurationSelector,
+  validateNumericInputs,
 } from "ui_editor_util";
 import {
   initSetCommandUi,

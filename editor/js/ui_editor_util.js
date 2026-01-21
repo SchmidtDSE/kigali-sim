@@ -5,19 +5,7 @@
  */
 import {EngineNumber} from "engine_number";
 import {NumberParseUtil} from "number_parse_util";
-import {VALID_YEAR_KEYWORDS} from "ui_editor_const";
-
-/**
- * Stream target selectors used throughout the application for updating dropdown states.
- * @constant {Array<string>}
- */
-const STREAM_TARGET_SELECTORS = [
-  ".set-target-input",
-  ".change-target-input",
-  ".limit-target-input",
-  ".replace-target-input",
-  ".displacing-input",
-];
+import {STREAM_TARGET_SELECTORS, VALID_YEAR_KEYWORDS} from "ui_editor_const";
 
 /**
  * Invalid patterns for numeric input validation.
@@ -559,7 +547,6 @@ function setupDialogInternalLinks(root, tabs) {
 }
 
 export {
-  STREAM_TARGET_SELECTORS,
   buildSetupListButton,
   buildUpdateCount,
   getEngineNumberValue,
