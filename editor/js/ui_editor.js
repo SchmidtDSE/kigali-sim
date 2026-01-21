@@ -1,17 +1,20 @@
 /**
- * Presenters and logic for the UI-based authoring experience.
+ * Entry point for presenter and logic for the UI-based authoring experience.
+ *
+ * Entry point for presenter and logic for the UI-based authoring experience,
+ * delegating to ui_editor_* as appropriate. See UIEditorPresenter.
  *
  * @license BSD, see LICENSE.md.
  */
-import {Program} from "ui_translator_components";
-import {MetaSerializer, MetaChangeApplier} from "meta_serialization";
 import {DuplicateEntityPresenter} from "duplicate_util";
-import {ApplicationsListPresenter} from "ui_editor_app";
-import {SimulationListPresenter} from "ui_editor_sim";
+import {MetaSerializer, MetaChangeApplier} from "meta_serialization";
 import {
   ConsumptionListPresenter,
   PolicyListPresenter,
 } from "ui_editor_action";
+import {ApplicationsListPresenter} from "ui_editor_app";
+import {SimulationListPresenter} from "ui_editor_sim";
+import {Program} from "ui_translator_components";
 
 /**
  * Result container for active substance extraction with error reporting.
