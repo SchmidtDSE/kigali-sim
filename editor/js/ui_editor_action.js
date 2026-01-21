@@ -1,5 +1,8 @@
 /**
- * Presenters for managing consumption and policy actions in the UI editor.
+ * Presenters for managing consumption and policy stanzas via the UI editor.
+ *
+ * Presenters for UI components which manage consumption and policy stanzas via
+ * the UI editor. These are the locations where action commands are actually held.
  *
  * @license BSD, see LICENSE.md.
  */
@@ -21,23 +24,26 @@ import {
   resolveSubstanceNameConflict,
   DuplicateEntityPresenter,
 } from "duplicate_util";
-import {ENABLEABLE_STREAMS, ALWAYS_ON_STREAMS} from "ui_editor_const";
 import {
+  ALWAYS_ON_STREAMS,
+  ENABLEABLE_STREAMS,
   STREAM_TARGET_SELECTORS,
-  updateDurationSelector,
-  setupDurationSelector,
+} from "ui_editor_const";
+import {
   buildSetupListButton,
-  setFieldValue,
-  getFieldValue,
-  getSanitizedFieldValue,
-  setListInput,
-  getListInput,
-  setEngineNumberValue,
-  getEngineNumberValue,
-  validateNumericInputs,
-  setDuring,
   buildUpdateCount,
+  getEngineNumberValue,
+  getFieldValue,
+  getListInput,
+  getSanitizedFieldValue,
+  setDuring,
+  setEngineNumberValue,
+  setFieldValue,
+  setListInput,
   setupDialogInternalLinks,
+  setupDurationSelector,
+  updateDurationSelector,
+  validateNumericInputs,
 } from "ui_editor_util";
 import {
   initSetCommandUi,
@@ -53,13 +59,38 @@ import {
   initReplaceCommandUi,
   readReplaceCommandUi,
   readDurationUi,
-} from "ui_editor_support";
+} from "ui_editor_strategy";
+
+/**
+ * Regular expression for matching consumption/policy object identifiers.
+ * Matches format: "substance" for "application"
+ */
+const OBJ_IDENTIFIER_REGEX = /"([^"]+)" for "([^"]+)"/;
+
+/**
+ * Regular expression for matching resolved substance names with optional suffix.
+ * Matches format: "substance" for "application" (optional suffix)
+ */
+const RESOLVED_FULL_NAME_REGEX = /^"([^"]+)" for "[^"]+"(\s*\([^)]+\))?$/;
 
 /**
  * Manages stream selection availability based on context.
+ *
+ * This sub-presenter is responsible for updating the availability of stream options in
+ * select dropdowns based on which streams are enabled in the current context.
+ * It handles both consumption context (where streams are determined by checkboxes)
+ * and policy context (where streams are determined by existing code).
  */
 class StreamSelectionAvailabilityUpdater {
-  constructor(container = document, context = null) {
+  /**
+   * Creates a new StreamSelectionAvailabilityUpdater.
+   *
+   * @param {HTMLElement|Document} container - The DOM container element to
+   *   search within for stream controls.
+   * @param {string|null} context - The context for stream availability
+   *   ('consumption' or 'policy').
+   */
+  constructor(container, context) {
     const self = this;
     self._container = container;
     self._context = context;
@@ -67,9 +98,11 @@ class StreamSelectionAvailabilityUpdater {
 
   /**
    * Gets enabled streams for the current context.
+   *
    * @param {Object} codeObj - The code object containing substances data.
    * @param {string} substanceName - The name of the substance to check.
-   * @param {string} context - Optional context override ('consumption' or 'policy').
+   * @param {string} context - Optional context override. If not provided, uses
+   *   the context provided at construction.
    * @returns {Array<string>} Array of enabled stream names.
    */
   getEnabledStreamsForCurrentContext(codeObj, substanceName, context = null) {
@@ -86,6 +119,7 @@ class StreamSelectionAvailabilityUpdater {
 
   /**
    * Gets the first enabled option from a select element.
+   *
    * @param {HTMLSelectElement} selectElement - The select element to check.
    * @returns {string} Value of the first enabled option, or 'sales' as fallback.
    */
@@ -96,6 +130,7 @@ class StreamSelectionAvailabilityUpdater {
 
   /**
    * Updates stream option disabled states based on enabled streams.
+   *
    * @param {HTMLSelectElement} selectElement - The select element to update.
    * @param {Array<string>} enabledStreams - Array of enabled stream names.
    */
@@ -118,6 +153,7 @@ class StreamSelectionAvailabilityUpdater {
 
   /**
    * Updates all stream target dropdowns within the container.
+   *
    * @param {Array<string>} enabledStreams - Array of enabled stream names.
    * @param {Function} filterFn - Optional filter function (deprecated).
    */
@@ -132,6 +168,7 @@ class StreamSelectionAvailabilityUpdater {
 
   /**
    * Refreshes all stream target dropdowns for a specific substance.
+   *
    * @param {Object} codeObj - The code object containing substances data.
    * @param {string} substanceName - The name of the substance whose streams changed.
    */
@@ -141,30 +178,32 @@ class StreamSelectionAvailabilityUpdater {
   }
 
   /**
-   * Private method to get enabled streams for a substance from code objects.
+   * Get enabled streams for a substance from code objects.
+   *
    * @param {Object} codeObj - The code object containing substances data.
    * @param {string} substanceName - The name of the substance to check.
    * @returns {Array<string>} Array of enabled stream names.
+   * @private
    */
   _getEnabledStreamsForSubstance(codeObj, substanceName) {
     const substances = codeObj.getSubstances();
     const substance = substances.find((s) => s.getName() === substanceName);
 
-    if (!substance) throw new Error(`Substance "${substanceName}" not found`);
-
-    if (typeof substance.getEnables === "function") {
-      const enableCommands = substance.getEnables();
-      return enableCommands
-        .map((cmd) => cmd.getTarget())
-        .filter((x) => ENABLEABLE_STREAMS.includes(x));
+    if (!substance) {
+      throw new Error(`Substance "${substanceName}" not found`);
     }
 
-    return [];
+    const enableCommands = substance.getEnables();
+    return enableCommands
+      .map((cmd) => cmd.getTarget())
+      .filter((x) => ENABLEABLE_STREAMS.includes(x));
   }
 
   /**
-   * Private method to get currently enabled streams from checkboxes.
+   * Get currently enabled streams from checkboxes.
+   *
    * @returns {Array<string>} Array of enabled stream names.
+   * @private
    */
   _getCurrentEnabledStreamsFromCheckboxes() {
     const enabledStreams = [];
@@ -174,37 +213,65 @@ class StreamSelectionAvailabilityUpdater {
     const enableImport = container.querySelector(".enable-import-checkbox");
     const enableExport = container.querySelector(".enable-export-checkbox");
 
-    if (enableDomestic && enableDomestic.checked) {
-      enabledStreams.push("domestic");
-    }
-    if (enableImport && enableImport.checked) {
-      enabledStreams.push("import");
-    }
-    if (enableExport && enableExport.checked) {
-      enabledStreams.push("export");
-    }
+    const addToEnabledIfChecked = (checkbox, streamName) => {
+      if (checkbox.checked) {
+        enabledStreams.push(streamName);
+      }
+    };
+
+    addToEnabledIfChecked(enableDomestic, "domestic");
+    addToEnabledIfChecked(enableImport, "import");
+    addToEnabledIfChecked(enableExport, "export");
 
     return enabledStreams;
   }
 
   /**
-   * Private method to get currently enabled streams from code objects.
+   * Get currently enabled streams from code objects.
+   *
    * @param {Object} codeObj - The code object containing substances data.
    * @param {string} substanceName - The name of the substance to check.
    * @returns {Array<string>} Array of enabled stream names.
+   * @private
    */
   _getCurrentEnabledStreamsFromCode(codeObj, substanceName) {
     const policySubstanceInput = this._container.querySelector(".edit-policy-substance-input");
-    if (!policySubstanceInput) return [];
+    if (!policySubstanceInput) {
+      return [];
+    }
 
     const firstName = policySubstanceInput.options[0].value;
     const policySubstanceNameCandidate = policySubstanceInput.value;
-    const noneSelected = !policySubstanceNameCandidate &&
-      policySubstanceInput.options &&
-      policySubstanceInput.options.length > 0;
+    const noneSelected = this._hasNoSubstanceSelected(policySubstanceInput);
 
     const policySubstanceName = noneSelected ? firstName : policySubstanceNameCandidate;
     return this._getEnabledStreamsForSubstance(codeObj, policySubstanceName);
+  }
+
+  /**
+   * Determines if a select element has no value selected but has options available.
+   *
+   * This occurs in the initial dialog state before user interaction, when the
+   * select element has options but no value has been explicitly chosen. In such
+   * cases, we need to default to the first option for stream availability calculation.
+   *
+   * @param {HTMLSelectElement} selectElement - The select element to check.
+   * @returns {boolean} True if no selection with available options, false otherwise.
+   * @private
+   */
+  _hasNoSubstanceSelected(selectElement) {
+    const valueSelected = selectElement.value;
+    if (valueSelected) {
+      return false;
+    }
+
+    const optionsEnabled = selectElement.options;
+    if (!optionsEnabled) {
+      return false;
+    }
+
+    const atLeastOneOption = selectElement.options.length > 0;
+    return atLeastOneOption;
   }
 }
 
@@ -255,12 +322,22 @@ class ReminderPresenter {
     const embedSubstanceDisplays = self._root.querySelectorAll(".embed-substance-label");
     const embedAppDisplays = self._root.querySelectorAll(".embed-app-label");
 
+    /**
+     * Updates a display element with the current substance value.
+     *
+     * @param {HTMLElement} display - The display element to update.
+     */
     const updateSubstance = (display) => {
       display.innerHTML = "";
       const textNode = document.createTextNode(substanceInput.value);
       display.appendChild(textNode);
     };
 
+    /**
+     * Updates a display element with the current application value.
+     *
+     * @param {HTMLElement} display - The display element to update.
+     */
     const updateApp = (display) => {
       display.innerHTML = "";
       const textNode = document.createTextNode(applicationInput.value);
@@ -399,27 +476,43 @@ class ConsumptionListPresenter {
       .attr("href", "#")
       .on("click", (event, x) => {
         event.preventDefault();
-        const message = "Are you sure you want to delete " + x + "?";
-        const isConfirmed = confirm(message);
-        if (isConfirmed) {
-          const codeObj = self._getCodeObj();
-          const objIdentifierRegex = /\"([^\"]+)\" for \"([^\"]+)\"/;
-          const match = x.match(objIdentifierRegex);
-          const substance = match[1];
-          const application = match[2];
-          codeObj.deleteSubstance(application, substance);
-          self._onCodeObjUpdate(codeObj);
-        }
+        self._handleDeleteConsumption(x);
       })
       .text("delete")
       .attr("aria-label", (x) => "delete " + x);
   }
 
   /**
+   * Handles deletion of a consumption record.
+   *
+   * Prompts the user for confirmation before deleting the specified consumption.
+   * Parses the consumption name to extract substance and application, then
+   * removes it from the code object.
+   *
+   * @param {string} consumptionName - The full name of the consumption to delete.
+   * @private
+   */
+  _handleDeleteConsumption(consumptionName) {
+    const self = this;
+    const message = "Are you sure you want to delete " + consumptionName + "?";
+    const isConfirmed = confirm(message);
+    if (!isConfirmed) {
+      return;
+    }
+
+    const codeObj = self._getCodeObj();
+    const match = consumptionName.match(OBJ_IDENTIFIER_REGEX);
+    const substance = match[1];
+    const application = match[2];
+    codeObj.deleteSubstance(application, substance);
+    self._onCodeObjUpdate(codeObj);
+  }
+
+  /**
    * Sets up the dialog for adding/editing consumption records.
    *
-   * Sets up the dialog for adding/editing consumption records, initializing
-   * tabs and event handlers.
+   * Orchestrates initialization of all dialog components including tabs,
+   * buttons, command lists, reminders, GWP lookup, and stream checkboxes.
    *
    * @private
    */
@@ -427,6 +520,24 @@ class ConsumptionListPresenter {
     const self = this;
 
     self._tabs = new Tabby("#" + self._dialog.querySelector(".tabs").id);
+
+    self._setupDialogButtons();
+    self._setupDialogCommandLists();
+    self._setupDialogReminders();
+    self._setupDialogGwpLookup();
+    self._setupDialogStreamCheckboxes();
+  }
+
+  /**
+   * Sets up dialog buttons for add, close, and save actions.
+   *
+   * Initializes event handlers for the add link, close button, and save button
+   * within the consumption dialog.
+   *
+   * @private
+   */
+  _setupDialogButtons() {
+    const self = this;
 
     const addLink = self._root.querySelector(".add-link");
     addLink.addEventListener("click", (event) => {
@@ -447,6 +558,19 @@ class ConsumptionListPresenter {
         self._dialog.close();
       }
     });
+  }
+
+  /**
+   * Sets up command list buttons for set, change, limit, and recharge.
+   *
+   * Initializes all command list buttons with their respective templates and
+   * initialization functions. Configures the update callback to hide reminders
+   * and refresh counts.
+   *
+   * @private
+   */
+  _setupDialogCommandLists() {
+    const self = this;
 
     const updateHints = () => {
       const embedReminders = self._root.querySelectorAll(".embed-reminder");
@@ -499,6 +623,18 @@ class ConsumptionListPresenter {
     setupListButton(addRechargeButton, rechargeList, "recharge-command-template", (item, root) =>
       initRechargeCommandUi(item, root, self._getCodeObj()),
     );
+  }
+
+  /**
+   * Sets up reminder presenter and internal navigation links.
+   *
+   * Initializes the ReminderPresenter to display current application and
+   * substance context, and configures internal dialog navigation links.
+   *
+   * @private
+   */
+  _setupDialogReminders() {
+    const self = this;
 
     self._reminderPresenter = new ReminderPresenter(
       self._dialog,
@@ -509,8 +645,19 @@ class ConsumptionListPresenter {
     );
 
     setupDialogInternalLinks(self._root, self._tabs);
+  }
 
-    // Initialize GWP lookup functionality
+  /**
+   * Sets up GWP lookup functionality.
+   *
+   * Initializes the GwpLookupPresenter to enable substance GWP value lookup
+   * from the known_gwp.json database via the lookup link.
+   *
+   * @private
+   */
+  _setupDialogGwpLookup() {
+    const self = this;
+
     const lookupLink = self._root.querySelector("#lookup-gwp");
     const substanceInput = self._dialog.querySelector(".edit-consumption-substance-input");
     const ghgInput = self._dialog.querySelector(".edit-consumption-ghg-input");
@@ -525,6 +672,18 @@ class ConsumptionListPresenter {
       ghgUnitsInput,
       jsonPath,
     );
+  }
+
+  /**
+   * Sets up enable stream checkbox listeners.
+   *
+   * Attaches change event listeners to the domestic, import, and export enable
+   * checkboxes to trigger visibility and validation updates.
+   *
+   * @private
+   */
+  _setupDialogStreamCheckboxes() {
+    const self = this;
 
     const enableImport = self._dialog.querySelector(".enable-import-checkbox");
     const enableDomestic = self._dialog.querySelector(".enable-domestic-checkbox");
@@ -533,6 +692,63 @@ class ConsumptionListPresenter {
     enableImport.addEventListener("change", () => self._updateSource());
     enableDomestic.addEventListener("change", () => self._updateSource());
     enableExport.addEventListener("change", () => self._updateSource());
+  }
+
+  /**
+   * Parses a full substance name into substance and equipment parts.
+   *
+   * Splits a compound substance name on the " - " separator to extract the
+   * base substance name and equipment model. Returns empty strings if the
+   * input is null or undefined.
+   *
+   * @param {string} fullSubstanceName - The full substance name potentially
+   *   containing equipment model (e.g., "R-410A - Model X").
+   * @returns {{substance: string, equipment: string}} Object with parsed parts.
+   * @private
+   */
+  _getSubstanceAndEquipment(fullSubstanceName) {
+    if (!fullSubstanceName) {
+      return {substance: "", equipment: ""};
+    }
+    const parts = fullSubstanceName.split(" - ");
+    return {
+      substance: parts[0] || "",
+      equipment: parts.slice(1).join(" - ") || "",
+    };
+  }
+
+  /**
+   * Gets effective substance and equipment from object or returns defaults.
+   *
+   * When an existing object is provided, parses its name to extract substance
+   * and equipment parts. Returns empty strings for both if object is null.
+   *
+   * @param {Object|null} objToShow - The substance object to extract from.
+   * @returns {{substance: string, equipment: string}} Parsed substance and equipment.
+   * @private
+   */
+  _getEffectiveSubstanceAndEquipment(objToShow) {
+    if (objToShow) {
+      return this._getSubstanceAndEquipment(objToShow.getName());
+    } else {
+      return {substance: "", equipment: ""};
+    }
+  }
+
+  /**
+   * Gets value from target or returns fallback if target is null.
+   *
+   * Null-safe accessor that calls getValue() on the target object if available,
+   * otherwise returns the provided fallback value.
+   *
+   * @param {Object|null} target - The target object with getValue() method.
+   * @param {*} fallback - The fallback value to return if target is null.
+   * @returns {*} The target's value or the fallback.
+   * @private
+   */
+  _getValueOrDefault(target, fallback) {
+    const needDefault = target === null;
+    return needDefault ? fallback : target.getValue();
   }
 
   /**
@@ -560,8 +776,7 @@ class ConsumptionListPresenter {
       if (name === null) {
         return {obj: null, application: ""};
       }
-      const objIdentifierRegex = /\"([^\"]+)\" for \"([^\"]+)\"/;
-      const match = name.match(objIdentifierRegex);
+      const match = name.match(OBJ_IDENTIFIER_REGEX);
       const substance = match[1];
       const application = match[2];
       const substanceObj = codeObj.getApplication(application).getSubstance(substance);
@@ -572,10 +787,7 @@ class ConsumptionListPresenter {
     const objToShow = objToShowInfo["obj"];
     const applicationName = objToShowInfo["application"];
 
-    const applicationNames = self
-      ._getCodeObj()
-      .getApplications()
-      .map((x) => x.getName());
+    const applicationNames = codeObj.getApplications().map((x) => x.getName());
 
     const applicationSelect = self._dialog.querySelector(".application-select");
     d3.select(applicationSelect)
@@ -587,21 +799,7 @@ class ConsumptionListPresenter {
       .attr("value", (x) => x)
       .text((x) => x);
 
-    // Split substance name to separate substance and equipment model
-    const getSubstanceAndEquipment = (fullSubstanceName) => {
-      if (!fullSubstanceName) {
-        return {substance: "", equipment: ""};
-      }
-      const parts = fullSubstanceName.split(" - ");
-      return {
-        substance: parts[0] || "",
-        equipment: parts.slice(1).join(" - ") || "",
-      };
-    };
-
-    const substanceAndEquipment = objToShow ?
-      getSubstanceAndEquipment(objToShow.getName()) :
-      {substance: "", equipment: ""};
+    const substanceAndEquipment = self._getEffectiveSubstanceAndEquipment(objToShow);
 
     setFieldValue(
       self._dialog.querySelector(".edit-consumption-substance-input"),
@@ -640,15 +838,13 @@ class ConsumptionListPresenter {
       (x) => (x.getEqualsKwh() ? x.getEqualsKwh().getValue() : null),
     );
 
-    const getValueOrDefault = (target, fallback) => target === null ? fallback : target.getValue();
-
     const domesticFallback = new EngineNumber(1, "kg / unit");
     setEngineNumberValue(
       self._dialog.querySelector(".edit-consumption-initial-charge-domestic-input"),
       self._dialog.querySelector(".initial-charge-domestic-units-input"),
       objToShow,
       domesticFallback,
-      (x) => getValueOrDefault(x.getInitialCharge("domestic"), domesticFallback),
+      (x) => self._getValueOrDefault(x.getInitialCharge("domestic"), domesticFallback),
     );
 
     const importFallback = new EngineNumber(2, "kg / unit");
@@ -657,7 +853,7 @@ class ConsumptionListPresenter {
       self._dialog.querySelector(".initial-charge-import-units-input"),
       objToShow,
       importFallback,
-      (x) => getValueOrDefault(x.getInitialCharge("import"), importFallback),
+      (x) => self._getValueOrDefault(x.getInitialCharge("import"), importFallback),
     );
 
     const exportFallback = new EngineNumber(1, "kg / unit");
@@ -666,7 +862,7 @@ class ConsumptionListPresenter {
       self._dialog.querySelector(".initial-charge-export-units-input"),
       objToShow,
       exportFallback,
-      (x) => getValueOrDefault(x.getInitialCharge("export"), exportFallback),
+      (x) => self._getValueOrDefault(x.getInitialCharge("export"), exportFallback),
     );
 
     setEngineNumberValue(
@@ -677,20 +873,28 @@ class ConsumptionListPresenter {
       (x) => x.getRetire() ? x.getRetire().getValue() : null,
     );
 
-    // Set retirement reduces equipment checkbox based on retire command
-    const retirementReducesCheckbox = self._dialog.querySelector(
-      ".retirement-reduces-equipment-checkbox",
-    );
+    /**
+     * Sets up retirement UI controls including input and checkbox.
+     *
+     * Initializes the retirement reduces equipment checkbox based on whether
+     * the substance has a retire command with the withReplacement flag.
+     * The checkbox logic is inverted: checked means normal retirement that
+     * reduces equipment population, unchecked means retirement with replacement
+     * that maintains equipment population.
+     */
+    const setupRetirementUI = () => {
+      const retirementReducesCheckbox = self._dialog.querySelector(
+        ".retirement-reduces-equipment-checkbox",
+      );
 
-    if (objToShow !== null && objToShow.getRetire()) {
-      // If retire command has withReplacement flag, checkbox should be UNCHECKED
-      // Logic is inverted: checked = reduces equipment, unchecked = with replacement
-      const withReplacement = objToShow.getRetire().getWithReplacement();
-      retirementReducesCheckbox.checked = !withReplacement;
-    } else {
-      // Default to checked (normal retirement reduces equipment)
-      retirementReducesCheckbox.checked = true;
-    }
+      if (objToShow !== null && objToShow.getRetire()) {
+        const withReplacement = objToShow.getRetire().getWithReplacement();
+        retirementReducesCheckbox.checked = !withReplacement;
+      } else {
+        retirementReducesCheckbox.checked = true;
+      }
+    };
+    setupRetirementUI();
 
     const removeCallback = () => self._updateCounts();
 
@@ -736,35 +940,51 @@ class ConsumptionListPresenter {
       removeCallback,
     );
 
-    // Set enable checkboxes based on existing substance data
-    const enableImport = self._dialog.querySelector(".enable-import-checkbox");
-    const enableDomestic = self._dialog.querySelector(".enable-domestic-checkbox");
-    const enableExport = self._dialog.querySelector(".enable-export-checkbox");
+    /**
+     * Sets up enable checkboxes based on substance's enable commands.
+     *
+     * Initializes the domestic, import, and export enable checkboxes.
+     * For existing substances, checks if the substance has enable commands
+     * for each stream. For new substances, defaults all checkboxes to unchecked
+     * since the enable command must be explicitly added when a stream is used.
+     */
+    const setupEnableCheckboxes = () => {
+      const enableImport = self._dialog.querySelector(".enable-import-checkbox");
+      const enableDomestic = self._dialog.querySelector(".enable-domestic-checkbox");
+      const enableExport = self._dialog.querySelector(".enable-export-checkbox");
 
-    if (objToShow !== null) {
-      // Check if the substance has enable commands
-      const enableCommands = objToShow.getEnables();
+      if (objToShow !== null) {
+        const enableCommands = objToShow.getEnables();
+        enableDomestic.checked = enableCommands.some((cmd) => cmd.getTarget() === "domestic");
+        enableImport.checked = enableCommands.some((cmd) => cmd.getTarget() === "import");
+        enableExport.checked = enableCommands.some((cmd) => cmd.getTarget() === "export");
+      } else {
+        enableDomestic.checked = false;
+        enableImport.checked = false;
+        enableExport.checked = false;
+      }
+    };
+    setupEnableCheckboxes();
 
-      enableDomestic.checked = enableCommands.some((cmd) => cmd.getTarget() === "domestic");
-      enableImport.checked = enableCommands.some((cmd) => cmd.getTarget() === "import");
-      enableExport.checked = enableCommands.some((cmd) => cmd.getTarget() === "export");
-    } else {
-      // For new substances, default all enable checkboxes to unchecked
-      enableDomestic.checked = false;
-      enableImport.checked = false;
-      enableExport.checked = false;
-    }
+    /**
+     * Sets up the sales assumption dropdown.
+     *
+     * Initializes the sales assumption dropdown with the current assume mode.
+     * Defaults to "continued" for new substances or when no assume mode is set.
+     * The assume mode controls whether sales continue from previous year,
+     * are zeroed out, or only cover recharge needs.
+     */
+    const setupSalesAssumption = () => {
+      const salesAssumptionInput = self._dialog.querySelector(".sales-assumption-input");
+      if (objToShow === null) {
+        salesAssumptionInput.value = "continued";
+      } else {
+        const assumeMode = objToShow.getAssumeMode();
+        salesAssumptionInput.value = assumeMode === null ? "continued" : assumeMode;
+      }
+    };
+    setupSalesAssumption();
 
-    // Set sales assumption dropdown
-    const salesAssumptionInput = self._dialog.querySelector(".sales-assumption-input");
-    if (objToShow === null) {
-      salesAssumptionInput.value = "continued";
-    } else {
-      const assumeMode = objToShow.getAssumeMode();
-      salesAssumptionInput.value = assumeMode === null ? "continued" : assumeMode;
-    }
-
-    self._updateEnableCheckboxes();
     self._updateSource();
 
     self._dialog.showModal();
@@ -774,6 +994,13 @@ class ConsumptionListPresenter {
 
   /**
    * Update the source inputs value and visibility.
+   *
+   * Shows or hides initial charge inputs based on enable checkbox states.
+   * When a stream is enabled, shows its input and sets default value if needed.
+   * When disabled, hides the input and sets value to 0. Updates stream target
+   * dropdowns to reflect current enabled streams.
+   *
+   * @private
    */
   _updateSource() {
     const self = this;
@@ -797,58 +1024,57 @@ class ConsumptionListPresenter {
       ".edit-consumption-initial-charge-export-input-outer",
     );
 
-    // Show/hide fields based on checkbox states and set default values
-    if (enableDomestic.checked) {
-      domesticInputOuter.style.display = "block";
-      // If enabling and current value is 0, set to 1 kg/unit
-      if (domesticInput.value === "0" || domesticInput.value === "") {
-        domesticInput.value = 1;
-        const domesticUnitsInput = self._dialog.querySelector(
-          ".initial-charge-domestic-units-input",
-        );
-        if (domesticUnitsInput) {
-          domesticUnitsInput.value = "kg / unit";
+    /**
+     * Updates visibility and value for a stream input based on checkbox state.
+     *
+     * When checkbox is checked, shows the input field and sets default value
+     * (1 kg/unit) if current value is 0 or empty. When unchecked, hides the
+     * input and sets value to 0.
+     *
+     * @param {HTMLInputElement} checkbox - The enable checkbox for this stream.
+     * @param {HTMLInputElement} input - The value input element.
+     * @param {HTMLElement} inputOuter - The container element for visibility.
+     * @param {string} unitsInputSelector - CSS selector for the units dropdown.
+     * @param {string} unitsValue - Default units value to set.
+     */
+    const updateStreamInput = (checkbox, input, inputOuter, unitsInputSelector, unitsValue) => {
+      if (checkbox.checked) {
+        inputOuter.style.display = "block";
+        if (input.value === "0" || input.value === "") {
+          input.value = 1;
+          const unitsInput = self._dialog.querySelector(unitsInputSelector);
+          if (unitsInput) {
+            unitsInput.value = unitsValue;
+          }
         }
+      } else {
+        inputOuter.style.display = "none";
+        input.value = 0;
       }
-    } else {
-      domesticInputOuter.style.display = "none";
-      domesticInput.value = 0;
-    }
+    };
 
-    if (enableImport.checked) {
-      importInputOuter.style.display = "block";
-      // If enabling and current value is 0, set to 1 kg/unit
-      if (importInput.value === "0" || importInput.value === "") {
-        importInput.value = 1;
-        const importUnitsInput = self._dialog.querySelector(".initial-charge-import-units-input");
-        if (importUnitsInput) {
-          importUnitsInput.value = "kg / unit";
-        }
-      }
-    } else {
-      importInputOuter.style.display = "none";
-      importInput.value = 0;
-    }
+    updateStreamInput(
+      enableDomestic,
+      domesticInput,
+      domesticInputOuter,
+      ".initial-charge-domestic-units-input",
+      "kg / unit",
+    );
+    updateStreamInput(
+      enableImport,
+      importInput,
+      importInputOuter,
+      ".initial-charge-import-units-input",
+      "kg / unit",
+    );
+    updateStreamInput(
+      enableExport,
+      exportInput,
+      exportInputOuter,
+      ".initial-charge-export-units-input",
+      "kg / unit",
+    );
 
-    if (enableExport.checked) {
-      exportInputOuter.style.display = "block";
-      // If enabling and current value is 0, set to 1 kg/unit
-      if (exportInput.value === "0" || exportInput.value === "") {
-        exportInput.value = 1;
-        const exportUnitsInput = self._dialog.querySelector(".initial-charge-export-units-input");
-        if (exportUnitsInput) {
-          exportUnitsInput.value = "kg / unit";
-        }
-      }
-    } else {
-      exportInputOuter.style.display = "none";
-      exportInput.value = 0;
-    }
-
-    // Update stream target dropdowns in all open dialogs when checkbox states change
-    const substanceInput = self._dialog.querySelector(".edit-consumption-substance-input");
-    const currentSubstanceName = substanceInput.value;
-    // Create a temporary substance object with current checkbox states to get enabled streams
     const tempEnabledStreams = [];
     if (enableDomestic.checked) {
       tempEnabledStreams.push("domestic");
@@ -860,30 +1086,9 @@ class ConsumptionListPresenter {
       tempEnabledStreams.push("export");
     }
 
-    // Update all open dialogs with the new stream states
     self._streamUpdater.updateAllStreamTargetDropdowns(tempEnabledStreams);
   }
 
-  /**
-   * Update the enable checkboxes based on current field values.
-   */
-  _updateEnableCheckboxes() {
-    const self = this;
-
-    const enableImport = self._dialog.querySelector(".enable-import-checkbox");
-    const enableDomestic = self._dialog.querySelector(".enable-domestic-checkbox");
-    const enableExport = self._dialog.querySelector(".enable-export-checkbox");
-
-    const domesticInput = self._dialog.querySelector(
-      ".edit-consumption-initial-charge-domestic-input",
-    );
-    const importInput = self._dialog.querySelector(".edit-consumption-initial-charge-import-input");
-    const exportInput = self._dialog.querySelector(".edit-consumption-initial-charge-export-input");
-
-    // For new substances, checkboxes should remain as explicitly set
-    // (either unchecked by default or checked by user interaction)
-    // Don't automatically check based on field values
-  }
 
   /**
    * Gets list of all consuming substances.
@@ -910,98 +1115,163 @@ class ConsumptionListPresenter {
   /**
    * Saves the current consumption data.
    *
+   * Validates inputs and delegates to either _saveNew or _saveUpdate based on
+   * whether a new substance is being created or an existing one is being modified.
+   *
+   * @returns {boolean} True if save succeeded, false if user cancelled.
    * @private
    */
   _save() {
     const self = this;
 
-    // Validate numeric inputs and get user confirmation for potentially invalid values
     if (!validateNumericInputs(self._dialog, "substance")) {
-      return false; // User cancelled, stop save operation
+      return false;
     }
-    let substance = self._parseObj();
+    const substance = self._parseObj();
 
     const codeObj = self._getCodeObj();
+    const newSubstance = self._editingName === null;
 
-    if (self._editingName === null) {
-      const applicationName = getFieldValue(
-        self._dialog.querySelector(".edit-consumption-application-input"),
-      );
-
-      // Handle duplicate substance name resolution for new substances
-      const baseName = substance.getName();
-      const priorNames = new Set(self._getConsumptionNames());
-      const fullBaseName = `"${baseName}" for "${applicationName}"`;
-      const resolution = resolveSubstanceNameConflict(fullBaseName, priorNames);
-
-      // If the name was changed, update the substance input field and re-parse
-      if (resolution.getNameChanged()) {
-        // Extract the resolved substance name from the full name
-        const resolvedFullName = resolution.getNewName();
-        // Handle format like: "SubA" for "Test" (1) -> should extract "SubA (1)"
-        const fullNameMatch = resolvedFullName.match(/^"([^"]+)" for "[^"]+"(\s*\([^)]+\))?$/);
-        if (fullNameMatch) {
-          const baseSubstanceName = fullNameMatch[1];
-          const suffix = fullNameMatch[2] || "";
-          const resolvedSubstanceName = baseSubstanceName + suffix;
-
-          // Update the substance input field - need to handle compound names properly
-          const substanceInput = self._dialog.querySelector(".edit-consumption-substance-input");
-          const equipmentInput = self._dialog.querySelector(".edit-consumption-equipment-input");
-
-          // Check if the resolved name has equipment model part
-          const equipmentModel = getFieldValue(equipmentInput);
-          if (equipmentModel && equipmentModel.trim() !== "") {
-            // For compound names, update the base substance part
-            const baseResolved = resolvedSubstanceName.replace(` - ${equipmentModel.trim()}`, "");
-            substanceInput.value = baseResolved;
-          } else {
-            substanceInput.value = resolvedSubstanceName;
-          }
-
-          // Re-parse with the updated name
-          substance = self._parseObj();
-        }
-      }
-
-      codeObj.insertSubstance(null, applicationName, null, substance);
+    if (newSubstance) {
+      return self._saveNew(substance, codeObj);
     } else {
-      const objIdentifierRegex = /\"([^\"]+)\" for \"([^\"]+)\"/;
-      const match = self._editingName.match(objIdentifierRegex);
-      const oldSubstanceName = match[1];
-      const oldApplicationName = match[2];
-      const newApplicationName = getFieldValue(
-        self._dialog.querySelector(".edit-consumption-application-input"),
-      );
-      const newSubstanceName = substance.getName();
+      return self._saveUpdate(substance, codeObj);
+    }
+  }
 
-      // Check if we need to rename substance in policies
-      const appNameSame = oldApplicationName === newApplicationName;
-      const substanceNameChanged = oldSubstanceName !== newSubstanceName;
+  /**
+   * Saves a new consumption substance.
+   *
+   * Handles name conflict resolution for new substances. If a duplicate name
+   * is detected, appends a numeric suffix and updates the UI accordingly.
+   * Delegates to specialized handlers based on conflict status.
+   *
+   * @param {Object} substance - The parsed substance object.
+   * @param {Object} codeObj - The code object to update.
+   * @returns {boolean} True indicating save succeeded.
+   * @private
+   */
+  _saveNew(substance, codeObj) {
+    const self = this;
+    const applicationName = getFieldValue(
+      self._dialog.querySelector(".edit-consumption-application-input"),
+    );
 
-      if (appNameSame && substanceNameChanged) {
-        // Substance name changed within same application - update policies
-        codeObj.renameSubstanceInApplication(
-          oldApplicationName,
-          oldSubstanceName,
-          newSubstanceName,
-        );
-        // Still need to update the substance definition itself
-        codeObj.insertSubstance(
-          oldApplicationName,
-          newApplicationName,
-          newSubstanceName,
-          substance,
-        );
+    const baseName = substance.getName();
+    const priorNames = new Set(self._getConsumptionNames());
+    const fullBaseName = `"${baseName}" for "${applicationName}"`;
+    const resolution = resolveSubstanceNameConflict(fullBaseName, priorNames);
+
+    if (resolution.getNameChanged()) {
+      return self._saveNewConflict(substance, applicationName, resolution);
+    } else {
+      return self._saveNewNoConflict(substance, applicationName, codeObj);
+    }
+  }
+
+  /**
+   * Saves a new substance after resolving name conflict.
+   *
+   * Updates the substance input field with the resolved name and re-parses
+   * the form data before inserting into the code object.
+   *
+   * @param {Object} substance - The original parsed substance object.
+   * @param {string} applicationName - The application name.
+   * @param {Object} resolution - The name conflict resolution result.
+   * @returns {boolean} True indicating save succeeded.
+   * @private
+   */
+  _saveNewConflict(substance, applicationName, resolution) {
+    const self = this;
+    const resolvedFullName = resolution.getNewName();
+    const fullNameMatch = resolvedFullName.match(RESOLVED_FULL_NAME_REGEX);
+    if (fullNameMatch) {
+      const baseSubstanceName = fullNameMatch[1];
+      const suffix = fullNameMatch[2] || "";
+      const resolvedSubstanceName = baseSubstanceName + suffix;
+
+      const substanceInput = self._dialog.querySelector(".edit-consumption-substance-input");
+      const equipmentInput = self._dialog.querySelector(".edit-consumption-equipment-input");
+
+      const equipmentModel = getFieldValue(equipmentInput);
+      if (equipmentModel && equipmentModel.trim() !== "") {
+        const baseResolved = resolvedSubstanceName.replace(` - ${equipmentModel.trim()}`, "");
+        substanceInput.value = baseResolved;
       } else {
-        // Application changed or no substance name change - use standard insert
-        codeObj.insertSubstance(
-          oldApplicationName,
-          newApplicationName,
-          oldSubstanceName,
-          substance,
-        );
+        substanceInput.value = resolvedSubstanceName;
       }
+
+      substance = self._parseObj();
+    }
+
+    const codeObj = self._getCodeObj();
+    codeObj.insertSubstance(null, applicationName, null, substance);
+    self._onCodeObjUpdate(codeObj);
+    return true;
+  }
+
+  /**
+   * Saves a new substance without name conflicts.
+   *
+   * Directly inserts the substance into the code object without modification.
+   *
+   * @param {Object} substance - The parsed substance object.
+   * @param {string} applicationName - The application name.
+   * @param {Object} codeObj - The code object to update.
+   * @returns {boolean} True indicating save succeeded.
+   * @private
+   */
+  _saveNewNoConflict(substance, applicationName, codeObj) {
+    const self = this;
+    codeObj.insertSubstance(null, applicationName, null, substance);
+    self._onCodeObjUpdate(codeObj);
+    return true;
+  }
+
+  /**
+   * Updates an existing consumption substance.
+   *
+   * Handles renaming of substances within the same application, ensuring
+   * that policy references are updated accordingly. Uses standard insertion
+   * logic for application changes or when the substance name remains unchanged.
+   *
+   * @param {Object} substance - The parsed substance object.
+   * @param {Object} codeObj - The code object to update.
+   * @returns {boolean} True indicating save succeeded.
+   * @private
+   */
+  _saveUpdate(substance, codeObj) {
+    const self = this;
+    const match = self._editingName.match(OBJ_IDENTIFIER_REGEX);
+    const oldSubstanceName = match[1];
+    const oldApplicationName = match[2];
+    const newApplicationName = getFieldValue(
+      self._dialog.querySelector(".edit-consumption-application-input"),
+    );
+    const newSubstanceName = substance.getName();
+
+    const appNameSame = oldApplicationName === newApplicationName;
+    const substanceNameChanged = oldSubstanceName !== newSubstanceName;
+
+    if (appNameSame && substanceNameChanged) {
+      codeObj.renameSubstanceInApplication(
+        oldApplicationName,
+        oldSubstanceName,
+        newSubstanceName,
+      );
+      codeObj.insertSubstance(
+        oldApplicationName,
+        newApplicationName,
+        newSubstanceName,
+        substance,
+      );
+    } else {
+      codeObj.insertSubstance(
+        oldApplicationName,
+        newApplicationName,
+        oldSubstanceName,
+        substance,
+      );
     }
 
     self._onCodeObjUpdate(codeObj);
@@ -1036,20 +1306,25 @@ class ConsumptionListPresenter {
 
     const substanceBuilder = new SubstanceBuilder(substanceName, false);
 
-    // Add enable commands based on checkbox states
+    /**
+     * Adds an enable command for a stream if its checkbox is checked.
+     *
+     * @param {string} streamName - The stream name (domestic, import, export).
+     * @param {HTMLInputElement} checkbox - The enable checkbox element.
+     */
+    const addEnableCommand = (streamName, checkbox) => {
+      if (checkbox.checked) {
+        substanceBuilder.addCommand(new Command("enable", streamName, null, null));
+      }
+    };
+
     const enableImport = self._dialog.querySelector(".enable-import-checkbox");
     const enableDomestic = self._dialog.querySelector(".enable-domestic-checkbox");
     const enableExport = self._dialog.querySelector(".enable-export-checkbox");
 
-    if (enableDomestic.checked) {
-      substanceBuilder.addCommand(new Command("enable", "domestic", null, null));
-    }
-    if (enableImport.checked) {
-      substanceBuilder.addCommand(new Command("enable", "import", null, null));
-    }
-    if (enableExport.checked) {
-      substanceBuilder.addCommand(new Command("enable", "export", null, null));
-    }
+    addEnableCommand("domestic", enableDomestic);
+    addEnableCommand("import", enableImport);
+    addEnableCommand("export", enableExport);
 
     const assumeModeDropdown = self._dialog.querySelector(".sales-assumption-input");
     const assumeMode = assumeModeDropdown.value;
@@ -1116,7 +1391,6 @@ class ConsumptionListPresenter {
     // Create retire command with withReplacement flag
     const retireCommand = new RetireCommand(retirement, null, withReplacement);
     substanceBuilder.addCommand(retireCommand);
-
 
     const levels = getListInput(self._dialog.querySelector(".level-list"), readSetCommandUi);
     levels.forEach((x) => substanceBuilder.addCommand(x));
@@ -1264,6 +1538,32 @@ class PolicyListPresenter {
   }
 
   /**
+   * Creates a listener function for substance input changes.
+   *
+   * Returns a function that updates stream target dropdowns when the substance
+   * selection changes. The listener retrieves enabled streams for the selected
+   * substance and updates all stream target dropdowns in the policy dialog to
+   * reflect which streams are available.
+   *
+   * @param {HTMLSelectElement} substanceInput - The substance selection input element.
+   * @returns {Function} Event listener function for the change event.
+   * @private
+   */
+  _createSubstanceInputListener(substanceInput) {
+    const self = this;
+    return () => {
+      const selectedSubstance = substanceInput.value;
+      const codeObj = self._getCodeObj();
+      const enabledStreams = self._streamUpdater._getEnabledStreamsForSubstance(
+        codeObj,
+        selectedSubstance,
+      );
+
+      self._streamUpdater.updateAllStreamTargetDropdowns(enabledStreams);
+    };
+  }
+
+  /**
    * Sets up the dialog for adding/editing policies.
    *
    * Sets up the dialog for adding/editing policies, initializing tabs and
@@ -1310,18 +1610,8 @@ class PolicyListPresenter {
     };
     const setupListButton = buildSetupListButton(updateHints);
 
-    // Add event listener for substance selection changes to update stream target dropdowns
     const substanceInput = self._dialog.querySelector(".edit-policy-substance-input");
-    substanceInput.addEventListener("change", () => {
-      const selectedSubstance = substanceInput.value;
-      const codeObj = self._getCodeObj();
-      const enabledStreams = self._streamUpdater._getEnabledStreamsForSubstance(
-        codeObj, selectedSubstance,
-      );
-
-      // Update all stream target dropdowns in the policy dialog
-      self._streamUpdater.updateAllStreamTargetDropdowns(enabledStreams);
-    });
+    substanceInput.addEventListener("change", self._createSubstanceInputListener(substanceInput));
 
     const addRecyclingButton = self._root.querySelector(".add-recycling-button");
     const recyclingList = self._root.querySelector(".recycling-list");
@@ -1620,24 +1910,21 @@ class PolicyListPresenter {
   _save() {
     const self = this;
 
-    // Validate numeric inputs and get user confirmation for potentially invalid values
     if (!validateNumericInputs(self._dialog, "policy")) {
-      return false; // User cancelled, stop save operation
+      return false;
     }
     let policy = self._parseObj();
 
-    // Handle duplicate name resolution for new policies
-    if (self._editingName === null) {
+    const newPolicy = self._editingName === null;
+    if (newPolicy) {
       const baseName = policy.getName();
       const priorNames = new Set(self._getPolicyNames());
       const resolution = resolveNameConflict(baseName, priorNames);
 
-      // Update the input field if the name was changed
       if (resolution.getNameChanged()) {
         const nameInput = self._dialog.querySelector(".edit-policy-name-input");
         nameInput.value = resolution.getNewName();
 
-        // Need to re-parse with the updated name
         policy = self._parseObj();
       }
     }
