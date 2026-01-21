@@ -1,5 +1,8 @@
 /**
- * Presenters for managing consumption and policy actions in the UI editor.
+ * Presenters for managing consumption and policy stanzas via the UI editor.
+ *
+ * Presenters for UI components which manage consumption and policy stanzas via
+ * the UI editor. These are the locations where action commands are actually held.
  *
  * @license BSD, see LICENSE.md.
  */
@@ -21,7 +24,8 @@ import {
   resolveSubstanceNameConflict,
   DuplicateEntityPresenter,
 } from "duplicate_util";
-import {ENABLEABLE_STREAMS, ALWAYS_ON_STREAMS} from "ui_editor_const";
+import {ENABLEABLE_STREAMS} from "ui_editor_const";
+import {ALWAYS_ON_STREAMS} from "ui_editor_const";
 import {
   STREAM_TARGET_SELECTORS,
   updateDurationSelector,
@@ -141,30 +145,36 @@ class StreamSelectionAvailabilityUpdater {
   }
 
   /**
-   * Private method to get enabled streams for a substance from code objects.
+   * Get enabled streams for a substance from code objects.
+   *
    * @param {Object} codeObj - The code object containing substances data.
    * @param {string} substanceName - The name of the substance to check.
    * @returns {Array<string>} Array of enabled stream names.
+   * @private
    */
   _getEnabledStreamsForSubstance(codeObj, substanceName) {
     const substances = codeObj.getSubstances();
     const substance = substances.find((s) => s.getName() === substanceName);
 
-    if (!substance) throw new Error(`Substance "${substanceName}" not found`);
+    if (!substance) {
+      throw new Error(`Substance "${substanceName}" not found`);
+    }
 
     if (typeof substance.getEnables === "function") {
       const enableCommands = substance.getEnables();
       return enableCommands
         .map((cmd) => cmd.getTarget())
         .filter((x) => ENABLEABLE_STREAMS.includes(x));
+    } else {
+      return [];
     }
-
-    return [];
   }
 
   /**
-   * Private method to get currently enabled streams from checkboxes.
+   * Get currently enabled streams from checkboxes.
+   *
    * @returns {Array<string>} Array of enabled stream names.
+   * @private
    */
   _getCurrentEnabledStreamsFromCheckboxes() {
     const enabledStreams = [];
@@ -188,14 +198,18 @@ class StreamSelectionAvailabilityUpdater {
   }
 
   /**
-   * Private method to get currently enabled streams from code objects.
+   * Get currently enabled streams from code objects.
+   *
    * @param {Object} codeObj - The code object containing substances data.
    * @param {string} substanceName - The name of the substance to check.
    * @returns {Array<string>} Array of enabled stream names.
+   * @private
    */
   _getCurrentEnabledStreamsFromCode(codeObj, substanceName) {
     const policySubstanceInput = this._container.querySelector(".edit-policy-substance-input");
-    if (!policySubstanceInput) return [];
+    if (!policySubstanceInput) {
+      return [];
+    }
 
     const firstName = policySubstanceInput.options[0].value;
     const policySubstanceNameCandidate = policySubstanceInput.value;
@@ -255,12 +269,22 @@ class ReminderPresenter {
     const embedSubstanceDisplays = self._root.querySelectorAll(".embed-substance-label");
     const embedAppDisplays = self._root.querySelectorAll(".embed-app-label");
 
+    /**
+     * Updates a display element with the current substance value.
+     *
+     * @param {HTMLElement} display - The display element to update.
+     */
     const updateSubstance = (display) => {
       display.innerHTML = "";
       const textNode = document.createTextNode(substanceInput.value);
       display.appendChild(textNode);
     };
 
+    /**
+     * Updates a display element with the current application value.
+     *
+     * @param {HTMLElement} display - The display element to update.
+     */
     const updateApp = (display) => {
       display.innerHTML = "";
       const textNode = document.createTextNode(applicationInput.value);
