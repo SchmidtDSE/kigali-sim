@@ -496,6 +496,24 @@ class SimulationListPresenter {
   }
 
   /**
+   * Moves a policy in the ordering by swapping with an adjacent element.
+   *
+   * @param {number} index - Current index of the policy in _policyOrderArray.
+   * @param {boolean} advance - True to move forward (+1), false to move backward (-1).
+   * @private
+   */
+  _movePolicy(index, advance) {
+    const self = this;
+    const targetIndex = advance ? index + 1 : index - 1;
+
+    const temp = self._policyOrderArray[targetIndex];
+    self._policyOrderArray[targetIndex] = self._policyOrderArray[index];
+    self._policyOrderArray[index] = temp;
+
+    self._renderPolicyCheckboxes();
+  }
+
+  /**
    * Moves a policy up (before the previous policy) in the ordering.
    *
    * Finds the policy in _policyOrderArray, swaps it with the previous element,
@@ -509,18 +527,11 @@ class SimulationListPresenter {
 
     const currentIndex = self._policyOrderArray.indexOf(policyName);
 
-    // Cannot move up if not found or already at the top
     if (currentIndex <= 0) {
       return;
     }
 
-    // Swap with previous element
-    const temp = self._policyOrderArray[currentIndex - 1];
-    self._policyOrderArray[currentIndex - 1] = self._policyOrderArray[currentIndex];
-    self._policyOrderArray[currentIndex] = temp;
-
-    // Re-render to reflect the new order
-    self._renderPolicyCheckboxes();
+    self._movePolicy(currentIndex, false);
   }
 
   /**
@@ -543,11 +554,7 @@ class SimulationListPresenter {
       return;
     }
 
-    const temp = self._policyOrderArray[currentIndex + 1];
-    self._policyOrderArray[currentIndex + 1] = self._policyOrderArray[currentIndex];
-    self._policyOrderArray[currentIndex] = temp;
-
-    self._renderPolicyCheckboxes();
+    self._movePolicy(currentIndex, true);
   }
 
   /**
