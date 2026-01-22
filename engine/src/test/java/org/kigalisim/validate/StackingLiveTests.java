@@ -39,52 +39,52 @@ public class StackingLiveTests {
     Stream<EngineResult> bigChangeResults = KigaliSimFacade.runScenario(
         program, "Big Change", progress -> {});
     List<EngineResult> bigChangeList = bigChangeResults.collect(Collectors.toList());
-    EngineResult bigChange2034 = LiveTestsUtil.getResult(
-        bigChangeList.stream(), 2034, "Domestic Refrigeration", "HFC-134a");
-    assertNotNull(bigChange2034, "Should have Big Change result for 2034");
-    double bigChangeDomestic = bigChange2034.getDomestic().getValue().doubleValue();
+    EngineResult bigChange2031 = LiveTestsUtil.getResult(
+        bigChangeList.stream(), 2031, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(bigChange2031, "Should have Big Change result for 2031");
+    double bigChangeDomestic = bigChange2031.getDomestic().getValue().doubleValue();
 
     // Run Permit scenario
     Stream<EngineResult> permitResults = KigaliSimFacade.runScenario(
         program, "Permit", progress -> {});
     List<EngineResult> permitList = permitResults.collect(Collectors.toList());
-    EngineResult permit2034 = LiveTestsUtil.getResult(
-        permitList.stream(), 2034, "Domestic Refrigeration", "HFC-134a");
-    assertNotNull(permit2034, "Should have Permit result for 2034");
-    double permitDomestic = permit2034.getDomestic().getValue().doubleValue();
+    EngineResult permit2031 = LiveTestsUtil.getResult(
+        permitList.stream(), 2031, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(permit2031, "Should have Permit result for 2031");
+    double permitDomestic = permit2031.getDomestic().getValue().doubleValue();
 
     // Run Before scenario (Big Change then Permit)
     Stream<EngineResult> beforeResults = KigaliSimFacade.runScenario(
         program, "Before", progress -> {});
     List<EngineResult> beforeList = beforeResults.collect(Collectors.toList());
-    EngineResult before2034 = LiveTestsUtil.getResult(
-        beforeList.stream(), 2034, "Domestic Refrigeration", "HFC-134a");
-    assertNotNull(before2034, "Should have Before result for 2034");
-    double beforeDomestic = before2034.getDomestic().getValue().doubleValue();
+    EngineResult before2031 = LiveTestsUtil.getResult(
+        beforeList.stream(), 2031, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(before2031, "Should have Before result for 2031");
+    double beforeDomestic = before2031.getDomestic().getValue().doubleValue();
 
     // Run After scenario (Permit then Big Change)
     Stream<EngineResult> afterResults = KigaliSimFacade.runScenario(
         program, "After", progress -> {});
     List<EngineResult> afterList = afterResults.collect(Collectors.toList());
-    EngineResult after2034 = LiveTestsUtil.getResult(
-        afterList.stream(), 2034, "Domestic Refrigeration", "HFC-134a");
-    assertNotNull(after2034, "Should have After result for 2034");
-    double afterDomestic = after2034.getDomestic().getValue().doubleValue();
+    EngineResult after2031 = LiveTestsUtil.getResult(
+        afterList.stream(), 2031, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(after2031, "Should have After result for 2031");
+    double afterDomestic = after2031.getDomestic().getValue().doubleValue();
 
-    // Assert: Permit should have lower domestic consumption than Big Change in 2034
+    // Assert: Permit should have lower domestic consumption than Big Change in 2031
     assertTrue(permitDomestic < bigChangeDomestic,
-        String.format("Permit domestic (%.2f kg) should be lower than Big Change domestic (%.2f kg) in 2034",
+        String.format("Permit domestic (%.2f kg) should be lower than Big Change domestic (%.2f kg) in 2031",
             permitDomestic, bigChangeDomestic));
 
-    // Assert: Permit should be within 0.01 mt (10 kg) of Before in 2034
+    // Assert: Permit should be within 0.01 mt (10 kg) of Before in 2031
     double tolerance = 10.0; // 0.01 mt = 10 kg
     assertEquals(permitDomestic, beforeDomestic, tolerance,
-        String.format("Permit domestic (%.2f kg) should be within 10 kg of Before domestic (%.2f kg) in 2034",
+        String.format("Permit domestic (%.2f kg) should be within 10 kg of Before domestic (%.2f kg) in 2031",
             permitDomestic, beforeDomestic));
 
-    // Assert: After should have lower domestic consumption than Permit in 2034
+    // Assert: After should have lower domestic consumption than Permit in 2031
     assertTrue(afterDomestic < permitDomestic,
-        String.format("After domestic (%.2f kg) should be lower than Permit domestic (%.2f kg) in 2034",
+        String.format("After domestic (%.2f kg) should be lower than Permit domestic (%.2f kg) in 2031",
             afterDomestic, permitDomestic));
   }
 
@@ -103,52 +103,52 @@ public class StackingLiveTests {
     Stream<EngineResult> bigChangeResults = KigaliSimFacade.runScenario(
         program, "Big Change", progress -> {});
     List<EngineResult> bigChangeList = bigChangeResults.collect(Collectors.toList());
-    EngineResult bigChange2034 = LiveTestsUtil.getResult(
-        bigChangeList.stream(), 2034, "Domestic Refrigeration", "HFC-134a");
-    assertNotNull(bigChange2034, "Should have Big Change result for 2034");
-    double bigChangeDomestic = bigChange2034.getDomestic().getValue().doubleValue();
+    EngineResult bigChange2031 = LiveTestsUtil.getResult(
+        bigChangeList.stream(), 2031, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(bigChange2031, "Should have Big Change result for 2031");
+    double bigChangeDomestic = bigChange2031.getDomestic().getValue().doubleValue();
 
     // Run Permit scenario
     Stream<EngineResult> permitResults = KigaliSimFacade.runScenario(
         program, "Permit", progress -> {});
     List<EngineResult> permitList = permitResults.collect(Collectors.toList());
-    EngineResult permit2034 = LiveTestsUtil.getResult(
-        permitList.stream(), 2034, "Domestic Refrigeration", "HFC-134a");
-    assertNotNull(permit2034, "Should have Permit result for 2034");
-    double permitDomestic = permit2034.getDomestic().getValue().doubleValue();
+    EngineResult permit2031 = LiveTestsUtil.getResult(
+        permitList.stream(), 2031, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(permit2031, "Should have Permit result for 2031");
+    double permitDomestic = permit2031.getDomestic().getValue().doubleValue();
 
     // Run Before scenario (Big Change then Permit)
     Stream<EngineResult> beforeResults = KigaliSimFacade.runScenario(
         program, "Before", progress -> {});
     List<EngineResult> beforeList = beforeResults.collect(Collectors.toList());
-    EngineResult before2034 = LiveTestsUtil.getResult(
-        beforeList.stream(), 2034, "Domestic Refrigeration", "HFC-134a");
-    assertNotNull(before2034, "Should have Before result for 2034");
-    double beforeDomestic = before2034.getDomestic().getValue().doubleValue();
+    EngineResult before2031 = LiveTestsUtil.getResult(
+        beforeList.stream(), 2031, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(before2031, "Should have Before result for 2031");
+    double beforeDomestic = before2031.getDomestic().getValue().doubleValue();
 
     // Run After scenario (Permit then Big Change)
     Stream<EngineResult> afterResults = KigaliSimFacade.runScenario(
         program, "After", progress -> {});
     List<EngineResult> afterList = afterResults.collect(Collectors.toList());
-    EngineResult after2034 = LiveTestsUtil.getResult(
-        afterList.stream(), 2034, "Domestic Refrigeration", "HFC-134a");
-    assertNotNull(after2034, "Should have After result for 2034");
-    double afterDomestic = after2034.getDomestic().getValue().doubleValue();
+    EngineResult after2031 = LiveTestsUtil.getResult(
+        afterList.stream(), 2031, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(after2031, "Should have After result for 2031");
+    double afterDomestic = after2031.getDomestic().getValue().doubleValue();
 
-    // Assert: Permit should have lower domestic consumption than Big Change in 2034
+    // Assert: Permit should have lower domestic consumption than Big Change in 2031
     assertTrue(permitDomestic < bigChangeDomestic,
-        String.format("Permit domestic (%.2f kg) should be lower than Big Change domestic (%.2f kg) in 2034",
+        String.format("Permit domestic (%.2f kg) should be lower than Big Change domestic (%.2f kg) in 2031",
             permitDomestic, bigChangeDomestic));
 
-    // Assert: Permit should be within 0.01 mt (10 kg) of Before in 2034
+    // Assert: Permit should be within 0.01 mt (10 kg) of Before in 2031
     double tolerance = 10.0; // 0.01 mt = 10 kg
     assertEquals(permitDomestic, beforeDomestic, tolerance,
-        String.format("Permit domestic (%.2f kg) should be within 10 kg of Before domestic (%.2f kg) in 2034",
+        String.format("Permit domestic (%.2f kg) should be within 10 kg of Before domestic (%.2f kg) in 2031",
             permitDomestic, beforeDomestic));
 
-    // Assert: After should have lower domestic consumption than Permit in 2034
+    // Assert: After should have lower domestic consumption than Permit in 2031
     assertTrue(afterDomestic < permitDomestic,
-        String.format("After domestic (%.2f kg) should be lower than Permit domestic (%.2f kg) in 2034",
+        String.format("After domestic (%.2f kg) should be lower than Permit domestic (%.2f kg) in 2031",
             afterDomestic, permitDomestic));
   }
 }

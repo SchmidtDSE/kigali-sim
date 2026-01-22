@@ -213,6 +213,14 @@ public class LimitExecutor {
           .build();
       engine.executeStreamUpdate(update);
 
+      // Update lastSpecified so subsequent percentage changes use the capped value
+      simulationState.setLastSpecifiedValue(scope, stream, newCappedValue);
+
+      // For "sales" stream, also update lastSpecified for component streams (domestic/import)
+      if ("sales".equals(stream)) {
+        updateComponentStreamsLastSpecified(simulationState, scope);
+      }
+
       if (displaceTarget != null) {
         EngineNumber finalInKg = engine.getStream(stream);
         BigDecimal changeInKg = finalInKg.getValue().subtract(currentInKg.getValue());
@@ -235,6 +243,16 @@ public class LimitExecutor {
           Optional.empty(),
           Optional.empty()
       );
+
+      // Update lastSpecified so subsequent percentage changes use the capped value
+      EngineNumber cappedValue = engine.getStream(stream);
+      simulationState.setLastSpecifiedValue(scope, stream, cappedValue);
+
+      // For "sales" stream, also update lastSpecified for component streams (domestic/import)
+      if ("sales".equals(stream)) {
+        updateComponentStreamsLastSpecified(simulationState, scope);
+      }
+
       displaceExecutor.execute(stream, amount, changeAmount, displaceTarget, displacementType);
     }
   }
@@ -279,6 +297,17 @@ public class LimitExecutor {
         .inferSubtractRecycling()
         .build();
     engine.executeStreamUpdate(update);
+
+    // Update lastSpecified so subsequent percentage changes use the capped value
+    SimulationState simulationState = engine.getStreamKeeper();
+    Scope scope = engine.getScope();
+    EngineNumber cappedValue = engine.getStream(stream);
+    simulationState.setLastSpecifiedValue(scope, stream, cappedValue);
+
+    // For "sales" stream, also update lastSpecified for component streams (domestic/import)
+    if ("sales".equals(stream)) {
+      updateComponentStreamsLastSpecified(simulationState, scope);
+    }
 
     if (displaceTarget != null) {
       EngineNumber cappedInKg = engine.getStream(stream);
@@ -343,6 +372,14 @@ public class LimitExecutor {
           .build();
       engine.executeStreamUpdate(update);
 
+      // Update lastSpecified so subsequent percentage changes use the floored value
+      simulationState.setLastSpecifiedValue(scope, stream, newFloorValue);
+
+      // For "sales" stream, also update lastSpecified for component streams (domestic/import)
+      if ("sales".equals(stream)) {
+        updateComponentStreamsLastSpecified(simulationState, scope);
+      }
+
       if (displaceTarget != null) {
         EngineNumber finalInKg = engine.getStream(stream);
         BigDecimal changeInKg = finalInKg.getValue().subtract(currentInKg.getValue());
@@ -365,6 +402,16 @@ public class LimitExecutor {
           Optional.empty(),
           Optional.empty()
       );
+
+      // Update lastSpecified so subsequent percentage changes use the floored value
+      EngineNumber flooredValue = engine.getStream(stream);
+      simulationState.setLastSpecifiedValue(scope, stream, flooredValue);
+
+      // For "sales" stream, also update lastSpecified for component streams (domestic/import)
+      if ("sales".equals(stream)) {
+        updateComponentStreamsLastSpecified(simulationState, scope);
+      }
+
       displaceExecutor.execute(stream, amount, changeAmount, displaceTarget, displacementType);
     }
   }
@@ -410,11 +457,38 @@ public class LimitExecutor {
         .build();
     engine.executeStreamUpdate(update);
 
+    // Update lastSpecified so subsequent percentage changes use the floored value
+    SimulationState simulationState = engine.getStreamKeeper();
+    Scope scope = engine.getScope();
+    EngineNumber flooredValue = engine.getStream(stream);
+    simulationState.setLastSpecifiedValue(scope, stream, flooredValue);
+
+    // For "sales" stream, also update lastSpecified for component streams (domestic/import)
+    if ("sales".equals(stream)) {
+      updateComponentStreamsLastSpecified(simulationState, scope);
+    }
+
     if (displaceTarget != null) {
       EngineNumber newInKg = engine.getStream(stream);
       BigDecimal changeInKg = newInKg.getValue().subtract(currentInKg.getValue());
       displaceExecutor.execute(stream, amount, changeInKg, displaceTarget, displacementType);
     }
+  }
+
+  /**
+   * Updates lastSpecified for domestic and import streams based on their current values.
+   *
+   * <p>This is called when a "sales" stream cap/floor is applied, to ensure subsequent
+   * percentage changes to component streams use the capped/floored values.</p>
+   *
+   * @param simulationState The simulation state to update
+   * @param scope The current scope (UseKey) for the update
+   */
+  private void updateComponentStreamsLastSpecified(SimulationState simulationState, Scope scope) {
+    EngineNumber domesticValue = engine.getStream("domestic");
+    EngineNumber importValue = engine.getStream("import");
+    simulationState.setLastSpecifiedValue(scope, "domestic", domesticValue);
+    simulationState.setLastSpecifiedValue(scope, "import", importValue);
   }
 
 }
