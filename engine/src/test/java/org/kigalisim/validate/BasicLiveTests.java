@@ -1187,4 +1187,5 @@ public class BasicLiveTests {
     assertEquals("kg", year2Result.getDomestic().getUnits(),
         "Domestic units should be kg");
   }
+
 }
