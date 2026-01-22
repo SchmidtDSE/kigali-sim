@@ -14,6 +14,14 @@ Finally, we want to again express our gratitude for your feedback and time.
 
 The following changes have been adopted and released.
 
+### Manual ordering of policies in UI editor
+
+**Status**: Released January 23, 2026
+
+**Classification**: Enhancement
+
+Added ability to manually specify the ordering of policy application / policy stacking. This allows for order-dependent policy scenarios to be defined without requiring use of the code editor. For example, if a percent decrease (like from an educational program) should be applied before or after a cap (like from a permitting system). Further described in [#703](https://github.com/SchmidtDSE/kigali-sim/issues/703).
+
 ### Alphabetical sorting in UI lists
 
 **Status**: Released January 20, 2026
