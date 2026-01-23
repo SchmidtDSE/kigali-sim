@@ -313,6 +313,74 @@ public class StackingLiveTests {
   }
 
   /**
+   * Test that multiple floor commands stack correctly, with the least restrictive floor winning.
+   * This validates that when two policies both floor a stream to different values,
+   * the least restrictive (highest) floor takes effect regardless of application order.
+   */
+  @Test
+  public void testDoubleFloor() throws IOException {
+    String qtaPath = "../examples/stacking_double_floor.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run BAU scenario
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(
+        program, "BAU", progress -> {});
+    List<EngineResult> bauList = bauResults.collect(Collectors.toList());
+    EngineResult bau2 = LiveTestsUtil.getResult(
+        bauList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(bau2, "Should have BAU result for year 2");
+    final double bauDomestic = bau2.getDomestic().getValue().doubleValue();
+
+    // Run Top Floor scenario
+    Stream<EngineResult> topFloorResults = KigaliSimFacade.runScenario(
+        program, "Top Floor", progress -> {});
+    List<EngineResult> topFloorList = topFloorResults.collect(Collectors.toList());
+    EngineResult topFloor2 = LiveTestsUtil.getResult(
+        topFloorList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(topFloor2, "Should have Top Floor result for year 2");
+    final double topFloorDomestic = topFloor2.getDomestic().getValue().doubleValue();
+
+    // Run Bottom Floor scenario
+    Stream<EngineResult> bottomFloorResults = KigaliSimFacade.runScenario(
+        program, "Bottom Floor", progress -> {});
+    List<EngineResult> bottomFloorList = bottomFloorResults.collect(Collectors.toList());
+    EngineResult bottomFloor2 = LiveTestsUtil.getResult(
+        bottomFloorList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(bottomFloor2, "Should have Bottom Floor result for year 2");
+    final double bottomFloorDomestic = bottomFloor2.getDomestic().getValue().doubleValue();
+
+    // Run Combined Strict scenario (Top Floor then Bottom Floor)
+    Stream<EngineResult> combinedStrictResults = KigaliSimFacade.runScenario(
+        program, "Combined Strict", progress -> {});
+    List<EngineResult> combinedStrictList = combinedStrictResults.collect(Collectors.toList());
+    EngineResult combinedStrict2 = LiveTestsUtil.getResult(
+        combinedStrictList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(combinedStrict2, "Should have Combined Strict result for year 2");
+    final double combinedStrictDomestic = combinedStrict2.getDomestic().getValue().doubleValue();
+
+    // Run Combined Loose scenario (Bottom Floor then Top Floor)
+    Stream<EngineResult> combinedLooseResults = KigaliSimFacade.runScenario(
+        program, "Combined Loose", progress -> {});
+    List<EngineResult> combinedLooseList = combinedLooseResults.collect(Collectors.toList());
+    EngineResult combinedLoose2 = LiveTestsUtil.getResult(
+        combinedLooseList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(combinedLoose2, "Should have Combined Loose result for year 2");
+    final double combinedLooseDomestic = combinedLoose2.getDomestic().getValue().doubleValue();
+
+    // Assertions with tolerance for floating-point comparisons
+    double tolerance = 0.01; // kg
+
+    assertEquals(10.0, bauDomestic, tolerance, "BAU should have 10 kg in year 2");
+    assertEquals(50.0, topFloorDomestic, tolerance, "Top Floor should have 50 kg in year 2");
+    assertEquals(20.0, bottomFloorDomestic, tolerance, "Bottom Floor should have 20 kg in year 2");
+    assertEquals(50.0, combinedStrictDomestic, tolerance,
+        "Combined Strict should have 50 kg in year 2");
+    assertEquals(50.0, combinedLooseDomestic, tolerance,
+        "Combined Loose should have 50 kg in year 2");
+  }
+
+  /**
    * Assert that domestic kg value is non-negative for a scenario result.
    *
    * @param resultsList The list of all results from the scenario
