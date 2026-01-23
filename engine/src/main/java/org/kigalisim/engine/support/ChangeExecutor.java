@@ -42,7 +42,7 @@ public class ChangeExecutor {
   }
 
   /**
-   * Clamps a change amount to prevent negative stream values.
+   * Determines the bounded change amount to prevent negative stream values.
    *
    * <p>This method ensures that applying the change will not result in a negative stream value.
    * If the proposed change would make the stream negative, it is clamped to bring the stream
@@ -52,17 +52,32 @@ public class ChangeExecutor {
    * @param proposedChange The proposed change amount in kg (can be negative)
    * @return The clamped change amount in kg that will not result in negative values
    */
-  private BigDecimal clampChangeToPreventNegative(EngineNumber currentValue,
+  private BigDecimal determineBoundChange(EngineNumber currentValue,
       BigDecimal proposedChange) {
     BigDecimal currentKg = currentValue.getValue();
     BigDecimal newValue = currentKg.add(proposedChange);
 
-    // If new value would be negative, clamp change to bring stream to exactly 0
-    if (newValue.compareTo(BigDecimal.ZERO) < 0) {
-      return currentKg.negate();  // Change of -currentKg brings stream to 0
+    boolean wouldBecomeNegative = newValue.compareTo(BigDecimal.ZERO) < 0;
+    if (wouldBecomeNegative) {
+      return currentKg.negate();
+    } else {
+      return proposedChange;
     }
+  }
 
-    return proposedChange;  // No clamping needed
+  /**
+   * Ensures a value is non-negative by clamping to zero if needed.
+   *
+   * @param value The value to check
+   * @return The original value if non-negative, zero otherwise
+   */
+  private BigDecimal ensureNonNegative(BigDecimal value) {
+    boolean isNegative = value.compareTo(BigDecimal.ZERO) < 0;
+    if (isNegative) {
+      return BigDecimal.ZERO;
+    } else {
+      return value;
+    }
   }
 
   /**
@@ -141,8 +156,7 @@ public class ChangeExecutor {
 
     EngineNumber convertedDelta = unitConverter.convert(amount, currentValue.getUnits());
 
-    // Clamp the change to prevent negative values
-    BigDecimal clampedDelta = clampChangeToPreventNegative(currentValue, convertedDelta.getValue());
+    BigDecimal clampedDelta = determineBoundChange(currentValue, convertedDelta.getValue());
     BigDecimal newAmount = currentValue.getValue().add(clampedDelta);
     EngineNumber outputWithUnits = new EngineNumber(newAmount, currentValue.getUnits());
 
@@ -205,11 +219,8 @@ public class ChangeExecutor {
     BigDecimal percentageValue = amount.getValue();
     BigDecimal changeAmount = lastSpecified.getValue().multiply(percentageValue).divide(new BigDecimal("100"));
 
-    // Clamp to prevent negative values
     BigDecimal proposedNewValue = currentValue.getValue().add(changeAmount);
-    BigDecimal clampedNewValue = proposedNewValue.compareTo(BigDecimal.ZERO) < 0
-        ? BigDecimal.ZERO
-        : proposedNewValue;
+    BigDecimal clampedNewValue = ensureNonNegative(proposedNewValue);
 
     EngineNumber newTotal = new EngineNumber(clampedNewValue, lastSpecified.getUnits());
     boolean subtractRecycling = "units".equals(lastSpecified.getUnits());
@@ -242,11 +253,8 @@ public class ChangeExecutor {
     BigDecimal percentageValue = amount.getValue();
     BigDecimal changeAmount = lastSpecified.getValue().multiply(percentageValue).divide(new BigDecimal("100"));
 
-    // Clamp to prevent negative values
     BigDecimal proposedNewValue = lastSpecified.getValue().add(changeAmount);
-    BigDecimal clampedNewValue = proposedNewValue.compareTo(BigDecimal.ZERO) < 0
-        ? BigDecimal.ZERO
-        : proposedNewValue;
+    BigDecimal clampedNewValue = ensureNonNegative(proposedNewValue);
 
     EngineNumber newTotal = new EngineNumber(clampedNewValue, lastSpecified.getUnits());
     boolean subtractRecycling = "units".equals(lastSpecified.getUnits());
@@ -326,11 +334,8 @@ public class ChangeExecutor {
       UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(engine, stream);
       EngineNumber currentInUnits = unitConverter.convert(currentValue, "units");
 
-      // Clamp the units change to prevent negative values
       BigDecimal proposedNewUnits = currentInUnits.getValue().add(amount.getValue());
-      BigDecimal clampedNewUnits = proposedNewUnits.compareTo(BigDecimal.ZERO) < 0
-          ? BigDecimal.ZERO
-          : proposedNewUnits;
+      BigDecimal clampedNewUnits = ensureNonNegative(proposedNewUnits);
 
       EngineNumber newTotal = new EngineNumber(clampedNewUnits, "units");
       StreamUpdate update = new StreamUpdateBuilder()
@@ -341,11 +346,8 @@ public class ChangeExecutor {
           .build();
       engine.executeStreamUpdate(update);
     } else {
-      // Clamp the units change to prevent negative values
       BigDecimal proposedNewUnits = lastSpecified.getValue().add(amount.getValue());
-      BigDecimal clampedNewUnits = proposedNewUnits.compareTo(BigDecimal.ZERO) < 0
-          ? BigDecimal.ZERO
-          : proposedNewUnits;
+      BigDecimal clampedNewUnits = ensureNonNegative(proposedNewUnits);
 
       EngineNumber newTotal = new EngineNumber(clampedNewUnits, lastSpecified.getUnits());
 
@@ -377,8 +379,7 @@ public class ChangeExecutor {
     UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(engine, stream);
     EngineNumber convertedDelta = unitConverter.convert(amount, "kg");
 
-    // Clamp the change to prevent negative values
-    BigDecimal clampedDelta = clampChangeToPreventNegative(currentValue, convertedDelta.getValue());
+    BigDecimal clampedDelta = determineBoundChange(currentValue, convertedDelta.getValue());
     BigDecimal newAmount = currentValue.getValue().add(clampedDelta);
     EngineNumber newTotal = new EngineNumber(newAmount, "kg");
 
