@@ -678,6 +678,87 @@ public class StackingLiveTests {
   }
 
   /**
+   * Test interaction between set (units-based) and cap (percentage-based) policies.
+   * This validates the units/kg switching behavior when set commands use units
+   * and cap commands use percentages, with stacking order determining final outcome.
+   */
+  @Test
+  public void testSetWithCapUnitsSwitch() throws IOException {
+    String qtaPath = "../examples/stacking_set_with_cap_units_switch.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run BAU scenario
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(
+        program, "BAU", progress -> {});
+    List<EngineResult> bauList = bauResults.collect(Collectors.toList());
+    EngineResult bau2 = LiveTestsUtil.getResult(
+        bauList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(bau2, "Should have BAU result for year 2");
+    final double bauDomestic = bau2.getDomestic().getValue().doubleValue();
+
+    // Run Set scenario
+    Stream<EngineResult> setResults = KigaliSimFacade.runScenario(
+        program, "Set", progress -> {});
+    List<EngineResult> setList = setResults.collect(Collectors.toList());
+    EngineResult set2 = LiveTestsUtil.getResult(
+        setList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(set2, "Should have Set result for year 2");
+    final double setDomestic = set2.getDomestic().getValue().doubleValue();
+
+    // Run Cap scenario
+    Stream<EngineResult> capResults = KigaliSimFacade.runScenario(
+        program, "Cap", progress -> {});
+    List<EngineResult> capList = capResults.collect(Collectors.toList());
+    EngineResult cap2 = LiveTestsUtil.getResult(
+        capList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(cap2, "Should have Cap result for year 2");
+    final double capDomestic = cap2.getDomestic().getValue().doubleValue();
+
+    // Run Set First scenario (Set then Cap)
+    Stream<EngineResult> setFirstResults = KigaliSimFacade.runScenario(
+        program, "Set First", progress -> {});
+    List<EngineResult> setFirstList = setFirstResults.collect(Collectors.toList());
+    EngineResult setFirst2 = LiveTestsUtil.getResult(
+        setFirstList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(setFirst2, "Should have Set First result for year 2");
+    final double setFirstDomestic = setFirst2.getDomestic().getValue().doubleValue();
+
+    // Run Cap First scenario (Cap then Set)
+    Stream<EngineResult> capFirstResults = KigaliSimFacade.runScenario(
+        program, "Cap First", progress -> {});
+    List<EngineResult> capFirstList = capFirstResults.collect(Collectors.toList());
+    EngineResult capFirst2 = LiveTestsUtil.getResult(
+        capFirstList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(capFirst2, "Should have Cap First result for year 2");
+    final double capFirstDomestic = capFirst2.getDomestic().getValue().doubleValue();
+
+    // Assertions with tolerance for floating-point comparisons
+    double tolerance = 0.1; // kg
+
+    // BAU should have approximately 10 kg (baseline with recharge)
+    assertEquals(10.0, bauDomestic, tolerance, "BAU should have approximately 10 kg in year 2");
+
+    // Set should be at least 10 kg (10 units converted to kg plus recharge)
+    assertTrue(setDomestic >= 10.0,
+        String.format("Set (%.2f kg) should be >= 10 kg in year 2", setDomestic));
+
+    // Cap should be approximately 0 kg (0% of BAU)
+    assertEquals(0.0, capDomestic, tolerance,
+        "Cap should have approximately 0 kg in year 2");
+
+    // Set First should be approximately 0 kg (cap to 0% applied after set, last policy wins)
+    assertEquals(0.0, setFirstDomestic, tolerance,
+        String.format("Set First (%.2f kg) should be approximately 0 kg in year 2",
+            setFirstDomestic));
+
+    // Cap First should be at least 10 kg (set to 10 units overrides cap, last policy wins)
+    assertTrue(capFirstDomestic >= 10.0,
+        String.format("Cap First (%.2f kg) should be >= 10 kg in year 2",
+            capFirstDomestic));
+  }
+
+  /**
    * Assert that domestic kg value is non-negative for a scenario result.
    *
    * @param resultsList The list of all results from the scenario
