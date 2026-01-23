@@ -245,6 +245,74 @@ public class StackingLiveTests {
   }
 
   /**
+   * Test that multiple cap commands stack correctly, with the most restrictive cap winning.
+   * This validates that when two policies both cap a stream to different values,
+   * the most restrictive (lowest) cap takes effect regardless of application order.
+   */
+  @Test
+  public void testDoubleCap() throws IOException {
+    String qtaPath = "../examples/stacking_double_cap.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run BAU scenario
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(
+        program, "BAU", progress -> {});
+    List<EngineResult> bauList = bauResults.collect(Collectors.toList());
+    EngineResult bau2 = LiveTestsUtil.getResult(
+        bauList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(bau2, "Should have BAU result for year 2");
+    final double bauDomestic = bau2.getDomestic().getValue().doubleValue();
+
+    // Run Top Cap scenario
+    Stream<EngineResult> topCapResults = KigaliSimFacade.runScenario(
+        program, "Top Cap", progress -> {});
+    List<EngineResult> topCapList = topCapResults.collect(Collectors.toList());
+    EngineResult topCap2 = LiveTestsUtil.getResult(
+        topCapList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(topCap2, "Should have Top Cap result for year 2");
+    final double topCapDomestic = topCap2.getDomestic().getValue().doubleValue();
+
+    // Run Bottom Cap scenario
+    Stream<EngineResult> bottomCapResults = KigaliSimFacade.runScenario(
+        program, "Bottom Cap", progress -> {});
+    List<EngineResult> bottomCapList = bottomCapResults.collect(Collectors.toList());
+    EngineResult bottomCap2 = LiveTestsUtil.getResult(
+        bottomCapList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(bottomCap2, "Should have Bottom Cap result for year 2");
+    final double bottomCapDomestic = bottomCap2.getDomestic().getValue().doubleValue();
+
+    // Run Combined Strict scenario (Top Cap then Bottom Cap)
+    Stream<EngineResult> combinedStrictResults = KigaliSimFacade.runScenario(
+        program, "Combined Strict", progress -> {});
+    List<EngineResult> combinedStrictList = combinedStrictResults.collect(Collectors.toList());
+    EngineResult combinedStrict2 = LiveTestsUtil.getResult(
+        combinedStrictList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(combinedStrict2, "Should have Combined Strict result for year 2");
+    final double combinedStrictDomestic = combinedStrict2.getDomestic().getValue().doubleValue();
+
+    // Run Combined Loose scenario (Bottom Cap then Top Cap)
+    Stream<EngineResult> combinedLooseResults = KigaliSimFacade.runScenario(
+        program, "Combined Loose", progress -> {});
+    List<EngineResult> combinedLooseList = combinedLooseResults.collect(Collectors.toList());
+    EngineResult combinedLoose2 = LiveTestsUtil.getResult(
+        combinedLooseList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(combinedLoose2, "Should have Combined Loose result for year 2");
+    final double combinedLooseDomestic = combinedLoose2.getDomestic().getValue().doubleValue();
+
+    // Assertions with tolerance for floating-point comparisons
+    double tolerance = 0.01; // kg
+
+    assertEquals(10.0, bauDomestic, tolerance, "BAU should have 10 kg in year 2");
+    assertEquals(5.0, topCapDomestic, tolerance, "Top Cap should have 5 kg in year 2");
+    assertEquals(2.0, bottomCapDomestic, tolerance, "Bottom Cap should have 2 kg in year 2");
+    assertEquals(2.0, combinedStrictDomestic, tolerance,
+        "Combined Strict should have 2 kg in year 2");
+    assertEquals(2.0, combinedLooseDomestic, tolerance,
+        "Combined Loose should have 2 kg in year 2");
+  }
+
+  /**
    * Assert that domestic kg value is non-negative for a scenario result.
    *
    * @param resultsList The list of all results from the scenario
