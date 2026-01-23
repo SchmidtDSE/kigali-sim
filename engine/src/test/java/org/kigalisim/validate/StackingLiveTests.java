@@ -842,6 +842,87 @@ public class StackingLiveTests {
   }
 
   /**
+   * Test interaction between change (units-based) and cap (percentage-based) policies.
+   * This validates that change commands can specify units and that when stacked with
+   * percentage-based caps, the units are properly converted and the cap is applied correctly.
+   * This test ensures that change reports in the same units as the original value.
+   */
+  @Test
+  public void testChangeWithUnitsSwitch() throws IOException {
+    String qtaPath = "../examples/stacking_change_with_units_switch.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run BAU scenario
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(
+        program, "BAU", progress -> {});
+    List<EngineResult> bauList = bauResults.collect(Collectors.toList());
+    EngineResult bau2 = LiveTestsUtil.getResult(
+        bauList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(bau2, "Should have BAU result for year 2");
+    final double bauDomestic = bau2.getDomestic().getValue().doubleValue();
+
+    // Run Change scenario
+    Stream<EngineResult> changeResults = KigaliSimFacade.runScenario(
+        program, "Change", progress -> {});
+    List<EngineResult> changeList = changeResults.collect(Collectors.toList());
+    EngineResult change2 = LiveTestsUtil.getResult(
+        changeList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(change2, "Should have Change result for year 2");
+    final double changeDomestic = change2.getDomestic().getValue().doubleValue();
+
+    // Run Cap scenario
+    Stream<EngineResult> capResults = KigaliSimFacade.runScenario(
+        program, "Cap", progress -> {});
+    List<EngineResult> capList = capResults.collect(Collectors.toList());
+    EngineResult cap2 = LiveTestsUtil.getResult(
+        capList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(cap2, "Should have Cap result for year 2");
+    final double capDomestic = cap2.getDomestic().getValue().doubleValue();
+
+    // Run Change First scenario (Change then Cap)
+    Stream<EngineResult> changeFirstResults = KigaliSimFacade.runScenario(
+        program, "Change First", progress -> {});
+    List<EngineResult> changeFirstList = changeFirstResults.collect(Collectors.toList());
+    EngineResult changeFirst2 = LiveTestsUtil.getResult(
+        changeFirstList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(changeFirst2, "Should have Change First result for year 2");
+    final double changeFirstDomestic = changeFirst2.getDomestic().getValue().doubleValue();
+
+    // Run Cap First scenario (Cap then Change)
+    Stream<EngineResult> capFirstResults = KigaliSimFacade.runScenario(
+        program, "Cap First", progress -> {});
+    List<EngineResult> capFirstList = capFirstResults.collect(Collectors.toList());
+    EngineResult capFirst2 = LiveTestsUtil.getResult(
+        capFirstList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(capFirst2, "Should have Cap First result for year 2");
+    final double capFirstDomestic = capFirst2.getDomestic().getValue().doubleValue();
+
+    // Assertions with tolerance for floating-point comparisons
+    double tolerance = 0.1; // kg
+
+    // BAU should have 10 kg (baseline from year 1)
+    assertEquals(10.0, bauDomestic, tolerance,
+        "BAU should have 10 kg in year 2");
+
+    // Change should have 20 kg (10 units * 1 kg/unit = 10 kg additional)
+    assertEquals(20.0, changeDomestic, tolerance,
+        "Change should have 20 kg in year 2");
+
+    // Cap should have 0 kg (capped to 0% of prior year)
+    assertEquals(0.0, capDomestic, tolerance,
+        "Cap should have 0 kg in year 2");
+
+    // Change First should have 0 kg (change increases, then cap reduces to 0%)
+    assertEquals(0.0, changeFirstDomestic, tolerance,
+        "Change First should have 0 kg in year 2");
+
+    // Cap First should have 10 kg (cap to 0%, then change adds 10 units)
+    assertEquals(10.0, capFirstDomestic, tolerance,
+        "Cap First should have 10 kg in year 2");
+  }
+
+  /**
    * Assert that domestic kg value is non-negative for a scenario result.
    *
    * @param resultsList The list of all results from the scenario
