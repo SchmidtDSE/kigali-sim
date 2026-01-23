@@ -343,6 +343,8 @@ function buildUiEditorSimTests() {
         _showForSimpleOrdering: SimulationListPresenter.prototype._showForSimpleOrdering,
         _updateMoveControlVisibility:
           SimulationListPresenter.prototype._updateMoveControlVisibility,
+        _readPoliciesEnabled: SimulationListPresenter.prototype._readPoliciesEnabled,
+        _wrapPolicyList: SimulationListPresenter.prototype._wrapPolicyList,
         _orderControlsTemplate: document.getElementById("sim-order-controls-template").innerHTML,
       };
 
@@ -387,6 +389,8 @@ function buildUiEditorSimTests() {
           _showForSimpleOrdering: SimulationListPresenter.prototype._showForSimpleOrdering,
           _updateMoveControlVisibility:
             SimulationListPresenter.prototype._updateMoveControlVisibility,
+          _readPoliciesEnabled: SimulationListPresenter.prototype._readPoliciesEnabled,
+          _wrapPolicyList: SimulationListPresenter.prototype._wrapPolicyList,
           _orderControlsTemplate: document.getElementById("sim-order-controls-template").innerHTML,
         };
 
