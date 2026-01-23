@@ -1465,6 +1465,142 @@ public class StackingLiveTests {
   }
 
   /**
+   * Test interaction between cap with displacement and recycling policies.
+   * This validates that cap with displacement and recycling with 0% induction
+   * interact correctly, with displacement only occurring when the cap triggers.
+   * Recycling with 0% induction reduces recharge demand (displacement behavior),
+   * so it can prevent a cap from triggering if applied first.
+   */
+  @Test
+  public void testCapRecycleDisplace() throws IOException {
+    String qtaPath = "../examples/stacking_cap_recycle_displace.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run BAU scenario
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(
+        program, "BAU", progress -> {});
+    List<EngineResult> bauList = bauResults.collect(Collectors.toList());
+    EngineResult bauHfc2 = LiveTestsUtil.getResult(
+        bauList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(bauHfc2, "Should have BAU HFC-134a result for year 2");
+    final double bauHfcDomestic = bauHfc2.getDomestic().getValue().doubleValue();
+
+    EngineResult bauR600a2 = LiveTestsUtil.getResult(
+        bauList.stream(), 2, "Domestic Refrigeration", "R-600a");
+    assertNotNull(bauR600a2, "Should have BAU R-600a result for year 2");
+    final double bauR600aDomestic = bauR600a2.getDomestic().getValue().doubleValue();
+
+    // Run Cap scenario
+    Stream<EngineResult> capResults = KigaliSimFacade.runScenario(
+        program, "Cap", progress -> {});
+    List<EngineResult> capList = capResults.collect(Collectors.toList());
+    EngineResult capHfc2 = LiveTestsUtil.getResult(
+        capList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(capHfc2, "Should have Cap HFC-134a result for year 2");
+    final double capHfcDomestic = capHfc2.getDomestic().getValue().doubleValue();
+
+    EngineResult capR600a2 = LiveTestsUtil.getResult(
+        capList.stream(), 2, "Domestic Refrigeration", "R-600a");
+    assertNotNull(capR600a2, "Should have Cap R-600a result for year 2");
+    final double capR600aDomestic = capR600a2.getDomestic().getValue().doubleValue();
+
+    // Run Recycling scenario
+    Stream<EngineResult> recyclingResults = KigaliSimFacade.runScenario(
+        program, "Recycling", progress -> {});
+    List<EngineResult> recyclingList = recyclingResults.collect(Collectors.toList());
+    EngineResult recyclingHfc2 = LiveTestsUtil.getResult(
+        recyclingList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(recyclingHfc2, "Should have Recycling HFC-134a result for year 2");
+    final double recyclingHfcDomestic = recyclingHfc2.getDomestic().getValue().doubleValue();
+
+    EngineResult recyclingR600a2 = LiveTestsUtil.getResult(
+        recyclingList.stream(), 2, "Domestic Refrigeration", "R-600a");
+    assertNotNull(recyclingR600a2, "Should have Recycling R-600a result for year 2");
+    final double recyclingR600aDomestic = recyclingR600a2.getDomestic().getValue().doubleValue();
+
+    // Run Cap First scenario (Cap then Recycling)
+    Stream<EngineResult> capFirstResults = KigaliSimFacade.runScenario(
+        program, "Cap First", progress -> {});
+    List<EngineResult> capFirstList = capFirstResults.collect(Collectors.toList());
+    EngineResult capFirstHfc2 = LiveTestsUtil.getResult(
+        capFirstList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(capFirstHfc2, "Should have Cap First HFC-134a result for year 2");
+    final double capFirstHfcDomestic = capFirstHfc2.getDomestic().getValue().doubleValue();
+
+    EngineResult capFirstR600a2 = LiveTestsUtil.getResult(
+        capFirstList.stream(), 2, "Domestic Refrigeration", "R-600a");
+    assertNotNull(capFirstR600a2, "Should have Cap First R-600a result for year 2");
+    final double capFirstR600aDomestic = capFirstR600a2.getDomestic().getValue().doubleValue();
+
+    // Run Recycling First scenario (Recycling then Cap)
+    Stream<EngineResult> recyclingFirstResults = KigaliSimFacade.runScenario(
+        program, "Recycling First", progress -> {});
+    List<EngineResult> recyclingFirstList = recyclingFirstResults.collect(Collectors.toList());
+    EngineResult recyclingFirstHfc2 = LiveTestsUtil.getResult(
+        recyclingFirstList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(recyclingFirstHfc2, "Should have Recycling First HFC-134a result for year 2");
+    final double recyclingFirstHfcDomestic = recyclingFirstHfc2.getDomestic().getValue().doubleValue();
+
+    EngineResult recyclingFirstR600a2 = LiveTestsUtil.getResult(
+        recyclingFirstList.stream(), 2, "Domestic Refrigeration", "R-600a");
+    assertNotNull(recyclingFirstR600a2, "Should have Recycling First R-600a result for year 2");
+    final double recyclingFirstR600aDomestic = recyclingFirstR600a2.getDomestic().getValue().doubleValue();
+
+    // Assertions with tolerance for floating-point comparisons
+    final double tolerance = 0.5; // kg
+
+    // Print actual values for debugging
+    System.out.println("=== Component 13: Cap and Recycling with Displacement ===");
+    System.out.println(String.format("BAU: HFC-134a=%.2f kg, R-600a=%.2f kg",
+        bauHfcDomestic, bauR600aDomestic));
+    System.out.println(String.format("Cap: HFC-134a=%.2f kg, R-600a=%.2f kg",
+        capHfcDomestic, capR600aDomestic));
+    System.out.println(String.format("Recycling: HFC-134a=%.2f kg, R-600a=%.2f kg",
+        recyclingHfcDomestic, recyclingR600aDomestic));
+    System.out.println(String.format("Cap First: HFC-134a=%.2f kg, R-600a=%.2f kg",
+        capFirstHfcDomestic, capFirstR600aDomestic));
+    System.out.println(String.format("Recycling First: HFC-134a=%.2f kg, R-600a=%.2f kg",
+        recyclingFirstHfcDomestic, recyclingFirstR600aDomestic));
+
+    // BAU: 10 kg primary (no policies)
+    assertEquals(10.0, bauHfcDomestic, tolerance, "BAU should have 10 kg HFC-134a in year 2");
+    assertEquals(0.0, bauR600aDomestic, tolerance, "BAU should have 0 kg R-600a in year 2");
+
+    // Cap alone: 8 kg primary, 2 kg displaced to secondary
+    assertEquals(8.0, capHfcDomestic, tolerance, "Cap should have 8 kg HFC-134a in year 2");
+    assertEquals(2.0, capR600aDomestic, tolerance, "Cap should have 2 kg R-600a in year 2");
+
+    // Recycling alone: 5 kg primary (100% recycling with 0% induction = no new kg for 50% recharge)
+    assertEquals(5.0, recyclingHfcDomestic, tolerance,
+        "Recycling should have 5 kg HFC-134a in year 2");
+    assertEquals(0.0, recyclingR600aDomestic, tolerance,
+        "Recycling should have 0 kg R-600a in year 2");
+
+    // Cap First (Cap then Recycling): ~3 kg primary (cap to 8, then recycling saves recharge)
+    // Cap to 8 kg, then recycling with 0% induction reduces recharge need
+    assertTrue(capFirstHfcDomestic < 5.0,
+        String.format("Cap First should have < 5 kg HFC-134a in year 2, got %.2f kg",
+            capFirstHfcDomestic));
+    assertTrue(capFirstR600aDomestic >= 2.0,
+        String.format("Cap First should have >= 2 kg R-600a in year 2, got %.2f kg",
+            capFirstR600aDomestic));
+
+    // Recycling First (Recycling then Cap): 5 kg primary (recycling reduces to 5 kg, cap at 8 doesn't trigger)
+    assertEquals(5.0, recyclingFirstHfcDomestic, tolerance,
+        "Recycling First should have 5 kg HFC-134a in year 2");
+    assertEquals(0.0, recyclingFirstR600aDomestic, tolerance,
+        "Recycling First should have 0 kg R-600a in year 2");
+
+    // Assert: All scenarios should have non-negative domestic values
+    assertDomesticNonNegative(bauList, 2, "BAU");
+    assertDomesticNonNegative(capList, 2, "Cap");
+    assertDomesticNonNegative(recyclingList, 2, "Recycling");
+    assertDomesticNonNegative(capFirstList, 2, "Cap First");
+    assertDomesticNonNegative(recyclingFirstList, 2, "Recycling First");
+  }
+
+  /**
    * Assert that domestic kg value is non-negative for a scenario result.
    *
    * @param resultsList The list of all results from the scenario
