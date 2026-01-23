@@ -289,7 +289,7 @@ public class LimitExecutor {
       return;
     }
 
-    EngineNumber currentInKg = unitConverter.convert(currentValueRaw, "kg");
+    final EngineNumber currentInKg = unitConverter.convert(currentValueRaw, "kg");
     StreamUpdate update = new StreamUpdateBuilder()
         .setName(stream)
         .setValue(amount)
@@ -448,7 +448,7 @@ public class LimitExecutor {
       return;
     }
 
-    EngineNumber currentInKg = unitConverter.convert(currentValueRaw, "kg");
+    final EngineNumber currentInKg = unitConverter.convert(currentValueRaw, "kg");
     StreamUpdate update = new StreamUpdateBuilder()
         .setName(stream)
         .setValue(amount)
