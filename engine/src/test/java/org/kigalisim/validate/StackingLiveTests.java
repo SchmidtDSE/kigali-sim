@@ -452,6 +452,75 @@ public class StackingLiveTests {
   }
 
   /**
+   * Test interaction between set and change commands when policies are stacked.
+   * This validates that set commands establish absolute values while change commands
+   * apply relative modifications, with stacking order determining final outcome.
+   */
+  @Test
+  public void testSetAndChange() throws IOException {
+    String qtaPath = "../examples/stacking_set_and_change.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run BAU scenario
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(
+        program, "BAU", progress -> {});
+    List<EngineResult> bauList = bauResults.collect(Collectors.toList());
+    EngineResult bau2 = LiveTestsUtil.getResult(
+        bauList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(bau2, "Should have BAU result for year 2");
+    final double bauDomestic = bau2.getDomestic().getValue().doubleValue();
+
+    // Run Set scenario
+    Stream<EngineResult> setResults = KigaliSimFacade.runScenario(
+        program, "Set", progress -> {});
+    List<EngineResult> setList = setResults.collect(Collectors.toList());
+    EngineResult set2 = LiveTestsUtil.getResult(
+        setList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(set2, "Should have Set result for year 2");
+    final double setDomestic = set2.getDomestic().getValue().doubleValue();
+
+    // Run Change scenario
+    Stream<EngineResult> changeResults = KigaliSimFacade.runScenario(
+        program, "Change", progress -> {});
+    List<EngineResult> changeList = changeResults.collect(Collectors.toList());
+    EngineResult change2 = LiveTestsUtil.getResult(
+        changeList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(change2, "Should have Change result for year 2");
+    final double changeDomestic = change2.getDomestic().getValue().doubleValue();
+
+    // Run Set First scenario (Set then Change)
+    Stream<EngineResult> setFirstResults = KigaliSimFacade.runScenario(
+        program, "Set First", progress -> {});
+    List<EngineResult> setFirstList = setFirstResults.collect(Collectors.toList());
+    EngineResult setFirst2 = LiveTestsUtil.getResult(
+        setFirstList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(setFirst2, "Should have Set First result for year 2");
+    final double setFirstDomestic = setFirst2.getDomestic().getValue().doubleValue();
+
+    // Run Change First scenario (Change then Set)
+    Stream<EngineResult> changeFirstResults = KigaliSimFacade.runScenario(
+        program, "Change First", progress -> {});
+    List<EngineResult> changeFirstList = changeFirstResults.collect(Collectors.toList());
+    EngineResult changeFirst2 = LiveTestsUtil.getResult(
+        changeFirstList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(changeFirst2, "Should have Change First result for year 2");
+    final double changeFirstDomestic = changeFirst2.getDomestic().getValue().doubleValue();
+
+    // Assertions with tolerance for floating-point comparisons
+    double tolerance = 0.01; // kg
+
+    assertEquals(10.0, bauDomestic, tolerance, "BAU should have 10 kg in year 2");
+    assertEquals(20.0, setDomestic, tolerance, "Set should have 20 kg in year 2");
+    assertEquals(11.0, changeDomestic, tolerance, "Change should have 11 kg in year 2");
+    assertEquals(22.0, setFirstDomestic, tolerance,
+        "Set First should have 22 kg in year 2");
+    // Note: Set overwrites previous value, so Change First results in 20 kg, not 21 kg
+    assertEquals(20.0, changeFirstDomestic, tolerance,
+        "Change First should have 20 kg in year 2");
+  }
+
+  /**
    * Test that explicit and percentage-based change commands with explicit current syntax
    * stack identically to the default percentage syntax. This validates that using
    * "% current" produces the same results as using "%" in change operations.
