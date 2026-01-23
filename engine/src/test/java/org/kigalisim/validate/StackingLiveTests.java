@@ -759,6 +759,89 @@ public class StackingLiveTests {
   }
 
   /**
+   * Test interaction between set (units-based) and floor (percentage-based) policies.
+   * This validates the units/kg switching behavior when set commands use units
+   * and floor commands use percentages, with stacking order determining final outcome.
+   * This is the mirror-image of testSetWithCapUnitsSwitch, testing minimum enforcement
+   * instead of maximum enforcement.
+   */
+  @Test
+  public void testSetWithFloorUnitsSwitch() throws IOException {
+    String qtaPath = "../examples/stacking_set_with_floor_units_switch.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run BAU scenario
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(
+        program, "BAU", progress -> {});
+    List<EngineResult> bauList = bauResults.collect(Collectors.toList());
+    EngineResult bau2 = LiveTestsUtil.getResult(
+        bauList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(bau2, "Should have BAU result for year 2");
+    final double bauDomestic = bau2.getDomestic().getValue().doubleValue();
+
+    // Run Set scenario
+    Stream<EngineResult> setResults = KigaliSimFacade.runScenario(
+        program, "Set", progress -> {});
+    List<EngineResult> setList = setResults.collect(Collectors.toList());
+    EngineResult set2 = LiveTestsUtil.getResult(
+        setList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(set2, "Should have Set result for year 2");
+    final double setDomestic = set2.getDomestic().getValue().doubleValue();
+
+    // Run Floor scenario
+    Stream<EngineResult> floorResults = KigaliSimFacade.runScenario(
+        program, "Floor", progress -> {});
+    List<EngineResult> floorList = floorResults.collect(Collectors.toList());
+    EngineResult floor2 = LiveTestsUtil.getResult(
+        floorList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(floor2, "Should have Floor result for year 2");
+    final double floorDomestic = floor2.getDomestic().getValue().doubleValue();
+
+    // Run Set First scenario (Set then Floor)
+    Stream<EngineResult> setFirstResults = KigaliSimFacade.runScenario(
+        program, "Set First", progress -> {});
+    List<EngineResult> setFirstList = setFirstResults.collect(Collectors.toList());
+    EngineResult setFirst2 = LiveTestsUtil.getResult(
+        setFirstList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(setFirst2, "Should have Set First result for year 2");
+    final double setFirstDomestic = setFirst2.getDomestic().getValue().doubleValue();
+
+    // Run Floor First scenario (Floor then Set)
+    Stream<EngineResult> floorFirstResults = KigaliSimFacade.runScenario(
+        program, "Floor First", progress -> {});
+    List<EngineResult> floorFirstList = floorFirstResults.collect(Collectors.toList());
+    EngineResult floorFirst2 = LiveTestsUtil.getResult(
+        floorFirstList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(floorFirst2, "Should have Floor First result for year 2");
+    final double floorFirstDomestic = floorFirst2.getDomestic().getValue().doubleValue();
+
+    // Assertions with tolerance for floating-point comparisons
+    double tolerance = 0.1; // kg
+
+    // BAU should have approximately 10 kg (baseline with recharge)
+    assertEquals(10.0, bauDomestic, tolerance, "BAU should have approximately 10 kg in year 2");
+
+    // Set should be at least 10 kg (10 units converted to kg plus recharge)
+    assertTrue(setDomestic >= 10.0,
+        String.format("Set (%.2f kg) should be >= 10 kg in year 2", setDomestic));
+
+    // Floor should be approximately 10 kg (100% of prior year, which is 10 kg)
+    assertEquals(10.0, floorDomestic, tolerance,
+        "Floor should have approximately 10 kg in year 2");
+
+    // Set First should be at least 10 kg (floor enforces minimum after set, last policy wins)
+    assertTrue(setFirstDomestic >= 10.0,
+        String.format("Set First (%.2f kg) should be >= 10 kg in year 2",
+            setFirstDomestic));
+
+    // Floor First should be approximately 10 kg (set to 10 units overrides floor, last policy wins)
+    assertEquals(10.0, floorFirstDomestic, tolerance,
+        String.format("Floor First (%.2f kg) should be approximately 10 kg in year 2",
+            floorFirstDomestic));
+  }
+
+  /**
    * Assert that domestic kg value is non-negative for a scenario result.
    *
    * @param resultsList The list of all results from the scenario
