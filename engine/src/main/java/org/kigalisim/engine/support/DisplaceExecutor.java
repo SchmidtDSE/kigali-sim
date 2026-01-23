@@ -249,7 +249,6 @@ public class DisplaceExecutor {
         Optional.empty()
     );
 
-    // Update lastSpecified for the displaced stream so subsequent percentage changes use new value
     updateLastSpecifiedAfterDisplacement(displaceTarget, engine.getScope());
   }
 
@@ -338,7 +337,6 @@ public class DisplaceExecutor {
           Optional.empty()
       );
 
-      // Update lastSpecified for the displaced stream
       updateLastSpecifiedAfterDisplacement(displaceTarget, engine.getScope());
     } else {
       Scope currentScope = engine.getScope();
@@ -369,11 +367,10 @@ public class DisplaceExecutor {
   private void updateLastSpecifiedAfterDisplacement(String stream, Scope scope) {
     SimulationState simulationState = engine.getStreamKeeper();
 
-    // Get the current value of the displaced stream
     String originalSubstance = engine.getScope().getSubstance();
-    boolean needsScopeSwitch = !scope.getSubstance().equals(originalSubstance);
+    boolean crossSubstanceDisplace = !scope.getSubstance().equals(originalSubstance);
 
-    if (needsScopeSwitch) {
+    if (crossSubstanceDisplace) {
       engine.setSubstance(scope.getSubstance());
     }
 
@@ -388,7 +385,7 @@ public class DisplaceExecutor {
       simulationState.setLastSpecifiedValue(scope, "import", importValue);
     }
 
-    if (needsScopeSwitch) {
+    if (crossSubstanceDisplace) {
       engine.setSubstance(originalSubstance);
     }
   }
