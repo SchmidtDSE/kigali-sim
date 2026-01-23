@@ -1,0 +1,87 @@
+start default
+
+  define application "Domestic Refrigeration"
+
+    uses substance "HFC-134a"
+      enable domestic
+      initial charge with 1 kg / unit for domestic
+      initial charge with 0 kg / unit for import
+      initial charge with 0 kg / unit for export
+      equals 1430 kgCO2e / kg
+      equals 1 kwh / unit
+      set domestic to 10 units during year 1
+      retire 5 % / year
+      recharge 10 % with 1 kg / unit
+    end substance
+
+    uses substance "R-600a"
+      enable domestic
+      initial charge with 1 kg / unit for domestic
+      initial charge with 0 kg / unit for import
+      initial charge with 0 kg / unit for export
+      equals 3 kgCO2e / kg
+      equals 1 kwh / unit
+      set domestic to 2 kg during year 1
+      retire 5 % / year
+      recharge 10 % with 1 kg / unit
+    end substance
+
+  end application
+
+end default
+
+
+start policy "Floor"
+
+  modify application "Domestic Refrigeration"
+
+    modify substance "HFC-134a"
+      floor domestic to 15 kg displacing "R-600a" during year 2
+    end substance
+
+  end application
+
+end policy
+
+
+start policy "Set"
+
+  modify application "Domestic Refrigeration"
+
+    modify substance "HFC-134a"
+      set domestic to 20 kg during year 2
+    end substance
+
+  end application
+
+end policy
+
+
+start simulations
+
+  simulate "BAU"
+  from years 1 to 2
+
+
+  simulate "Floor"
+    using "Floor"
+  from years 1 to 2
+
+
+  simulate "Set"
+    using "Set"
+  from years 1 to 2
+
+
+  simulate "Floor First"
+    using "Floor"
+    then "Set"
+  from years 1 to 2
+
+
+  simulate "Set First"
+    using "Set"
+    then "Floor"
+  from years 1 to 2
+
+end simulations
