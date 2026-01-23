@@ -177,6 +177,93 @@ public class StackingLiveTests {
   }
 
   /**
+   * Test interaction between change and floor commands with percentage-based changes.
+   * This validates that floor operations enforce minimum thresholds while change operations
+   * apply relative increases, with stacking order determining whether the floor triggers.
+   * This is the mirror-image of testChangeAndCapPercent, testing minimum enforcement
+   * instead of maximum enforcement.
+   */
+  @Test
+  public void testChangeAndFloor() throws IOException {
+    String qtaPath = "../examples/stacking_change_and_floor.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run Big Change scenario
+    Stream<EngineResult> bigChangeResults = KigaliSimFacade.runScenario(
+        program, "Big Change", progress -> {});
+    List<EngineResult> bigChangeList = bigChangeResults.collect(Collectors.toList());
+    EngineResult bigChange2031 = LiveTestsUtil.getResult(
+        bigChangeList.stream(), 2031, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(bigChange2031, "Should have Big Change result for 2031");
+    final double bigChangeDomestic = bigChange2031.getDomestic().getValue().doubleValue();
+
+    // Run Floor Policy scenario
+    Stream<EngineResult> floorResults = KigaliSimFacade.runScenario(
+        program, "Floor Policy", progress -> {});
+    List<EngineResult> floorList = floorResults.collect(Collectors.toList());
+    EngineResult floor2031 = LiveTestsUtil.getResult(
+        floorList.stream(), 2031, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(floor2031, "Should have Floor Policy result for 2031");
+    final double floorDomestic = floor2031.getDomestic().getValue().doubleValue();
+
+    // Run Before scenario (Big Change then Floor Policy)
+    Stream<EngineResult> beforeResults = KigaliSimFacade.runScenario(
+        program, "Before", progress -> {});
+    List<EngineResult> beforeList = beforeResults.collect(Collectors.toList());
+    EngineResult before2031 = LiveTestsUtil.getResult(
+        beforeList.stream(), 2031, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(before2031, "Should have Before result for 2031");
+    final double beforeDomestic = before2031.getDomestic().getValue().doubleValue();
+
+    // Run After scenario (Floor Policy then Big Change)
+    Stream<EngineResult> afterResults = KigaliSimFacade.runScenario(
+        program, "After", progress -> {});
+    List<EngineResult> afterList = afterResults.collect(Collectors.toList());
+    EngineResult after2031 = LiveTestsUtil.getResult(
+        afterList.stream(), 2031, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(after2031, "Should have After result for 2031");
+    final double afterDomestic = after2031.getDomestic().getValue().doubleValue();
+
+    // Assert: Floor Policy should have higher domestic consumption than Big Change in 2031
+    // This is the mirror of cap behavior - floor enforces minimums, increasing values
+    assertTrue(floorDomestic > bigChangeDomestic,
+        String.format(
+            "Floor Policy domestic (%.2f kg) should be higher than "
+            + "Big Change domestic (%.2f kg) in 2031",
+            floorDomestic, bigChangeDomestic));
+
+    // Assert: Floor Policy should be within 0.01 mt (10 kg) of Before in 2031
+    // When change is applied first, floor may still trigger if change didn't reach minimum
+    double tolerance = 10.0; // 0.01 mt = 10 kg
+    assertEquals(floorDomestic, beforeDomestic, tolerance,
+        String.format(
+            "Floor Policy domestic (%.2f kg) should be within 10 kg of "
+            + "Before domestic (%.2f kg) in 2031",
+            floorDomestic, beforeDomestic));
+
+    // Assert: After should have higher domestic consumption than Floor Policy in 2031
+    // Floor establishes minimum, then change increases further
+    assertTrue(afterDomestic > floorDomestic,
+        String.format(
+            "After domestic (%.2f kg) should be higher than "
+            + "Floor Policy domestic (%.2f kg) in 2031",
+            afterDomestic, floorDomestic));
+
+    // Assert: All scenarios should have non-negative domestic values at year 2035
+    // Even with floor operations forcing increases, values should remain valid
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(
+        program, "BAU", progress -> {});
+    List<EngineResult> bauList = bauResults.collect(Collectors.toList());
+    assertDomesticNonNegative(bauList, 2035, "BAU");
+
+    assertDomesticNonNegative(bigChangeList, 2035, "Big Change");
+    assertDomesticNonNegative(floorList, 2035, "Floor Policy");
+    assertDomesticNonNegative(beforeList, 2035, "Before");
+    assertDomesticNonNegative(afterList, 2035, "After");
+  }
+
+  /**
    * Test that multiple set commands stack correctly, with the last policy determining the value.
    * This validates that when two policies both set a stream to different values,
    * the last policy applied in the stacking order wins.
