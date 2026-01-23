@@ -95,6 +95,8 @@ The `assume` command is particularly useful for bank (equipment) tracking scenar
 
 **Note**: When using units (of equipment) in cap, floor, and set commands, those limits apply after recharge calculations. So a cap of 100 units means 100 units on top of recharge for prior equipment.
 
+**Units Tracking**: Cap and floor commands with percentage values preserve the tracking mode (units vs kg) from the last specified value. If the last specification was in units (e.g., "set to 10 units"), a percentage-based cap or floor that triggers will maintain units tracking, allowing recharge calculations to continue. If the cap or floor does not trigger (current value already satisfies the constraint), tracking mode is unchanged. Change operations always preserve the current tracking mode. Displacement operations add to the target stream in whatever units that stream currently uses, without changing its tracking mode.
+
 #### Units System
 Supports automatic unit conversion: kg, mt (metric tons), tCO2e (tons CO2 equivalent), kwh (kilowatt hours), units (equipment), years/months/days (time), % (percentages).
 
@@ -192,7 +194,7 @@ Changes in one substance can be offset by changes in another. For example:
  - `cap sales to 1400 mt displacing "R-404A" during years 1 to 5` offsets with another substance
  - `cap import to 1400 mt displacing "domestic" during years 1 to 5` offsets with another stream
 
-This is available for `cap`, `floor`, and `recover`.
+This is available for `cap`, `floor`, and `recover`. Displacement preserves the target stream's current units tracking mode (units vs kg) without forcing a conversion.
 
 ### Recycling Stages and Induction
 The `recover` command supports specifying when recycling occurs and how much induced demand it creates:
