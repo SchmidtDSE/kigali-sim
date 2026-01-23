@@ -42,6 +42,45 @@ public class ChangeExecutor {
   }
 
   /**
+   * Determines the bounded change amount to prevent negative stream values.
+   *
+   * <p>This method ensures that applying the change will not result in a negative stream value.
+   * If the proposed change would make the stream negative, it is clamped to bring the stream
+   * to exactly zero instead.</p>
+   *
+   * @param currentValue The current stream value in kg
+   * @param proposedChange The proposed change amount in kg (can be negative)
+   * @return The clamped change amount in kg that will not result in negative values
+   */
+  private BigDecimal determineBoundChange(EngineNumber currentValue,
+      BigDecimal proposedChange) {
+    BigDecimal currentKg = currentValue.getValue();
+    BigDecimal newValue = currentKg.add(proposedChange);
+
+    boolean wouldBecomeNegative = newValue.compareTo(BigDecimal.ZERO) < 0;
+    if (wouldBecomeNegative) {
+      return currentKg.negate();
+    } else {
+      return proposedChange;
+    }
+  }
+
+  /**
+   * Ensures a value is non-negative by clamping to zero if needed.
+   *
+   * @param value The value to check
+   * @return The original value if non-negative, zero otherwise
+   */
+  private BigDecimal ensureNonNegative(BigDecimal value) {
+    boolean isNegative = value.compareTo(BigDecimal.ZERO) < 0;
+    if (isNegative) {
+      return BigDecimal.ZERO;
+    } else {
+      return value;
+    }
+  }
+
+  /**
    * Execute a change operation by routing to the appropriate handler.
    *
    * @param stream The stream identifier to modify
@@ -116,7 +155,9 @@ public class ChangeExecutor {
     UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(engine, stream);
 
     EngineNumber convertedDelta = unitConverter.convert(amount, currentValue.getUnits());
-    BigDecimal newAmount = currentValue.getValue().add(convertedDelta.getValue());
+
+    BigDecimal clampedDelta = determineBoundChange(currentValue, convertedDelta.getValue());
+    BigDecimal newAmount = currentValue.getValue().add(clampedDelta);
     EngineNumber outputWithUnits = new EngineNumber(newAmount, currentValue.getUnits());
 
     StreamUpdate update = new StreamUpdateBuilder()
@@ -177,9 +218,11 @@ public class ChangeExecutor {
     EngineNumber currentValue = engine.getStream(stream, Optional.of(useKeyEffective), Optional.empty());
     BigDecimal percentageValue = amount.getValue();
     BigDecimal changeAmount = lastSpecified.getValue().multiply(percentageValue).divide(new BigDecimal("100"));
-    BigDecimal newTotalValue = currentValue.getValue().add(changeAmount);
 
-    EngineNumber newTotal = new EngineNumber(newTotalValue, lastSpecified.getUnits());
+    BigDecimal proposedNewValue = currentValue.getValue().add(changeAmount);
+    BigDecimal clampedNewValue = ensureNonNegative(proposedNewValue);
+
+    EngineNumber newTotal = new EngineNumber(clampedNewValue, lastSpecified.getUnits());
     boolean subtractRecycling = "units".equals(lastSpecified.getUnits());
     StreamUpdate update = new StreamUpdateBuilder()
         .setName(stream)
@@ -209,9 +252,11 @@ public class ChangeExecutor {
 
     BigDecimal percentageValue = amount.getValue();
     BigDecimal changeAmount = lastSpecified.getValue().multiply(percentageValue).divide(new BigDecimal("100"));
-    BigDecimal newTotalValue = lastSpecified.getValue().add(changeAmount);
 
-    EngineNumber newTotal = new EngineNumber(newTotalValue, lastSpecified.getUnits());
+    BigDecimal proposedNewValue = lastSpecified.getValue().add(changeAmount);
+    BigDecimal clampedNewValue = ensureNonNegative(proposedNewValue);
+
+    EngineNumber newTotal = new EngineNumber(clampedNewValue, lastSpecified.getUnits());
     boolean subtractRecycling = "units".equals(lastSpecified.getUnits());
     StreamUpdate update = new StreamUpdateBuilder()
         .setName(stream)
@@ -288,8 +333,11 @@ public class ChangeExecutor {
       EngineNumber currentValue = engine.getStream(stream, Optional.of(useKeyEffective), Optional.empty());
       UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(engine, stream);
       EngineNumber currentInUnits = unitConverter.convert(currentValue, "units");
-      BigDecimal newUnits = currentInUnits.getValue().add(amount.getValue());
-      EngineNumber newTotal = new EngineNumber(newUnits, "units");
+
+      BigDecimal proposedNewUnits = currentInUnits.getValue().add(amount.getValue());
+      BigDecimal clampedNewUnits = ensureNonNegative(proposedNewUnits);
+
+      EngineNumber newTotal = new EngineNumber(clampedNewUnits, "units");
       StreamUpdate update = new StreamUpdateBuilder()
           .setName(stream)
           .setValue(newTotal)
@@ -298,8 +346,10 @@ public class ChangeExecutor {
           .build();
       engine.executeStreamUpdate(update);
     } else {
-      BigDecimal newTotalValue = lastSpecified.getValue().add(amount.getValue());
-      EngineNumber newTotal = new EngineNumber(newTotalValue, lastSpecified.getUnits());
+      BigDecimal proposedNewUnits = lastSpecified.getValue().add(amount.getValue());
+      BigDecimal clampedNewUnits = ensureNonNegative(proposedNewUnits);
+
+      EngineNumber newTotal = new EngineNumber(clampedNewUnits, lastSpecified.getUnits());
 
       boolean subtractRecycling = "units".equals(lastSpecified.getUnits());
       StreamUpdate update = new StreamUpdateBuilder()
@@ -328,7 +378,9 @@ public class ChangeExecutor {
     EngineNumber currentValue = engine.getStream(stream, Optional.of(useKeyEffective), Optional.empty());
     UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(engine, stream);
     EngineNumber convertedDelta = unitConverter.convert(amount, "kg");
-    BigDecimal newAmount = currentValue.getValue().add(convertedDelta.getValue());
+
+    BigDecimal clampedDelta = determineBoundChange(currentValue, convertedDelta.getValue());
+    BigDecimal newAmount = currentValue.getValue().add(clampedDelta);
     EngineNumber newTotal = new EngineNumber(newAmount, "kg");
 
     // Use executeStreamUpdate to handle the change and update lastSpecifiedValue

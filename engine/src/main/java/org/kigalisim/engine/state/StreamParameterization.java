@@ -18,7 +18,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import org.kigalisim.engine.number.EngineNumber;
-import org.kigalisim.engine.support.EngineSupportUtils;
 import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
 
 /**
