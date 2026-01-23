@@ -244,8 +244,8 @@ class SimulationListPresenter {
       self._isExplicitOrdering,
     );
 
-    // Render policy checkboxes
-    self._renderPolicyCheckboxes();
+    // Render policy checkboxes with initial selection
+    self._renderPolicyCheckboxes(policiesSelected);
 
     self._dialog.showModal();
   }
@@ -449,23 +449,56 @@ class SimulationListPresenter {
   }
 
   /**
+   * Wraps a policy selection set into a checked states object.
+   *
+   * @param {Set<string>} selection - Set of policy names that should be checked.
+   * @returns {Object} Object mapping policy names to enabled state (true).
+   * @private
+   */
+  _wrapPolicyList(selection) {
+    const checkedStates = {};
+    selection.forEach((name) => {
+      checkedStates[name] = true;
+    });
+    return checkedStates;
+  }
+
+  /**
+   * Reads current policy checkbox states from the DOM.
+   *
+   * Used during reordering operations to preserve user selections across
+   * re-renders of the policy checkbox list.
+   *
+   * @returns {Object} Object mapping policy names to their current checked state.
+   * @private
+   */
+  _readPoliciesEnabled() {
+    const self = this;
+    const checkedStates = {};
+    self._dialog.querySelectorAll(".policy-check").forEach((checkbox) => {
+      checkedStates[checkbox.value] = checkbox.checked;
+    });
+    return checkedStates;
+  }
+
+  /**
    * Renders the policy checkbox list in the dialog.
    *
    * This method generates the checkbox list based on the current _policyOrderArray
-   * state. It preserves checkbox checked states across re-renders by querying
-   * existing checkboxes before clearing the DOM.
+   * state. When initialSelection is provided (opening dialog), uses it for checked
+   * states. When not provided (reordering), preserves existing checkbox states.
    *
+   * @param {Set<string>|null} initialSelection - Set of policy names to check
+   *     initially. Pass null to preserve existing checkbox states (for reordering).
    * @private
    */
-  _renderPolicyCheckboxes() {
+  _renderPolicyCheckboxes(initialSelection = null) {
     const self = this;
 
-    // Capture current checked states before re-rendering
-    const checkedStates = {};
-    const existingCheckboxes = self._dialog.querySelectorAll(".policy-check");
-    existingCheckboxes.forEach((checkbox) => {
-      checkedStates[checkbox.value] = checkbox.checked;
-    });
+    const noPriorSelection = initialSelection === null;
+    const checkedStates = noPriorSelection ?
+      self._readPoliciesEnabled() :
+      self._wrapPolicyList(initialSelection);
 
     const policySimList = self._dialog.querySelector(".policy-sim-list");
     const newLabels = d3.select(policySimList)
