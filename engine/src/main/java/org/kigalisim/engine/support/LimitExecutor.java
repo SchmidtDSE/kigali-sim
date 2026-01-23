@@ -213,13 +213,7 @@ public class LimitExecutor {
           .build();
       engine.executeStreamUpdate(update);
 
-      // Update lastSpecified so subsequent percentage changes use the capped value
-      simulationState.setLastSpecifiedValue(scope, stream, newCappedValue);
-
-      // For "sales" stream, also update lastSpecified for component streams (domestic/import)
-      if ("sales".equals(stream)) {
-        updateComponentStreamsLastSpecified(simulationState, scope);
-      }
+      setCurrentValueAsLastSpecified(scope, stream);
 
       if (displaceTarget != null) {
         EngineNumber finalInKg = engine.getStream(stream);
@@ -244,14 +238,7 @@ public class LimitExecutor {
           Optional.empty()
       );
 
-      // Update lastSpecified so subsequent percentage changes use the capped value
-      EngineNumber cappedValue = engine.getStream(stream);
-      simulationState.setLastSpecifiedValue(scope, stream, cappedValue);
-
-      // For "sales" stream, also update lastSpecified for component streams (domestic/import)
-      if ("sales".equals(stream)) {
-        updateComponentStreamsLastSpecified(simulationState, scope);
-      }
+      setCurrentValueAsLastSpecified(scope, stream);
 
       displaceExecutor.execute(stream, amount, changeAmount, displaceTarget, displacementType);
     }
@@ -298,16 +285,8 @@ public class LimitExecutor {
         .build();
     engine.executeStreamUpdate(update);
 
-    // Update lastSpecified so subsequent percentage changes use the capped value
-    SimulationState simulationState = engine.getStreamKeeper();
     Scope scope = engine.getScope();
-    EngineNumber cappedValue = engine.getStream(stream);
-    simulationState.setLastSpecifiedValue(scope, stream, cappedValue);
-
-    // For "sales" stream, also update lastSpecified for component streams (domestic/import)
-    if ("sales".equals(stream)) {
-      updateComponentStreamsLastSpecified(simulationState, scope);
-    }
+    setCurrentValueAsLastSpecified(scope, stream);
 
     if (displaceTarget != null) {
       EngineNumber cappedInKg = engine.getStream(stream);
@@ -372,13 +351,7 @@ public class LimitExecutor {
           .build();
       engine.executeStreamUpdate(update);
 
-      // Update lastSpecified so subsequent percentage changes use the floored value
-      simulationState.setLastSpecifiedValue(scope, stream, newFloorValue);
-
-      // For "sales" stream, also update lastSpecified for component streams (domestic/import)
-      if ("sales".equals(stream)) {
-        updateComponentStreamsLastSpecified(simulationState, scope);
-      }
+      setCurrentValueAsLastSpecified(scope, stream);
 
       if (displaceTarget != null) {
         EngineNumber finalInKg = engine.getStream(stream);
@@ -403,14 +376,7 @@ public class LimitExecutor {
           Optional.empty()
       );
 
-      // Update lastSpecified so subsequent percentage changes use the floored value
-      EngineNumber flooredValue = engine.getStream(stream);
-      simulationState.setLastSpecifiedValue(scope, stream, flooredValue);
-
-      // For "sales" stream, also update lastSpecified for component streams (domestic/import)
-      if ("sales".equals(stream)) {
-        updateComponentStreamsLastSpecified(simulationState, scope);
-      }
+      setCurrentValueAsLastSpecified(scope, stream);
 
       displaceExecutor.execute(stream, amount, changeAmount, displaceTarget, displacementType);
     }
@@ -457,21 +423,34 @@ public class LimitExecutor {
         .build();
     engine.executeStreamUpdate(update);
 
-    // Update lastSpecified so subsequent percentage changes use the floored value
-    SimulationState simulationState = engine.getStreamKeeper();
     Scope scope = engine.getScope();
-    EngineNumber flooredValue = engine.getStream(stream);
-    simulationState.setLastSpecifiedValue(scope, stream, flooredValue);
-
-    // For "sales" stream, also update lastSpecified for component streams (domestic/import)
-    if ("sales".equals(stream)) {
-      updateComponentStreamsLastSpecified(simulationState, scope);
-    }
+    setCurrentValueAsLastSpecified(scope, stream);
 
     if (displaceTarget != null) {
       EngineNumber newInKg = engine.getStream(stream);
       BigDecimal changeInKg = newInKg.getValue().subtract(currentInKg.getValue());
       displaceExecutor.execute(stream, amount, changeInKg, displaceTarget, displacementType);
+    }
+  }
+
+  /**
+   * Sets the current stream value as the lastSpecified value for future percentage calculations.
+   *
+   * <p>This method updates the lastSpecified tracking value to the current stream value,
+   * ensuring that subsequent percentage-based operations (cap/floor) use the newly set value
+   * as their basis. For "sales" streams, it also updates the component streams (domestic/import)
+   * to maintain consistency across the sales composition.</p>
+   *
+   * @param scope The current scope (UseKey) for the update
+   * @param stream The stream identifier whose value should be recorded as lastSpecified
+   */
+  private void setCurrentValueAsLastSpecified(Scope scope, String stream) {
+    SimulationState simulationState = engine.getStreamKeeper();
+    EngineNumber currentValue = engine.getStream(stream);
+    simulationState.setLastSpecifiedValue(scope, stream, currentValue);
+
+    if ("sales".equals(stream)) {
+      updateComponentStreamsLastSpecified(simulationState, scope);
     }
   }
 
