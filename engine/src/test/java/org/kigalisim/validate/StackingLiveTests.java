@@ -381,6 +381,147 @@ public class StackingLiveTests {
   }
 
   /**
+   * Test that explicit and percentage-based change commands stack additively.
+   * This validates that when two policies both change a stream, their changes are applied
+   * additively, and that the order of application affects the final value due to the
+   * percentage being calculated from different base values.
+   */
+  @Test
+  public void testDoubleChange() throws IOException {
+    String qtaPath = "../examples/stacking_double_change.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run BAU scenario
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(
+        program, "BAU", progress -> {});
+    List<EngineResult> bauList = bauResults.collect(Collectors.toList());
+    EngineResult bau2 = LiveTestsUtil.getResult(
+        bauList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(bau2, "Should have BAU result for year 2");
+    final double bauDomestic = bau2.getDomestic().getValue().doubleValue();
+
+    // Run Explicit Change scenario
+    Stream<EngineResult> explicitChangeResults = KigaliSimFacade.runScenario(
+        program, "Explicit Change", progress -> {});
+    List<EngineResult> explicitChangeList = explicitChangeResults.collect(Collectors.toList());
+    EngineResult explicitChange2 = LiveTestsUtil.getResult(
+        explicitChangeList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(explicitChange2, "Should have Explicit Change result for year 2");
+    final double explicitChangeDomestic = explicitChange2.getDomestic().getValue().doubleValue();
+
+    // Run Percent Change scenario
+    Stream<EngineResult> percentChangeResults = KigaliSimFacade.runScenario(
+        program, "Percent Change", progress -> {});
+    List<EngineResult> percentChangeList = percentChangeResults.collect(Collectors.toList());
+    EngineResult percentChange2 = LiveTestsUtil.getResult(
+        percentChangeList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(percentChange2, "Should have Percent Change result for year 2");
+    final double percentChangeDomestic = percentChange2.getDomestic().getValue().doubleValue();
+
+    // Run Explicit First scenario (Explicit Change then Percent Change)
+    Stream<EngineResult> explicitFirstResults = KigaliSimFacade.runScenario(
+        program, "Explicit First", progress -> {});
+    List<EngineResult> explicitFirstList = explicitFirstResults.collect(Collectors.toList());
+    EngineResult explicitFirst2 = LiveTestsUtil.getResult(
+        explicitFirstList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(explicitFirst2, "Should have Explicit First result for year 2");
+    final double explicitFirstDomestic = explicitFirst2.getDomestic().getValue().doubleValue();
+
+    // Run Percent First scenario (Percent Change then Explicit Change)
+    Stream<EngineResult> percentFirstResults = KigaliSimFacade.runScenario(
+        program, "Percent First", progress -> {});
+    List<EngineResult> percentFirstList = percentFirstResults.collect(Collectors.toList());
+    EngineResult percentFirst2 = LiveTestsUtil.getResult(
+        percentFirstList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(percentFirst2, "Should have Percent First result for year 2");
+    final double percentFirstDomestic = percentFirst2.getDomestic().getValue().doubleValue();
+
+    // Assertions with tolerance for floating-point comparisons
+    double tolerance = 0.01; // kg
+
+    assertEquals(10.0, bauDomestic, tolerance, "BAU should have 10 kg in year 2");
+    assertEquals(20.0, explicitChangeDomestic, tolerance,
+        "Explicit Change should have 20 kg in year 2");
+    assertEquals(11.0, percentChangeDomestic, tolerance,
+        "Percent Change should have 11 kg in year 2");
+    assertEquals(22.0, explicitFirstDomestic, tolerance,
+        "Explicit First should have 22 kg in year 2");
+    assertEquals(21.0, percentFirstDomestic, tolerance,
+        "Percent First should have 21 kg in year 2");
+  }
+
+  /**
+   * Test that explicit and percentage-based change commands with explicit current syntax
+   * stack identically to the default percentage syntax. This validates that using
+   * "% current" produces the same results as using "%" in change operations.
+   */
+  @Test
+  public void testDoubleChangeCurrent() throws IOException {
+    String qtaPath = "../examples/stacking_double_change_current.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run BAU scenario
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(
+        program, "BAU", progress -> {});
+    List<EngineResult> bauList = bauResults.collect(Collectors.toList());
+    EngineResult bau2 = LiveTestsUtil.getResult(
+        bauList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(bau2, "Should have BAU result for year 2");
+    final double bauDomestic = bau2.getDomestic().getValue().doubleValue();
+
+    // Run Explicit Change scenario
+    Stream<EngineResult> explicitChangeResults = KigaliSimFacade.runScenario(
+        program, "Explicit Change", progress -> {});
+    List<EngineResult> explicitChangeList = explicitChangeResults.collect(Collectors.toList());
+    EngineResult explicitChange2 = LiveTestsUtil.getResult(
+        explicitChangeList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(explicitChange2, "Should have Explicit Change result for year 2");
+    final double explicitChangeDomestic = explicitChange2.getDomestic().getValue().doubleValue();
+
+    // Run Percent Change scenario
+    Stream<EngineResult> percentChangeResults = KigaliSimFacade.runScenario(
+        program, "Percent Change", progress -> {});
+    List<EngineResult> percentChangeList = percentChangeResults.collect(Collectors.toList());
+    EngineResult percentChange2 = LiveTestsUtil.getResult(
+        percentChangeList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(percentChange2, "Should have Percent Change result for year 2");
+    final double percentChangeDomestic = percentChange2.getDomestic().getValue().doubleValue();
+
+    // Run Explicit First scenario (Explicit Change then Percent Change)
+    Stream<EngineResult> explicitFirstResults = KigaliSimFacade.runScenario(
+        program, "Explicit First", progress -> {});
+    List<EngineResult> explicitFirstList = explicitFirstResults.collect(Collectors.toList());
+    EngineResult explicitFirst2 = LiveTestsUtil.getResult(
+        explicitFirstList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(explicitFirst2, "Should have Explicit First result for year 2");
+    final double explicitFirstDomestic = explicitFirst2.getDomestic().getValue().doubleValue();
+
+    // Run Percent First scenario (Percent Change then Explicit Change)
+    Stream<EngineResult> percentFirstResults = KigaliSimFacade.runScenario(
+        program, "Percent First", progress -> {});
+    List<EngineResult> percentFirstList = percentFirstResults.collect(Collectors.toList());
+    EngineResult percentFirst2 = LiveTestsUtil.getResult(
+        percentFirstList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(percentFirst2, "Should have Percent First result for year 2");
+    final double percentFirstDomestic = percentFirst2.getDomestic().getValue().doubleValue();
+
+    // Assertions with tolerance for floating-point comparisons
+    double tolerance = 0.01; // kg
+
+    assertEquals(10.0, bauDomestic, tolerance, "BAU should have 10 kg in year 2");
+    assertEquals(20.0, explicitChangeDomestic, tolerance,
+        "Explicit Change should have 20 kg in year 2");
+    assertEquals(11.0, percentChangeDomestic, tolerance,
+        "Percent Change should have 11 kg in year 2");
+    assertEquals(22.0, explicitFirstDomestic, tolerance,
+        "Explicit First should have 22 kg in year 2");
+    assertEquals(21.0, percentFirstDomestic, tolerance,
+        "Percent First should have 21 kg in year 2");
+  }
+
+  /**
    * Assert that domestic kg value is non-negative for a scenario result.
    *
    * @param resultsList The list of all results from the scenario
