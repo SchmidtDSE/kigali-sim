@@ -25,13 +25,13 @@ import org.kigalisim.lang.program.ParsedProgram;
 public class StackingLiveTests {
 
   /**
-   * Test policy stacking order affects outcomes with percentage-based changes.
+   * Test interaction between change and cap commands with percentage-based changes.
    * This validates that applying policies in different orders produces different results,
    * and that caps applied after changes behave differently than caps applied before changes.
    */
   @Test
-  public void testPolicyStackingOrderPercent() throws IOException {
-    String qtaPath = "../examples/stacking.qta";
+  public void testChangeAndCapPercent() throws IOException {
+    String qtaPath = "../examples/stacking_change_and_cap_percent.qta";
     ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
     assertNotNull(program, "Program should not be null");
 
@@ -101,13 +101,13 @@ public class StackingLiveTests {
   }
 
   /**
-   * Test policy stacking order affects outcomes with explicit (absolute) changes.
+   * Test interaction between change and cap commands with explicit (absolute) changes.
    * This validates that applying policies in different orders produces different results,
-   * using explicit mt values instead of percentages.
+   * using explicit mt values instead of percentages for change operations.
    */
   @Test
-  public void testPolicyStackingOrderExplicit() throws IOException {
-    String qtaPath = "../examples/stacking_explicit.qta";
+  public void testChangeAndCapExplicit() throws IOException {
+    String qtaPath = "../examples/stacking_change_and_cap_explicit.qta";
     ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
     assertNotNull(program, "Program should not be null");
 
