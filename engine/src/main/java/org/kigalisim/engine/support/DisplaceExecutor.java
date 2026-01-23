@@ -30,6 +30,7 @@ import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.state.Scope;
+import org.kigalisim.engine.state.SimulationState;
 import org.kigalisim.lang.operation.DisplacementType;
 
 /**
@@ -247,6 +248,8 @@ public class DisplaceExecutor {
         Optional.empty(),
         Optional.empty()
     );
+
+    updateLastSpecifiedAfterDisplacement(displaceTarget, engine.getScope());
   }
 
   /**
@@ -276,7 +279,7 @@ public class DisplaceExecutor {
       EngineNumber unitsChanged, String displaceTarget) {
     Scope currentScope = engine.getScope();
     Scope destinationScope = currentScope.getWithSubstance(displaceTarget);
-    String originalSubstance = currentScope.getSubstance();
+    final String originalSubstance = currentScope.getSubstance();
 
     // Temporarily change scope to destination for unit conversion
     engine.setSubstance(displaceTarget);
@@ -294,6 +297,8 @@ public class DisplaceExecutor {
 
     // Use custom recalc kit with destination substance's properties for correct GWP calculation
     shortcuts.changeStreamWithDisplacementContext(stream, displaceChange, destinationScope);
+
+    updateLastSpecifiedAfterDisplacement(stream, destinationScope);
 
     // Restore original scope
     engine.setSubstance(originalSubstance);
@@ -330,6 +335,8 @@ public class DisplaceExecutor {
           Optional.empty(),
           Optional.empty()
       );
+
+      updateLastSpecifiedAfterDisplacement(displaceTarget, engine.getScope());
     } else {
       Scope currentScope = engine.getScope();
       Scope destinationScope = currentScope.getWithSubstance(displaceTarget);
@@ -339,6 +346,46 @@ public class DisplaceExecutor {
           displaceChange,
           destinationScope
       );
+
+      // Update lastSpecified for the displaced stream in destination scope
+      updateLastSpecifiedAfterDisplacement(stream, destinationScope);
+    }
+  }
+
+  /**
+   * Updates lastSpecified for a stream after displacement to ensure subsequent percentage changes
+   * use the new displaced value.
+   *
+   * <p>When displacement adds volume to a stream, the lastSpecified value must be updated
+   * so that subsequent percentage-based changes (e.g., "change sales by 5%") apply to the
+   * new value that includes the displaced amount, not the original value.</p>
+   *
+   * @param stream The stream that received the displacement
+   * @param scope The scope (UseKey) for the displaced stream
+   */
+  private void updateLastSpecifiedAfterDisplacement(String stream, Scope scope) {
+    SimulationState simulationState = engine.getStreamKeeper();
+
+    String originalSubstance = engine.getScope().getSubstance();
+    boolean crossSubstanceDisplace = !scope.getSubstance().equals(originalSubstance);
+
+    if (crossSubstanceDisplace) {
+      engine.setSubstance(scope.getSubstance());
+    }
+
+    EngineNumber currentValue = engine.getStream(stream);
+    simulationState.setLastSpecifiedValue(scope, stream, currentValue);
+
+    // For "sales" stream, also update lastSpecified for component streams (domestic/import)
+    if ("sales".equals(stream)) {
+      EngineNumber domesticValue = engine.getStream("domestic");
+      EngineNumber importValue = engine.getStream("import");
+      simulationState.setLastSpecifiedValue(scope, "domestic", domesticValue);
+      simulationState.setLastSpecifiedValue(scope, "import", importValue);
+    }
+
+    if (crossSubstanceDisplace) {
+      engine.setSubstance(originalSubstance);
     }
   }
 }
