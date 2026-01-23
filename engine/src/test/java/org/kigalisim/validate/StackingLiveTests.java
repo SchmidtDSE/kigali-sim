@@ -86,6 +86,18 @@ public class StackingLiveTests {
     assertTrue(afterDomestic < permitDomestic,
         String.format("After domestic (%.2f kg) should be lower than Permit domestic (%.2f kg) in 2031",
             afterDomestic, permitDomestic));
+
+    // Assert: All scenarios should have non-negative domestic values at year 2035
+    // Year 2035 is critical because Permit policy caps sales to 0 mt at this point
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(
+        program, "BAU", progress -> {});
+    List<EngineResult> bauList = bauResults.collect(Collectors.toList());
+    assertDomesticNonNegative(bauList, 2035, "BAU");
+
+    assertDomesticNonNegative(bigChangeList, 2035, "Big Change");
+    assertDomesticNonNegative(permitList, 2035, "Permit");
+    assertDomesticNonNegative(beforeList, 2035, "Before");
+    assertDomesticNonNegative(afterList, 2035, "After");
   }
 
   /**
@@ -150,5 +162,36 @@ public class StackingLiveTests {
     assertTrue(afterDomestic < permitDomestic,
         String.format("After domestic (%.2f kg) should be lower than Permit domestic (%.2f kg) in 2031",
             afterDomestic, permitDomestic));
+
+    // Assert: All scenarios should have non-negative domestic values at year 2035
+    // Year 2035 is critical because Permit policy caps sales to 0 mt at this point
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(
+        program, "BAU", progress -> {});
+    List<EngineResult> bauList = bauResults.collect(Collectors.toList());
+    assertDomesticNonNegative(bauList, 2035, "BAU");
+
+    assertDomesticNonNegative(bigChangeList, 2035, "Big Change");
+    assertDomesticNonNegative(permitList, 2035, "Permit");
+    assertDomesticNonNegative(beforeList, 2035, "Before");
+    assertDomesticNonNegative(afterList, 2035, "After");
+  }
+
+  /**
+   * Assert that domestic kg value is non-negative for a scenario result.
+   *
+   * @param resultsList The list of all results from the scenario
+   * @param year The year to check
+   * @param scenarioName The scenario name for error messages
+   */
+  private void assertDomesticNonNegative(
+      List<EngineResult> resultsList, int year, String scenarioName) {
+    EngineResult result = LiveTestsUtil.getResult(
+        resultsList.stream(), year, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(result,
+        String.format("Should have %s result for %d", scenarioName, year));
+    double domestic = result.getDomestic().getValue().doubleValue();
+    assertTrue(domestic >= 0.0,
+        String.format("%s domestic should be non-negative at year %d, but was %.4f kg",
+            scenarioName, year, domestic));
   }
 }
