@@ -42,7 +42,7 @@ public class StackingLiveTests {
     EngineResult bigChange2031 = LiveTestsUtil.getResult(
         bigChangeList.stream(), 2031, "Domestic Refrigeration", "HFC-134a");
     assertNotNull(bigChange2031, "Should have Big Change result for 2031");
-    double bigChangeDomestic = bigChange2031.getDomestic().getValue().doubleValue();
+    final double bigChangeDomestic = bigChange2031.getDomestic().getValue().doubleValue();
 
     // Run Permit scenario
     Stream<EngineResult> permitResults = KigaliSimFacade.runScenario(
@@ -51,7 +51,7 @@ public class StackingLiveTests {
     EngineResult permit2031 = LiveTestsUtil.getResult(
         permitList.stream(), 2031, "Domestic Refrigeration", "HFC-134a");
     assertNotNull(permit2031, "Should have Permit result for 2031");
-    double permitDomestic = permit2031.getDomestic().getValue().doubleValue();
+    final double permitDomestic = permit2031.getDomestic().getValue().doubleValue();
 
     // Run Before scenario (Big Change then Permit)
     Stream<EngineResult> beforeResults = KigaliSimFacade.runScenario(
@@ -60,7 +60,7 @@ public class StackingLiveTests {
     EngineResult before2031 = LiveTestsUtil.getResult(
         beforeList.stream(), 2031, "Domestic Refrigeration", "HFC-134a");
     assertNotNull(before2031, "Should have Before result for 2031");
-    double beforeDomestic = before2031.getDomestic().getValue().doubleValue();
+    final double beforeDomestic = before2031.getDomestic().getValue().doubleValue();
 
     // Run After scenario (Permit then Big Change)
     Stream<EngineResult> afterResults = KigaliSimFacade.runScenario(
@@ -69,7 +69,7 @@ public class StackingLiveTests {
     EngineResult after2031 = LiveTestsUtil.getResult(
         afterList.stream(), 2031, "Domestic Refrigeration", "HFC-134a");
     assertNotNull(after2031, "Should have After result for 2031");
-    double afterDomestic = after2031.getDomestic().getValue().doubleValue();
+    final double afterDomestic = after2031.getDomestic().getValue().doubleValue();
 
     // Assert: Permit should have lower domestic consumption than Big Change in 2031
     assertTrue(permitDomestic < bigChangeDomestic,
@@ -118,7 +118,7 @@ public class StackingLiveTests {
     EngineResult bigChange2031 = LiveTestsUtil.getResult(
         bigChangeList.stream(), 2031, "Domestic Refrigeration", "HFC-134a");
     assertNotNull(bigChange2031, "Should have Big Change result for 2031");
-    double bigChangeDomestic = bigChange2031.getDomestic().getValue().doubleValue();
+    final double bigChangeDomestic = bigChange2031.getDomestic().getValue().doubleValue();
 
     // Run Permit scenario
     Stream<EngineResult> permitResults = KigaliSimFacade.runScenario(
@@ -127,7 +127,7 @@ public class StackingLiveTests {
     EngineResult permit2031 = LiveTestsUtil.getResult(
         permitList.stream(), 2031, "Domestic Refrigeration", "HFC-134a");
     assertNotNull(permit2031, "Should have Permit result for 2031");
-    double permitDomestic = permit2031.getDomestic().getValue().doubleValue();
+    final double permitDomestic = permit2031.getDomestic().getValue().doubleValue();
 
     // Run Before scenario (Big Change then Permit)
     Stream<EngineResult> beforeResults = KigaliSimFacade.runScenario(
@@ -136,7 +136,7 @@ public class StackingLiveTests {
     EngineResult before2031 = LiveTestsUtil.getResult(
         beforeList.stream(), 2031, "Domestic Refrigeration", "HFC-134a");
     assertNotNull(before2031, "Should have Before result for 2031");
-    double beforeDomestic = before2031.getDomestic().getValue().doubleValue();
+    final double beforeDomestic = before2031.getDomestic().getValue().doubleValue();
 
     // Run After scenario (Permit then Big Change)
     Stream<EngineResult> afterResults = KigaliSimFacade.runScenario(
@@ -145,7 +145,7 @@ public class StackingLiveTests {
     EngineResult after2031 = LiveTestsUtil.getResult(
         afterList.stream(), 2031, "Domestic Refrigeration", "HFC-134a");
     assertNotNull(after2031, "Should have After result for 2031");
-    double afterDomestic = after2031.getDomestic().getValue().doubleValue();
+    final double afterDomestic = after2031.getDomestic().getValue().doubleValue();
 
     // Assert: Permit should have lower domestic consumption than Big Change in 2031
     assertTrue(permitDomestic < bigChangeDomestic,

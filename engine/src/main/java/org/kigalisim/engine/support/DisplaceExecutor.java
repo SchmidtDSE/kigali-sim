@@ -280,7 +280,7 @@ public class DisplaceExecutor {
       EngineNumber unitsChanged, String displaceTarget) {
     Scope currentScope = engine.getScope();
     Scope destinationScope = currentScope.getWithSubstance(displaceTarget);
-    String originalSubstance = currentScope.getSubstance();
+    final String originalSubstance = currentScope.getSubstance();
 
     // Temporarily change scope to destination for unit conversion
     engine.setSubstance(displaceTarget);
