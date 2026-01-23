@@ -299,7 +299,6 @@ public class DisplaceExecutor {
     // Use custom recalc kit with destination substance's properties for correct GWP calculation
     shortcuts.changeStreamWithDisplacementContext(stream, displaceChange, destinationScope);
 
-    // Update lastSpecified for the displaced stream in destination scope
     updateLastSpecifiedAfterDisplacement(stream, destinationScope);
 
     // Restore original scope
