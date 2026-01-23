@@ -923,6 +923,454 @@ public class StackingLiveTests {
   }
 
   /**
+   * Test displace with cap in scenario A: original substance in kg, cap in units with displace.
+   * This validates that cap with units and displace reports in the same units as the target
+   * substance prior to displace, and that cap/floor changes units only if triggered.
+   * Original: 10 kg, other: 2 kg, cap to 5 units displacing, set to 5 kg.
+   * All combined cases should be 5 kg.
+   */
+  @Test
+  public void testDisplaceCapScenarioA() throws IOException {
+    String qtaPath = "../examples/stacking_displace_cap_scenario_a.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run BAU scenario
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(
+        program, "BAU", progress -> {});
+    List<EngineResult> bauList = bauResults.collect(Collectors.toList());
+    EngineResult bau2 = LiveTestsUtil.getResult(
+        bauList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(bau2, "Should have BAU result for year 2");
+
+    // Run Cap scenario
+    Stream<EngineResult> capResults = KigaliSimFacade.runScenario(
+        program, "Cap", progress -> {});
+    List<EngineResult> capList = capResults.collect(Collectors.toList());
+    EngineResult cap2 = LiveTestsUtil.getResult(
+        capList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(cap2, "Should have Cap result for year 2");
+
+    // Run Set scenario
+    Stream<EngineResult> setResults = KigaliSimFacade.runScenario(
+        program, "Set", progress -> {});
+    List<EngineResult> setList = setResults.collect(Collectors.toList());
+    EngineResult set2 = LiveTestsUtil.getResult(
+        setList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(set2, "Should have Set result for year 2");
+    final double setDomestic = set2.getDomestic().getValue().doubleValue();
+
+    // Run Cap First scenario (Cap then Set)
+    Stream<EngineResult> capFirstResults = KigaliSimFacade.runScenario(
+        program, "Cap First", progress -> {});
+    List<EngineResult> capFirstList = capFirstResults.collect(Collectors.toList());
+    EngineResult capFirst2 = LiveTestsUtil.getResult(
+        capFirstList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(capFirst2, "Should have Cap First result for year 2");
+    final double capFirstDomestic = capFirst2.getDomestic().getValue().doubleValue();
+
+    // Run Set First scenario (Set then Cap)
+    Stream<EngineResult> setFirstResults = KigaliSimFacade.runScenario(
+        program, "Set First", progress -> {});
+    List<EngineResult> setFirstList = setFirstResults.collect(Collectors.toList());
+    EngineResult setFirst2 = LiveTestsUtil.getResult(
+        setFirstList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(setFirst2, "Should have Set First result for year 2");
+    final double setFirstDomestic = setFirst2.getDomestic().getValue().doubleValue();
+
+    // Assertions with tolerance for floating-point comparisons
+    double tolerance = 0.1; // kg
+
+    // All combined cases should be 5 kg
+    assertEquals(5.0, setDomestic, tolerance,
+        "Set should have 5 kg in year 2");
+    assertEquals(5.0, capFirstDomestic, tolerance,
+        "Cap First should have 5 kg in year 2");
+    assertEquals(5.0, setFirstDomestic, tolerance,
+        "Set First should have 5 kg in year 2");
+  }
+
+  /**
+   * Test displace with cap in scenario B: original substance in units, cap in kg with displace.
+   * This validates that cap with kg (when original is in units) and displace reports in the
+   * same units as the target substance prior to displace.
+   * Original: 10 units, other: 2 kg, cap to 5 kg displacing, set to 5 kg.
+   * All combined cases should be 5 kg.
+   */
+  @Test
+  public void testDisplaceCapScenarioB() throws IOException {
+    String qtaPath = "../examples/stacking_displace_cap_scenario_b.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run BAU scenario
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(
+        program, "BAU", progress -> {});
+    List<EngineResult> bauList = bauResults.collect(Collectors.toList());
+    EngineResult bau2 = LiveTestsUtil.getResult(
+        bauList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(bau2, "Should have BAU result for year 2");
+
+    // Run Cap scenario
+    Stream<EngineResult> capResults = KigaliSimFacade.runScenario(
+        program, "Cap", progress -> {});
+    List<EngineResult> capList = capResults.collect(Collectors.toList());
+    EngineResult cap2 = LiveTestsUtil.getResult(
+        capList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(cap2, "Should have Cap result for year 2");
+
+    // Run Set scenario
+    Stream<EngineResult> setResults = KigaliSimFacade.runScenario(
+        program, "Set", progress -> {});
+    List<EngineResult> setList = setResults.collect(Collectors.toList());
+    EngineResult set2 = LiveTestsUtil.getResult(
+        setList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(set2, "Should have Set result for year 2");
+    final double setDomestic = set2.getDomestic().getValue().doubleValue();
+
+    // Run Cap First scenario (Cap then Set)
+    Stream<EngineResult> capFirstResults = KigaliSimFacade.runScenario(
+        program, "Cap First", progress -> {});
+    List<EngineResult> capFirstList = capFirstResults.collect(Collectors.toList());
+    EngineResult capFirst2 = LiveTestsUtil.getResult(
+        capFirstList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(capFirst2, "Should have Cap First result for year 2");
+    final double capFirstDomestic = capFirst2.getDomestic().getValue().doubleValue();
+
+    // Run Set First scenario (Set then Cap)
+    Stream<EngineResult> setFirstResults = KigaliSimFacade.runScenario(
+        program, "Set First", progress -> {});
+    List<EngineResult> setFirstList = setFirstResults.collect(Collectors.toList());
+    EngineResult setFirst2 = LiveTestsUtil.getResult(
+        setFirstList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(setFirst2, "Should have Set First result for year 2");
+    final double setFirstDomestic = setFirst2.getDomestic().getValue().doubleValue();
+
+    // Assertions with tolerance for floating-point comparisons
+    double tolerance = 0.1; // kg
+
+    // All combined cases should be 5 kg
+    assertEquals(5.0, setDomestic, tolerance,
+        "Set should have 5 kg in year 2");
+    assertEquals(5.0, capFirstDomestic, tolerance,
+        "Cap First should have 5 kg in year 2");
+    assertEquals(5.0, setFirstDomestic, tolerance,
+        "Set First should have 5 kg in year 2");
+  }
+
+  /**
+   * Test displace with cap in scenario C: cap that doesn't trigger.
+   * This validates that when cap doesn't trigger, units don't change, but when set is applied,
+   * the result is as expected.
+   * Original: 10 units, other: 2 kg, cap to 50 kg (doesn't trigger) displacing, set to 5 kg.
+   * Without set: should be > 10 kg (recharge happens).
+   * With set: 5 kg.
+   */
+  @Test
+  public void testDisplaceCapScenarioC() throws IOException {
+    String qtaPath = "../examples/stacking_displace_cap_scenario_c.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run BAU scenario
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(
+        program, "BAU", progress -> {});
+    List<EngineResult> bauList = bauResults.collect(Collectors.toList());
+    EngineResult bau2 = LiveTestsUtil.getResult(
+        bauList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(bau2, "Should have BAU result for year 2");
+    final double bauDomestic = bau2.getDomestic().getValue().doubleValue();
+
+    // Run Cap scenario (cap doesn't trigger)
+    Stream<EngineResult> capResults = KigaliSimFacade.runScenario(
+        program, "Cap", progress -> {});
+    List<EngineResult> capList = capResults.collect(Collectors.toList());
+    EngineResult cap2 = LiveTestsUtil.getResult(
+        capList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(cap2, "Should have Cap result for year 2");
+    final double capDomestic = cap2.getDomestic().getValue().doubleValue();
+
+    // Run Set scenario
+    Stream<EngineResult> setResults = KigaliSimFacade.runScenario(
+        program, "Set", progress -> {});
+    List<EngineResult> setList = setResults.collect(Collectors.toList());
+    EngineResult set2 = LiveTestsUtil.getResult(
+        setList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(set2, "Should have Set result for year 2");
+    final double setDomestic = set2.getDomestic().getValue().doubleValue();
+
+    // Run Cap First scenario (Cap then Set)
+    Stream<EngineResult> capFirstResults = KigaliSimFacade.runScenario(
+        program, "Cap First", progress -> {});
+    List<EngineResult> capFirstList = capFirstResults.collect(Collectors.toList());
+    EngineResult capFirst2 = LiveTestsUtil.getResult(
+        capFirstList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(capFirst2, "Should have Cap First result for year 2");
+    final double capFirstDomestic = capFirst2.getDomestic().getValue().doubleValue();
+
+    // Run Set First scenario (Set then Cap)
+    Stream<EngineResult> setFirstResults = KigaliSimFacade.runScenario(
+        program, "Set First", progress -> {});
+    List<EngineResult> setFirstList = setFirstResults.collect(Collectors.toList());
+    EngineResult setFirst2 = LiveTestsUtil.getResult(
+        setFirstList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(setFirst2, "Should have Set First result for year 2");
+    final double setFirstDomestic = setFirst2.getDomestic().getValue().doubleValue();
+
+    // Assertions with tolerance for floating-point comparisons
+    double tolerance = 0.1; // kg
+
+    // Cap doesn't trigger, so should be > 10 kg (with recharge)
+    assertTrue(capDomestic > 10.0,
+        String.format("Cap (%.2f kg) should be > 10 kg in year 2", capDomestic));
+
+    // Set should override to 5 kg
+    assertEquals(5.0, setDomestic, tolerance,
+        "Set should have 5 kg in year 2");
+
+    // Cap First then Set should be 5 kg (set overwrites)
+    assertEquals(5.0, capFirstDomestic, tolerance,
+        "Cap First should have 5 kg in year 2");
+
+    // Set First then Cap should be 5 kg (cap doesn't trigger, set value remains)
+    assertEquals(5.0, setFirstDomestic, tolerance,
+        "Set First should have 5 kg in year 2");
+  }
+
+  /**
+   * Test displace with floor in scenario A: original substance in kg, floor in units with displace.
+   * This validates that floor with units and displace reports in the same units as the target
+   * substance prior to displace, and that floor changes units only if triggered.
+   * Original: 10 kg, other: 2 kg, floor to 15 units displacing, set to 20 kg.
+   * Floor should trigger, increasing values.
+   */
+  @Test
+  public void testDisplaceFloorScenarioA() throws IOException {
+    String qtaPath = "../examples/stacking_displace_floor_scenario_a.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run BAU scenario
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(
+        program, "BAU", progress -> {});
+    List<EngineResult> bauList = bauResults.collect(Collectors.toList());
+    EngineResult bau2 = LiveTestsUtil.getResult(
+        bauList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(bau2, "Should have BAU result for year 2");
+    final double bauDomestic = bau2.getDomestic().getValue().doubleValue();
+
+    // Run Floor scenario
+    Stream<EngineResult> floorResults = KigaliSimFacade.runScenario(
+        program, "Floor", progress -> {});
+    List<EngineResult> floorList = floorResults.collect(Collectors.toList());
+    EngineResult floor2 = LiveTestsUtil.getResult(
+        floorList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(floor2, "Should have Floor result for year 2");
+    final double floorDomestic = floor2.getDomestic().getValue().doubleValue();
+
+    // Run Set scenario
+    Stream<EngineResult> setResults = KigaliSimFacade.runScenario(
+        program, "Set", progress -> {});
+    List<EngineResult> setList = setResults.collect(Collectors.toList());
+    EngineResult set2 = LiveTestsUtil.getResult(
+        setList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(set2, "Should have Set result for year 2");
+    final double setDomestic = set2.getDomestic().getValue().doubleValue();
+
+    // Run Floor First scenario (Floor then Set)
+    Stream<EngineResult> floorFirstResults = KigaliSimFacade.runScenario(
+        program, "Floor First", progress -> {});
+    List<EngineResult> floorFirstList = floorFirstResults.collect(Collectors.toList());
+    EngineResult floorFirst2 = LiveTestsUtil.getResult(
+        floorFirstList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(floorFirst2, "Should have Floor First result for year 2");
+    final double floorFirstDomestic = floorFirst2.getDomestic().getValue().doubleValue();
+
+    // Run Set First scenario (Set then Floor)
+    Stream<EngineResult> setFirstResults = KigaliSimFacade.runScenario(
+        program, "Set First", progress -> {});
+    List<EngineResult> setFirstList = setFirstResults.collect(Collectors.toList());
+    EngineResult setFirst2 = LiveTestsUtil.getResult(
+        setFirstList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(setFirst2, "Should have Set First result for year 2");
+    final double setFirstDomestic = setFirst2.getDomestic().getValue().doubleValue();
+
+    // Assertions with tolerance for floating-point comparisons
+    double tolerance = 0.1; // kg
+
+    // Floor should enforce minimum (15 units with recharge)
+    assertTrue(floorDomestic >= 15.0,
+        String.format("Floor (%.2f kg) should be >= 15 kg in year 2", floorDomestic));
+
+    // Set should be 20 kg
+    assertEquals(20.0, setDomestic, tolerance,
+        "Set should have 20 kg in year 2");
+
+    // Floor First then Set should be 20 kg (set overwrites)
+    assertEquals(20.0, floorFirstDomestic, tolerance,
+        "Floor First should have 20 kg in year 2");
+
+    // Set First then Floor should be 20 kg (set already above floor)
+    assertEquals(20.0, setFirstDomestic, tolerance,
+        "Set First should have 20 kg in year 2");
+  }
+
+  /**
+   * Test displace with floor in scenario B: original substance in units, floor in kg with displace.
+   * This validates that floor with kg (when original is in units) and displace reports in the
+   * same units as the target substance prior to displace.
+   * Original: 10 units, other: 2 kg, floor to 15 kg displacing, set to 20 kg.
+   */
+  @Test
+  public void testDisplaceFloorScenarioB() throws IOException {
+    String qtaPath = "../examples/stacking_displace_floor_scenario_b.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run BAU scenario
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(
+        program, "BAU", progress -> {});
+    List<EngineResult> bauList = bauResults.collect(Collectors.toList());
+    EngineResult bau2 = LiveTestsUtil.getResult(
+        bauList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(bau2, "Should have BAU result for year 2");
+    final double bauDomestic = bau2.getDomestic().getValue().doubleValue();
+
+    // Run Floor scenario
+    Stream<EngineResult> floorResults = KigaliSimFacade.runScenario(
+        program, "Floor", progress -> {});
+    List<EngineResult> floorList = floorResults.collect(Collectors.toList());
+    EngineResult floor2 = LiveTestsUtil.getResult(
+        floorList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(floor2, "Should have Floor result for year 2");
+    final double floorDomestic = floor2.getDomestic().getValue().doubleValue();
+
+    // Run Set scenario
+    Stream<EngineResult> setResults = KigaliSimFacade.runScenario(
+        program, "Set", progress -> {});
+    List<EngineResult> setList = setResults.collect(Collectors.toList());
+    EngineResult set2 = LiveTestsUtil.getResult(
+        setList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(set2, "Should have Set result for year 2");
+    final double setDomestic = set2.getDomestic().getValue().doubleValue();
+
+    // Run Floor First scenario (Floor then Set)
+    Stream<EngineResult> floorFirstResults = KigaliSimFacade.runScenario(
+        program, "Floor First", progress -> {});
+    List<EngineResult> floorFirstList = floorFirstResults.collect(Collectors.toList());
+    EngineResult floorFirst2 = LiveTestsUtil.getResult(
+        floorFirstList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(floorFirst2, "Should have Floor First result for year 2");
+    final double floorFirstDomestic = floorFirst2.getDomestic().getValue().doubleValue();
+
+    // Run Set First scenario (Set then Floor)
+    Stream<EngineResult> setFirstResults = KigaliSimFacade.runScenario(
+        program, "Set First", progress -> {});
+    List<EngineResult> setFirstList = setFirstResults.collect(Collectors.toList());
+    EngineResult setFirst2 = LiveTestsUtil.getResult(
+        setFirstList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(setFirst2, "Should have Set First result for year 2");
+    final double setFirstDomestic = setFirst2.getDomestic().getValue().doubleValue();
+
+    // Assertions with tolerance for floating-point comparisons
+    double tolerance = 0.1; // kg
+
+    // Floor should enforce minimum of 15 kg
+    assertEquals(15.0, floorDomestic, tolerance,
+        "Floor should have 15 kg in year 2");
+
+    // Set should be 20 kg
+    assertEquals(20.0, setDomestic, tolerance,
+        "Set should have 20 kg in year 2");
+
+    // Floor First then Set should be 20 kg (set overwrites)
+    assertEquals(20.0, floorFirstDomestic, tolerance,
+        "Floor First should have 20 kg in year 2");
+
+    // Set First then Floor should be 20 kg (set already above floor)
+    assertEquals(20.0, setFirstDomestic, tolerance,
+        "Set First should have 20 kg in year 2");
+  }
+
+  /**
+   * Test displace with floor in scenario C: floor that doesn't trigger.
+   * This validates that when floor doesn't trigger, units don't change, but when set is applied,
+   * the result is as expected.
+   * Original: 10 units, other: 2 kg, floor to 1 kg (doesn't trigger) displacing, set to 5 kg.
+   */
+  @Test
+  public void testDisplaceFloorScenarioC() throws IOException {
+    String qtaPath = "../examples/stacking_displace_floor_scenario_c.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run BAU scenario
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(
+        program, "BAU", progress -> {});
+    List<EngineResult> bauList = bauResults.collect(Collectors.toList());
+    EngineResult bau2 = LiveTestsUtil.getResult(
+        bauList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(bau2, "Should have BAU result for year 2");
+    final double bauDomestic = bau2.getDomestic().getValue().doubleValue();
+
+    // Run Floor scenario (floor doesn't trigger)
+    Stream<EngineResult> floorResults = KigaliSimFacade.runScenario(
+        program, "Floor", progress -> {});
+    List<EngineResult> floorList = floorResults.collect(Collectors.toList());
+    EngineResult floor2 = LiveTestsUtil.getResult(
+        floorList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(floor2, "Should have Floor result for year 2");
+    final double floorDomestic = floor2.getDomestic().getValue().doubleValue();
+
+    // Run Set scenario
+    Stream<EngineResult> setResults = KigaliSimFacade.runScenario(
+        program, "Set", progress -> {});
+    List<EngineResult> setList = setResults.collect(Collectors.toList());
+    EngineResult set2 = LiveTestsUtil.getResult(
+        setList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(set2, "Should have Set result for year 2");
+    final double setDomestic = set2.getDomestic().getValue().doubleValue();
+
+    // Run Floor First scenario (Floor then Set)
+    Stream<EngineResult> floorFirstResults = KigaliSimFacade.runScenario(
+        program, "Floor First", progress -> {});
+    List<EngineResult> floorFirstList = floorFirstResults.collect(Collectors.toList());
+    EngineResult floorFirst2 = LiveTestsUtil.getResult(
+        floorFirstList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(floorFirst2, "Should have Floor First result for year 2");
+    final double floorFirstDomestic = floorFirst2.getDomestic().getValue().doubleValue();
+
+    // Run Set First scenario (Set then Floor)
+    Stream<EngineResult> setFirstResults = KigaliSimFacade.runScenario(
+        program, "Set First", progress -> {});
+    List<EngineResult> setFirstList = setFirstResults.collect(Collectors.toList());
+    EngineResult setFirst2 = LiveTestsUtil.getResult(
+        setFirstList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(setFirst2, "Should have Set First result for year 2");
+    final double setFirstDomestic = setFirst2.getDomestic().getValue().doubleValue();
+
+    // Assertions with tolerance for floating-point comparisons
+    double tolerance = 0.1; // kg
+
+    // Floor doesn't trigger, should be close to BAU (with recharge)
+    assertTrue(floorDomestic >= bauDomestic,
+        String.format("Floor (%.2f kg) should be >= BAU (%.2f kg) in year 2",
+            floorDomestic, bauDomestic));
+
+    // Set should be 5 kg
+    assertEquals(5.0, setDomestic, tolerance,
+        "Set should have 5 kg in year 2");
+
+    // Floor First then Set should be 5 kg (set overwrites)
+    assertEquals(5.0, floorFirstDomestic, tolerance,
+        "Floor First should have 5 kg in year 2");
+
+    // Set First then Floor should be 5 kg (floor doesn't trigger, set value remains)
+    assertEquals(5.0, setFirstDomestic, tolerance,
+        "Set First should have 5 kg in year 2");
+  }
+
+  /**
    * Assert that domestic kg value is non-negative for a scenario result.
    *
    * @param resultsList The list of all results from the scenario
