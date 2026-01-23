@@ -177,6 +177,74 @@ public class StackingLiveTests {
   }
 
   /**
+   * Test that multiple set commands stack correctly, with the last policy determining the value.
+   * This validates that when two policies both set a stream to different values,
+   * the last policy applied in the stacking order wins.
+   */
+  @Test
+  public void testDoubleSet() throws IOException {
+    String qtaPath = "../examples/stacking_double_set.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run BAU scenario
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(
+        program, "BAU", progress -> {});
+    List<EngineResult> bauList = bauResults.collect(Collectors.toList());
+    EngineResult bau2 = LiveTestsUtil.getResult(
+        bauList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(bau2, "Should have BAU result for year 2");
+    final double bauDomestic = bau2.getDomestic().getValue().doubleValue();
+
+    // Run Small Set scenario
+    Stream<EngineResult> smallSetResults = KigaliSimFacade.runScenario(
+        program, "Small Set", progress -> {});
+    List<EngineResult> smallSetList = smallSetResults.collect(Collectors.toList());
+    EngineResult smallSet2 = LiveTestsUtil.getResult(
+        smallSetList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(smallSet2, "Should have Small Set result for year 2");
+    final double smallSetDomestic = smallSet2.getDomestic().getValue().doubleValue();
+
+    // Run Large Set scenario
+    Stream<EngineResult> largeSetResults = KigaliSimFacade.runScenario(
+        program, "Large Set", progress -> {});
+    List<EngineResult> largeSetList = largeSetResults.collect(Collectors.toList());
+    EngineResult largeSet2 = LiveTestsUtil.getResult(
+        largeSetList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(largeSet2, "Should have Large Set result for year 2");
+    final double largeSetDomestic = largeSet2.getDomestic().getValue().doubleValue();
+
+    // Run Combined Increase scenario (Small Set then Large Set)
+    Stream<EngineResult> combinedIncreaseResults = KigaliSimFacade.runScenario(
+        program, "Combined Increase", progress -> {});
+    List<EngineResult> combinedIncreaseList = combinedIncreaseResults.collect(Collectors.toList());
+    EngineResult combinedIncrease2 = LiveTestsUtil.getResult(
+        combinedIncreaseList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(combinedIncrease2, "Should have Combined Increase result for year 2");
+    final double combinedIncreaseDomestic = combinedIncrease2.getDomestic().getValue().doubleValue();
+
+    // Run Combined Decrease scenario (Large Set then Small Set)
+    Stream<EngineResult> combinedDecreaseResults = KigaliSimFacade.runScenario(
+        program, "Combined Decrease", progress -> {});
+    List<EngineResult> combinedDecreaseList = combinedDecreaseResults.collect(Collectors.toList());
+    EngineResult combinedDecrease2 = LiveTestsUtil.getResult(
+        combinedDecreaseList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(combinedDecrease2, "Should have Combined Decrease result for year 2");
+    final double combinedDecreaseDomestic = combinedDecrease2.getDomestic().getValue().doubleValue();
+
+    // Assertions with tolerance for floating-point comparisons
+    double tolerance = 0.01; // kg
+
+    assertEquals(10.0, bauDomestic, tolerance, "BAU should have 10 kg in year 2");
+    assertEquals(15.0, smallSetDomestic, tolerance, "Small Set should have 15 kg in year 2");
+    assertEquals(20.0, largeSetDomestic, tolerance, "Large Set should have 20 kg in year 2");
+    assertEquals(20.0, combinedIncreaseDomestic, tolerance,
+        "Combined Increase should have 20 kg in year 2");
+    assertEquals(15.0, combinedDecreaseDomestic, tolerance,
+        "Combined Decrease should have 15 kg in year 2");
+  }
+
+  /**
    * Assert that domestic kg value is non-negative for a scenario result.
    *
    * @param resultsList The list of all results from the scenario
