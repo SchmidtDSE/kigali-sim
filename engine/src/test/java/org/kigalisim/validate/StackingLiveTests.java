@@ -1371,6 +1371,100 @@ public class StackingLiveTests {
   }
 
   /**
+   * Test interaction between recycling and cap policies when stacked.
+   * This validates that the order of applying recycling and cap policies affects the outcome.
+   * When recycling is applied first, it adds to the base (with 100% induction) before the cap
+   * is applied. When the cap is applied first, it reduces the amount before recycling adds to it.
+   * Therefore, "Permit First" should result in higher domestic kg than "Recycling First" because
+   * the cap operates on a larger base in the former case.
+   */
+  @Test
+  public void testRecycleAndCap() throws IOException {
+    String qtaPath = "../examples/stacking_recycle_and_cap.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run Recycling First scenario (Domestic Recycling then Sales Permit)
+    Stream<EngineResult> recyclingFirstResults = KigaliSimFacade.runScenario(
+        program, "Recycling First", progress -> {});
+    List<EngineResult> recyclingFirstList = recyclingFirstResults.collect(Collectors.toList());
+    EngineResult recyclingFirst2030 = LiveTestsUtil.getResult(
+        recyclingFirstList.stream(), 2030, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(recyclingFirst2030, "Should have Recycling First result for 2030");
+    final double recyclingFirstDomestic = recyclingFirst2030.getDomestic().getValue().doubleValue();
+
+    // Run Permit First scenario (Sales Permit then Domestic Recycling)
+    Stream<EngineResult> permitFirstResults = KigaliSimFacade.runScenario(
+        program, "Permit First", progress -> {});
+    List<EngineResult> permitFirstList = permitFirstResults.collect(Collectors.toList());
+    EngineResult permitFirst2030 = LiveTestsUtil.getResult(
+        permitFirstList.stream(), 2030, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(permitFirst2030, "Should have Permit First result for 2030");
+    final double permitFirstDomestic = permitFirst2030.getDomestic().getValue().doubleValue();
+
+    // Run BAU scenario for reference
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(
+        program, "BAU", progress -> {});
+    List<EngineResult> bauList = bauResults.collect(Collectors.toList());
+    EngineResult bau2030 = LiveTestsUtil.getResult(
+        bauList.stream(), 2030, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(bau2030, "Should have BAU result for 2030");
+    final double bauDomestic = bau2030.getDomestic().getValue().doubleValue();
+
+    // Run Recycling scenario for reference
+    Stream<EngineResult> recyclingResults = KigaliSimFacade.runScenario(
+        program, "Recycling", progress -> {});
+    List<EngineResult> recyclingList = recyclingResults.collect(Collectors.toList());
+    EngineResult recycling2030 = LiveTestsUtil.getResult(
+        recyclingList.stream(), 2030, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(recycling2030, "Should have Recycling result for 2030");
+    final double recyclingDomestic = recycling2030.getDomestic().getValue().doubleValue();
+
+    // Run Permit scenario for reference
+    Stream<EngineResult> permitResults = KigaliSimFacade.runScenario(
+        program, "Permit", progress -> {});
+    List<EngineResult> permitList = permitResults.collect(Collectors.toList());
+    EngineResult permit2030 = LiveTestsUtil.getResult(
+        permitList.stream(), 2030, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(permit2030, "Should have Permit result for 2030");
+    final double permitDomestic = permit2030.getDomestic().getValue().doubleValue();
+
+    // Assert: Permit First should have higher domestic than Recycling First in 2030
+    // When recycling is applied first, the cap operates on the increased base (recycled added).
+    // When permit is applied first, the cap reduces before recycling adds to it.
+    assertTrue(permitFirstDomestic > recyclingFirstDomestic,
+        String.format(
+            "Permit First domestic (%.2f kg) should be higher than "
+            + "Recycling First domestic (%.2f kg) in 2030",
+            permitFirstDomestic, recyclingFirstDomestic));
+
+    // Assert: Both combined scenarios should be less than BAU
+    assertTrue(recyclingFirstDomestic < bauDomestic,
+        String.format(
+            "Recycling First domestic (%.2f kg) should be less than BAU (%.2f kg) in 2030",
+            recyclingFirstDomestic, bauDomestic));
+    assertTrue(permitFirstDomestic < bauDomestic,
+        String.format(
+            "Permit First domestic (%.2f kg) should be less than BAU (%.2f kg) in 2030",
+            permitFirstDomestic, bauDomestic));
+
+    // Assert: Recycling First should be less than Recycling alone
+    // (because cap is applied after recycling increases the base)
+    assertTrue(recyclingFirstDomestic < recyclingDomestic,
+        String.format(
+            "Recycling First domestic (%.2f kg) should be less than "
+            + "Recycling alone (%.2f kg) in 2030",
+            recyclingFirstDomestic, recyclingDomestic));
+
+    // Assert: All scenarios should have non-negative domestic values
+    assertDomesticNonNegative(bauList, 2030, "BAU");
+    assertDomesticNonNegative(recyclingList, 2030, "Recycling");
+    assertDomesticNonNegative(permitList, 2030, "Permit");
+    assertDomesticNonNegative(recyclingFirstList, 2030, "Recycling First");
+    assertDomesticNonNegative(permitFirstList, 2030, "Permit First");
+  }
+
+  /**
    * Assert that domestic kg value is non-negative for a scenario result.
    *
    * @param resultsList The list of all results from the scenario
