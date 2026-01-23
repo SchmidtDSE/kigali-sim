@@ -190,7 +190,10 @@ public class LimitExecutor {
 
     SimulationState simulationState = engine.getStreamKeeper();
     Scope scope = engine.getScope();
-    EngineNumber lastSpecified = simulationState.getStream(scope, stream, true);
+    EngineNumber lastSpecified = simulationState.getLastSpecifiedValue(scope, stream);
+    if (lastSpecified == null || !lastSpecified.hasEquipmentUnits()) {
+      lastSpecified = simulationState.getStream(scope, stream, true);
+    }
     boolean hasPrior = lastSpecified != null;
 
     if (hasPrior) {
@@ -349,7 +352,10 @@ public class LimitExecutor {
 
     SimulationState simulationState = engine.getStreamKeeper();
     Scope scope = engine.getScope();
-    EngineNumber lastSpecified = simulationState.getStream(scope, stream, true);
+    EngineNumber lastSpecified = simulationState.getLastSpecifiedValue(scope, stream);
+    if (lastSpecified == null || !lastSpecified.hasEquipmentUnits()) {
+      lastSpecified = simulationState.getStream(scope, stream, true);
+    }
     boolean hasPrior = lastSpecified != null;
 
     if (hasPrior) {
