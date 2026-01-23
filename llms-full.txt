@@ -62,6 +62,8 @@ The about stanza is optional.
 - `set {stream} to {amount} <during>` - Sets flow volumes
 - `change {stream} by {amount} <during>` - Growth or decay rates where amount is often +X %
 
+**Note**: Change operations prevent streams from going negative. When a change would result in a negative value (e.g., reducing a 5 kg stream by 10 kg), the stream is clamped to exactly 0. The actual amount removed (not the requested amount) is what matters for downstream calculations.
+
 #### Equipment Lifecycle
 - `retire {amount} <with replacement> <during>` - Equipment retirement rate, also called hazard rate or scrap rate (with replacement maintains equipment population)
 - `recharge {population} with {volume} <during>` - Service recharging (population = equipment to recharge, volume = substance per unit)
