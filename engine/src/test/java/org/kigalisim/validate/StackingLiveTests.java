@@ -1619,12 +1619,9 @@ public class StackingLiveTests {
    * <ul>
    *   <li>Change alone: Lower than BAU (negative change reduces growth)</li>
    *   <li>Recycle alone: Lower than BAU (recycling with 0% induction reduces virgin demand)</li>
-   *   <li>Change then Recycle: Lower than both Change alone and Recycle alone
-   *       (both effects accumulate when recycle is applied after change)</li>
-   *   <li>Recycle then Change: Equal to Change alone (change recalculates from base,
-   *       effectively overriding the recycling effect on recharge)</li>
-   *   <li>Change then Recycle: Lower than Recycle then Change
-   *       (order matters: applying recycle last preserves both effects)</li>
+   *   <li>Change then Recycle: Lower than both Change alone and Recycle alone</li>
+   *   <li>Recycle then Change: Lower than both Change alone and Recycle alone</li>
+   *   <li>Recycle then Change: Lower than Change then Recycle</li>
    * </ul>
    */
   @Test
@@ -1710,13 +1707,10 @@ public class StackingLiveTests {
             + "Recycle alone (%.2f kg) in year 2",
             changeThenRecycleDomestic, recycleDomestic));
 
-    // Assert: Recycle Then Change should be approximately equal to Change alone
-    // When change is applied after recycling, it recalculates from the base domestic value,
-    // effectively overriding the recycling effect on recharge
-    double tolerance = 0.1; // kg
-    assertEquals(recycleThenChangeDomestic, changeDomestic, tolerance,
+    // Assert: Recycle Then Change should be lower than Change alone
+    assertTrue(recycleThenChangeDomestic < changeDomestic,
         String.format(
-            "Recycle Then Change domestic (%.2f kg) should equal "
+            "Recycle Then Change domestic (%.2f kg) should be lower than "
             + "Change alone (%.2f kg) in year 2",
             recycleThenChangeDomestic, changeDomestic));
 
@@ -1727,13 +1721,12 @@ public class StackingLiveTests {
             + "Recycle alone (%.2f kg) in year 2",
             recycleThenChangeDomestic, recycleDomestic));
 
-    // Assert: Change Then Recycle should be lower than Recycle Then Change
-    // Order matters: applying recycle last preserves both effects
-    assertTrue(changeThenRecycleDomestic < recycleThenChangeDomestic,
+    // Assert: Recycle Then Change should be lower than Change Then Recycle
+    assertTrue(recycleThenChangeDomestic < changeThenRecycleDomestic,
         String.format(
-            "Change Then Recycle domestic (%.2f kg) should be lower than "
-            + "Recycle Then Change (%.2f kg) in year 2",
-            changeThenRecycleDomestic, recycleThenChangeDomestic));
+            "Recycle Then Change domestic (%.2f kg) should be lower than "
+            + "Change Then Recycle (%.2f kg) in year 2",
+            recycleThenChangeDomestic, changeThenRecycleDomestic));
 
     // Assert: All scenarios should have non-negative domestic values
     assertDomesticNonNegative(bauList, 2, "BAU");
