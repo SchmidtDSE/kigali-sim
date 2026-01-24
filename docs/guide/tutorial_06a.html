@@ -120,7 +120,7 @@ Let's call this policy Domestic Recycling. Please also add a new simulation alon
 domestic recycling then also sales permit.</code></pre>
 
         <p>
-          Pay close attention to how this is reflected in the UI-based editor after opening the new file. Note that we asked for domestic recycling to be applied prior to the sales permit. This means that induced demand is applied but then the sales permit ensures that the limits are still respected. In many cases, the ordering of policies does not matter but we will see policy stack ordering in a later tutorial.
+          Pay close attention to how this is reflected in the UI-based editor after opening the new file. Note that we asked for domestic recycling to be applied prior to the sales permit. This means that induced demand is applied but then the sales permit ensures that the limits are still respected. This is further explored at the end of the tutorial.
         </p>
       </section>
 
@@ -180,6 +180,10 @@ domestic recycling then also sales permit.</code></pre>
 
         <p>
           You've successfully implemented ABC Country's comprehensive HFC-134a strategy combining permitting and recycling policies. This tutorial demonstrated how recycling appears as an alternative supply source and complements demand-side restrictions for maximum policy effectiveness. Along the way, used AI assistance to help understand what each of the recycling parameters meant.
+        </p>
+
+        <p>
+          <strong>Note about policy order</strong>: Sometimes the order in which policies apply can matter. For example, consider a policy which reduces consumption by 5% and a separate policy that imposes a cap. Should the reduction count towards the cap or be applied after the cap has taken place? It depends on your policy assumptions. If the cap is a permit and the change is an educational policy, one may wish to have the percent change applied prior to cap. This is why having that policy further up in the list is important.
         </p>
 
         <p>

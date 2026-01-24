@@ -91,7 +91,7 @@
         </p>
 
         <p>
-          Note: here, the domestic recycling is applied prior to the sales permit. This means we tackle induced demand (more on that in a moment) followed by ensuring that the sales caps are still respected. In many cases, the ordering does not matter but you'll notice this in a future tutorial. That said, when using the UI-based editor, they are applied in alphabetical order. When using the code-based editor introduced in Tutorial 7, the ordering can be manipulated manually.
+          Note: Here, the domestic recycling is applied prior to the sales permit (should appear in the checkbox list of policies first). If not, please use the specify policy order link. This is discussed further at the end of this tutorial.
         </p>
       </section>
 
@@ -154,8 +154,13 @@
         </p>
 
         <p>
+          <strong>Note about policy order</strong>: Sometimes the order in which policies apply can matter. For example, consider a policy which reduces consumption by 5% and a separate policy that imposes a cap. Should the reduction count towards the cap or be applied after the cap has taken place? It depends on your policy assumptions. If the cap is a permit and the change is an educational policy, one may wish to have the percent change applied prior to cap. This is why having that policy further up in the list is important.
+        </p>
+
+        <p>
           <strong>Download the completed tutorial</strong> result at <a href="tutorial_06.qta" download>tutorial_06.qta</a> which contains the complete model with combined permitting and recycling policies. It differs from the <a href="tutorial_05.qta" download>prior tutorial result</a> in that it adds recycling, the results of which are most apparent when looking at emissions.
         </p>
+
       </section>
 
       <section id="next-steps">
