@@ -237,10 +237,11 @@ public class ChangeExecutor {
   }
 
   /**
-   * Apply percentage change based on last specified value.
+   * Apply percentage change based on last specified value plus stream's share of recycling.
    *
-   * <p>Calculates the change amount from lastSpecified value and applies it to that same value,
-   * updating the stream with the new total. The updated value becomes the new lastSpecified.</p>
+   * <p>Calculates the change amount from an effective base that includes the stream's proportional
+   * share of recycling. This ensures percentage changes represent total demand changes, accounting
+   * for recycled material that displaces virgin production.</p>
    *
    * @param config The configuration containing all parameters for the change operation
    * @param lastSpecified The last specified value for the stream
@@ -249,9 +250,16 @@ public class ChangeExecutor {
     String stream = config.getStream();
     EngineNumber amount = config.getAmount();
     YearMatcher yearMatcher = config.getYearMatcher().orElse(null);
+    UseKey useKeyEffective = config.getUseKeyEffective();
+
+    // Get this stream's share of recycling to include in the effective base
+    BigDecimal recyclingShare = getStreamRecyclingShare(stream, useKeyEffective, lastSpecified.getUnits());
+
+    // Effective base = lastSpecified + stream's share of recycling
+    BigDecimal effectiveBase = lastSpecified.getValue().add(recyclingShare);
 
     BigDecimal percentageValue = amount.getValue();
-    BigDecimal changeAmount = lastSpecified.getValue().multiply(percentageValue).divide(new BigDecimal("100"));
+    BigDecimal changeAmount = effectiveBase.multiply(percentageValue).divide(new BigDecimal("100"));
 
     BigDecimal proposedNewValue = lastSpecified.getValue().add(changeAmount);
     BigDecimal clampedNewValue = ensureNonNegative(proposedNewValue);
@@ -265,6 +273,45 @@ public class ChangeExecutor {
         .setSubtractRecycling(subtractRecycling)
         .build();
     engine.executeStreamUpdate(update);
+  }
+
+  /**
+   * Gets the stream's proportional share of total recycling.
+   *
+   * <p>Uses SalesStreamDistribution to determine what percentage of total sales this stream
+   * represents, then returns that percentage of total recycling converted to the target units.</p>
+   *
+   * @param stream The stream name (domestic or import)
+   * @param useKey The use key for the current scope
+   * @param targetUnits The units to convert the recycling share to
+   * @return The stream's share of recycling in the target units
+   */
+  private BigDecimal getStreamRecyclingShare(String stream, UseKey useKey, String targetUnits) {
+    // Get total recycling amount
+    EngineNumber recycleRaw = engine.getStream("recycle", Optional.of(useKey), Optional.empty());
+    if (recycleRaw == null || recycleRaw.getValue().compareTo(BigDecimal.ZERO) == 0) {
+      return BigDecimal.ZERO;
+    }
+
+    // Convert to target units
+    UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(engine, stream);
+    EngineNumber recycleConverted = unitConverter.convert(recycleRaw, targetUnits);
+
+    // Get stream's percentage of total sales
+    SimulationState simulationState = engine.getStreamKeeper();
+    SalesStreamDistribution distribution = simulationState.getDistribution(useKey);
+
+    BigDecimal streamPercent;
+    if ("domestic".equals(stream)) {
+      streamPercent = distribution.getPercentDomestic();
+    } else if ("import".equals(stream)) {
+      streamPercent = distribution.getPercentImport();
+    } else {
+      return BigDecimal.ZERO;
+    }
+
+    // Return stream's share of recycling
+    return recycleConverted.getValue().multiply(streamPercent);
   }
 
   /**

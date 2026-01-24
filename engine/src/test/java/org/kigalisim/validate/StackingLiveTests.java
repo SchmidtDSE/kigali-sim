@@ -1721,10 +1721,11 @@ public class StackingLiveTests {
             + "Recycle alone (%.2f kg) in year 2",
             recycleThenChangeDomestic, recycleDomestic));
 
-    // Assert: Recycle Then Change should be lower than Change Then Recycle
-    assertTrue(recycleThenChangeDomestic < changeThenRecycleDomestic,
+    // Assert: Recycle Then Change should be larger than Change Then Recycle
+    // (recycling is calculated on larger pre-change base when recycle runs first)
+    assertTrue(recycleThenChangeDomestic > changeThenRecycleDomestic,
         String.format(
-            "Recycle Then Change domestic (%.2f kg) should be lower than "
+            "Recycle Then Change (%.2f kg) should be larger than "
             + "Change Then Recycle (%.2f kg) in year 2",
             recycleThenChangeDomestic, changeThenRecycleDomestic));
 
