@@ -302,15 +302,13 @@ public class ChangeExecutor {
     SalesStreamDistribution distribution = simulationState.getDistribution(useKey);
 
     // Return full recycling for sales, or proportional share for individual streams
-    if ("sales".equals(stream)) {
-      return recycleConverted.getValue();
-    } else if ("domestic".equals(stream)) {
-      return recycleConverted.getValue().multiply(distribution.getPercentDomestic());
-    } else if ("import".equals(stream)) {
-      return recycleConverted.getValue().multiply(distribution.getPercentImport());
-    } else {
-      return BigDecimal.ZERO;
-    }
+    BigDecimal recycleValue = recycleConverted.getValue();
+    return switch (stream) {
+      case "sales" -> recycleValue;
+      case "domestic" -> recycleValue.multiply(distribution.getPercentDomestic());
+      case "import" -> recycleValue.multiply(distribution.getPercentImport());
+      default -> BigDecimal.ZERO;
+    };
   }
 
   /**
