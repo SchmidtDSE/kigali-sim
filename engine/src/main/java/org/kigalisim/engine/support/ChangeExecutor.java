@@ -281,7 +281,7 @@ public class ChangeExecutor {
    * <p>Uses SalesStreamDistribution to determine what percentage of total sales this stream
    * represents, then returns that percentage of total recycling converted to the target units.</p>
    *
-   * @param stream The stream name (domestic or import)
+   * @param stream The stream name (sales, domestic, or import)
    * @param useKey The use key for the current scope
    * @param targetUnits The units to convert the recycling share to
    * @return The stream's share of recycling in the target units
@@ -301,17 +301,16 @@ public class ChangeExecutor {
     SimulationState simulationState = engine.getStreamKeeper();
     SalesStreamDistribution distribution = simulationState.getDistribution(useKey);
 
-    BigDecimal streamPercent;
-    if ("domestic".equals(stream)) {
-      streamPercent = distribution.getPercentDomestic();
+    // Return full recycling for sales, or proportional share for individual streams
+    if ("sales".equals(stream)) {
+      return recycleConverted.getValue();
+    } else if ("domestic".equals(stream)) {
+      return recycleConverted.getValue().multiply(distribution.getPercentDomestic());
     } else if ("import".equals(stream)) {
-      streamPercent = distribution.getPercentImport();
+      return recycleConverted.getValue().multiply(distribution.getPercentImport());
     } else {
       return BigDecimal.ZERO;
     }
-
-    // Return stream's share of recycling
-    return recycleConverted.getValue().multiply(streamPercent);
   }
 
   /**
