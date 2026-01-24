@@ -26,9 +26,9 @@ Added ability to manually specify the ordering of policy application / policy st
 
 **Status**: Released January 26, 2026.
 
-**Classification**: Bug
+**Classification**: Bug / clarification
 
-When stacking policies, it is possible for change statements with `% current` to use the original basis from BAU and not that set by a floor or cap. See [#711](https://github.com/SchmidtDSE/kigali-sim/pull/711). There is some ambiguity in what is desireable but, given explicit control of stacking order, this was fixed to use the cap or floor as basis (if cap or floor were violated) instead of the original value for `% current`.
+When stacking policies, it is possible for change statements with `% current` to use the original basis from BAU and not that set by another policy like floor or cap. See [#711](https://github.com/SchmidtDSE/kigali-sim/pull/711) and [#716](https://github.com/SchmidtDSE/kigali-sim/pull/716). There is some ambiguity in what is desireable but, given explicit control of stacking order, this was fixed to use the modified value as basis (like if cap or floor were violated) instead of the original value for `% current`. Corresponding changes made to documentation to provide clarity. Our apologies for this ambiguity. Tests have been added to prevent regression. See [#690](https://github.com/SchmidtDSE/kigali-sim/issues/690) and [#691](https://github.com/SchmidtDSE/kigali-sim/issues/691) (new features released on Dec 30, 2025).
 
 ### Alphabetical sorting in UI lists
 
