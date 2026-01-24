@@ -1738,6 +1738,130 @@ public class StackingLiveTests {
   }
 
   /**
+   * Test interaction between change and recycle policies when stacked, using sales stream.
+   * This is a variation of testChangeAndRecycle that uses "change sales" instead of
+   * "change domestic" in the policy to verify recycling share works for sales stream.
+   *
+   * <p>Setup is identical to testChangeAndRecycle except the Change Tax policy uses
+   * "change sales by -4 % current each year" instead of "change domestic".</p>
+   *
+   * <p>Expected outcomes should be the same as testChangeAndRecycle since sales = domestic + import
+   * and import is 0 in this test.</p>
+   */
+  @Test
+  public void testChangeAndRecycleSales() throws IOException {
+    String qtaPath = "../examples/stacking_change_and_recycle_sales.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run BAU scenario
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(
+        program, "BAU", progress -> {});
+    List<EngineResult> bauList = bauResults.collect(Collectors.toList());
+    EngineResult bau2 = LiveTestsUtil.getResult(
+        bauList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(bau2, "Should have BAU result for year 2");
+    final double bauDomestic = bau2.getDomestic().getValue().doubleValue();
+
+    // Run Change scenario
+    Stream<EngineResult> changeResults = KigaliSimFacade.runScenario(
+        program, "Change", progress -> {});
+    List<EngineResult> changeList = changeResults.collect(Collectors.toList());
+    EngineResult change2 = LiveTestsUtil.getResult(
+        changeList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(change2, "Should have Change result for year 2");
+    final double changeDomestic = change2.getDomestic().getValue().doubleValue();
+
+    // Run Recycle scenario
+    Stream<EngineResult> recycleResults = KigaliSimFacade.runScenario(
+        program, "Recycle", progress -> {});
+    List<EngineResult> recycleList = recycleResults.collect(Collectors.toList());
+    EngineResult recycle2 = LiveTestsUtil.getResult(
+        recycleList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(recycle2, "Should have Recycle result for year 2");
+    final double recycleDomestic = recycle2.getDomestic().getValue().doubleValue();
+
+    // Run Change Then Recycle scenario
+    Stream<EngineResult> changeThenRecycleResults = KigaliSimFacade.runScenario(
+        program, "Change Then Recycle", progress -> {});
+    List<EngineResult> changeThenRecycleList = changeThenRecycleResults.collect(Collectors.toList());
+    EngineResult changeThenRecycle2 = LiveTestsUtil.getResult(
+        changeThenRecycleList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(changeThenRecycle2, "Should have Change Then Recycle result for year 2");
+    final double changeThenRecycleDomestic = changeThenRecycle2.getDomestic().getValue().doubleValue();
+
+    // Run Recycle Then Change scenario
+    Stream<EngineResult> recycleThenChangeResults = KigaliSimFacade.runScenario(
+        program, "Recycle Then Change", progress -> {});
+    List<EngineResult> recycleThenChangeList = recycleThenChangeResults.collect(Collectors.toList());
+    EngineResult recycleThenChange2 = LiveTestsUtil.getResult(
+        recycleThenChangeList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
+    assertNotNull(recycleThenChange2, "Should have Recycle Then Change result for year 2");
+    final double recycleThenChangeDomestic = recycleThenChange2.getDomestic().getValue().doubleValue();
+
+    // Print actual values for debugging
+    System.out.println("=== Change and Recycle Stacking Test (Sales) ===");
+    System.out.println(String.format("BAU: %.2f kg", bauDomestic));
+    System.out.println(String.format("Change: %.2f kg", changeDomestic));
+    System.out.println(String.format("Recycle: %.2f kg", recycleDomestic));
+    System.out.println(String.format("Change Then Recycle: %.2f kg", changeThenRecycleDomestic));
+    System.out.println(String.format("Recycle Then Change: %.2f kg", recycleThenChangeDomestic));
+
+    // Assert: Change alone should be lower than BAU
+    assertTrue(changeDomestic < bauDomestic,
+        String.format("Change domestic (%.2f kg) should be lower than BAU (%.2f kg) in year 2",
+            changeDomestic, bauDomestic));
+
+    // Assert: Recycle alone should be lower than BAU
+    assertTrue(recycleDomestic < bauDomestic,
+        String.format("Recycle domestic (%.2f kg) should be lower than BAU (%.2f kg) in year 2",
+            recycleDomestic, bauDomestic));
+
+    // Assert: Change Then Recycle should be lower than Change alone
+    assertTrue(changeThenRecycleDomestic < changeDomestic,
+        String.format(
+            "Change Then Recycle domestic (%.2f kg) should be lower than "
+            + "Change alone (%.2f kg) in year 2",
+            changeThenRecycleDomestic, changeDomestic));
+
+    // Assert: Change Then Recycle should be lower than Recycle alone
+    assertTrue(changeThenRecycleDomestic < recycleDomestic,
+        String.format(
+            "Change Then Recycle domestic (%.2f kg) should be lower than "
+            + "Recycle alone (%.2f kg) in year 2",
+            changeThenRecycleDomestic, recycleDomestic));
+
+    // Assert: Recycle Then Change should be lower than Change alone
+    assertTrue(recycleThenChangeDomestic < changeDomestic,
+        String.format(
+            "Recycle Then Change domestic (%.2f kg) should be lower than "
+            + "Change alone (%.2f kg) in year 2",
+            recycleThenChangeDomestic, changeDomestic));
+
+    // Assert: Recycle Then Change should be lower than Recycle alone
+    assertTrue(recycleThenChangeDomestic < recycleDomestic,
+        String.format(
+            "Recycle Then Change domestic (%.2f kg) should be lower than "
+            + "Recycle alone (%.2f kg) in year 2",
+            recycleThenChangeDomestic, recycleDomestic));
+
+    // Assert: Recycle Then Change should be larger than Change Then Recycle
+    // (recycling is calculated on larger pre-change base when recycle runs first)
+    assertTrue(recycleThenChangeDomestic > changeThenRecycleDomestic,
+        String.format(
+            "Recycle Then Change (%.2f kg) should be larger than "
+            + "Change Then Recycle (%.2f kg) in year 2",
+            recycleThenChangeDomestic, changeThenRecycleDomestic));
+
+    // Assert: All scenarios should have non-negative domestic values
+    assertDomesticNonNegative(bauList, 2, "BAU");
+    assertDomesticNonNegative(changeList, 2, "Change");
+    assertDomesticNonNegative(recycleList, 2, "Recycle");
+    assertDomesticNonNegative(changeThenRecycleList, 2, "Change Then Recycle");
+    assertDomesticNonNegative(recycleThenChangeList, 2, "Recycle Then Change");
+  }
+
+  /**
    * Assert that domestic kg value is non-negative for a scenario result.
    *
    * @param resultsList The list of all results from the scenario
