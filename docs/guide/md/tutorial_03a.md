@@ -13,7 +13,9 @@ All that said, all of this can take quite a bit of clicking. So, we will see if 
 In this tutorial series, we have used [Claude](https://claude.ai/). However, in practice, most AI assistants can help with Kigali Sim using a standard called [llms.txt](https://llmstxt.org/). So, to get AI ready to go, please create a new chat session. Then, give it your Tutorial 2 file by going to the Save File button at the top of the screen and adding it to the chat as an attachment. Finally, tell it to look up information about Kigali Sim through a message like this:
 
 ```
-Hello! I would like help with the attached Kigali Sim simulation. Please read  https://kigalisim.org/llms-full.txt?v=20251226 to learn more. Please stick to only features compatible with the UI editor.
+Hello! I would like help with the attached Kigali Sim simulation. Please
+read https://kigalisim.org/llms-full.txt?v=20251226 to learn more. Please
+stick to only features compatible with the UI editor.
 ```
 
 Need a little cheat? [Download the Tutorial 2](tutorial_02.qta) file here.
@@ -26,7 +28,11 @@ Note that we are telling the AI assistant to avoid advanced features which requi
 Let's start with one new substance record. Here's a prompt:
 
 ```
-Please add R-600a to the simulation. It will be in domestic refrigeration like HFC-134a with a GWP of 3 kgCO2e / kg and initial charge of 0.07 kg / unit. Please use retirement of 5% / year and 10% recharged per year at 0.07 kg / unit. Please have 100000 units of prior equipment and 2 mt / year of domestic manufacture. Thanks!
+Please add R-600a to the simulation. It will be in domestic refrigeration
+like HFC-134a with a GWP of 3 kgCO2e / kg and initial charge of 0.07 kg /
+unit. Please use retirement of 5% / year and 10% recharged per year at
+0.07 kg / unit. Please have 100000 units of prior equipment and 2 mt /
+year of domestic manufacture. Thanks!
 ```
 
 After the AI is done, download the resulting file and click "Load File" in the UI and upload the AI output. If you are comfortable, you can also copy from the AI assistant chat into the editor tab.

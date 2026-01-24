@@ -78,7 +78,7 @@ cap import to 50% during years 2028 to 2032</code></pre>
 
         <h3>Displacement Types</h3>
 
-        <p>When using displacement, you can control how the displaced demand is calculated:</p>
+        <p>When using displacement, you can control how the displaced demand is calculated. Displacement always operates in the target stream's current units (units or kg) without changing its tracking mode:</p>
 
         <ul>
           <li><strong>displacing</strong> means equivalent displacement (default). This maintains the same quantity in the units last specified. If last value was in kg, displaces by kg. If last value was in units, displaces by units.</li>
@@ -99,6 +99,8 @@ cap sales to 100 kg displacing by units "R-600a" during years 2027 to 2030
 # Result: 100 kg ÷ 1 kg/unit = 100 units displaced to R-600a</code></pre>
 
         <p><strong>Note:</strong> When using <code>displacing by volume</code>, total substance mass is preserved but equipment counts may change. When using <code>displacing by units</code>, equipment population is preserved but substance mass may change. Use <code>displacing by units</code> when equipment tracking is critical (e.g., equipment bank management). Use <code>displacing by volume</code> when substance consumption limits are the primary concern.</p>
+
+        <p><strong>Units Tracking Behavior:</strong> When a percentage-based cap triggers (reduces the stream value), it preserves units tracking from the last specified value if that value was in equipment units. For example, if you "set domestic to 10 units" and then "cap domestic to 0%", the cap result will be in units (0 units), which allows recharge calculations to add equipment. If the cap does not trigger (current value is already below the cap), tracking mode remains unchanged. This enables unit-based policies to maintain equipment population tracking even when using percentage-based caps.</p>
       </section>
 
       <section id="change">
@@ -112,6 +114,10 @@ cap sales to 100 kg displacing by units "R-600a" during years 2027 to 2030
         <pre><code class="language-qubectalk">change sales by 6% / year during years 2025 to 2030
 change domestic by -3% / year during years 2031 to 2035
 change import by 5% / year during years 2025 to onwards</code></pre>
+
+        <p><strong>Non-Negative Clamping:</strong> Change operations prevent streams from going negative. When a change would result in a negative value (e.g., reducing a 5 kg stream by 10 kg), the stream is clamped to exactly 0. The actual amount removed (not the requested amount) is used for downstream calculations.</p>
+
+        <p><strong>Units Tracking Behavior:</strong> Change operations preserve the current tracking mode of the stream. If the stream is currently in units (equipment-based), the change will be applied in units. If the stream is in kg or mt (volume-based), the change will be applied in volume units. Change operations do not force a conversion between tracking modes.</p>
       </section>
 
       <section id="define">
@@ -175,6 +181,8 @@ floor domestic to 5 mt during years 2025 to 2035
 floor import to 100 units displacing by units "R-600a" during years 2028 to 2032</code></pre>
 
         <p>Floor supports the same displacement types as Cap. See <a href="#cap">Cap</a> for detailed explanation of displacement behavior.</p>
+
+        <p><strong>Units Tracking Behavior:</strong> Floor commands follow the same units tracking behavior as cap commands. When a percentage-based floor triggers (increases the stream value), it preserves units tracking from the last specified value if that value was in equipment units. If the floor does not trigger, tracking mode remains unchanged.</p>
       </section>
 
       <section id="get">

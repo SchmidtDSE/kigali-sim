@@ -26,7 +26,7 @@ This gives R-600a a similar import/domestic split as HFC-134a, making the displa
 Now let's create ABC's permitting system that targets HFC-134a in domestic refrigeration, where displaced demand will shift to R-600a.
 
 - Click **Add Policy**. Name it "Sales Permit". Then, select **Domestic Refrigeration** as the application and **HFC-134a** as the substance.
-- Go to the **Limit** tab within your HFC-134a policy configuration and click **Add Limit**. Then, **Cap** all sales to 85% (or equivalently **85% prior year**) during **years 2029 to 2034**. Note that percentage caps and floors are relative to the prior year's value. You can make this explicit by using `% prior year` instead of `%`.
+- Go to the **Limit** tab within your HFC-134a policy configuration and click **Add Limit**. Then, **Cap** all sales to 85% (or equivalently **85% prior year**) during **years 2029 to 2034**. Note that percentage caps and floors are relative to the prior year's value by default. You can make this explicit by using `% prior year` instead of `%`.
 - **Displacing** means that the demand lost from HFC-134a is then sent to another stream or substance. In this case, let's have it go to **R-600a** instead. Leave the displacement type as "displacing" for now—we'll discuss the other displacement options in a moment.
 - Click **Add Limit** again. Set **Cap** on sales to 0 kg displacing R-600a during **years 2035 to onwards**. This will conclude the phase-out.
 - Click **Finish** to finish the policy

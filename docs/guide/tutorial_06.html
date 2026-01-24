@@ -91,8 +91,15 @@
         </p>
 
         <p>
-          Note: here, the domestic recycling is applied prior to the sales permit. This means we tackle induced demand (more on that in a moment) followed by ensuring that the sales caps are still respected. In many cases, the ordering does not matter but you'll notice this in a future tutorial. That said, when using the UI-based editor, they are applied in alphabetical order. When using the code-based editor introduced in Tutorial 7, the ordering can be manipulated manually.
+          Note: The domestic recycling is applied prior to the sales permit (should appear in the checkbox list of policies first). If not, please use the specify policy order link.
         </p>
+
+        <details>
+          <summary>More about policy order</summary>
+          <p>
+            Sometimes the order in which policies apply can matter. For example, consider a policy which reduces consumption by 5% and a separate policy that imposes a cap. Should the reduction count towards the cap or be applied after the cap has taken place? It depends on your policy assumptions. If the cap is a permit and the change is an educational policy, one may wish to have the percent change applied prior to cap. This is why having that policy further up in the list is important.
+          </p>
+        </details>
       </section>
 
       <section id="results">
@@ -127,9 +134,12 @@
           For comparison, try setting the induced demand to <strong>0%</strong> instead. With 0% induced demand, every kg of recycled substance means one less kg of virgin substance produced, a direct 1:1 offset. First, check the <strong>Bank</strong> view with million units of equipment selected. Notice that BAU and recycling scenarios now have the same amount of equipment, since recycling no longer drives additional demand. Next, switch to <strong>Consumption</strong> and observe that virgin domestic production is now lower in the recycling scenario. Finally, return to <strong>Emissions</strong> to see that they remain lower with recycling in either case, though the mechanism differs between 0% and 100% induced demand. For the purposes of the later tutorials, let's leave induced demand at 100%, but remember that you can try out different values along the way.
         </p>
 
-        <p>
-          Note: <strong>Bank</strong> refers to all of the equipment and substance (not yet emitted to the atmosphere) in a country. Some call this reservoir. This can be expressed in terms of number of units of equipment, substance volumes, and tCO2e. Kigali Sim uses Bank to refer to the full population of equipment and substance in the country at any given time. This is also where metrics derived from operating characteristics (like energy consumption) are reported.
-        </p>
+        <details>
+          <summary>More about terminology / bank</summary>
+          <p>
+            <strong>Bank</strong> refers to all of the equipment and substance (not yet emitted to the atmosphere) in a country. Some call this reservoir. This can be expressed in terms of number of units of equipment, substance volumes, and tCO2e. Kigali Sim uses Bank to refer to the full population of equipment and substance in the country at any given time. This is also where metrics derived from operating characteristics (like energy consumption) are reported.
+          </p>
+        </details>
 
         <p id="tutorial-gif-6-4" class="tutorial-gif-holder">
           <video
@@ -156,6 +166,7 @@
         <p>
           <strong>Download the completed tutorial</strong> result at <a href="tutorial_06.qta" download>tutorial_06.qta</a> which contains the complete model with combined permitting and recycling policies. It differs from the <a href="tutorial_05.qta" download>prior tutorial result</a> in that it adds recycling, the results of which are most apparent when looking at emissions.
         </p>
+
       </section>
 
       <section id="next-steps">

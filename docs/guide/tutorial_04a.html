@@ -61,7 +61,9 @@
           <strong>If you are new to the AI</strong> or just want to start fresh, create a new chat session and then give it your Tutorial 3 file by going to the Save File button at the top of the screen before adding it to the chat as an attachment. Finally, tell it to look up information about Kigali Sim through a message like this:
         </p>
 
-        <pre><code>Hello! I would like help with the attached Kigali Sim simulation. Please read  https://kigalisim.org/llms-full.txt?v=20251226 to learn more. Please stick to only features compatible with the UI editor.</code></pre>
+        <pre><code>Hello! I would like help with the attached Kigali Sim simulation. Please
+read https://kigalisim.org/llms-full.txt?v=20251226 to learn more. Please
+stick to only features compatible with the UI editor.</code></pre>
 
         <p>
           Need a little cheat? <a href="tutorial_03.qta" download>Download the Tutorial 3</a> file here.
@@ -87,7 +89,10 @@
           Let's say that ABC imports some but not all of their HFC-134a. Therefore, for <strong>Domestic Refrigeration</strong>, modify your <strong>HFC-134a</strong> consumption record with a prompt like this:
         </p>
 
-        <pre><code>Please modify HFC-134a to enable imports in addition to the domestic manufacture already present. For charge, let's use 0.2 kg / unit for import. Then, let's reduce domestic to 13 mt / year for this substance in 2025. However, also add 11 mt / year in year 2025. Thanks!</code></pre>
+        <pre><code>Please modify HFC-134a to enable imports in addition to the domestic
+manufacture already present. For charge, let's use 0.2 kg / unit for
+import. Then, let's reduce domestic to 13 mt / year for this substance
+in 2025. However, also add 11 mt / year in year 2025. Thanks!</code></pre>
 
         <p>
           When the AI is done, check its work by downloading the file it creates and using the Load File button in Kigali Sim. You should see changes when you click "edit" next to HFC-134a (domestic refrigeration).
@@ -101,15 +106,19 @@
           In addition to trade, let's also add in economic growth. For example, these projections might come from industry surveys or from outside modeling efforts. Let's continue with HFC-134a:
         </p>
 
-        <pre><code>Great! Let's continue with HFC-134a. Next, please expect growth +6% of current for all sales (domestic manufacture and import) from 2025 to 2030. Then, have this decrease to +4% of current for all sales from 2031 to 2035.</code></pre>
+        <pre><code>Great! Let's continue with HFC-134a. Next, please expect growth +6% of
+current for all sales (domestic manufacture and import) from 2025 to
+2030. Then, have this decrease to +4% of current for all sales from
+2031 to 2035.</code></pre>
 
         <p>
-          Note: You can use <code>% current</code> instead of <code>%</code> for growth rates to make it explicit that the percentage applies to the current year's value. This distinction doesn't matter in this simulation but we say % of current year so that the AI knows for sure we mean % of current year's value though Claude would just use the default % if we didn't specify. This could come up in simulations with multiple change directives due to complex economic modeling.
+          Be sure to open the resulting simulation again and see how the AI's edits translate to changes in the configuration seen in the editor. You'll want to open up the "change" tab after clicking "edit" next to HFC-134a again.
         </p>
 
-        <p>
-          Regardless, be sure to open the resulting simulation again and see how the AI's edits translate to changes in the configuration seen in the editor. You'll want to open up the "change" tab after clicking "edit" next to HFC-134a again.
-        </p>
+        <details>
+          <summary>More about percentages</summary>
+          <p>Note: You can use <code>% current</code> instead of <code>%</code> for growth rates to make it explicit that the percentage applies to the current year's value. The system supports three percentage formats: <code>%</code> (equivalent to <code>% current</code>) applies the percentage to the current year's value, <code>% current</code> explicitly applies to the current year's value, and <code>% prior year</code> applies the percentage to the previous year's value. This flexibility allows you to match your data source's reference year convention. This could come up in simulations with multiple change directives due to complex economic modeling.</p>
+        </details>
       </section>
 
       <section id="expanding-the-growth">

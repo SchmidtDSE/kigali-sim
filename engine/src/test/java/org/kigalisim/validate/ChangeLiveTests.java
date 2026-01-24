@@ -799,4 +799,44 @@ public class ChangeLiveTests {
     assertTrue(kgDifference > 40.0 && kgDifference < 60.0,
         "R-600a should receive ~50 kg from equivalent displacement, got: " + kgDifference);
   }
+
+  /**
+   * Test that change operations prevent negative stream values.
+   * When a change would result in a negative value, the stream should be clamped to zero.
+   * This test documents the bug and should initially FAIL.
+   */
+  @Test
+  public void testChangeNegativeValue() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/change_negative_test.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run the scenario
+    String scenarioName = "Test Negative Change";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // Year 1: Should have 5 kg (initial set)
+    EngineResult year1Result = LiveTestsUtil.getResult(resultsList.stream(), 1, "Test Application", "Test Substance");
+    assertNotNull(year1Result, "Should have result for year 1");
+    assertEquals(5.0, year1Result.getDomestic().getValue().doubleValue(), 0.0001,
+        "Year 1 domestic should be 5 kg");
+
+    // Year 2: Should be clamped to 0 kg (not -5 kg)
+    EngineResult year2Result = LiveTestsUtil.getResult(resultsList.stream(), 2, "Test Application", "Test Substance");
+    assertNotNull(year2Result, "Should have result for year 2");
+    double year2Value = year2Result.getDomestic().getValue().doubleValue();
+    assertTrue(year2Value >= 0.0,
+        "Year 2 domestic should not be negative (bug: currently allows negative values), got: " + year2Value);
+    assertEquals(0.0, year2Value, 0.0001,
+        "Year 2 domestic should be clamped to 0 kg (5 kg - 10 kg change should clamp to 0)");
+
+    // Year 3: Should remain at 0 kg
+    EngineResult year3Result = LiveTestsUtil.getResult(resultsList.stream(), 3, "Test Application", "Test Substance");
+    assertNotNull(year3Result, "Should have result for year 3");
+    assertEquals(0.0, year3Result.getDomestic().getValue().doubleValue(), 0.0001,
+        "Year 3 domestic should remain at 0 kg");
+  }
 }

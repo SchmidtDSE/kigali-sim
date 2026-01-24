@@ -1,0 +1,100 @@
+start default
+
+  define application "Domestic Refrigeration"
+
+    uses substance "HFC-134a"
+      enable domestic
+      initial charge with 1 kg / unit for domestic
+      initial charge with 1 kg / unit for import
+      initial charge with 0 kg / unit for export
+      equals 1430 kgCO2e / kg
+      equals 1 kwh / unit
+      set sales to 1 mt during year 2025
+      set priorEquipment to 10000 units during year 2025
+      change sales by 5 % / year during years 2026 to onwards
+      retire 5 % / year
+      recharge 5 % with 1 kg / unit
+    end substance
+
+  end application
+
+end default
+
+
+start policy "Big Change"
+
+  modify application "Domestic Refrigeration"
+
+    modify substance "HFC-134a"
+      change sales by +7 % during years 2027 to onwards
+    end substance
+
+  end application
+
+end policy
+
+
+
+start policy "Floor Policy"
+
+  modify application "Domestic Refrigeration"
+
+    modify substance "HFC-134a"
+      floor sales to 1.5 mt during years 2029 to 2030
+      floor sales to 2.0 mt during years 2031 to 2032
+      floor sales to 2.5 mt during years 2033 to 2034
+      floor sales to 3.0 mt during years 2035 to onwards
+    end substance
+
+  end application
+
+end policy
+
+
+
+start policy "Small Change"
+
+  modify application "Domestic Refrigeration"
+
+    modify substance "HFC-134a"
+      change sales by +3 % current during years 2027 to onwards
+    end substance
+
+  end application
+
+end policy
+
+
+start simulations
+
+  simulate "BAU"
+  from years 2025 to 2035
+
+
+  simulate "Big Change"
+    using "Big Change"
+  from years 2025 to 2035
+
+
+  simulate "Small Change"
+    using "Small Change"
+  from years 2025 to 2035
+
+
+  simulate "Floor Policy"
+    using "Floor Policy"
+  from years 2025 to 2035
+
+
+  simulate "After"
+    using "Floor Policy"
+    then "Big Change"
+  from years 2025 to 2035
+
+
+  simulate "Before"
+    using "Big Change"
+    then "Floor Policy"
+  from years 2025 to 2035
+
+end simulations
