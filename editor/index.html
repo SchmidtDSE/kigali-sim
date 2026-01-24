@@ -1112,7 +1112,10 @@
                           </div>
                         </div>
                         <div class="form-group">
-                          <div><label for="edit-simulation-policies">Policies:</label></div>
+                          <div>
+                            <label for="edit-simulation-policies">Policies:</label>
+                            <span class="enable-policy-order-holder">(<a href="#" class="enable-policy-order-link" data-tippy-content="Sometimes, when multiple policies are active, the order in which they are applied matters (like a percent decrease before or after a cap). By default, policies are applied alphabetically but this can be modified.">specify policy order</a>)</span>
+                          </div>
                           <div class="dialog-list policy-sim-list small"></div>
                         </div>
                         <div class="dialog-buttons bold-buttons">
@@ -1995,6 +1998,10 @@
     <script type="text/javascript" src="/third_party/tippy-bundle.umd.min.js"></script>
     <script type="text/javascript" src="/third_party/papaparse.min.js"></script>
 
+    <script type="text/template" id="sim-order-controls-template">
+      <span class="move-policy-control"> - <a href="#" class="move-policy-up-link" data-policy-name="{POLICY_NAME}">move before</a><span class="move-policy-sep"> / </span><a href="#" class="move-policy-down-link" data-policy-name="{POLICY_NAME}">move after</a></span>
+    </script>
+
     <script type="text/javascript" src="/intermediate/static/qubectalk.js?v=EPOCH"></script>
 
     <script type="importmap">
@@ -2017,7 +2024,11 @@
           "results": "./js/results.js?v=EPOCH",
           "storage_keeper": "./js/storage_keeper.js?v=EPOCH",
           "ui_editor": "./js/ui_editor.js?v=EPOCH",
+          "ui_editor_action": "./js/ui_editor_action.js?v=EPOCH",
+          "ui_editor_app": "./js/ui_editor_app.js?v=EPOCH",
           "ui_editor_const": "./js/ui_editor_const.js?v=EPOCH",
+          "ui_editor_sim": "./js/ui_editor_sim.js?v=EPOCH",
+          "ui_editor_strategy": "./js/ui_editor_strategy.js?v=EPOCH",
           "ui_editor_util": "./js/ui_editor_util.js?v=EPOCH",
           "ui_translator": "./js/ui_translator.js?v=EPOCH",
           "ui_translator_commands": "./js/ui_translator_commands.js?v=EPOCH",

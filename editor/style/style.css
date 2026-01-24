@@ -560,6 +560,21 @@ select option[disabled] {
   height: 150px;
 }
 
+.enable-policy-order-holder {
+  font-size: 0.9em;
+  margin-left: 0.5em;
+}
+
+.move-policy-control {
+  margin-left: 0.5em;
+  font-size: 0.9em;
+  color: #666;
+}
+
+.move-policy-sep {
+  color: #999;
+}
+
 .dialog-sub-buttons {
   text-align: center;
 }
