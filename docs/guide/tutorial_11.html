@@ -19,8 +19,8 @@
         <summary>Contents</summary>
         <ul>
           <li><a href="#motivation">Motivation</a></li>
-          <li><a href="#prior">Prior tutorials</a></li>
           <li><a href="#assistants">Assistants</a></li>
+          <li><a href="#prior">Prior tutorials</a></li>
           <li><a href="#giving-ai-information">Giving the AI information</a></li>
           <li><a href="#building-basic-simulation">Building the basic simulation</a></li>
           <li><a href="#adding-recycling-program">Adding a recycling program</a></li>
@@ -70,8 +70,22 @@
         </p>
 
         <p>
-          <strong>Note</strong>: If you do not yet have an assistant and are looking for one which performs well with Kigali Sim specifically, <a href="https://claude.ai/">Claude</a> tends to perform the best in our testing.
+          If you do not yet have an assistant and are looking for one which performs well with Kigali Sim specifically, <a href="https://claude.ai/">Claude</a> tends to perform the best in our testing.
         </p>
+
+        <section>
+          <h3>ChatGPT</h3>
+          
+          <p>
+            ChatGPT tends to perform well if given an example. Consider providing a tutorial qta file in your initial prompt like so:
+          </p>
+
+          <pre class="prompt-code"><code>Hello! Please review https://preview.kigalisim.org/llms-full.txt?v=20250928 and an example simulation at https://kigalisim.org/guide/tutorial_02.qta. Please follow the structure of that Tutorial 2 with similar keywords and layout in order to write correct QubecTalk code though you may use the other keywords and language features mentioned in llms-full.txt. Please review and then we will build a simulation together.</code></pre>
+
+          <p>
+            Depending on where you use ChatGPT, it may just give you back code instead of a file. This can be copied and pasted into the <strong>Editor</strong> tab. If you instructed ChatGPT to only use UI-editor compatible code, you can update the code and go back to the <strong>Designer</strong> tab to continue with UI-based authoring.
+          </p>
+        </section>
 
         <section>
           <h3>Claude</h3>
@@ -93,6 +107,10 @@
           <p>
             Depending on where you use Copilot, it may just give you back code instead of a file. This can be copied and pasted into the <strong>Editor</strong> tab. If you instructed Copilot to only use UI-editor compatible code, you can update the code and go back to the <strong>Designer</strong> tab to continue with UI-based authoring.
           </p>
+
+          <p>
+            <strong>Caution</strong>: As of January 2026, Copilot has performed poorly in a number of tasks using Kigali Sim in our testing. If you encounter issues, you may consider switching to a different assistant.
+          </p>
         </section>
 
         <section>
@@ -109,7 +127,7 @@
           <h3>Gemini</h3>
           
           <p>
-            Available at <a href="https://gemini.google.com/">gemini.google.com</a>, Gemini may have issues directly accessing the llms-full.txt file depending on your organization's settings. It also sometimes tries to add links in brackets which are not compatible with Kigali Sim. Therefore, you may with to <a href="/llms-full.txt" download>download llms-full.txt</a> and add it as an attachment in your inital prompt. To take care of both of these potential issues, here is an example initial message:
+            Available at <a href="https://gemini.google.com/">gemini.google.com</a>, Gemini may have issues directly accessing the llms-full.txt file depending on your organization's settings. It also sometimes tries to add links in brackets which are not compatible with Kigali Sim. Therefore, you may wish to <a href="/llms-full.txt" download>download llms-full.txt</a> and add it as an attachment in your initial prompt. To take care of both of these potential issues, here is an example initial message:
           </p>
           
           <pre class="prompt-code"><code>Hello! Please review the attached llms-full.txt for information about Kigali Sim. Then, we will build a simulation together! Also, please do not add citations in brackets in the Kigali Sim simulation itself. Instead, please mention them in your text response outside of the qta file.</code></pre>
@@ -122,7 +140,7 @@
         <section>
           <h3>Mistral</h3>
           <p>
-            One of the best performing models in our testing, typically no additional steps are needed for Mistral to perform well. See <a href="https://chat.mistral.ai/">chat.mistral.ai</a>. That said, if using Le Chat without login, you may need to <a href="/llms-full.txt" download>download llms-full.txt</a> and add it as an attachment in your inital prompt. Also, depending on where you use Mistral, it may just give you back code instead of a file. This can be copied and pasted into the <strong>Editor</strong> tab. If you instructed Mistral to only use UI-editor compatible code, you can update the code and go back to the <strong>Designer</strong> tab to continue with UI-based authoring.
+            One of the best performing models in our testing, typically no additional steps are needed for Mistral to perform well. See <a href="https://chat.mistral.ai/">chat.mistral.ai</a>. That said, if using Le Chat without login, you may need to <a href="/llms-full.txt" download>download llms-full.txt</a> and add it as an attachment in your initial prompt. Also, depending on where you use Mistral, it may just give you back code instead of a file. This can be copied and pasted into the <strong>Editor</strong> tab. If you instructed Mistral to only use UI-editor compatible code, you can update the code and go back to the <strong>Designer</strong> tab to continue with UI-based authoring.
           </p>
         </section>
 
