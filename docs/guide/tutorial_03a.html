@@ -32,7 +32,7 @@
         </ul>
       </details>
 
-      <section id="motivation">
+      <section class="major" id="motivation">
         <h2>Motivation</h2>
 
         <p>
@@ -44,49 +44,45 @@
         </p>
       </section>
 
-      <section id="preparing-for-ai">
+      <section class="major" id="preparing-for-ai">
         <h2>Preparing for AI</h2>
 
         <p>
-          In this tutorial series, we have used <a href="https://claude.ai/">Claude</a>. However, in practice, most AI assistants can help with Kigali Sim using a standard called <a href="https://llmstxt.org/">llms.txt</a>. So, to get AI ready to go, please create a new chat session. Then, give it your Tutorial 2 file by going to the Save File button at the top of the screen and adding it to the chat as an attachment. Finally, tell it to look up information about Kigali Sim through a message like this:
+          In this tutorial series, we have used <a href="https://claude.ai/">Claude</a>. However, in practice, most AI assistants can help with Kigali Sim using a standard called <a href="https://llmstxt.org/">llms.txt</a>. So, to get AI ready to go, please create a new chat session. Then, tell it to look up information about Kigali Sim through a message like this:
         </p>
 
-        <pre><code>Hello! I would like help with the attached Kigali Sim simulation. Please
-read https://kigalisim.org/llms-full.txt?v=20251226 to learn more. Please
-stick to only features compatible with the UI editor.</code></pre>
+        <pre class="prompt-code"><code>Hello! I would like help with building a Kigali Sim simulation. Please read https://kigalisim.org/llms-full.txt?v=20251226 to learn more. Please stick to only features compatible with the UI editor.</code></pre>
 
         <p>
-          Need a little cheat? <a href="tutorial_02.qta" download>Download the Tutorial 2</a> file here.
-        </p>
-
-        <p>
-          For more capable assistants like Claude, this is enough. However, some assistants cannot access the full internet or won't know how to work with this kind of file out of the box. If your assistant is having issues, instead, attach the <a href="https://kigalisim.org/llms-full.txt?v=20251226">Kigali Sim llms-full.txt</a> file as an attachment!
+          Need a little cheat? <a href="tutorial_02.qta" download>Download the Tutorial 2</a> file here. Also, for more capable assistants like Claude, this is enough. However, some assistants cannot access the full internet or won't know how to work with this kind of file out of the box. If your assistant is having issues, instead, attach the <a href="https://kigalisim.org/llms-full.txt?v=20251226" download>Kigali Sim llms-full.txt</a> file as an attachment!
         </p>
 
         <p>
-          Note that we are telling the AI assistant to avoid advanced features which require programming. More details about this are available in <a href="https://kigalisim.org/guide/tutorial_11.html">Tutorial 11</a>.
+          When your assistant is ready, next give it your Tutorial 2 file. This can be done by going to the Save File button at the top of the Kigali Sim application and adding it to the chat as an attachment with a message like this:
+        </p>
+
+        <pre class="prompt-code"><code>Great! The attached is the simulation I started working on.</code></pre>
+
+        <p>
+          <strong>Note</strong>: More details and troubleshooting steps specific to individual AI assistants are available in <a href="/guide/tutorial_11.html">Tutorial 11</a>.
         </p>
       </section>
 
-      <section id="add-a-new-substance">
+      <section class="major" id="add-a-new-substance">
         <h2>Add a new substance</h2>
 
         <p>
           Let's start with one new substance record. Here's a prompt:
         </p>
 
-        <pre><code>Please add R-600a to the simulation. It will be in domestic refrigeration
-like HFC-134a with a GWP of 3 kgCO2e / kg and initial charge of 0.07 kg /
-unit. Please use retirement of 5% / year and 10% recharged per year at
-0.07 kg / unit. Please have 100000 units of prior equipment and 2 mt /
-year of domestic manufacture. Thanks!</code></pre>
+        <pre class="prompt-code"><code>Please add R-600a to the simulation. It will be in domestic refrigeration like HFC-134a with a GWP of 3 kgCO2e / kg and initial charge of 0.07 kg / unit. Please use retirement of 5% / year and 10% recharged per year at 0.07 kg / unit. Please have 100000 units of prior equipment and 2 mt / year of domestic manufacture. Thanks!</code></pre>
 
         <p>
           After the AI is done, download the resulting file and click "Load File" in the UI and upload the AI output. If you are comfortable, you can also copy from the AI assistant chat into the editor tab.
         </p>
       </section>
 
-      <section id="check-the-work">
+      <section class="major" id="check-the-work">
         <h2>Check the work</h2>
 
         <p>
@@ -98,14 +94,14 @@ year of domestic manufacture. Thanks!</code></pre>
         </p>
       </section>
 
-      <section id="adding-multiple-substances">
+      <section class="major" id="adding-multiple-substances">
         <h2>Adding multiple substances</h2>
 
         <p>
           This is a great start but let's try to be more brief in our next message:
         </p>
 
-        <pre><code>Great! Let's add two more substances...
+        <pre class="prompt-code"><code>Great! Let's add two more substances...
 
 HFC-32:
 
@@ -132,7 +128,7 @@ R-410A:
         </p>
       </section>
 
-      <section id="interpreting-multi-application-results">
+      <section class="major" id="interpreting-multi-application-results">
         <h2>Interpreting Multi-Application Results</h2>
 
         <p>As you work, the simulation will update automatically.</p>
@@ -172,7 +168,7 @@ R-410A:
         </p>
       </section>
 
-      <section id="conclusion">
+      <section class="major" id="conclusion">
         <h2>Conclusion</h2>
 
         <p>You've successfully expanded ABC Country's model to include multiple applications and substances! To get there, AI helped speed up the process quite a bit. All that said, we considered:</p>
@@ -191,7 +187,7 @@ R-410A:
         </p>
       </section>
 
-      <section id="next-steps">
+      <section class="major" id="next-steps">
         <h2>Next Steps</h2>
 
         <p>
