@@ -38,7 +38,7 @@
         </p>
 
         <section>
-          <h3>For UI-based authoring</h3>
+          <h3 class="compact">For UI-based authoring</h3>
 
           <div>
             Sometimes there is just quite a bit of typing and clicking involved to define all of the substances and policies. Of course, AI assistants can help take the natural language we use to describe simulations and convert them into structured Kigali Sim simulations that you can then read and refine using UI-based authoring. However, AI assistants can also help read data files and convert them to Kigali Sim's preferred format or walk through the defining of complex policy scenarios, helping describe those ideas in a way that Kigali Sim can understand. Just be sure that, when working with UI-based authoring, you let your assistant know like we saw in <a href="/guide/tutorial_03a.html">Tutorial 3a</a>.
@@ -46,7 +46,7 @@
         </section>
 
         <section>
-          <h3>For programming in code</h3>
+          <h3 class="compact">For programming in code</h3>
           
           <div>
             If you recall <a href="/guide/tutorial_07.html">Tutorial 7</a>, we revealed that you are actually writing computer code when you use the UI-based authoring <strong>Designer</strong> tab. Kigali Sim uses a programming language built just for Montreal Protocol models called QubecTalk. In addition to allowing you to make more sophisticated simulations, this programming option also allows you to use AI (LLM) assistants. This includes many different options like <a href="https://chatgpt.com/" target="_blank">ChatGPT</a> or, for example, we use <a href="https://claude.ai/" target="_blank">Claude</a>.
@@ -54,7 +54,7 @@
         </section>
 
         <section>
-          <h3>How it works</h3>
+          <h3 class="compact">How it works</h3>
           
           <div>
             We use a protocol called <a href="https://llmstxt.org/" target="_blank">llms.txt</a> which allows you to use your own assistant. This frees you and your organization to choose the right option given different needs, terms of service, and privacy options. After you have selected the AI that you want to use, you can use natural language to work on simulations. This tutorial walks through how to build up a simulation using an AI assistant.
@@ -74,7 +74,7 @@
         </p>
 
         <section>
-          <h3>ChatGPT</h3>
+          <h3 class="compact">ChatGPT</h3>
           
           <div>
             ChatGPT tends to perform well if given an example. Consider providing a tutorial qta file in your initial prompt like so:
@@ -88,7 +88,7 @@
         </section>
 
         <section>
-          <h3>Claude</h3>
+          <h3 class="compact">Claude</h3>
           
           <div>
             The best performing model in our testing, typically no additional steps are needed for Claude to perform well. See <a href="https://claude.ai/">claude.ai</a>.
@@ -96,7 +96,7 @@
         </section>
 
         <section>
-          <h3>Copilot</h3>
+          <h3 class="compact">Copilot</h3>
           
           <div>
             Different versions of copilot might perform differently. See <a href="https://copilot.microsoft.com/">copilot.microsoft.com</a>. In general, Copilot tends to work best when working from an example so you may want to start with a prompt like this:
@@ -114,7 +114,7 @@
         </section>
 
         <section>
-          <h3>DeepSeek</h3>
+          <h3 class="compact">DeepSeek</h3>
           
           <div>
             Visit <a href="https://chat.deepseek.com/">chat.deepseek.com</a>. DeepSeek tends to work fairly well but may require a reminder to add the simulations stanza like so:
@@ -124,7 +124,7 @@
         </section>
 
         <section>
-          <h3>Gemini</h3>
+          <h3 class="compact">Gemini</h3>
           
           <div>
             Available at <a href="https://gemini.google.com/">gemini.google.com</a>, Gemini may have issues directly accessing the llms-full.txt file depending on your organization's settings. It also sometimes tries to add links in brackets which are not compatible with Kigali Sim. Therefore, you may wish to <a href="/llms-full.txt" download>download llms-full.txt</a> and add it as an attachment in your initial prompt. To take care of both of these potential issues, here is an example initial message:
@@ -138,7 +138,7 @@
         </section>
 
         <section>
-          <h3>Mistral</h3>
+          <h3 class="compact">Mistral</h3>
           
           <div>
             One of the best performing models in our testing, typically no additional steps are needed for Mistral to perform well. See <a href="https://chat.mistral.ai/">chat.mistral.ai</a>. That said, if using Le Chat without login, you may need to <a href="/llms-full.txt" download>download llms-full.txt</a> and add it as an attachment in your initial prompt. Also, depending on where you use Mistral, it may just give you back code instead of a file. This can be copied and pasted into the <strong>Editor</strong> tab. If you instructed Mistral to only use UI-editor compatible code, you can update the code and go back to the <strong>Designer</strong> tab to continue with UI-based authoring.
