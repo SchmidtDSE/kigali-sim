@@ -1,6 +1,6 @@
 <html lang="en-GB">
   <head>
-    <title>Tutorial 11: AI Assistants</title>
+    <title>Tutorial 11: AI Coding Assistants</title>
     <link href="/guide/guide.css?v=EPOCH" rel="stylesheet" type="text/css" />
     <link href="/third_party/prism-tomorrow.min.css" rel="stylesheet" type="text/css" />
   </head>
@@ -11,14 +11,16 @@
       <a href="/">Kigali Sim</a>.
     </header>
     <main id="main">
-      <h1>Tutorial 11: AI Assistants</h1>
+      <h1>Tutorial 11: AI Coding Assistants</h1>
 
-      If you have access to an AI assistant, you can use them to help build or modify simulations.
+      If you have access to an AI assistant, you can use them to help build or modify simulations through code.
 
       <details>
         <summary>Contents</summary>
         <ul>
           <li><a href="#motivation">Motivation</a></li>
+          <li><a href="#assistants">Assistants</a></li>
+          <li><a href="#prior">Prior tutorials</a></li>
           <li><a href="#giving-ai-information">Giving the AI information</a></li>
           <li><a href="#building-basic-simulation">Building the basic simulation</a></li>
           <li><a href="#adding-recycling-program">Adding a recycling program</a></li>
@@ -28,33 +30,158 @@
         </ul>
       </details>
 
-      <section id="motivation">
+      <section class="major" id="motivation">
         <h2>Motivation</h2>
 
         <p>
-          If you recall <a href="/guide/tutorial_07.html">Tutorial 7</a>, we revealed that you are actually writing computer code when you use the UI-based editor. Kigali Sim uses a programming language built just for Montreal Protocol models called QubecTalk. In addition to allowing you to make more sophisticated simulations, this programming option also allows you to use AI (LLM) assistants. This includes many different options like <a href="https://chatgpt.com/" target="_blank">ChatGPT</a> or, for example, we use <a href="https://claude.ai/" target="_blank">Claude</a>.
+          AI assistants can express your ideas in Kigali Sim and analyze outputs. This can benefit both those using Kigali Sim through UI-based authoring and for those taking advantage of QubecTalk code. 
+        </p>
+
+        <section>
+          <h3 class="compact">For UI-based authoring</h3>
+
+          <div>
+            Sometimes there is just quite a bit of typing and clicking involved to define all of the substances and policies. Of course, AI assistants can help take the natural language we use to describe simulations and convert them into structured Kigali Sim simulations that you can then read and refine using UI-based authoring. However, AI assistants can also help read data files and convert them to Kigali Sim's preferred format or walk through the defining of complex policy scenarios, helping describe those ideas in a way that Kigali Sim can understand. Just be sure that, when working with UI-based authoring, you let your assistant know like we saw in <a href="/guide/tutorial_03a.html">Tutorial 3a</a>.
+          </div>
+        </section>
+
+        <section>
+          <h3 class="compact">For programming in code</h3>
+          
+          <div>
+            If you recall <a href="/guide/tutorial_07.html">Tutorial 7</a>, we revealed that you are actually writing computer code when you use the UI-based authoring <strong>Designer</strong> tab. Kigali Sim uses a programming language built just for Montreal Protocol models called QubecTalk. In addition to allowing you to make more sophisticated simulations, this programming option also allows you to use AI (LLM) assistants. This includes many different options like <a href="https://chatgpt.com/" target="_blank">ChatGPT</a> or, for example, we use <a href="https://claude.ai/" target="_blank">Claude</a>.
+          </div>
+        </section>
+
+        <section>
+          <h3 class="compact">How it works</h3>
+          
+          <div>
+            We use a protocol called <a href="https://llmstxt.org/" target="_blank">llms.txt</a> which allows you to use your own assistant. This frees you and your organization to choose the right option given different needs, terms of service, and privacy options. After you have selected the AI that you want to use, you can use natural language to work on simulations. This tutorial walks through how to build up a simulation using an AI assistant.
+          </div>
+        </section>
+      </section>
+
+      <section class="major" id="assistants">
+        <h2>Assistants</h2>
+
+        <p>
+          We assume that you have access to an AI assistant and we have tested this tutorial with multiple products. If you do not have access to an LLM, we observe that <a href="https://chatgpt.com/" target="_blank">ChatGPT</a> has a free offering. However, we caution that you should be sure to read the privacy policy and terms of service for any AI you choose as, unlike Kigali Sim, these options may involve sending your simulations and data to servers controlled by other organizations. All that in mind, here are some AI assistants with which we have tested along with troubleshooting.
         </p>
 
         <p>
-          More precisely, we use a protocol called <a href="https://llmstxt.org/" target="_blank">llms.txt</a> which allows you to use your own assistant. This frees you and your organization to choose the right option given different needs, terms of service, and privacy options. After you have selected the AI that you want to use, you can use natural language to work on simulations. This tutorial walks through how to build up a simulation using an AI assistant.
+          If you do not yet have an assistant and are looking for one which performs well with Kigali Sim specifically, <a href="https://claude.ai/">Claude</a> tends to perform the best in our testing.
         </p>
 
+        <details>
+          <summary>ChatGPT</summary>
+          <div>
+            <p>
+              <a href="https://chatgpt.com/">ChatGPT</a> tends to perform well if given an example. Consider providing a tutorial qta file in your initial prompt like so:
+            </p>
+
+            <pre class="prompt-code"><code>Hello! Please review https://preview.kigalisim.org/llms-full.txt?v=20250928 and an example simulation at https://kigalisim.org/guide/tutorial_02.qta. Please follow the structure of that Tutorial 2 with similar keywords and layout in order to write correct QubecTalk code though you may use the other keywords and language features mentioned in llms-full.txt. Please review and then we will build a simulation together.</code></pre>
+
+            <p>
+              Depending on where you use ChatGPT, it may just give you back code instead of a file. This can be copied and pasted into the <strong>Editor</strong> tab. If you instructed ChatGPT to only use UI-editor compatible code, you can update the code and go back to the <strong>Designer</strong> tab to continue with UI-based authoring.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>Claude</summary>
+          <div>
+            <p>
+              The best performing model in our testing, typically no additional steps are needed for Claude to perform well. See <a href="https://claude.ai/">claude.ai</a>.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>Copilot</summary>
+          <div>
+            <p>
+              Different versions of copilot might perform differently. See <a href="https://copilot.microsoft.com/">copilot.microsoft.com</a>. In general, Copilot tends to work best when working from an example so you may want to start with a prompt like this:
+            </p>
+
+            <pre class="prompt-code"><code>Hello! Please review https://preview.kigalisim.org/llms-full.txt?v=20250928 and an example simulation at https://kigalisim.org/guide/tutorial_02.qta. Please follow the structure of that Tutorial 2 with similar keywords and layout in order to write correct QubecTalk code though you may use the other keywords and language features mentioned in llms-full.txt. Please review and then we will build a simulation together.</code></pre>
+
+            <p>
+              Depending on where you use Copilot, it may just give you back code instead of a file. This can be copied and pasted into the <strong>Editor</strong> tab. If you instructed Copilot to only use UI-editor compatible code, you can update the code and go back to the <strong>Designer</strong> tab to continue with UI-based authoring.
+            </p>
+
+            <p>
+              <strong>Caution</strong>: As of January 2026, Copilot has performed poorly in a number of tasks using Kigali Sim in our testing. If you encounter issues, you may consider switching to a different assistant.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>DeepSeek</summary>
+          <div>
+            <p>
+              Visit <a href="https://chat.deepseek.com/">chat.deepseek.com</a>. DeepSeek tends to work fairly well but may require a reminder to add the simulations stanza like so:
+            </p>
+
+            <pre class="prompt-code"><code>Hello! Please review https://preview.kigalisim.org/llms-full.txt?v=20260127. Then, we will build a simulation together. Please be sure to include the simulation stanza like seen in https://kigalisim.org/guide/tutorial_02.qta.</code></pre>
+          </div>
+        </details>
+
+        <details>
+          <summary>Gemini</summary>
+          <div>
+            <p>
+              Available at <a href="https://gemini.google.com/">gemini.google.com</a>, Gemini may have issues directly accessing the llms-full.txt file depending on your organization's settings. It also sometimes tries to add links in brackets which are not compatible with Kigali Sim. Therefore, you may wish to <a href="/llms-full.txt" download>download llms-full.txt</a> and add it as an attachment in your initial prompt. To take care of both of these potential issues, here is an example initial message:
+            </p>
+
+            <pre class="prompt-code"><code>Hello! Please review the attached llms-full.txt for information about Kigali Sim. Then, we will build a simulation together! Also, please do not add citations in brackets in the Kigali Sim simulation itself. Instead, please mention them in your text response outside of the qta file.</code></pre>
+
+            <p>
+              Depending on where you use Gemini, it may just give you back code instead of a file. This can be copied and pasted into the <strong>Editor</strong> tab. If you instructed Gemini to only use UI-editor compatible code, you can update the code and go back to the <strong>Designer</strong> tab to continue with UI-based authoring.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>Mistral</summary>
+          <div>
+            <p>
+              One of the best performing models in our testing, typically no additional steps are needed for Mistral to perform well. See <a href="https://chat.mistral.ai/">chat.mistral.ai</a>. That said, if using Le Chat without login, you may need to <a href="/llms-full.txt" download>download llms-full.txt</a> and add it as an attachment in your initial prompt. Also, depending on where you use Mistral, it may just give you back code instead of a file. This can be copied and pasted into the <strong>Editor</strong> tab. If you instructed Mistral to only use UI-editor compatible code, you can update the code and go back to the <strong>Designer</strong> tab to continue with UI-based authoring.
+            </p>
+          </div>
+        </details>
+
+      </section>
+
+      <section class="major" id="prior">
+        <h2>Prior tutorials</h2>
+
         <p>
-          We assume that you have access to an AI assistant and we have tested this tutorial with multiple products. If you do not have access to an LLM, we observe that <a href="https://chatgpt.com/" target="_blank">ChatGPT</a> has a free offering. However, we caution that you should be sure to read the privacy policy and terms of service for any AI you choose as, unlike Kigali Sim, these options may involve sending your simulations and data to servers controlled by other organizations. All that in mind, we use <a href="https://claude.ai/" target="_blank">Claude</a> due to its terms of use and strong performance.
+          This walkthrough complements prior tutorials that included AI:
+        </p>
+
+        <ul>
+          <li><a href="/guide/tutorial_03a.html">Tutorial 3a</a>: Modifying an existing simulation to add new substances.</li>
+          <li><a href="/guide/tutorial_04a.html">Tutorial 4a</a>: Using AI to incorporate information for business as usual forecasting.</li>
+          <li><a href="/guide/tutorial_06a.html">Tutorial 6a</a>: Using AI to walkthrough adding policy interventions.</li>
+        </ul>
+
+        <p>
+          This tutorial specifically adds additional information specific to individual AI assistants as well as guidance on using AI with more advanced features of Kigali Sim. To explore those advanced features, the rest of this tutorial will focus on code. However, the earlier tutorials can provide guidance if you want to stick to UI-based authoring.
         </p>
       </section>
 
-      <section id="giving-ai-information">
+      <section class="major" id="giving-ai-information">
         <h2>Giving the AI information</h2>
 
         <p>
           At minimum, you should tell your AI to read <a href="https://kigalisim.org/llms.txt" target="_blank">kigalisim.org/llms.txt</a> but we find that providing both <code>llms.txt</code> and <code>llms-full.txt</code> is helpful. Here is how you might want to start.
         </p>
 
-        <pre class="prompt-code"><code>Hello! Please review https://kigalisim.org/llms.txt?v=20250928 and https://preview.kigalisim.org/llms-full.txt?v=20250928. Then, we will build a simulation together.</code></pre>
+        <pre class="prompt-code"><code>Hello! Please review https://preview.kigalisim.org/llms-full.txt?v=20260127. Then, we will build a simulation together.</code></pre>
 
         <p>
-          The use of the version is optional but we recommend it to ensure you have the latest copy.
+          <strong>Note</strong>: You may want to review the <a href="#assistants">assistants</a> section for tips on making your specific AI assistant work well. Also, the use of the version (v=20260127) is optional but we recommend it to ensure you have the latest copy.
         </p>
 
         <p>
@@ -62,7 +189,7 @@
         </p>
       </section>
 
-      <section id="building-basic-simulation">
+      <section class="major" id="building-basic-simulation">
         <h2>Building the basic simulation</h2>
 
         <p>
@@ -78,7 +205,7 @@ Please write the QubecTalk code for this simulation and then pause.</code></pre>
         </p>
       </section>
 
-      <section id="adding-recycling-program">
+      <section class="major" id="adding-recycling-program">
         <h2>Adding a recycling program</h2>
 
         <p>
@@ -92,7 +219,7 @@ Please write the QubecTalk code for this simulation and then pause.</code></pre>
         </p>
       </section>
 
-      <section id="results">
+      <section class="major" id="results">
         <h2>Results</h2>
 
         <p>
@@ -100,15 +227,15 @@ Please write the QubecTalk code for this simulation and then pause.</code></pre>
         </p>
       </section>
 
-      <section id="conclusion">
+      <section class="major" id="conclusion">
         <h2>Conclusion</h2>
 
         <p>
-          This tutorial demonstrated the use of AI assistants to build models in Kigali Sim. You are now ready to use LLMs to explore other functionality of Kigali Sim and move faster in prototyping new simulations. Remember, you can also use <a href="https://preview.kigalisim.org/guide/tutorial_16.html" target="_blank">Kigali Sim on the command line</a>. In addition to taking advantage of version control and automation, this can also enable use of tools like <a href="https://www.anthropic.com/claude-code" target="_blank">Claude Code</a>.
+          This tutorial demonstrated the use of AI assistants to build models in Kigali Sim. You are now ready to use LLMs to explore other functionality of Kigali Sim and move faster in prototyping new simulations. Remember, you can also use <a href="/guide/tutorial_16.html">Kigali Sim on the command line</a>. In addition to taking advantage of version control and automation, this can also enable use of tools like <a href="https://www.anthropic.com/claude-code" target="_blank">Claude Code</a>.
         </p>
       </section>
 
-      <section id="next-steps">
+      <section class="major" id="next-steps">
         <h2>Next Steps</h2>
 
         <p>

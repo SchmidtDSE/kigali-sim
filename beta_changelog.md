@@ -14,9 +14,25 @@ Finally, we want to again express our gratitude for your feedback and time.
 
 The following changes have been adopted and released.
 
-### Manual ordering of policies in UI editor
+### AI troubleshooting guidance
+
+**Status**: Released January 27, 2026
+
+**Classification**: Enhancement
+
+Expanded Tutorial 11 to provide further guidance on specific AI assistants.
+
+### Improved tutorials
 
 **Status**: Released January 26, 2026
+
+**Classification**: Enhancement
+
+Further improved tutorials 2 - 6 based on user testing.
+
+### Manual ordering of policies in UI editor
+
+**Status**: Released January 24, 2026
 
 **Classification**: Enhancement
 
@@ -24,7 +40,7 @@ Added ability to manually specify the ordering of policy application / policy st
 
 ### Fix basis for stacked change policy
 
-**Status**: Released January 26, 2026.
+**Status**: Released January 24, 2026.
 
 **Classification**: Bug / clarification
 

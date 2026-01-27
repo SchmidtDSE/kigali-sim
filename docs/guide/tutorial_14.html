@@ -27,7 +27,7 @@
         </ul>
       </details>
 
-      <section id="motivation">
+      <section class="major" id="motivation">
         <h2>Motivation</h2>
 
         <p>
@@ -35,7 +35,7 @@
         </p>
       </section>
 
-      <section id="specifying-the-bank-level">
+      <section class="major" id="specifying-the-bank-level">
         <h2>Specifying the bank level</h2>
 
         <p>
@@ -77,7 +77,7 @@
 end substance</code></pre>
       </section>
 
-      <section id="understand-translation">
+      <section class="major" id="understand-translation">
         <h2>Understand translation</h2>
 
         <p>
@@ -89,7 +89,7 @@ end substance</code></pre>
         </p>
       </section>
 
-      <section id="changing-the-bank-level">
+      <section class="major" id="changing-the-bank-level">
         <h2>Changing the bank level</h2>
 
         <p>
@@ -104,14 +104,14 @@ end substance</code></pre>
           This might be appropriate given how your forecasting model is designed but, for this tutorial, let's assume we are forecasting the bank size without that assumed continued sales. Therefore, let's set the default sales assumption to recharge only. For those working in the UI-based editor, change "Default sales assumption in a new year" to "Cover only servicing" in the General tab. Alternatively, for those in QubecTalk, add an <code>assume</code> command like as follows:
         </p>
 
-        <pre><code class="language-qubectalk">assume only recharge sales</code></pre>
+        <pre class="prompt-code"><code>assume only recharge sales</code></pre>
 
         <p>
           Finally, change your business as usual simulation to run from 2020 to 2030. You should see a steady increase in the bank levels into the future!
         </p>
       </section>
 
-      <section id="conclusion">
+      <section class="major" id="conclusion">
         <h2>Conclusion</h2>
 
         <p>
@@ -122,7 +122,7 @@ end substance</code></pre>
           One last thing to consider is that currently we assume retired equipment is not replaced so the 10% increase in bank is after retirement from the year prior. In most simulations, this doesn't have a large effect but, if you want to assume that retired equipment is replaced such that it is strictly a 10% increase over the bank level specified in the year prior, you can turn on this automatic back fill. For those using the UI-based designer, please uncheck "Retirement reduces in-service equipment" in the Equipment tab. For those working with QubecTalk, change retirement like as follows:
         </p>
 
-        <pre><code class="language-qubectalk">retire 5 % / year with replacement</code></pre>
+        <pre class="prompt-code"><code>retire 5 % / year with replacement</code></pre>
 
         <p>
           Nevertheless, bank-based tracking provides a valuable alternative if you have overall metrics for your system but need to calculate what that means in terms of different streams like imports.
@@ -133,7 +133,7 @@ end substance</code></pre>
         </p>
       </section>
 
-      <section id="next-steps">
+      <section class="major" id="next-steps">
         <h2>Next Steps</h2>
 
         <p>
