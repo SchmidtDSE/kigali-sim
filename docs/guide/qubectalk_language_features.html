@@ -31,7 +31,7 @@
         </ul>
       </details>
 
-      <section id="comments">
+      <section class="major" id="comments">
         <h2>Comments</h2>
 
         <p><strong>Purpose:</strong> Add explanatory text that is ignored by the interpreter.</p>
@@ -48,7 +48,7 @@ set domestic to 25 mt during year 2025  # This is an end-of-line comment
 change sales by 6% / year during years 2025 to 2030</code></pre>
       </section>
 
-      <section id="comparison-operators">
+      <section class="major" id="comparison-operators">
         <h2>Comparison Operators</h2>
 
         <p><strong>Purpose:</strong> Compare values to create conditions for logical operations.</p>
@@ -77,7 +77,7 @@ define testB as 0
 set domestic to 90 if testA > 0 and testB == 0 else 55 endif mt during year 6</code></pre>
       </section>
 
-      <section id="conditional-statements">
+      <section class="major" id="conditional-statements">
         <h2>Conditional Statements</h2>
 
         <p><strong>Purpose:</strong> Execute different actions based on conditions using if-else logic.</p>
@@ -97,7 +97,7 @@ define testVar as 5
 set domestic to 100 if testVar > 10 else 50 endif mt during year 2025</code></pre>
       </section>
 
-      <section id="constraints">
+      <section class="major" id="constraints">
         <h2>Constraints</h2>
 
         <p><strong>Purpose:</strong> Constrain values to a specified range using the <code>limit</code> function.</p>
@@ -121,7 +121,7 @@ define safeValue as limit (salesGrowth - baseCost) to [0, ]
 define cappedGrowth as limit growthRate to [, 15]</code></pre>
       </section>
 
-      <section id="logical-operators">
+      <section class="major" id="logical-operators">
         <h2>Logical Operators</h2>
 
         <p><strong>Purpose:</strong> Combine multiple conditions using logical operations.</p>
@@ -151,7 +151,7 @@ set domestic to 60 if testA xor testC else 40 endif mt during year 3
 set domestic to 70 if (testA or testB) and testC else 35 endif mt during year 4</code></pre>
       </section>
 
-      <section id="mathematical-operations">
+      <section class="major" id="mathematical-operations">
         <h2>Mathematical Operations</h2>
 
         <p><strong>Purpose:</strong> Perform arithmetic calculations within expressions.</p>
@@ -180,7 +180,7 @@ define growthRate as 5
 set domestic to (baselineConsumption * (1 + growthRate / 100)) mt during year 2026</code></pre>
       </section>
 
-      <section id="probabilistic-sampling">
+      <section class="major" id="probabilistic-sampling">
         <h2>Probabilistic Sampling</h2>
 
         <p><strong>Purpose:</strong> Introduce uncertainty into models using probability distributions for Monte Carlo analysis.</p>
@@ -202,7 +202,7 @@ set priorEquipment to sample normally from mean of 1000000 std of 100000 units d
 recover sample uniformly from 20% to 40% with 90% reuse during years 2027 to onwards</code></pre>
       </section>
 
-      <section id="units-and-measurements">
+      <section class="major" id="units-and-measurements">
         <h2>Units and Measurements</h2>
 
         <p><strong>Purpose:</strong> Specify quantities with proper units for consumption, time, and other measurements.</p>
@@ -263,7 +263,7 @@ retire 5% each year
 recharge 10% with 0.15 kg / unit in all years</code></pre>
       </section>
 
-      <section id="navigation">
+      <section class="major" id="navigation">
         <h2>See Also</h2>
         <ul>
           <li><a href="/guide/qubectalk_stanzas.html">QubecTalk Stanzas Reference</a></li>
