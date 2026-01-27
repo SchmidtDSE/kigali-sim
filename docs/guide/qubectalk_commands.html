@@ -37,7 +37,7 @@
         </ul>
       </details>
 
-      <section id="assume">
+      <section class="major" id="assume">
         <h2>Assume</h2>
 
         <p><strong>Purpose:</strong> Controls sales carryover behavior, particularly useful for bank tracking scenarios.</p>
@@ -60,7 +60,7 @@ assume only recharge bank during years 3 to onwards</code></pre>
         </ul>
       </section>
 
-      <section id="cap">
+      <section class="major" id="cap">
         <h2>Cap</h2>
 
         <p><strong>Purpose:</strong> Limits consumption to specified levels, optionally with displacement to alternative substances.</p>
@@ -76,18 +76,19 @@ cap streamName to amount displacing by units "substanceName"|stream during years
 cap domestic to 0 mt displacing "R-600a" during years 2031 to onwards
 cap import to 50% during years 2028 to 2032</code></pre>
 
-        <h3>Displacement Types</h3>
+        <section>
+          <h3>Displacement Types</h3>
 
-        <p>When using displacement, you can control how the displaced demand is calculated. Displacement always operates in the target stream's current units (units or kg) without changing its tracking mode:</p>
+          <p>When using displacement, you can control how the displaced demand is calculated. Displacement always operates in the target stream's current units (units or kg) without changing its tracking mode:</p>
 
-        <ul>
-          <li><strong>displacing</strong> means equivalent displacement (default). This maintains the same quantity in the units last specified. If last value was in kg, displaces by kg. If last value was in units, displaces by units.</li>
-          <li><strong>displacing by volume</strong> means volume-based displacement. This always displaces by substance mass (kg), converting from units if necessary using initial charge values. May result in different equipment counts. In other words, this assumes 1 kg of the original substance is displaced by 1 kg of the new substance.</li>
-          <li><strong>displacing by units</strong> means units-based displacement. This always displaces by equipment units, converting from kg if necessary using initial charge values. Maintains equipment population. In other words, this assumes 1 unit of equipment using the original substance is displaced by 1 unit of equipment using the new substance.</li>
-        </ul>
+          <ul>
+            <li><strong>displacing</strong> means equivalent displacement (default). This maintains the same quantity in the units last specified. If last value was in kg, displaces by kg. If last value was in units, displaces by units.</li>
+            <li><strong>displacing by volume</strong> means volume-based displacement. This always displaces by substance mass (kg), converting from units if necessary using initial charge values. May result in different equipment counts. In other words, this assumes 1 kg of the original substance is displaced by 1 kg of the new substance.</li>
+            <li><strong>displacing by units</strong> means units-based displacement. This always displaces by equipment units, converting from kg if necessary using initial charge values. Maintains equipment population. In other words, this assumes 1 unit of equipment using the original substance is displaced by 1 unit of equipment using the new substance.</li>
+          </ul>
 
-        <p><strong>Examples:</strong></p>
-        <pre><code class="language-qubectalk"># Equivalent displacement (default behavior)
+          <p><strong>Examples:</strong></p>
+          <pre><code class="language-qubectalk"># Equivalent displacement (default behavior)
 cap sales to 80% displacing "R-600a" during years 2027 to 2030
 
 # Volume-based displacement (always use kg, regardless of spec)
@@ -98,12 +99,13 @@ cap sales to 50 units displacing by volume "R-600a" during years 2027 to 2030
 cap sales to 100 kg displacing by units "R-600a" during years 2027 to 2030
 # Result: 100 kg ÷ 1 kg/unit = 100 units displaced to R-600a</code></pre>
 
-        <p><strong>Note:</strong> When using <code>displacing by volume</code>, total substance mass is preserved but equipment counts may change. When using <code>displacing by units</code>, equipment population is preserved but substance mass may change. Use <code>displacing by units</code> when equipment tracking is critical (e.g., equipment bank management). Use <code>displacing by volume</code> when substance consumption limits are the primary concern.</p>
+          <p><strong>Note:</strong> When using <code>displacing by volume</code>, total substance mass is preserved but equipment counts may change. When using <code>displacing by units</code>, equipment population is preserved but substance mass may change. Use <code>displacing by units</code> when equipment tracking is critical (e.g., equipment bank management). Use <code>displacing by volume</code> when substance consumption limits are the primary concern.</p>
 
-        <p><strong>Units Tracking Behavior:</strong> When a percentage-based cap triggers (reduces the stream value), it preserves units tracking from the last specified value if that value was in equipment units. For example, if you "set domestic to 10 units" and then "cap domestic to 0%", the cap result will be in units (0 units), which allows recharge calculations to add equipment. If the cap does not trigger (current value is already below the cap), tracking mode remains unchanged. This enables unit-based policies to maintain equipment population tracking even when using percentage-based caps.</p>
+          <p><strong>Units Tracking Behavior:</strong> When a percentage-based cap triggers (reduces the stream value), it preserves units tracking from the last specified value if that value was in equipment units. For example, if you "set domestic to 10 units" and then "cap domestic to 0%", the cap result will be in units (0 units), which allows recharge calculations to add equipment. If the cap does not trigger (current value is already below the cap), tracking mode remains unchanged. This enables unit-based policies to maintain equipment population tracking even when using percentage-based caps.</p>
+        </section>
       </section>
 
-      <section id="change">
+      <section class="major" id="change">
         <h2>Change</h2>
 
         <p><strong>Purpose:</strong> Applies growth or decline rates to consumption over time.</p>
@@ -120,7 +122,7 @@ change import by 5% / year during years 2025 to onwards</code></pre>
         <p><strong>Units Tracking Behavior:</strong> Change operations preserve the current tracking mode of the stream. If the stream is currently in units (equipment-based), the change will be applied in units. If the stream is in kg or mt (volume-based), the change will be applied in volume units. Change operations do not force a conversion between tracking modes.</p>
       </section>
 
-      <section id="define">
+      <section class="major" id="define">
         <h2>Define</h2>
 
         <p><strong>Purpose:</strong> Creates variables for use in calculations and conditional statements.</p>
@@ -133,7 +135,7 @@ define phaseOutYear as 2030
 define targetReduction as 80</code></pre>
       </section>
 
-      <section id="enable">
+      <section class="major" id="enable">
         <h2>Enable</h2>
 
         <p><strong>Purpose:</strong> Activates specific supply streams for a substance.</p>
@@ -148,7 +150,7 @@ enable import
 enable export</code></pre>
       </section>
 
-      <section id="equals">
+      <section class="major" id="equals">
         <h2>Equals (GWP)</h2>
 
         <p><strong>Purpose:</strong> Defines the Global Warming Potential and energy consumption for a substance.</p>
@@ -164,7 +166,7 @@ equals 3 tCO2e / mt</code></pre>
         <p><strong>Note:</strong> Both tCO2e (tonnes) and kgCO2e (kilograms) CO2 equivalent units are supported for GWP values.</p>
       </section>
 
-      <section id="floor">
+      <section class="major" id="floor">
         <h2>Floor</h2>
 
         <p><strong>Purpose:</strong> Sets minimum consumption levels to prevent unrealistic reductions.</p>
@@ -185,7 +187,7 @@ floor import to 100 units displacing by units "R-600a" during years 2028 to 2032
         <p><strong>Units Tracking Behavior:</strong> Floor commands follow the same units tracking behavior as cap commands. When a percentage-based floor triggers (increases the stream value), it preserves units tracking from the last specified value if that value was in equipment units. If the floor does not trigger, tracking mode remains unchanged.</p>
       </section>
 
-      <section id="get">
+      <section class="major" id="get">
         <h2>Get</h2>
 
         <p><strong>Purpose:</strong> Retrieves values from streams for use in expressions and calculations.</p>
@@ -223,7 +225,7 @@ define substanceAInMT as get import of "substance a" as mt</code></pre>
         <p><strong>Note:</strong> The <code>age</code> stream is a computed value that tracks the weighted average age of equipment. It starts at 0 years for new equipment and increases annually. This feature is only available in the Advanced Editor.</p>
       </section>
 
-      <section id="initial-charge">
+      <section class="major" id="initial-charge">
         <h2>Initial Charge</h2>
 
         <p><strong>Purpose:</strong> Specifies the amount of substance in new equipment per unit.</p>
@@ -236,7 +238,7 @@ initial charge with 0.20 kg / unit for import
 initial charge with 1.5 kg / unit for domestic</code></pre>
       </section>
 
-      <section id="recharge">
+      <section class="major" id="recharge">
         <h2>Recharge</h2>
 
         <p><strong>Purpose:</strong> Specifies servicing patterns for existing equipment including frequency and amount.</p>
@@ -249,7 +251,7 @@ recharge 15% with 0.85 kg / unit during years 2025 to 2030
 recharge 5% with 1.0 kg / unit in all years</code></pre>
       </section>
 
-      <section id="recover">
+      <section class="major" id="recover">
         <h2>Recover</h2>
 
         <p><strong>Purpose:</strong> Implements recycling programs that recover and reuse substances from equipment.</p>
@@ -263,34 +265,38 @@ recover 25% with 100% reuse with 0% induction at eol during years 2028 to onward
 recover 20% with 80% reuse with default induction at recharge during years 2026 to onwards
 recover 15% with 85% reuse displacing "HFC-134a" during years 2025 to onwards</code></pre>
 
-        <p><strong>Recycling Stages:</strong></p>
-        <ul>
-          <li><code>at recharge</code> - Recycling occurs during equipment servicing (default)</li>
-          <li><code>at eol</code> - Recycling occurs during equipment retirement (end-of-life)</li>
-        </ul>
+        <section>
+          <h3>Recycling Stages</h3>
+          <ul>
+            <li><code>at recharge</code> - Recycling occurs during equipment servicing (default)</li>
+            <li><code>at eol</code> - Recycling occurs during equipment retirement (end-of-life)</li>
+          </ul>
+        </section>
 
-        <p><strong>Induction Control:</strong></p>
-        <ul>
-          <li><code>with 0% induction</code> - Full displacement (recycled material reduces virgin demand)</li>
-          <li><code>with 100% induction</code> - Full induced demand (recycled material adds to supply, recommended when uncertain)</li>
-          <li><code>with 50% induction</code> - Mixed behavior (partial displacement)</li>
-          <li><code>with default induction</code> - Uses system default based on specification type</li>
-        </ul>
+        <section>
+          <h3>Induction Control</h3>
+          <ul>
+            <li><code>with 0% induction</code> - Full displacement (recycled material reduces virgin demand)</li>
+            <li><code>with 100% induction</code> - Full induced demand (recycled material adds to supply, recommended when uncertain)</li>
+            <li><code>with 50% induction</code> - Mixed behavior (partial displacement)</li>
+            <li><code>with default induction</code> - Uses system default based on specification type</li>
+          </ul>
+        </section>
       </section>
 
-      <section id="replace">
+      <section class="major" id="replace">
         <h2>Replace</h2>
 
         <p><strong>Purpose:</strong> Substitutes one substance with another in new equipment over specified time periods.</p>
 
-        <p><strong>Syntax:</strong> <code>replace with "newSubstanceName" during years startYear to endYear</code></p>
+        <p><strong>Syntax:</strong> <code>replace percentage % of streamName with "newSubstanceName" during years startYear to endYear</code></p>
 
         <p><strong>Examples:</strong></p>
-        <pre><code class="language-qubectalk">replace with "R-600a" during years 2027 to 2030
-replace with "HFC-32" during years 2025 to onwards</code></pre>
+        <pre><code class="language-qubectalk">replace 50% of domestic with "R-600a" during years 2027 to 2030
+replace 100% of sales with "HFC-32" during years 2025 to onwards</code></pre>
       </section>
 
-      <section id="retire">
+      <section class="major" id="retire">
         <h2>Retire</h2>
 
         <p><strong>Purpose:</strong> Sets equipment retirement rates determining equipment lifespan.</p>
@@ -303,7 +309,7 @@ retire 7% each year during years 2025 to 2030
 retire 10% each year</code></pre>
       </section>
 
-      <section id="set">
+      <section class="major" id="set">
         <h2>Set</h2>
 
         <p><strong>Purpose:</strong> Sets consumption volumes or equipment units for specific streams and time periods.</p>
@@ -316,7 +322,7 @@ set import to 15000 units during year 2025
 set priorEquipment to 1000000 units during year 2025</code></pre>
       </section>
 
-      <section id="navigation">
+      <section class="major" id="navigation">
         <h2>See Also</h2>
         <ul>
           <li><a href="/guide/qubectalk_stanzas.html">QubecTalk Stanzas Reference</a></li>
