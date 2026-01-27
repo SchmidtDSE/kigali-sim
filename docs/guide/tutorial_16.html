@@ -31,7 +31,7 @@
         </ul>
       </details>
 
-      <section id="motivation">
+      <section class="major" id="motivation">
         <h2>Motivation</h2>
 
         <p>
@@ -43,7 +43,7 @@
         </p>
       </section>
 
-      <section id="setting-up-command-line-tools">
+      <section class="major" id="setting-up-command-line-tools">
         <h2>Setting Up Command Line Tools</h2>
 
         <p>First, we need to download and set up the Kigali Sim command line interface:</p>
@@ -59,7 +59,7 @@
         </p>
       </section>
 
-      <section id="running-command-line-analysis">
+      <section class="major" id="running-command-line-analysis">
         <h2>Running Command Line Analysis</h2>
 
         <p>In this tutorial, we will assume you know how to use the command line. Save your updated QubecTalk model and validate it.</p>
@@ -73,7 +73,7 @@
         <p>Note that you will need to use the name of the file where you saved your results. This will execute your simulation and put the results in the specified CSV file.</p>
       </section>
 
-      <section id="understanding-uncertainty-in-our-model">
+      <section class="major" id="understanding-uncertainty-in-our-model">
         <h2>Understanding Uncertainty in Our Model</h2>
 
         <p>Looking at our current ABC Country model, we have several sources of uncertainty:</p>
@@ -87,7 +87,7 @@
         <p>Let's focus on the first source. Note that we will use normal distributions but uniform distributions can also be used.</p>
       </section>
 
-      <section id="adding-growth-rate-uncertainty">
+      <section class="major" id="adding-growth-rate-uncertainty">
         <h2>Adding Growth Rate Uncertainty</h2>
 
         <p>Economic growth projections inherently contain uncertainty. Let's modify our model to reflect this by adding probabilistic elements to our growth rates.</p>
@@ -121,7 +121,7 @@ change sales by sample normally from mean of 4 std of 1 % / year during years 20
         <pre><code class="language-qubectalk">change domestic by sample normally from mean of 6 std of 1 % / year during years 2025 to 2035</code></pre>
       </section>
 
-      <section id="configuring-monte-carlo-simulation">
+      <section class="major" id="configuring-monte-carlo-simulation">
         <h2>Configuring Monte Carlo Simulation</h2>
 
         <p>Now we need to configure our simulations to run multiple trials. Update the simulations section to include Monte Carlo analysis:</p>
@@ -153,13 +153,13 @@ end simulations</code></pre>
         <p>The <code>across 100 trials</code> specification tells Kigali Sim to run 100 different scenarios, each time sampling new values from the probability distributions we defined.</p>
       </section>
 
-      <section id="interpreting-uncertainty-results">
+      <section class="major" id="interpreting-uncertainty-results">
         <h2>Interpreting Uncertainty Results</h2>
 
         <p>Go ahead and give this another run. When you open up the resulting CSV file, notice individual trial results as denoted by the trial column. You can use this to run sensitivity analysis or plug into other tools like spreadsheet software, R, or Python.</p>
       </section>
 
-      <section id="conclusion">
+      <section class="major" id="conclusion">
         <h2>Conclusion</h2>
 
         <p>You've successfully implemented Monte Carlo uncertainty analysis for ABC Country's HFC strategy. This kind of simulation provides policymakers with confidence intervals and risk assessments that support more informed decision-making under uncertainty. Rather than single projections, they now have probability distributions that show both best-case and worst-case scenarios.
@@ -170,7 +170,7 @@ end simulations</code></pre>
         </p>
       </section>
 
-      <section id="next-steps">
+      <section class="major" id="next-steps">
         <h2>Next Steps</h2>
 
         <p>Explore how to model countries with exports.</p>
