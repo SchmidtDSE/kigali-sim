@@ -14,6 +14,14 @@ Finally, we want to again express our gratitude for your feedback and time.
 
 The following changes have been adopted and released.
 
+### AI troubleshooting guidance
+
+**Status**: Released January 27, 2026
+
+**Classification**: Enhancement
+
+Expanded Tutorial 11 to provide further guidance on specific AI assistants.
+
 ### Improved tutorials
 
 **Status**: Released January 26, 2026
