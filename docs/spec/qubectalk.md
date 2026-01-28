@@ -115,7 +115,7 @@ initial charge with 0.10 kg / unit for export
 If this is omitted and the substance has sales, an error message may be shown. The initial charge determines how much substance is contained in each unit of new equipment for that stream.
 
 ### Sales
-The sale of substances typically defines the equipment population. QubecTalk considers possible streams to fit into three groups: `domestic`, `import`, `export`, `recycling`.
+The sale of substances typically defines the equipment population. QubecTalk considers possible streams to fit into `domestic`, `import`, `export`, or `recycling`.
 
 **Enable Statement**: Before setting sales values, streams must be explicitly enabled using the `enable` command. This command indicates which streams (domestic, import, export) will be used for a substance:
 
