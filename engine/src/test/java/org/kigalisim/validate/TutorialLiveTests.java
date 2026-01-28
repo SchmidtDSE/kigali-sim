@@ -399,6 +399,67 @@ public class TutorialLiveTests {
   }
 
   /**
+   * Test Tutorial 06: 100% induction recycling should not affect the virgin sales basis for caps.
+   *
+   * <p>With 100% induction, recycling adds material ON TOP of virgin sales but should NOT reduce
+   * the virgin sales baseline. Therefore, when combining Recycling (100% induction) with Permit
+   * (85% cap), the Combined scenario's virgin consumption should be >= Permit-only consumption.
+   *
+   * <p>If Combined has LOWER consumption than Permit in 2034, it suggests the 85% cap basis is
+   * being calculated on a lower value when recycling is involved, which is incorrect behavior.
+   *
+   * <p><b>Root cause:</b> The {@code recover} command triggers {@code recalcSales()} which
+   * recalculates virgin sales from scratch based on equipment needs, REPLACING the values set
+   * by the {@code change sales} command. The calculated values don't preserve the user's growth
+   * trajectory because they use a frozen {@code rechargeBase}. At year end, {@code snapshotStreams()}
+   * captures these replaced values as the prior year values, which are then used as the cap basis.
+   * This results in a lower cap basis for Combined than for Permit, even though 100% induction
+   * should mean virgin sales are unchanged.
+   */
+  @Test
+  public void testTutorial06InductionBasis() throws IOException {
+    String qtaPath = "../examples/tutorial_06.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run all scenarios for comparison
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, "BAU", progress -> {});
+    List<EngineResult> bauResultsList = bauResults.collect(Collectors.toList());
+
+    Stream<EngineResult> permitResults = KigaliSimFacade.runScenario(program, "Permit", progress -> {});
+    List<EngineResult> permitResultsList = permitResults.collect(Collectors.toList());
+
+    Stream<EngineResult> recyclingResults = KigaliSimFacade.runScenario(program, "Recycling", progress -> {});
+    List<EngineResult> recyclingResultsList = recyclingResults.collect(Collectors.toList());
+
+    Stream<EngineResult> combinedResults = KigaliSimFacade.runScenario(program, "Combined", progress -> {});
+    List<EngineResult> combinedResultsList = combinedResults.collect(Collectors.toList());
+
+    // Test: Combined (Recycling → Permit) should have consumption >= Permit in 2034
+    // Because 100% induction means recycling doesn't reduce virgin sales, only adds on top
+    int year = 2034;
+    EngineResult permitResult = LiveTestsUtil.getResult(permitResultsList.stream(), year,
+        "Domestic Refrigeration", "HFC-134a");
+    EngineResult combinedResult = LiveTestsUtil.getResult(combinedResultsList.stream(), year,
+        "Domestic Refrigeration", "HFC-134a");
+
+    assertNotNull(permitResult, "Should have Permit result for " + year);
+    assertNotNull(combinedResult, "Should have Combined result for " + year);
+
+    double permitTotal = permitResult.getDomestic().getValue().doubleValue()
+        + permitResult.getImport().getValue().doubleValue();
+    double combinedTotal = combinedResult.getDomestic().getValue().doubleValue()
+        + combinedResult.getImport().getValue().doubleValue();
+
+    // Allow 0.1 kg tolerance for floating point comparisons
+    double tolerance = 0.1;
+    assertTrue(combinedTotal >= permitTotal - tolerance,
+        "Combined total (" + combinedTotal + " kg) should be >= Permit total ("
+            + permitTotal + " kg) in year " + year
+            + " because 100% induction recycling should not reduce the virgin sales basis for the 85% cap");
+  }
+
+  /**
    * Test Tutorial 07: Enhanced recycling with R-600a program.
    * - The recycling scenario total consumption (kg: domestic + import) at 2033 from tutorial 6
    *   is higher than that from tutorial 7.
