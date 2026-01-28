@@ -174,7 +174,7 @@ This can be run using the editor tab at https://kigalisim.org/ or locally via `j
 Developers can continue their work by going to the [User Guide](https://kigalisim.org/guide/) which had information on other features. See also the [formal QubecTalk language specification](https://kigalisim.org/guide/qubectalk.pdf).
 
 ### LLM assistants
-If desired, AI coding assistants or chatbots can help in using Kigali Sim. We implement the [llms.txt specification](https://llmstxt.org), a standard that allows users to bring their own LLM assistants to the tool. Direct your AI to read `https://kigalisim.org/llms-full.txt?v=20250928` and / or `https://kigalisim.org/llms.txt?v=20250928`.
+If desired, AI coding assistants or chatbots can help in using Kigali Sim. We implement the [llms.txt specification](https://llmstxt.org), a standard that allows users to bring their own LLM assistants to the tool. Direct your AI to read `https://kigalisim.org/llms-full.txt?v=20260128` and / or `https://kigalisim.org/llms.txt?v=20260128`.
 
 <br>
 
