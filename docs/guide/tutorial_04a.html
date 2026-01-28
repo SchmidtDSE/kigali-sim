@@ -113,6 +113,13 @@
           <summary>More about percentages</summary>
           <p>Note: You can use <code>% current</code> instead of <code>%</code> for growth rates to make it explicit that the percentage applies to the current year's value. The system supports three percentage formats: <code>%</code> (equivalent to <code>% current</code>) applies the percentage to the current year's value, <code>% current</code> explicitly applies to the current year's value, and <code>% prior year</code> applies the percentage to the previous year's value. This flexibility allows you to match your data source's reference year convention. This could come up in simulations with multiple change directives due to complex economic modeling.</p>
         </details>
+
+        <details>
+          <summary>More about the sales stream</summary>
+          <p>
+            This refers to all consumption in the country. So, it includes domestic and import but excludes exports. This may also include "secondary" substance if recycling is active. Having Kigali Sim set / change sales impacts all consumption with the exception that recycling is limited by the recover command so domestic and import will be modified to satisfy command. That said, using sales with cap floor like for permitting place lower or upper limits on all consumption including recycling. For virgin only, replace `sales` with individual commands on `domestic` and `import` to exclude secondary.
+          </p>
+        </details>
       </section>
 
       <section class="major" id="expanding-the-growth">
