@@ -1678,14 +1678,6 @@ public class StackingLiveTests {
     assertNotNull(recycleThenChange2, "Should have Recycle Then Change result for year 2");
     final double recycleThenChangeDomestic = recycleThenChange2.getDomestic().getValue().doubleValue();
 
-    // Print actual values for debugging
-    System.out.println("=== Change and Recycle Stacking Test ===");
-    System.out.println(String.format("BAU: %.2f kg", bauDomestic));
-    System.out.println(String.format("Change: %.2f kg", changeDomestic));
-    System.out.println(String.format("Recycle: %.2f kg", recycleDomestic));
-    System.out.println(String.format("Change Then Recycle: %.2f kg", changeThenRecycleDomestic));
-    System.out.println(String.format("Recycle Then Change: %.2f kg", recycleThenChangeDomestic));
-
     // Assert: Change alone should be lower than BAU
     assertTrue(changeDomestic < bauDomestic,
         String.format("Change domestic (%.2f kg) should be lower than BAU (%.2f kg) in year 2",
@@ -1801,14 +1793,6 @@ public class StackingLiveTests {
         recycleThenChangeList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
     assertNotNull(recycleThenChange2, "Should have Recycle Then Change result for year 2");
     final double recycleThenChangeDomestic = recycleThenChange2.getDomestic().getValue().doubleValue();
-
-    // Print actual values for debugging
-    System.out.println("=== Change and Recycle Stacking Test (Sales) ===");
-    System.out.println(String.format("BAU: %.2f kg", bauDomestic));
-    System.out.println(String.format("Change: %.2f kg", changeDomestic));
-    System.out.println(String.format("Recycle: %.2f kg", recycleDomestic));
-    System.out.println(String.format("Change Then Recycle: %.2f kg", changeThenRecycleDomestic));
-    System.out.println(String.format("Recycle Then Change: %.2f kg", recycleThenChangeDomestic));
 
     // Assert: Change alone should be lower than BAU
     assertTrue(changeDomestic < bauDomestic,

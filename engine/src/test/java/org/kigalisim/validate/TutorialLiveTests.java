@@ -435,34 +435,6 @@ public class TutorialLiveTests {
     Stream<EngineResult> combinedResults = KigaliSimFacade.runScenario(program, "Combined", progress -> {});
     List<EngineResult> combinedResultsList = combinedResults.collect(Collectors.toList());
 
-    // Print comparison table for all years 2028-2035
-    System.out.println("\n=== Tutorial 06 Induction Basis Debug ===");
-    System.out.println("Year\tBAU\t\tRecycling\tPermit\t\tCombined\tRecycle Amt");
-    for (int year = 2028; year <= 2035; year++) {
-      EngineResult bauResult = LiveTestsUtil.getResult(bauResultsList.stream(), year,
-          "Domestic Refrigeration", "HFC-134a");
-      EngineResult permitResult = LiveTestsUtil.getResult(permitResultsList.stream(), year,
-          "Domestic Refrigeration", "HFC-134a");
-      EngineResult recyclingResult = LiveTestsUtil.getResult(recyclingResultsList.stream(), year,
-          "Domestic Refrigeration", "HFC-134a");
-      EngineResult combinedResult = LiveTestsUtil.getResult(combinedResultsList.stream(), year,
-          "Domestic Refrigeration", "HFC-134a");
-
-      double bauTotal = bauResult.getDomestic().getValue().doubleValue()
-          + bauResult.getImport().getValue().doubleValue();
-      double permitTotal = permitResult.getDomestic().getValue().doubleValue()
-          + permitResult.getImport().getValue().doubleValue();
-      double recyclingTotal = recyclingResult.getDomestic().getValue().doubleValue()
-          + recyclingResult.getImport().getValue().doubleValue();
-      double combinedTotal = combinedResult.getDomestic().getValue().doubleValue()
-          + combinedResult.getImport().getValue().doubleValue();
-      double combinedRecycle = combinedResult.getRecycle().getValue().doubleValue();
-
-      System.out.printf("%d\t%.0f\t\t%.0f\t\t%.0f\t\t%.0f\t\t%.0f%n",
-          year, bauTotal, recyclingTotal, permitTotal, combinedTotal, combinedRecycle);
-    }
-    System.out.println("=========================================\n");
-
     // Test: Combined (Recycling → Permit) should have consumption >= Permit in 2034
     // Because 100% induction means recycling doesn't reduce virgin sales, only adds on top
     int year = 2034;
@@ -478,9 +450,6 @@ public class TutorialLiveTests {
         + permitResult.getImport().getValue().doubleValue();
     double combinedTotal = combinedResult.getDomestic().getValue().doubleValue()
         + combinedResult.getImport().getValue().doubleValue();
-
-    System.out.println("Year " + year + ": Permit total = " + permitTotal
-        + " kg, Combined total = " + combinedTotal + " kg");
 
     // Allow 0.1 kg tolerance for floating point comparisons
     double tolerance = 0.1;
