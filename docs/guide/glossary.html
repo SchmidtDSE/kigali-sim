@@ -165,7 +165,7 @@
           <dd>The annual percentage or amount of equipment that is scrapped or retired from service. A constant retirement percentage corresponds to an exponential decay model. Also called hazard rate or scrap rate.</dd>
 
           <dt>Sales</dt>
-          <dd>A stream representing all consumption within the simulated country in the current year. In other words, the total new substance entering the market. For all simulations, this is the combination of both domestic manufacturing and imports and recycling (if active). Set / change sales impacts all consumption but recycling is limited by the recover command so domestic and import will be modified to satisfy command. However, cap / floor place lower or upper limits on all consumption including recycling.</dd>
+          <dd>A stream representing all consumption within the simulated country in the current year. In other words, the total new substance entering the market. For all simulations, this is the combination of both domestic manufacturing and imports. However, this includes recycling if active. Set / change sales impacts all consumption where, as recycling is limited by the recover command, domestic and import will be modified to satisfy a set or change after taking the unchanged recycling capacity into account. Cap / floor using sales place upper or lower limits on all consumption where those limits include recycling.</dd>
 
           <dt>Scrap Rate</dt>
           <dd>See Retirement Rate.</dd>
