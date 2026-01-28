@@ -151,7 +151,7 @@ assume only recharge bank during years 2025 to onwards
 The `bank` keyword is syntactic sugar for the `equipment` stream, provided for semantic clarity when modeling substance banks (total refrigerant in equipment). Using `bank` instead of `equipment` can make code more readable in banking scenarios:
 
 #### Sales
-Includes domestic, import, and recycling if active.
+Includes domestic, import, and recycling if active. Excludes export.
 
  - `set` / `change` sales impacts all consumption but recycling is limited by the recover command so domestic and import will be modified to satisfy command.
  - `cap` / `floor` place lower or upper limits on all consumption including recycling.

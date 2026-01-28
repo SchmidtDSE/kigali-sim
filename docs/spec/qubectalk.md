@@ -164,7 +164,7 @@ If no stream is specified, it will apply proportionally across sub-streams (dome
 
 **Equipment Units and Implicit Recharge**: When specifying sales using equipment units (e.g., `set domestic to 100 units`), the system automatically calculates and includes implicit recharge. This means the engine assumes sufficient substance is available to service (recharge) existing equipment in addition to the substance needed for initial charges on new equipment. This behavior applies because users specifying equipment units are expressing intent about how much new equipment is to be sold, and the simulation ensures servicing needs are met automatically.
 
-**Sales keyword**: The `sales` keyword indicates all consumption so includes domestic, import, and recycling if active.
+**Sales keyword**: The `sales` keyword indicates all consumption so includes domestic, import, and recycling if active. It excludes exports.
 
  - `set` / `change` sales impacts all consumption but recycling is limited by the addressable stream as indicated in a `recover` command so domestic and import will be modified to satisfy new target levels with the same level of prior recycling.
  - `cap` / `floor` place lower or upper limits on all consumption including recycling.
