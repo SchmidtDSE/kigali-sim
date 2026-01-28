@@ -61,10 +61,10 @@
           <strong>If you are new to the AI</strong> or just want to start fresh, create a new chat session. Then, tell it to look up information about Kigali Sim through a message like this:
         </p>
 
-        <pre class="prompt-code"><code>Hello! I would like help with building a Kigali Sim simulation. Please read https://kigalisim.org/llms-full.txt?v=20251226 to learn more. Please stick to only features compatible with the UI editor.</code></pre>
+        <pre class="prompt-code"><code>Hello! I would like help with building a Kigali Sim simulation. Please read https://kigalisim.org/llms-full.txt?v=20260128 to learn more. Please stick to only features compatible with the UI editor.</code></pre>
 
         <p>
-          Need a little cheat? <a href="tutorial_03.qta" download>Download the Tutorial 3</a> file here. Also, for more capable assistants like Claude, this is enough. However, some assistants cannot access the full internet or won't know how to work with this kind of file out of the box. If your assistant is having issues, instead, attach the <a href="https://kigalisim.org/llms-full.txt?v=20251226" download>Kigali Sim llms-full.txt</a> file as an attachment!
+          Need a little cheat? <a href="tutorial_03.qta" download>Download the Tutorial 3</a> file here. Also, for more capable assistants like Claude, this is enough. However, some assistants cannot access the full internet or won't know how to work with this kind of file out of the box. If your assistant is having issues, instead, attach the <a href="https://kigalisim.org/llms-full.txt?v=20260128" download>Kigali Sim llms-full.txt</a> file as an attachment!
         </p>
 
         <p>
@@ -112,6 +112,16 @@
         <details>
           <summary>More about percentages</summary>
           <p>Note: You can use <code>% current</code> instead of <code>%</code> for growth rates to make it explicit that the percentage applies to the current year's value. The system supports three percentage formats: <code>%</code> (equivalent to <code>% current</code>) applies the percentage to the current year's value, <code>% current</code> explicitly applies to the current year's value, and <code>% prior year</code> applies the percentage to the previous year's value. This flexibility allows you to match your data source's reference year convention. This could come up in simulations with multiple change directives due to complex economic modeling.</p>
+        </details>
+
+        <details>
+          <summary>More about the sales stream</summary>
+          <p>
+            This refers to all consumption in the country. So, having Kigali Sim set / change sales impacts overall consumption. More specifically, it includes domestic and import but excludes export. When applying changes through the sales keyword, Kigali Sim will try to keep the ratio between domestic and import the same for the substance.
+          </p>
+          <p>
+            Note that this may also include "secondary" substance if recycling is active. That said, indicated by the recover command, recycling capacity is assumed to be limited. So, domestic and import will be modified to satisfy a set or change command after taking the unchanged recycling stream into account. However, using sales with cap/floor (like for permitting) places lower or upper limits on all consumption including recycling. For virgin only, replace sales with individual commands on domestic and import. This will exclude secondary production.
+          </p>
         </details>
       </section>
 
