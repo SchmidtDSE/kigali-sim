@@ -1506,13 +1506,35 @@ public class SimulationState {
     EngineNumber valueConverted = unitConverter.convert(value, "kg");
     BigDecimal amountKg = valueConverted.getValue();
 
-    // Get current recycle amount to avoid double counting
-    EngineNumber recycleAmountRaw = getStream(useKey, "recycle");
-    EngineNumber recycleAmount = unitConverter.convert(recycleAmountRaw, "kg");
-    BigDecimal recycleKg = recycleAmount != null ? recycleAmount.getValue() : BigDecimal.ZERO;
+    // Get stage-specific recycle amounts
+    EngineNumber recycleEolRaw = getStream(useKey, "recycleEol");
+    EngineNumber recycleRechargeRaw = getStream(useKey, "recycleRecharge");
+    EngineNumber recycleEol = unitConverter.convert(recycleEolRaw, "kg");
+    EngineNumber recycleRecharge = unitConverter.convert(recycleRechargeRaw, "kg");
+    BigDecimal recycleEolKg = recycleEol != null ? recycleEol.getValue() : BigDecimal.ZERO;
+    BigDecimal recycleRechargeKg = recycleRecharge != null ? recycleRecharge.getValue() : BigDecimal.ZERO;
+    BigDecimal totalRecycleKg = recycleEolKg.add(recycleRechargeKg);
 
     // Calculate virgin material needed (sales - recycling)
-    BigDecimal virginMaterialKg = amountKg.subtract(recycleKg);
+    BigDecimal virginMaterialKg = amountKg.subtract(totalRecycleKg);
+
+    // Add back induced demand based on induction rates
+    // With 100% induction, recycled material adds to supply rather than displacing virgin
+    EngineNumber inductionEolRate = getInductionRate(useKey, RecoveryStage.EOL);
+    EngineNumber inductionRechargeRate = getInductionRate(useKey, RecoveryStage.RECHARGE);
+
+    BigDecimal inducedKg = BigDecimal.ZERO;
+    if (inductionEolRate != null && inductionEolRate.getValue().compareTo(BigDecimal.ZERO) > 0) {
+      // Induction rate is a percentage (0-100), convert to ratio
+      BigDecimal eolRatio = inductionEolRate.getValue().divide(new BigDecimal("100"), java.math.MathContext.DECIMAL128);
+      inducedKg = inducedKg.add(recycleEolKg.multiply(eolRatio));
+    }
+    if (inductionRechargeRate != null && inductionRechargeRate.getValue().compareTo(BigDecimal.ZERO) > 0) {
+      BigDecimal rechargeRatio = inductionRechargeRate.getValue().divide(new BigDecimal("100"), java.math.MathContext.DECIMAL128);
+      inducedKg = inducedKg.add(recycleRechargeKg.multiply(rechargeRatio));
+    }
+
+    virginMaterialKg = virginMaterialKg.add(inducedKg);
 
     if (virginMaterialKg.compareTo(BigDecimal.ZERO) < 0) {
       virginMaterialKg = BigDecimal.ZERO;
