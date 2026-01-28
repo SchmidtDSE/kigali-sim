@@ -1519,13 +1519,11 @@ public class SimulationState {
     BigDecimal virginMaterialKg = amountKg.subtract(totalRecycleKg);
 
     // Add back induced demand based on induction rates
-    // With 100% induction, recycled material adds to supply rather than displacing virgin
     EngineNumber inductionEolRate = getInductionRate(useKey, RecoveryStage.EOL);
     EngineNumber inductionRechargeRate = getInductionRate(useKey, RecoveryStage.RECHARGE);
 
     BigDecimal inducedKg = BigDecimal.ZERO;
     if (inductionEolRate != null && inductionEolRate.getValue().compareTo(BigDecimal.ZERO) > 0) {
-      // Induction rate is a percentage (0-100), convert to ratio
       BigDecimal eolRatio = inductionEolRate.getValue().divide(new BigDecimal("100"), java.math.MathContext.DECIMAL128);
       inducedKg = inducedKg.add(recycleEolKg.multiply(eolRatio));
     }
