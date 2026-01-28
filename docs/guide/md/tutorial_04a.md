@@ -18,13 +18,13 @@ If you did the AI version of Tutorial 3, you probably are already familiar with 
 
 ```
 Hello! I would like help with the attached Kigali Sim simulation. Please
-read https://kigalisim.org/llms-full.txt?v=20251226 to learn more. Please
+read https://kigalisim.org/llms-full.txt?v=20260128 to learn more. Please
 stick to only features compatible with the UI editor.
 ```
 
 Need a little cheat? [Download the Tutorial 3](tutorial_03.qta) file here.
 
-For more capable assistants like Claude, this is enough. However, some assistants cannot access the full internet or won't know how to work with this kind of file out of the box. If your assistant is having issues, instead, attach the [Kigali Sim llms-full.txt](https://kigalisim.org/llms-full.txt?v=20251226) file as an attachment!
+For more capable assistants like Claude, this is enough. However, some assistants cannot access the full internet or won't know how to work with this kind of file out of the box. If your assistant is having issues, instead, attach the [Kigali Sim llms-full.txt](https://kigalisim.org/llms-full.txt?v=20260128) file as an attachment!
 
 Note that we are telling the AI assistant to avoid advanced features which require programming. More details about this are available in [Tutorial 11](https://kigalisim.org/guide/tutorial_11.html).
 

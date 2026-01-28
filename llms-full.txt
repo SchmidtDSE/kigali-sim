@@ -135,19 +135,31 @@ No duration means runs each year. Use `during year beginning` for first year onl
 ### Streams
 Streams may be `domestic|import|export|sales|equipment|priorEquipment|bank|age`
 
-- `domestic` - domestic manufacturing
-- `sales` - both `domestic` and `import`
-- `equipment` - both prior and new equipment
-- `age` - weighted average equipment age (read-only, Advanced Editor only)
-
-**Bank Keyword**: The `bank` keyword is syntactic sugar for the `equipment` stream, provided for semantic clarity when modeling substance banks (total refrigerant in equipment). Using `bank` instead of `equipment` can make code more readable in banking scenarios:
+- `domestic`: domestically produced and consumed
+- `import`: imported either in vessel or initial charge
+- `sales`: all consumption in country
+- `priorEquipment`: equipment active coming into current year
+- `equipment`: equipment active, either from prior or new
+- `age`: weighted average equipment age (read-only, Advanced Editor only)
 
 ```qubectalk
 set bank to 1000 units during year 1990         # Same as: set equipment to 1000 units
 assume only recharge bank during years 2025 to onwards
 ```
 
-**Age Stream**: The `age` stream tracks the weighted average age of equipment in the population. This is a computed, read-only stream that cannot be set by users:
+#### Bank
+The `bank` keyword is syntactic sugar for the `equipment` stream, provided for semantic clarity when modeling substance banks (total refrigerant in equipment). Using `bank` instead of `equipment` can make code more readable in banking scenarios:
+
+#### Sales
+Includes domestic, import, and recycling if active. Excludes export.
+
+ - `set` / `change` sales impacts all consumption but recycling is limited by the recover command so domestic and import will be modified to satisfy command.
+ - `cap` / `floor` place lower or upper limits on all consumption including recycling.
+
+For virgin only, replace `sales` with individual commands on `domestic` and `import` to exclude secondary.
+
+#### Age
+The `age` stream tracks the weighted average age of equipment in the population. This is a computed, read-only stream that cannot be set by users:
 
 - Age starts at 0 years for initial equipment
 - Age increases by 1 year each simulation year

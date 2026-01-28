@@ -55,10 +55,10 @@
           In this case, let's create a new chat session. Then, tell it to look up information about Kigali Sim through a message like this:
         </p>
 
-        <pre class="prompt-code"><code>Hello! I would like help with building a Kigali Sim simulation. Please read https://kigalisim.org/llms-full.txt?v=20251226 to learn more. Please stick to only features compatible with the UI editor.</code></pre>
+        <pre class="prompt-code"><code>Hello! I would like help with building a Kigali Sim simulation. Please read https://kigalisim.org/llms-full.txt?v=20260128 to learn more. Please stick to only features compatible with the UI editor.</code></pre>
 
         <p>
-          Need a little cheat? <a href="tutorial_05.qta" download>Download the Tutorial 5</a> file here. Also, for more capable assistants like Claude, this is enough. However, some assistants cannot access the full internet or won't know how to work with this kind of file out of the box. If your assistant is having issues, instead, attach the <a href="https://kigalisim.org/llms-full.txt?v=20251226" download>Kigali Sim llms-full.txt</a> file as an attachment!
+          Need a little cheat? <a href="tutorial_05.qta" download>Download the Tutorial 5</a> file here. Also, for more capable assistants like Claude, this is enough. However, some assistants cannot access the full internet or won't know how to work with this kind of file out of the box. If your assistant is having issues, instead, attach the <a href="https://kigalisim.org/llms-full.txt?v=20260128" download>Kigali Sim llms-full.txt</a> file as an attachment!
         </p>
 
         <p>
@@ -123,8 +123,15 @@ policy included.</code></pre>
         </p>
 
         <details>
-          <summary>More about policy order</summary>
-          <p>Sometimes the order in which policies apply can matter. For example, consider a policy which reduces consumption by 5% and a separate policy that imposes a cap. Should the reduction count towards the cap or be applied after the cap has taken place? It depends on your policy assumptions. If the cap is a permit and the change is an educational policy, one may wish to have the percent change applied prior to cap. This is why having that policy further up in the list is important.</p>
+          <summary>More about policy order and interaction</summary>
+          <div>
+            <p>
+              Sometimes the order in which policies apply can matter. For example, consider a policy which reduces consumption by 5% and a separate policy that imposes a cap. Should the reduction count towards the cap or be applied after the cap has taken place? It depends on your policy assumptions. If the cap is a permit and the change is an educational policy, one may wish to have the percent change applied prior to cap. This is why having that policy further up in the list is important.
+            </p>
+            <p>
+              In this case, we have recycling applied with possible changes to amount of virgin consumption. Then, the cap is applied, displacing any of the remaining virgin consumption over the limit to R-600a. Note that the combined scenario has lower consumption than permit alone because we set our permit to cap all sales which includes secondary. We can replace sales with individual caps on domestic and import if we want to target virgin only.
+            </p>
+          </div>
         </details>
       </section>
 
