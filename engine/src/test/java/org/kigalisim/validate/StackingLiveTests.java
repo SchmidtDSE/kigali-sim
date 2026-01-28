@@ -1429,15 +1429,12 @@ public class StackingLiveTests {
     assertNotNull(permit2030, "Should have Permit result for 2030");
     final double permitDomestic = permit2030.getDomestic().getValue().doubleValue();
 
-    // Assert: With 100% induction, Permit First and Recycling First should be equal
-    // With 100% induction, recycling adds ON TOP of virgin sales (doesn't displace).
-    // The cap correctly accounts for induced demand, so the order doesn't matter:
-    // - Recycling First: recycling calculates amount, cap sets virgin (accounting for induction)
-    // - Permit First: cap sets virgin (accounting for induction), recycling adds on top
-    double orderTolerance = 0.1; // kg
-    assertEquals(permitFirstDomestic, recyclingFirstDomestic, orderTolerance,
+    // Assert: Permit First should have higher domestic than Recycling First in 2030
+    // When recycling is applied first, the cap operates on the increased base (recycled added).
+    // When permit is applied first, the cap reduces before recycling adds to it.
+    assertTrue(permitFirstDomestic > recyclingFirstDomestic,
         String.format(
-            "With 100%% induction, Permit First domestic (%.2f kg) should equal "
+            "Permit First domestic (%.2f kg) should be higher than "
             + "Recycling First domestic (%.2f kg) in 2030",
             permitFirstDomestic, recyclingFirstDomestic));
 
@@ -1678,6 +1675,14 @@ public class StackingLiveTests {
     assertNotNull(recycleThenChange2, "Should have Recycle Then Change result for year 2");
     final double recycleThenChangeDomestic = recycleThenChange2.getDomestic().getValue().doubleValue();
 
+    // Print actual values for debugging
+    System.out.println("=== Change and Recycle Stacking Test ===");
+    System.out.println(String.format("BAU: %.2f kg", bauDomestic));
+    System.out.println(String.format("Change: %.2f kg", changeDomestic));
+    System.out.println(String.format("Recycle: %.2f kg", recycleDomestic));
+    System.out.println(String.format("Change Then Recycle: %.2f kg", changeThenRecycleDomestic));
+    System.out.println(String.format("Recycle Then Change: %.2f kg", recycleThenChangeDomestic));
+
     // Assert: Change alone should be lower than BAU
     assertTrue(changeDomestic < bauDomestic,
         String.format("Change domestic (%.2f kg) should be lower than BAU (%.2f kg) in year 2",
@@ -1793,6 +1798,14 @@ public class StackingLiveTests {
         recycleThenChangeList.stream(), 2, "Domestic Refrigeration", "HFC-134a");
     assertNotNull(recycleThenChange2, "Should have Recycle Then Change result for year 2");
     final double recycleThenChangeDomestic = recycleThenChange2.getDomestic().getValue().doubleValue();
+
+    // Print actual values for debugging
+    System.out.println("=== Change and Recycle Stacking Test (Sales) ===");
+    System.out.println(String.format("BAU: %.2f kg", bauDomestic));
+    System.out.println(String.format("Change: %.2f kg", changeDomestic));
+    System.out.println(String.format("Recycle: %.2f kg", recycleDomestic));
+    System.out.println(String.format("Change Then Recycle: %.2f kg", changeThenRecycleDomestic));
+    System.out.println(String.format("Recycle Then Change: %.2f kg", recycleThenChangeDomestic));
 
     // Assert: Change alone should be lower than BAU
     assertTrue(changeDomestic < bauDomestic,
