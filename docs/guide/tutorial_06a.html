@@ -32,7 +32,7 @@
         </ul>
       </details>
 
-      <section id="motivation">
+      <section class="major" id="motivation">
         <h2>Motivation</h2>
 
         <p>
@@ -44,7 +44,7 @@
         </p>
       </section>
 
-      <section id="preparing-for-ai">
+      <section class="major" id="preparing-for-ai">
         <h2>Preparing for AI</h2>
 
         <p>
@@ -52,79 +52,83 @@
         </p>
 
         <p>
-          In this case, let's create a new chat session and then give it your Tutorial 5 file by going to the Save File button at the top of the screen before adding it to the chat as an attachment. Finally, tell it to look up information about Kigali Sim through a message like this:
+          In this case, let's create a new chat session. Then, tell it to look up information about Kigali Sim through a message like this:
         </p>
 
-        <pre><code>Hello! I would like help with the attached Kigali Sim simulation. Please
-read https://kigalisim.org/llms-full.txt?v=20251226 to learn more. Please
-stick to only features compatible with the UI editor.</code></pre>
+        <pre class="prompt-code"><code>Hello! I would like help with building a Kigali Sim simulation. Please read https://kigalisim.org/llms-full.txt?v=20251226 to learn more. Please stick to only features compatible with the UI editor.</code></pre>
 
         <p>
-          Need a little cheat? <a href="tutorial_05.qta" download>Download the Tutorial 5</a> file here.
-        </p>
-
-        <p>
-          For more capable assistants like Claude, this is enough. However, some assistants cannot access the full internet or won't know how to work with this kind of file out of the box. If your assistant is having issues, instead, attach the <a href="https://kigalisim.org/llms-full.txt?v=20251226">Kigali Sim llms-full.txt</a> file as an attachment!
+          Need a little cheat? <a href="tutorial_05.qta" download>Download the Tutorial 5</a> file here. Also, for more capable assistants like Claude, this is enough. However, some assistants cannot access the full internet or won't know how to work with this kind of file out of the box. If your assistant is having issues, instead, attach the <a href="https://kigalisim.org/llms-full.txt?v=20251226" download>Kigali Sim llms-full.txt</a> file as an attachment!
         </p>
 
         <p>
-          Note that we are telling the AI assistant to avoid advanced features which require programming. More details about this are available in <a href="/guide/tutorial_11.html">Tutorial 11</a>.
+          When your assistant is ready, next give it your Tutorial 5 file. This can be done by going to the Save File button at the top of the Kigali Sim application and adding it to the chat as an attachment with a message like this:
+        </p>
+
+        <pre class="prompt-code"><code>Great! The attached is the simulation I started working on.</code></pre>
+
+        <p>
+          <strong>Note</strong>: More details and troubleshooting steps specific to individual AI assistants are available in <a href="/guide/tutorial_11.html">Tutorial 11</a>.
         </p>
       </section>
 
-      <section id="asking-about-recycling">
+      <section class="major" id="asking-about-recycling">
         <h2>Asking about Recycling</h2>
 
         <p>
           There's quite a few parameters to specify for recycling. So, let's actually start this time by asking the AI assistant for help. Here's an example prompt:
         </p>
 
-        <pre><code>I want to add a recycling intervention for HFC-134a. Can you please tell
-me what each of the parameters are that are required for a recycling
-policy?</code></pre>
+        <pre class="prompt-code"><code>I want to add a recycling intervention for HFC-134a. Can you please tell me what each of the parameters are that are required for a recycling policy?</code></pre>
 
         <p>
           Let's follow up to its response in a moment.
         </p>
       </section>
 
-      <section id="adding-the-recycling-policy">
+      <section class="major" id="adding-the-recycling-policy">
         <h2>Adding the Recycling Policy</h2>
 
         <p>With that in mind, let's go ahead and provide the details:</p>
 
-        <pre><code>Great! Here's what I would like:
+        <pre class="prompt-code"><code>Great! Here's the recycling intervention I would like:
 
- - 20% recovery.
- - 90% reuse.
- - Recycle at point of servicing (recharge).
- - 0% induced demand.
+ - Recover 20%.
+ - With 90% reuse.
+ - With 100% induction.
 
 Let's have this start in year 2027 and continue to the end of the simulation.
+We can have this recycling happen at point of servicing (recharge).
 
-Let's call this policy Domestic Recycling. Please also add a new simulation alongside BAU and Permit called Recycling with this new Domestic Recycling policy included.</code></pre>
+Let's call this policy Domestic Recycling. Please also add a new simulation
+alongside BAU and Permit called Recycling with this new Domestic Recycling
+policy included.</code></pre>
 
         <p>
           Let's take a look at what the AI produced by opening up the resulting file in Kigali Sim. Check its work but, in particular, note that it both added a new policy and a new simulation scenario.
         </p>
       </section>
 
-      <section id="add-a-combined-simulation">
+      <section class="major" id="add-a-combined-simulation">
         <h2>Add a Combined Simulation</h2>
 
         <p>
           Let's finish this off by asking for a combined simulation which both recycles and applies the sales permit.
         </p>
 
-        <pre><code>Fantastic! Please next add a Combined simulation scenario which applies
-domestic recycling then also sales permit.</code></pre>
+        <pre class="prompt-code"><code>Fantastic! Please next add a Combined simulation scenario which applies domestic recycling then also sales permit.</code></pre>
 
         <p>
-          Pay close attention to how this is reflected in the UI-based editor after opening the new file. Note that we asked for domestic recycling to be applied prior to the sales permit. This means that induced demand is applied but then the sales permit ensures that the limits are still respected. In many cases, the ordering of policies does not matter but we will see policy stack ordering in a later tutorial.
+          Pay close attention to how this is reflected in the UI-based editor after opening the new file. Note that we asked for domestic recycling to be applied prior to the sales permit. This means that induced demand is applied but then the sales permit ensures that the limits are still respected. This is further explored at the end of the tutorial.
         </p>
+
+        <details>
+          <summary>More about policy order</summary>
+          <p>Sometimes the order in which policies apply can matter. For example, consider a policy which reduces consumption by 5% and a separate policy that imposes a cap. Should the reduction count towards the cap or be applied after the cap has taken place? It depends on your policy assumptions. If the cap is a permit and the change is an educational policy, one may wish to have the percent change applied prior to cap. This is why having that policy further up in the list is important.</p>
+        </details>
       </section>
 
-      <section id="results">
+      <section class="major" id="results">
         <h2>Results</h2>
 
         <p>
@@ -148,17 +152,29 @@ domestic recycling then also sales permit.</code></pre>
           </video>
         </p>
 
-        <p>
-          Note that we said 100% induced demand. This means that virgin consumption does not on its own decrease because recycling is present. This is common in recycling programs where recycling does not 1:1 offset virgin production. Determining the correct rate of displacement (100% - induced demand) can require a bit of work. Induced demand is likely neither 0% or 100% in practice. However, this ambiguity goes away when we add the cap policy. When both are employed together, we see a stronger response in terms of emissions.
-        </p>
+        <details>
+          <summary>More on induced demand</summary>
+          <div>
+            <p>
+              Note that we said 100% induced demand. This means that virgin consumption does not on its own decrease because recycling is present. This is common in recycling programs where recycling does not 1:1 offset virgin production. Determining the correct rate of displacement (100% - induced demand) can require a bit of work.
+            </p>
 
-        <p>
-          For comparison, try setting the induced demand to <strong>0%</strong> instead. With 0% induced demand, every kg of recycled substance means one less kg of virgin substance produced, a direct 1:1 offset. First, check the <strong>Bank</strong> view with million units of equipment selected. Notice that BAU and recycling scenarios now have the same amount of equipment, since recycling no longer drives additional demand. Next, switch to <strong>Consumption</strong> and observe that virgin domestic production is now lower in the recycling scenario. Finally, return to <strong>Emissions</strong> to see that they remain lower with recycling in either case, though the mechanism differs between 0% and 100% induced demand. For the purposes of the later tutorials, let's leave induced demand at 100%, but remember that you can try out different values along the way.
-        </p>
+            <p>
+              For comparison, try setting the induced demand to <strong>0%</strong> instead. With 0% induced demand, every kg of recycled substance means one less kg of virgin substance produced, a direct 1:1 offset. First, check the <strong>Bank</strong> view with million units of equipment selected. Notice that BAU and recycling scenarios now have the same amount of equipment, since recycling no longer drives additional demand. Next, switch to <strong>Consumption</strong> and observe that virgin domestic production is now lower in the recycling scenario. Finally, return to <strong>Emissions</strong> to see that they remain lower with recycling in either case, though the mechanism differs between 0% and 100% induced demand. For the purposes of the later tutorials, let's leave induced demand at 100%, but remember that you can try out different values along the way.
+            </p>
 
-        <p>
-          Note: <strong>Bank</strong> refers to all of the equipment and substance (not yet emitted to the atmosphere) in a country. Some call this reservoir. This can be expressed in terms of number of units of equipment, substance volumes, and tCO2e. Kigali Sim uses Bank to refer to the full population of equipment and substance in the country at any given time. This is also where metrics derived from operating characteristics (like energy consumption) are reported.
-        </p>
+            <p>
+              All that in mind, induced demand is likely neither 0% nor 100% in practice. However, this ambiguity largely goes away when we add the cap policy. When both are employed together, we see a stronger response in terms of emissions. In this case though, it is important to have recycling followed by permit. This is because we want recycling effects calculated first. After all, if there's enough servicing activity, demand is higher than it would be without recycling! Then, the cap policy can reduce whatever virgin sales were after recycling to the mandated levels, offsetting any induced demand over the cap into R-600a instead of leaving it in HFC-134a.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>More about terminology / bank</summary>
+          <p>
+            <strong>Bank</strong> refers to all of the equipment and substance (not yet emitted to the atmosphere) in a country. Some call this reservoir. This can be expressed in terms of number of units of equipment, substance volumes, and tCO2e. Kigali Sim uses Bank to refer to the full population of equipment and substance in the country at any given time. This is also where metrics derived from operating characteristics (like energy consumption) are reported.
+          </p>
+        </details>
 
         <p id="tutorial-gif-6-4" class="tutorial-gif-holder">
           <video
@@ -175,7 +191,7 @@ domestic recycling then also sales permit.</code></pre>
 
       </section>
 
-      <section id="conclusion">
+      <section class="major" id="conclusion">
         <h2>Conclusion</h2>
 
         <p>
@@ -187,7 +203,7 @@ domestic recycling then also sales permit.</code></pre>
         </p>
       </section>
 
-      <section id="next-steps">
+      <section class="major" id="next-steps">
         <h2>Next Steps</h2>
 
         <p>

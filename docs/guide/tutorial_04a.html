@@ -34,7 +34,7 @@
         </ul>
       </details>
 
-      <section id="motivation">
+      <section class="major" id="motivation">
         <h2>Motivation</h2>
 
         <p>
@@ -46,7 +46,7 @@
         </p>
       </section>
 
-      <section id="preparing-for-ai">
+      <section class="major" id="preparing-for-ai">
         <h2>Preparing for AI</h2>
 
         <p>
@@ -58,27 +58,27 @@
         </p>
 
         <p>
-          <strong>If you are new to the AI</strong> or just want to start fresh, create a new chat session and then give it your Tutorial 3 file by going to the Save File button at the top of the screen before adding it to the chat as an attachment. Finally, tell it to look up information about Kigali Sim through a message like this:
+          <strong>If you are new to the AI</strong> or just want to start fresh, create a new chat session. Then, tell it to look up information about Kigali Sim through a message like this:
         </p>
 
-        <pre><code>Hello! I would like help with the attached Kigali Sim simulation. Please
-read https://kigalisim.org/llms-full.txt?v=20251226 to learn more. Please
-stick to only features compatible with the UI editor.</code></pre>
+        <pre class="prompt-code"><code>Hello! I would like help with building a Kigali Sim simulation. Please read https://kigalisim.org/llms-full.txt?v=20251226 to learn more. Please stick to only features compatible with the UI editor.</code></pre>
 
         <p>
-          Need a little cheat? <a href="tutorial_03.qta" download>Download the Tutorial 3</a> file here.
-        </p>
-
-        <p>
-          For more capable assistants like Claude, this is enough. However, some assistants cannot access the full internet or won't know how to work with this kind of file out of the box. If your assistant is having issues, instead, attach the <a href="https://kigalisim.org/llms-full.txt?v=20251226">Kigali Sim llms-full.txt</a> file as an attachment!
+          Need a little cheat? <a href="tutorial_03.qta" download>Download the Tutorial 3</a> file here. Also, for more capable assistants like Claude, this is enough. However, some assistants cannot access the full internet or won't know how to work with this kind of file out of the box. If your assistant is having issues, instead, attach the <a href="https://kigalisim.org/llms-full.txt?v=20251226" download>Kigali Sim llms-full.txt</a> file as an attachment!
         </p>
 
         <p>
-          Note that we are telling the AI assistant to avoid advanced features which require programming. More details about this are available in <a href="/guide/tutorial_11.html">Tutorial 11</a>.
+          When your assistant is ready, next give it your Tutorial 3 file. This can be done by going to the Save File button at the top of the Kigali Sim application and adding it to the chat as an attachment with a message like this:
+        </p>
+
+        <pre class="prompt-code"><code>Great! The attached is the simulation I started working on.</code></pre>
+
+        <p>
+          <strong>Note</strong>: More details and troubleshooting steps specific to individual AI assistants are available in <a href="/guide/tutorial_11.html">Tutorial 11</a>.
         </p>
       </section>
 
-      <section id="adding-imports-for-hfc-134a">
+      <section class="major" id="adding-imports-for-hfc-134a">
         <h2>Adding imports for HFC-134a</h2>
 
         <p>
@@ -89,45 +89,40 @@ stick to only features compatible with the UI editor.</code></pre>
           Let's say that ABC imports some but not all of their HFC-134a. Therefore, for <strong>Domestic Refrigeration</strong>, modify your <strong>HFC-134a</strong> consumption record with a prompt like this:
         </p>
 
-        <pre><code>Please modify HFC-134a to enable imports in addition to the domestic
-manufacture already present. For charge, let's use 0.2 kg / unit for
-import. Then, let's reduce domestic to 13 mt / year for this substance
-in 2025. However, also add 11 mt / year in year 2025. Thanks!</code></pre>
+        <pre class="prompt-code"><code>Please modify HFC-134a to enable imports in addition to the domestic manufacture already present. For charge, let's use 0.2 kg / unit for import. Then, let's reduce domestic to 13 mt / year for this substance in 2025. However, also add 11 mt / year in year 2025. Thanks!</code></pre>
 
         <p>
           When the AI is done, check its work by downloading the file it creates and using the Load File button in Kigali Sim. You should see changes when you click "edit" next to HFC-134a (domestic refrigeration).
         </p>
       </section>
 
-      <section id="first-economic-growth">
+      <section class="major" id="first-economic-growth">
         <h2>First Economic Growth</h2>
 
         <p>
           In addition to trade, let's also add in economic growth. For example, these projections might come from industry surveys or from outside modeling efforts. Let's continue with HFC-134a:
         </p>
 
-        <pre><code>Great! Let's continue with HFC-134a. Next, please expect growth +6% of
-current for all sales (domestic manufacture and import) from 2025 to
-2030. Then, have this decrease to +4% of current for all sales from
-2031 to 2035.</code></pre>
+        <pre class="prompt-code"><code>Great! Let's continue with HFC-134a. Next, please expect growth +6% of current for all sales (domestic manufacture and import) from 2025 to 2030. Then, have this decrease to +4% of current for all sales from 2031 to 2035.</code></pre>
 
         <p>
-          Note: You can use <code>% current</code> instead of <code>%</code> for growth rates to make it explicit that the percentage applies to the current year's value. This distinction doesn't matter in this simulation but we say % of current year so that the AI knows for sure we mean % of current year's value though Claude would just use the default % if we didn't specify. This could come up in simulations with multiple change directives due to complex economic modeling.
+          Be sure to open the resulting simulation again and see how the AI's edits translate to changes in the configuration seen in the editor. You'll want to open up the "change" tab after clicking "edit" next to HFC-134a again.
         </p>
 
-        <p>
-          Regardless, be sure to open the resulting simulation again and see how the AI's edits translate to changes in the configuration seen in the editor. You'll want to open up the "change" tab after clicking "edit" next to HFC-134a again.
-        </p>
+        <details>
+          <summary>More about percentages</summary>
+          <p>Note: You can use <code>% current</code> instead of <code>%</code> for growth rates to make it explicit that the percentage applies to the current year's value. The system supports three percentage formats: <code>%</code> (equivalent to <code>% current</code>) applies the percentage to the current year's value, <code>% current</code> explicitly applies to the current year's value, and <code>% prior year</code> applies the percentage to the previous year's value. This flexibility allows you to match your data source's reference year convention. This could come up in simulations with multiple change directives due to complex economic modeling.</p>
+        </details>
       </section>
 
-      <section id="expanding-the-growth">
+      <section class="major" id="expanding-the-growth">
         <h2>Expanding the Growth</h2>
 
         <p>
           Let's continue by applying these growth rates to other substances.
         </p>
 
-        <pre><code>Great! Let's continue with change statements. Using HFC-134a as an example, please ensure the following:
+        <pre class="prompt-code"><code>Great! Let's continue with change statements. Using HFC-134a as an example, please ensure the following:
 
 HFC-134a (domestic refrigeration):
 
@@ -154,7 +149,7 @@ R-410A (domestic AC): +6% (2025-2035)</code></pre>
         </p>
       </section>
 
-      <section id="results">
+      <section class="major" id="results">
         <h2>Results</h2>
 
         <p>
@@ -184,7 +179,7 @@ R-410A (domestic AC): +6% (2025-2035)</code></pre>
         </p>
       </section>
 
-      <section id="conclusion">
+      <section class="major" id="conclusion">
         <h2>Conclusion</h2>
 
         <p>
@@ -200,7 +195,7 @@ R-410A (domestic AC): +6% (2025-2035)</code></pre>
         </p>
       </section>
 
-      <section id="next-steps">
+      <section class="major" id="next-steps">
         <h2>Next Steps</h2>
 
         <p>
