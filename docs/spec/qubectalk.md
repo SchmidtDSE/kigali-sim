@@ -115,7 +115,7 @@ initial charge with 0.10 kg / unit for export
 If this is omitted and the substance has sales, an error message may be shown. The initial charge determines how much substance is contained in each unit of new equipment for that stream.
 
 ### Sales
-The sale of substances typically defines the equipment population. QubecTalk considers sales to fit into three groups: `domestic`, `import`, and `export`.
+The sale of substances typically defines the equipment population. QubecTalk considers possible streams to fit into `domestic`, `import`, `export`, or `recycling`.
 
 **Enable Statement**: Before setting sales values, streams must be explicitly enabled using the `enable` command. This command indicates which streams (domestic, import, export) will be used for a substance:
 
@@ -163,6 +163,13 @@ change export by +3 % each year during years 6 to 9
 If no stream is specified, it will apply proportionally across sub-streams (domestic manufacturing, imports, and exports).
 
 **Equipment Units and Implicit Recharge**: When specifying sales using equipment units (e.g., `set domestic to 100 units`), the system automatically calculates and includes implicit recharge. This means the engine assumes sufficient substance is available to service (recharge) existing equipment in addition to the substance needed for initial charges on new equipment. This behavior applies because users specifying equipment units are expressing intent about how much new equipment is to be sold, and the simulation ensures servicing needs are met automatically.
+
+**Sales keyword**: The `sales` keyword indicates all consumption so includes domestic, import, and recycling if active. It excludes exports.
+
+ - `set` / `change` sales impacts all consumption but recycling is limited by the addressable stream as indicated in a `recover` command so domestic and import will be modified to satisfy new target levels with the same level of prior recycling.
+ - `cap` / `floor` place lower or upper limits on all consumption including recycling.
+
+For virgin only, replace `sales` with individual commands on `domestic` and `import` to exclude secondary.
 
 ### Population
 Historic equipment populations are typically inferred by sales before applying a retirement rate into the future. However, they may be specified manually as well.

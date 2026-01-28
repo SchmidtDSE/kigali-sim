@@ -14,6 +14,14 @@ Finally, we want to again express our gratitude for your feedback and time.
 
 The following changes have been adopted and released.
 
+### Sales clarification in documentation
+
+**Status**: Released January 28, 2026
+
+**Classification**: Clarification
+
+Expanded documentation regarding the meaning and use of the `sales` keyword. See [#731](https://github.com/SchmidtDSE/kigali-sim/issues/731).
+
 ### AI troubleshooting guidance
 
 **Status**: Released January 27, 2026
