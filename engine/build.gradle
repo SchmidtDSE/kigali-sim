@@ -12,7 +12,7 @@ plugins {
 }
 
 group = 'org.kigalisim'
-version = '0.1.5'
+version = '0.1.6'
 
 eclipse {
     classpath {
@@ -285,7 +285,7 @@ publishing {
       gpr(MavenPublication) {
         groupId = 'org.kigalisim'
         artifactId = 'engine'
-        version = '0.1.5'
+        version = '0.1.6'
 
         from(components.java)
         artifact fatJarVersion
