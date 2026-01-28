@@ -22,6 +22,14 @@ The following changes have been adopted and released.
 
 Expanded Tutorial 11 to provide further guidance on specific AI assistants.
 
+### AI troubleshooting guidance
+
+**Status**: Released January 27, 2026
+
+**Classification**: Bug
+
+Ensured induced demand still included in the target when setting a cap. Our apologies.
+
 ### Improved tutorials
 
 **Status**: Released January 26, 2026
