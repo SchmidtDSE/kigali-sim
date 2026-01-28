@@ -59,6 +59,10 @@ h2 {
   margin-bottom: 10px;
 }
 
+h3.compact {
+  margin-bottom: 5px;
+}
+
 header {
   background-color: #F0F0F0;
   padding: 5px;
@@ -92,13 +96,13 @@ pre.prompt-code {
   overflow-wrap: break-word;
 }
 
-section {
+section.major {
   margin-top: 30px;
   border-top: 1px dotted #A0A0A0;
   padding-top: 30px;
 }
 
-section.no-border {
+section.major.no-border {
   border-top: none;
   margin-top: 0;
 }

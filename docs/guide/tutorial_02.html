@@ -30,7 +30,7 @@
         </ul>
       </details>
 
-      <section id="motivation">
+      <section class="major" id="motivation">
         <h2>Motivation</h2>
 
         <p>
@@ -42,7 +42,7 @@
         </p>
       </section>
 
-      <section id="setting-up-your-first-application">
+      <section class="major" id="setting-up-your-first-application">
         <h2>Setting Up Your First Application</h2>
 
         <p>Let's start by creating a new simulation for ABC:</p>
@@ -69,7 +69,7 @@
         </p>
       </section>
 
-      <section id="adding-hfc-134a-substance">
+      <section class="major" id="adding-hfc-134a-substance">
         <h2>Adding HFC-134a Substance</h2>
 
         <p>Next, let's add our refrigerant substance:</p>
@@ -77,13 +77,18 @@
         <ul>
           <li>Click <strong>Add Consumption</strong>.</li>
           <li>Enter <strong>HFC-134a</strong> for the substance name.</li>
-          <li>Set the Global Warming Potential to <strong>1430 kgCO2e/kg</strong>. This means 1430 kg of CO2 equivalent per kilogram of substance. You can also use other units like 1.43 tCO2e/kg.</li>
+          <li>Set the GHG equivalency to <strong>1430 kgCO2e/kg</strong>.</li>
           <li>Leave energy consumption at <strong>1 kWh/unit</strong> for now.</li>
           <li><strong>Enable the domestic manufacture checkbox</strong> (domestic production stream).</li>
           <li><strong>Leave import and export unchecked</strong> as ABC Country doesn't trade HFC-134a for domestic refrigeration.</li>
         </ul>
 
         <p>Don't click save yet! We need to configure equipment properties first.</p>
+
+        <details>
+          <summary>More about greenhouse gas emissions</summary>
+          <p>In Kigali Sim the GHG equivalency or intensity is the same as the global warming potential (GWP) of the substance. Our value means 1430 kg of CO2 equivalent per kilogram of substance. You can also use other units like 1.43 tCO2e/kg.</p>
+        </details>
 
         <p id="tutorial-gif-2-2" class="tutorial-gif-holder">
           <video
@@ -99,7 +104,7 @@
         </p>
       </section>
 
-      <section id="equipment-properties">
+      <section class="major" id="equipment-properties">
         <h2>Equipment Properties</h2>
 
         <p>Now let's define the equipment characteristics that drive HFC consumption:</p>
@@ -112,7 +117,10 @@
           <li>Leave <strong>"Retirement reduces in-service equipment"</strong> checked. This is recommended for most simulations but a later tutorial will revisit this option.</li>
         </ul>
 
-        <p>The retirement rate is sometimes called the <strong>hazard rate</strong> or <strong>scrap rate</strong> in equipment lifecycle analysis. Kigali Sim, by default, assumes a constant hazard rate when you specify a percentage. However, this can be modified by using a non-percentage retirement amount if you need more complex retirement patterns.</p>
+        <details>
+          <summary>More about retirement rate</summary>
+          <p>The retirement rate is sometimes called the <strong>hazard rate</strong> or <strong>scrap rate</strong> in equipment lifecycle analysis. Kigali Sim, by default, assumes a constant hazard rate when you specify a percentage. However, this can be modified by using a non-percentage retirement amount if you need more complex retirement patterns.</p>
+        </details>
 
         <p>These basic parameters are enough to start modeling, but we also will want to account for servicing existing equipment.</p>
 
@@ -130,7 +138,7 @@
         </p>
       </section>
 
-      <section id="servicing-configuration">
+      <section class="major" id="servicing-configuration">
         <h2>Servicing Configuration</h2>
 
         <p>Refrigerants are needed both for new equipment (initial charge) and maintenance of existing equipment:</p>
@@ -159,7 +167,7 @@
         </p>
       </section>
 
-      <section id="initial-conditions">
+      <section class="major" id="initial-conditions">
         <h2>Initial Conditions</h2>
 
         <p>Head to the <strong>Set tab</strong> to specify ABC Country's starting conditions:</p>
@@ -187,12 +195,15 @@
           </video>
         </p>
 
-        <p>
-          Note that, below the setpoints, you'll see a "Default sales assumption in a new year" dropdown. For this tutorial (and most simulations), leave this set to "Continue from last year (recommended)", which is the default. This setting controls how sales carry over from one year to the next. The default option maintains existing sales patterns, allowing the model to automatically balance substance allocation between initial charge and recharge based on equipment population dynamics.
-        </p>
+        <details>
+          <summary>More about default sales assumptions</summary>
+          <p>
+            Below the setpoints, you may see a "Default sales assumption in a new year" dropdown. For this tutorial (and most simulations), leave this set to "Continue from last year (recommended)" which is the default. This setting controls how sales carry over from one year to the next. The default option maintains existing sales patterns, allowing the model to automatically balance substance allocation between initial charge and recharge based on equipment population dynamics. In other words, it assumes that prior sales levels persist until other indication is provided.
+          </p>
+        </details>
       </section>
 
-      <section id="running-your-first-simulation">
+      <section class="major" id="running-your-first-simulation">
         <h2>Running Your First Simulation</h2>
 
         <p>Now let's see our model in action. After clicking save for our consumption record, do the following:</p>
@@ -219,18 +230,23 @@
         </p>
       </section>
 
-      <section id="interpreting-results">
+      <section class="major" id="interpreting-results">
         <h2>Interpreting Results</h2>
 
         <p>Let's examine what our model shows us.</p>
 
         <ul>
           <li>First, select the <strong>Consumption</strong> radio button and you'll see HFC-134a consumption steady at <strong>25 mt/year</strong>, which the model automatically allocates between initial charge for new equipment and servicing existing equipment.</li>
-          <li>Next, select <strong>Equipment</strong> to see that equipment population grows but the growth rate decreases over time. This happens because as the equipment population increases, more of the manufactured substance goes to recharge existing units, leaving less for new equipment growth.</li>
+          <li>Next, select <strong>Bank</strong> to see that equipment population grows but the growth rate decreases over time. This happens because as the equipment population increases, more of the manufactured substance goes to recharge existing units, leaving less for new equipment growth.</li>
           <li>Finally, with <strong>Emissions</strong> selected, recharge emissions (substance lost during service) also grow but at a decreasing rate, reflecting the sub-linear equipment population growth.</li>
         </ul>
 
         <p>We will add additional dynamics but this starts building an intuition for how Kigali Sim interpreted our very simple model.</p>
+
+        <details>
+          <summary>More about bank</summary>
+          <p>We will return to the concept of the bank in later sections of this tutorial series. However, at a high level, this refers to all of the equipment and substance not yet emitted within the country. The "bank measures" allow us to see what that population of machinery and reservoir of substance looks like. Even if policies and treaty mechanisms often do not directly address these metrics, this may be important to understand when modeling.</p>
+        </details>
 
         <p id="tutorial-gif-2-7" class="tutorial-gif-holder">
           <video
@@ -246,7 +262,7 @@
         </p>
       </section>
 
-      <section id="conclusion">
+      <section class="major" id="conclusion">
         <h2>Conclusion</h2>
 
         <p>
@@ -273,7 +289,7 @@
         </p>
       </section>
 
-      <section id="next-steps">
+      <section class="major" id="next-steps">
         <h2>Next Steps</h2>
 
         <p>

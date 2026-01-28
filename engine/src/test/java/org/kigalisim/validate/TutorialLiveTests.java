@@ -482,7 +482,9 @@ public class TutorialLiveTests {
     System.out.println("Year " + year + ": Permit total = " + permitTotal
         + " kg, Combined total = " + combinedTotal + " kg");
 
-    assertTrue(combinedTotal >= permitTotal,
+    // Allow 0.1 kg tolerance for floating point comparisons
+    double tolerance = 0.1;
+    assertTrue(combinedTotal >= permitTotal - tolerance,
         "Combined total (" + combinedTotal + " kg) should be >= Permit total ("
             + permitTotal + " kg) in year " + year
             + " because 100% induction recycling should not reduce the virgin sales basis for the 85% cap");

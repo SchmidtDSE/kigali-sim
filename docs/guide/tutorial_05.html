@@ -27,7 +27,7 @@
         </ul>
       </details>
 
-      <section id="motivation">
+      <section class="major" id="motivation">
         <h2>Motivation</h2>
 
         <p>
@@ -35,7 +35,7 @@
         </p>
       </section>
 
-      <section id="adding-r-600a-imports">
+      <section class="major" id="adding-r-600a-imports">
         <h2>Adding R-600a Imports</h2>
 
         <p>
@@ -67,18 +67,23 @@
         </p>
       </section>
 
-      <section id="adding-the-sales-permitting-policy">
+      <section class="major" id="adding-the-sales-permitting-policy">
         <h2>Adding the Sales Permitting Policy</h2>
 
         <p>Now let's create ABC's permitting system that targets HFC-134a in domestic refrigeration, where displaced demand will shift to R-600a.</p>
 
         <ul>
           <li>Click <strong>Add Policy</strong>. Name it "Sales Permit". Then, select <strong>Domestic Refrigeration</strong> as the application and <strong>HFC-134a</strong> as the substance.</li>
-          <li>Go to the <strong>Limit</strong> tab within your HFC-134a policy configuration and click <strong>Add Limit</strong>. Then, <strong>Cap</strong> all sales to 85% (or equivalently <strong>85% prior year</strong>) during <strong>years 2029 to 2034</strong>. Note that percentage caps and floors are relative to the prior year's value by default. You can make this explicit by using <code>% prior year</code> instead of <code>%</code>.</li>
+          <li>Go to the <strong>Limit</strong> tab within your HFC-134a policy configuration and click <strong>Add Limit</strong>. Then, <strong>Cap</strong> all sales to 85% (or equivalently <strong>85% prior year</strong>) during <strong>years 2029 to 2034</strong>.</li>
           <li><strong>Displacing</strong> means that the demand lost from HFC-134a is then sent to another stream or substance. In this case, let's have it go to <strong>R-600a</strong> instead. Leave the displacement type as "displacing" for now. We'll discuss the other displacement options in a moment!</li>
-          <li>Click <strong>Add Limit</strong> again. Set <strong>Cap</strong> on sales to 0 kg displacing R-600a during <strong>years 2035 to onwards</strong>. This will conclude the phase-out.</li>
+          <li>Click <strong>Add Limit</strong> again. Set <strong>Cap</strong> on sales to 0 kg displacing R-600a <strong>starting in year 2035</strong> (to onwards). This will conclude the phase-out.</li>
           <li>Click <strong>Finish</strong> to finish the policy</li>
         </ul>
+
+        <details>
+          <summary>More about percentages in cap and floor</summary>
+          <p>Note that percentage caps and floors are relative to the prior year's value by default. You can make this explicit by using <code>% prior year</code> instead of <code>%</code>.</p>
+        </details>
 
         <p id="tutorial-gif-5-2" class="tutorial-gif-holder">
           <video
@@ -94,7 +99,7 @@
         </p>
       </section>
 
-      <section id="creating-the-permit-simulation">
+      <section class="major" id="creating-the-permit-simulation">
         <h2>Creating the Permit Simulation</h2>
 
         <p>Now let's create a simulation to see how the permitting policy compares to business-as-usual.</p>
@@ -123,7 +128,7 @@
         </p>
       </section>
 
-      <section id="results">
+      <section class="major" id="results">
         <h2>Results</h2>
 
         <p>Let's observe how:</p>
@@ -188,7 +193,7 @@
         </p>
       </section>
 
-      <section id="conclusion">
+      <section class="major" id="conclusion">
         <h2>Conclusion</h2>
 
         <p>You've successfully implemented ABC Country's first policy intervention! The sales permitting system demonstrates:</p>
@@ -210,7 +215,7 @@
         </p>
       </section>
 
-      <section id="next-steps">
+      <section class="major" id="next-steps">
         <h2>Next Steps</h2>
 
         <p>

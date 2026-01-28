@@ -14,13 +14,37 @@ Finally, we want to again express our gratitude for your feedback and time.
 
 The following changes have been adopted and released.
 
+### AI troubleshooting guidance
+
+**Status**: Released January 27, 2026
+
+**Classification**: Enhancement
+
+Expanded Tutorial 11 to provide further guidance on specific AI assistants.
+
+### Improved tutorials
+
+**Status**: Released January 26, 2026
+
+**Classification**: Enhancement
+
+Further improved tutorials 2 - 6 based on user testing.
+
 ### Manual ordering of policies in UI editor
 
-**Status**: Released January 23, 2026
+**Status**: Released January 24, 2026
 
 **Classification**: Enhancement
 
 Added ability to manually specify the ordering of policy application / policy stacking. This allows for order-dependent policy scenarios to be defined without requiring use of the code editor. For example, if a percent decrease (like from an educational program) should be applied before or after a cap (like from a permitting system). Further described in [#703](https://github.com/SchmidtDSE/kigali-sim/issues/703).
+
+### Fix basis for stacked change policy
+
+**Status**: Released January 24, 2026.
+
+**Classification**: Bug / clarification
+
+When stacking policies, it is possible for change statements with `% current` to use the original basis from BAU and not that set by another policy like floor or cap. See [#711](https://github.com/SchmidtDSE/kigali-sim/pull/711) and [#716](https://github.com/SchmidtDSE/kigali-sim/pull/716). There is some ambiguity in what is desireable but, given explicit control of stacking order, this was fixed to use the modified value as basis (like if cap or floor were violated) instead of the original value for `% current`. Corresponding changes made to documentation to provide clarity. Our apologies for this ambiguity. Tests have been added to prevent regression. See [#690](https://github.com/SchmidtDSE/kigali-sim/issues/690) and [#691](https://github.com/SchmidtDSE/kigali-sim/issues/691) (new features released on Dec 30, 2025).
 
 ### Alphabetical sorting in UI lists
 
