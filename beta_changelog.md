@@ -20,7 +20,7 @@ The following changes have been adopted and released.
 
 **Classification**: Enhancement
 
-Added additional documention describing each of the types of emissions in further details. See [glossary](https://kigalisim.org/guide/glossary.html) and [tutorial 2](https://kigalisim.org/guide/tutorial_02.html).
+Added additional documention describing each of the types of emissions in further detail. See [glossary](https://kigalisim.org/guide/glossary.html) and [tutorial 2](https://kigalisim.org/guide/tutorial_02.html).
 
 ### Sales clarification in documentation
 
