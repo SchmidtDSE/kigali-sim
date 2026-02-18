@@ -66,7 +66,7 @@
           <dd>A programming language specialized for a particular application domain. QubecTalk is a DSL designed specifically for Montreal Protocol policy simulation.</dd>
 
           <dt>Emissions</dt>
-          <dd>Direct release of substances to the atmosphere, measured in tCO2e (tons CO2 equivalent). Sources include emissions during useful life (typically approximated by recharge emissions looking at leakage calculated at servicing), end-of-life emissions (those encountered at disposal or otherwise after retirement), and initial charge emissions. Excludes substance captured to be recycled or destroyed before emitting.</dd>
+          <dd>Direct release of substances to the atmosphere, measured in tCO2e (tons CO2 equivalent). Sources include emissions during useful life (typically approximated by recharge emissions, calculated at time of servicing), end-of-life emissions (those encountered at disposal or after retirement), and initial charge emissions. Excludes substance captured to be recycled or destroyed before emitting.</dd>
           
           <dt>Emissions, direct</dt>
           <dd>The emissions caused directly by the activity of interest. Kigali Sim models these direct emissions which is to say the actual controlled substances. In contrast, it does not model indirect emissions like CO2e from energy consumption though its metrics can support calculation of indirect emissions.</dd>
@@ -78,10 +78,10 @@
           <dd>Emissions caused by activities which support the activity of interest. For Kigali Sim, these indirect emissions are typically CO2e from energy production. Users may model this by exporting data from Kigali Sim and combining it with energy mix information.</dd>
 
           <dt>Emissions, initial charge</dt>
-          <dd>Emissions encountered when first filling equipment with refrigerant. Typically these volumes are very small relative to emissions encountered during the lifetime or end of life.</dd>
+          <dd>Emissions from first filling equipment with refrigerant. Typically very small relative to recharge or end-of-life emissions over the equipment's lifetime.</dd>
 
           <dt>Emissions, recharge</dt>
-          <dd>Recharge emissions approximate emissions during the active lifetime of equipment (excluding end of life). This is specifically the amount of substance reported as emitted as calculated at time of servicing. This approximation is used as the shape of the curve describing precise emissions over time between manufacturing and servicing, between servicings themselves, or between servicing and end of life, is typically unknown or variable. If no servicing, these are reported emitted at end of life.</dd>
+          <dd>Recharge emissions approximate emissions during the active lifetime of equipment (excluding end of life). This is specifically the amount of substance calculated to have been emitted at time of servicing. This approximation is used as the shape of the curve describing precise emissions over time between manufacturing and servicing, between consecutive servicings, or between servicing and end of life, is typically unknown or variable. If no servicing occurs, these are reported as emitted at end of life.</dd>
 
           <dt>Enable</dt>
           <dd>A command that activates specific supply streams (domestic, import, export) for a substance. Required before operations like recharge that require sales distribution calculations. Syntax: <code>enable streamName</code>.</dd>
