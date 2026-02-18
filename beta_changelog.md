@@ -14,6 +14,14 @@ Finally, we want to again express our gratitude for your feedback and time.
 
 The following changes have been adopted and released.
 
+### Emissions details in documentation
+
+**Status**: Released Feburary 18, 2026
+
+**Classification**: Enhancement
+
+Added additional documention describing each of the types of emissions in further detail. See [glossary](https://kigalisim.org/guide/glossary.html) and [tutorial 2](https://kigalisim.org/guide/tutorial_02.html).
+
 ### Sales clarification in documentation
 
 **Status**: Released January 28, 2026
