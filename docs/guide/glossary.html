@@ -72,16 +72,16 @@
           <dd>The emissions caused directly by the activity of interest. Kigali Sim models these direct emissions which is to say the actual controlled substances. In contrast, it does not model indirect emissions like CO2e from energy consumption though its metrics can support calculation of indirect emissions.</dd>
 
           <dt>Emissions, end of life</dt>
-          <dd>End of life emissions or EOL emissions refer to the leakage of substance from equipment after that equipment is no longer in service. This is typically reported at the time the equipment leaves active use as the curve describing the precise emissions over time after retirement or "scrap" may be variable or unknown. In practice, this is substance which was not reported in recharge emissions or initial charge emissions but which is still expected to emit because it was not captured (recycled or destroyed).</dd>
+          <dd>End of life emissions or EOL emissions refer to the leakage of substance from equipment after that equipment is no longer in service. This is typically reported at the time the equipment leaves active use as the curve describing the precise emissions over time after retirement or "scrap" may be variable or unknown. Note that, in practice, this is substance which was not reported in recharge emissions or initial charge emissions but which is still expected to emit because it was not captured (recycled or destroyed).</dd>
 
           <dt>Emissions, indirect</dt>
           <dd>Emissions caused by activities which support the activity of interest. For Kigali Sim, these indirect emissions are typically CO2e from energy production. Users may model this by exporting data from Kigali Sim and combining it with energy mix information.</dd>
 
           <dt>Emissions, initial charge</dt>
-          <dd>Emissions from first filling equipment with refrigerant. Typically very small relative to recharge or end-of-life emissions over the equipment's lifetime.</dd>
+          <dd>Emissions from first filling equipment with refrigerant or other substance. Typically very small or negligible relative to recharge or end-of-life emissions over the equipment's lifetime.</dd>
 
           <dt>Emissions, recharge</dt>
-          <dd>Recharge emissions approximate emissions during the active lifetime of equipment (excluding end of life). This is specifically the amount of substance calculated to have been emitted at time of servicing. This approximation is used as the shape of the curve describing precise emissions over time between manufacturing and servicing, between consecutive servicings, or between servicing and end of life, is typically unknown or variable. If no servicing occurs, these are reported as emitted at end of life.</dd>
+          <dd>Recharge emissions approximate emissions during the active lifetime of equipment (excluding end of life). This is specifically the amount of substance found to have been emitted at time of servicing. This approximation is used as the shape of the curve describing precise emissions over time between manufacturing and servicing or between consecutive servicings is typically unknown or variable.</dd>
 
           <dt>Enable</dt>
           <dd>A command that activates specific supply streams (domestic, import, export) for a substance. Required before operations like recharge that require sales distribution calculations. Syntax: <code>enable streamName</code>.</dd>
