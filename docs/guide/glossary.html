@@ -66,7 +66,22 @@
           <dd>A programming language specialized for a particular application domain. QubecTalk is a DSL designed specifically for Montreal Protocol policy simulation.</dd>
 
           <dt>Emissions</dt>
-          <dd>Direct release of substances to the atmosphere, measured in tCO2e (tons CO2 equivalent). Sources include recharge emissions (servicing/leakage), end-of-life emissions (disposal), and initial charge emissions (informational metric). Kigali Sim models direct emissions (the actual controlled substances) but not indirect emissions (energy consumption) though users may model the later by exporting data from Kigali Sim and combining it with energy mix information.</dd>
+          <dd>Direct release of substances to the atmosphere, measured in tCO2e (tons CO2 equivalent). Sources include emissions during useful life (typically approximated by recharge emissions, calculated at time of servicing), end-of-life emissions (those encountered at disposal or after retirement), and initial charge emissions. Excludes substance captured to be recycled or destroyed before emitting.</dd>
+          
+          <dt>Emissions, direct</dt>
+          <dd>The emissions caused directly by the activity of interest. Kigali Sim models these direct emissions or, in other words, the actual controlled substances. In contrast, it does not model indirect emissions like CO2e from energy consumption. However, its metrics can support calculation of indirect emissions.</dd>
+
+          <dt>Emissions, end of life</dt>
+          <dd>End of life emissions or EOL emissions refer to the leakage of substance from equipment after that equipment is no longer in service. This is typically reported at the time the equipment leaves active use. This is because the curve describing the precise emissions over time after retirement or "scrap" may be variable or unknown. Note that, in practice, this is substance which was not reported in recharge emissions or initial charge emissions but which is still expected to emit because it was not captured (recycled or destroyed).</dd>
+
+          <dt>Emissions, indirect</dt>
+          <dd>Emissions caused by activities which support the activity of interest. For Kigali Sim, these indirect emissions are typically CO2e from energy production. Users may model this by exporting data from Kigali Sim and combining it with energy mix information.</dd>
+
+          <dt>Emissions, initial charge</dt>
+          <dd>Emissions from first filling equipment with refrigerant or other substance. Typically very small or negligible relative to recharge or end-of-life emissions over the equipment's lifetime.</dd>
+
+          <dt>Emissions, recharge</dt>
+          <dd>Recharge emissions approximate emissions during the active lifetime of equipment (excluding end of life). This is specifically the amount of substance found to have been emitted at time of servicing. This approximation is used because the shape of the curve describing precise emissions over time between manufacturing and servicing or between consecutive servicings is typically unknown or variable.</dd>
 
           <dt>Enable</dt>
           <dd>A command that activates specific supply streams (domestic, import, export) for a substance. Required before operations like recharge that require sales distribution calculations. Syntax: <code>enable streamName</code>.</dd>
