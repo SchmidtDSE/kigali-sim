@@ -63,6 +63,11 @@ h3.compact {
   margin-bottom: 5px;
 }
 
+dt {
+  font-weight: bold;
+  margin-top: 10px;
+}
+
 header {
   background-color: #F0F0F0;
   padding: 5px;
