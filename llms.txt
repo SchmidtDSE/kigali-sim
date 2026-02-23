@@ -1,7 +1,7 @@
 # Kigali Sim
 v=20250926
 
-Open source web-based simulation engine for Montreal Protocol policy modeling. It is **storngly** recommended to review [llms-full.txt](llms-full.txt) which can be found at http://kigalisim.org/llms-full.txt.
+Open source web-based simulation engine for Montreal Protocol policy modeling. It is **strongly** recommended to review [llms-full.txt](llms-full.txt) which can be found at http://kigalisim.org/llms-full.txt.
 
 ## Resources
 
