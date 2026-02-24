@@ -26,12 +26,14 @@ Next, let's add our refrigerant substance:
 
 - Click **Add Consumption**.
 - Enter **HFC-134a** for the substance name.
-- Set the Global Warming Potential to **1430 kgCO2e/kg**. This means 1430 kg of CO2 equivalent per kilogram of substance. You can also use other units like 1.43 tCO2e/kg.
+- Set the GHG equivalency to **1430 kgCO2e/kg**.
 - Leave energy consumption at **1 kWh/unit** for now.
 - **Enable the domestic manufacture checkbox** (domestic production stream).
 - **Leave import and export unchecked** as ABC Country doesn't trade HFC-134a for domestic refrigeration.
 
 Don't click save yet! We need to configure equipment properties first.
+
+> **More about greenhouse gas emissions**: In Kigali Sim the GHG equivalency or intensity is the same as the global warming potential (GWP) of the substance. Our value means 1430 kg of CO2 equivalent per kilogram of substance. You can also use other units like 1.43 tCO2e/kg.
 
 <video src="/webm/tutorial_02_02.webm" autoplay loop muted playsinline style="width: 500px; border: 2px solid #505050; border-radius: 3px;">Your browser does not support the video tag. Please upgrade to a modern browser.</video>
 
@@ -45,7 +47,7 @@ Now let's define the equipment characteristics that drive HFC consumption:
 - Set annual retirement rate to **5% each year** (corresponds to 20-year average equipment lifetime)
 - Leave **"Retirement reduces in-service equipment"** checked. This is recommended for most simulations but a later tutorial will revisit this option.
 
-The retirement rate is sometimes called the **hazard rate** or **scrap rate** in equipment lifecycle analysis. Kigali Sim, by default, assumes a constant hazard rate when you specify a percentage. However, this can be modified by using a non-percentage retirement amount if you need more complex retirement patterns.
+> **More about retirement rate**: The retirement rate is sometimes called the **hazard rate** or **scrap rate** in equipment lifecycle analysis. Kigali Sim, by default, assumes a constant hazard rate when you specify a percentage. However, this can be modified by using a non-percentage retirement amount if you need more complex retirement patterns.
 
 These basic parameters are enough to start modeling, but we also will want to account for servicing existing equipment.
 
@@ -77,7 +79,7 @@ This 25 mt/year gives us a good demonstrative curve showing how consumption patt
 
 <video src="/webm/tutorial_02_05.webm" autoplay loop muted playsinline style="width: 500px; border: 2px solid #505050; border-radius: 3px;">Your browser does not support the video tag. Please upgrade to a modern browser.</video>
 
-Note that, below the setpoints, you'll see a "Default sales assumption in a new year" dropdown. For this tutorial (and most simulations), leave this set to "Continue from last year (recommended)", which is the default. This setting controls how sales carry over from one year to the next. The default option maintains existing sales patterns, allowing the model to automatically balance substance allocation between initial charge and recharge based on equipment population dynamics.
+> **More about default sales assumptions**: Below the setpoints, you may see a "Default sales assumption in a new year" dropdown. For this tutorial (and most simulations), leave this set to "Continue from last year (recommended)" which is the default. This setting controls how sales carry over from one year to the next. The default option maintains existing sales patterns, allowing the model to automatically balance substance allocation between initial charge and recharge based on equipment population dynamics. In other words, it assumes that prior sales levels persist until other indication is provided.
 
 ## Running Your First Simulation
 
@@ -96,10 +98,22 @@ Now let's see our model in action. After clicking save for our consumption recor
 Let's examine what our model shows us.
 
 - First, select the **Consumption** radio button and you'll see HFC-134a consumption steady at **25 mt/year**, which the model automatically allocates between initial charge for new equipment and servicing existing equipment.
-- Next, select **Equipment** to see that equipment population grows but the growth rate decreases over time. This happens because as the equipment population increases, more of the manufactured substance goes to recharge existing units, leaving less for new equipment growth.
-- Finally, with **Emissions** selected, recharge emissions (substance lost during service) also grow but at a decreasing rate, reflecting the sub-linear equipment population growth.
+- Next, select **Bank** to see that equipment population grows but the growth rate decreases over time. This happens because as the equipment population increases, more of the manufactured substance goes to recharge existing units, leaving less for new equipment growth.
+- Finally, with **Emissions** selected, **recharge emissions** and **end of life emissions** also grow but at a decreasing rate, reflecting the sub-linear equipment population growth.
 
 We will add additional dynamics but this starts building an intuition for how Kigali Sim interpreted our very simple model.
+
+> **More about emissions**: Emissions are volumes of substance which leak into the environment. We typically determine that substance was lost during servicing when those levels are topped up or at end of life where any remaining substance is assumed to eventually leak. That said, emissions is the sum of:
+>
+> - **Initial charge emissions**, typically a small to negligible amount of emissions as part of the manufacture or assembly process.
+> - **Recharge emissions**, the amount determined to have been emitted between either 1) manufacture and the current servicing or 2) between the prior servicing and the current one.
+> - **End of life emissions**, the amount assumed to eventually leak, typically after retirement ("scrap").
+>
+> These happen over the lifetime of equipment. However, the specific curve describing volume emitted over time is often variable or unknown. Therefore, the exact timing of emissions is sometimes unclear. That in mind, these three volumes of emissions are associated with the time of manufacture or assembly, servicing, or retirement. In practice, substance which was not reported in recharge emissions or initial charge emissions but which is still expected to emit because it was not captured (recycled or destroyed) is reported in end of life emissions. While individual units' emissions curves may be unclear, the population-wide amount as a whole tends to resolve to a strong volume estimate and good temporal approximation using this approach.
+>
+> In any case, emissions excludes substance captured prior to emitting. A topic revisited in a later tutorial, this includes substance captured and destroyed or recycled.
+
+> **More about bank**: We will return to the concept of the bank in later sections of this tutorial series. However, at a high level, this refers to all of the equipment and substance not yet emitted within the country. The "bank measures" allow us to see what that population of machinery and reservoir of substance looks like. Even if policies and treaty mechanisms often do not directly address these metrics, this may be important to understand when modeling.
 
 <video src="/webm/tutorial_02_07.webm" autoplay loop muted playsinline style="width: 500px; border: 2px solid #505050; border-radius: 3px;">Your browser does not support the video tag. Please upgrade to a modern browser.</video>
 
