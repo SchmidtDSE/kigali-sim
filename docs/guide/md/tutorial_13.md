@@ -2,15 +2,6 @@
 
 We can assume that retired equipment are automatically replaced regardless of sales data.
 
-## Contents
-
-- [Motivation](#motivation)
-- [Retiring normally](#retiring-normally)
-- [Evaluating default behavior](#evaluating-default-behavior)
-- [Changing the assumption](#changing-the-assumption)
-- [Conclusion](#conclusion)
-- [Next Steps](#next-steps)
-
 ## Motivation
 
 When we added equipment retirement in previous tutorials, that equipment was removed from the population. Then, depending on the level of sales (import, domestic, or recycling), that equipment may or may not get replaced. That said, what if your sales data already excluded replacement equipment? Perhaps you have data from a permitting system so know when equipment is sold but not when it is replaced or transferred. We can instruct Kigali Sim that retired equipment should be replaced on top of other sales values specified.
@@ -27,7 +18,7 @@ Let's add a business as usual scenario that runs from 2025 to 2035. Then, look a
 
 Let's go back to HFC-134a's definition. If you are using the UI-based designer, go to the Equipment tab and uncheck "Retirement reduces in-service equipment" or, if you are using QubecTalk, add `with replacement` to the end of the retire command like so:
 
-```
+```qubectalk
 uses substance "HFC-134a"
   enable import
   assume only recharge sales
@@ -53,8 +44,6 @@ This option to retire with replacement can be helpful in a number of modeling ci
 ## Next Steps
 
 [Tutorial 14](/guide/tutorial_14.html) will explore bank-based modeling. You'll learn how to use Kigali Sim when you have longitudinal bank estimates and need to work backwards to determine consumption patterns.
-
-[Previous: Tutorial 12](/guide/tutorial_12.html) | [Next: Tutorial 14](/guide/tutorial_14.html)
 
 [Previous: Tutorial 12](/guide/tutorial_12.html) | [Return to Guide Index](/guide) | [Next: Tutorial 14](/guide/tutorial_14.html)
 
