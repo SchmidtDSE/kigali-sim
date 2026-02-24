@@ -7,6 +7,7 @@ QubecTalk includes advanced language features for conditional logic, probabilist
 - [Comments](#comments)
 - [Comparison Operators](#comparison-operators)
 - [Conditional Statements](#conditional-statements)
+- [Constraints](#constraints)
 - [Logical Operators](#logical-operators)
 - [Mathematical Operations](#mathematical-operations)
 - [Probabilistic Sampling](#probabilistic-sampling)
@@ -74,6 +75,28 @@ set import to 75 if economicGrowth > 5 else
 # With variable definitions
 define testVar as 5
 set domestic to 100 if testVar > 10 else 50 endif mt during year 2025
+```
+
+## Constraints
+
+**Purpose:** Constrain values to a specified range using the `limit` function.
+
+**Syntax:**
+- `limit expression to [min, max]` - Constrain to range
+- `limit expression to [, max]` - Only maximum (min is negative infinity)
+- `limit expression to [min, ]` - Only minimum (max is positive infinity)
+
+**Examples:**
+```qubectalk
+# Gradual phase-in with constraint
+define level as limit (yearAbsolute - 2025) * 10 to [0, 100]
+replace level % of domestic with "R-600a" during years 2026 to onwards
+
+# Ensure non-negative values
+define safeValue as limit (salesGrowth - baseCost) to [0, ]
+
+# Cap maximum value
+define cappedGrowth as limit growthRate to [, 15]
 ```
 
 ## Logical Operators
@@ -160,6 +183,7 @@ recover sample uniformly from 20% to 40% with 90% reuse during years 2027 to onw
 - `mt` - Metric tons
 - `unit` / `units` - Equipment units
 - `tCO2e` - Tons of CO₂ equivalent
+- `kgCO2e` - Kilograms of CO₂ equivalent
 - `kwh` - Kilowatt hours
 
 **Time Units:**
@@ -169,8 +193,8 @@ recover sample uniformly from 20% to 40% with 90% reuse during years 2027 to onw
 
 **Other Units:**
 - `%` - Percentage (context-dependent: same as `% prior year` for caps/floors, `% current` for set/change)
-- `% prior year` - Percentage of prior year's value (explicit form)
-- `% current` or `% current year` - Percentage of current year's value (explicit form)
+- `% prior year` - Percentage of prior year's value (explicit form). In other words, always a percent of the final value of the stream from the prior year no matter the operations undertaken in the current year.
+- `% current` or `% current year` - Percentage of current year's value (explicit form). In other words, always a percent of the current value which may compound or incorporate other actions already taken on the stream in the current year.
 - `each` - Per unit (e.g., "% each year")
 
 **Percentage Unit Variants:**
@@ -193,6 +217,7 @@ initial charge with 0.15 kg / unit for domestic
 
 # GWP and energy
 equals 1430 tCO2e / mt 100 kwh / unit
+equals 1430 kgCO2e / kg 100 kwh / unit
 
 # Time specifications
 change sales by 5% / year during years 2025 to 2030

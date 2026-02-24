@@ -19,19 +19,21 @@ For **Domestic Refrigeration**, modify your **R-600a** consumption record:
 
 This gives R-600a a similar import/domestic split as HFC-134a, making the displacement mechanism clearer when we implement the policy.
 
-<video src="/webm/tutorial_05_01.webm" autoplay loop muted playsinline style="width: 500px; border: 2px solid #505050; border-radius: 3px;">Your browser does not support the video tag. Please upgrade to a modern browser.</video>
+<video src="/webm/tutorial_05_01.webm" loop muted playsinline controls style="width: 500px; border: 2px solid #505050; border-radius: 3px;">Your browser does not support the video tag. Please upgrade to a modern browser.</video>
 
 ## Adding the Sales Permitting Policy
 
 Now let's create ABC's permitting system that targets HFC-134a in domestic refrigeration, where displaced demand will shift to R-600a.
 
 - Click **Add Policy**. Name it "Sales Permit". Then, select **Domestic Refrigeration** as the application and **HFC-134a** as the substance.
-- Go to the **Limit** tab within your HFC-134a policy configuration and click **Add Limit**. Then, **Cap** all sales to 85% (or equivalently **85% prior year**) during **years 2029 to 2034**. Note that percentage caps and floors are relative to the prior year's value by default. You can make this explicit by using `% prior year` instead of `%`.
-- **Displacing** means that the demand lost from HFC-134a is then sent to another stream or substance. In this case, let's have it go to **R-600a** instead. Leave the displacement type as "displacing" for now—we'll discuss the other displacement options in a moment.
-- Click **Add Limit** again. Set **Cap** on sales to 0 kg displacing R-600a during **years 2035 to onwards**. This will conclude the phase-out.
+- Go to the **Limit** tab within your HFC-134a policy configuration and click **Add Limit**. Then, **Cap** all sales to 85% (or equivalently **85% prior year**) during **years 2029 to 2034**.
+- **Displacing** means that the demand lost from HFC-134a is then sent to another stream or substance. In this case, let's have it go to **R-600a** instead. Leave the displacement type as "displacing" for now. We'll discuss the other displacement options in a moment!
+- Click **Add Limit** again. Set **Cap** on sales to 0 kg displacing R-600a **starting in year 2035** (to onwards). This will conclude the phase-out.
 - Click **Finish** to finish the policy
 
-<video src="/webm/tutorial_05_02.webm" autoplay loop muted playsinline style="width: 500px; border: 2px solid #505050; border-radius: 3px;">Your browser does not support the video tag. Please upgrade to a modern browser.</video>
+> **More about percentages in cap and floor**: Note that percentage caps and floors are relative to the prior year's value by default. You can make this explicit by using `% prior year` instead of `%`.
+
+<video src="/webm/tutorial_05_02.webm" loop muted playsinline controls style="width: 500px; border: 2px solid #505050; border-radius: 3px;">Your browser does not support the video tag. Please upgrade to a modern browser.</video>
 
 ## Creating the Permit Simulation
 
@@ -45,7 +47,7 @@ Now let's create a simulation to see how the permitting policy compares to busin
 
 The simulation will now show both your original **BAU** and new **Permit** scenarios side by side.
 
-<video src="/webm/tutorial_05_03.webm" autoplay loop muted playsinline style="width: 500px; border: 2px solid #505050; border-radius: 3px;">Your browser does not support the video tag. Please upgrade to a modern browser.</video>
+<video src="/webm/tutorial_05_03.webm" loop muted playsinline controls style="width: 500px; border: 2px solid #505050; border-radius: 3px;">Your browser does not support the video tag. Please upgrade to a modern browser.</video>
 
 ## Results
 
@@ -57,7 +59,7 @@ Let's observe how:
 
 Specifically, under the **Substances** view with Permit selected under the **Simulations** radio button, you can see how displacement works: as HFC-134a is restricted, R-600a scales up proportionally. Since R-600a now has both domestic and import sources, the displaced demand gets distributed across both supply chains.
 
-<video src="/webm/tutorial_05_04.webm" autoplay loop muted playsinline style="width: 500px; border: 2px solid #505050; border-radius: 3px;">Your browser does not support the video tag. Please upgrade to a modern browser.</video>
+<video src="/webm/tutorial_05_04.webm" loop muted playsinline controls style="width: 500px; border: 2px solid #505050; border-radius: 3px;">Your browser does not support the video tag. Please upgrade to a modern browser.</video>
 
 All that said, remember that without **Attribute initial charge to importer** checked, the visualizations show only the substance flows for servicing imported equipment, not their initial charge. Before finishing up, let's just quickly check that box once more and:
 
@@ -68,7 +70,11 @@ All that said, remember that without **Attribute initial charge to importer** ch
 
 The lines almost perfectly overlap when **Attribute initial charge to importer** is checked but are a little further off without it, especially in 2035. This is because, as the import / domestic ratios (and their growth rates) are slightly different for R-600a and HFC-134a, the trade attribution causes the numbers to shift around a bit even though the total global-level picture is essentially balanced. That said, in any case, there are very minor differences expected due to servicing differences between equipment.
 
-<video src="/webm/tutorial_05_05.webm" autoplay loop muted playsinline style="width: 500px; border: 2px solid #505050; border-radius: 3px;">Your browser does not support the video tag. Please upgrade to a modern browser.</video>
+<video src="/webm/tutorial_05_05.webm" loop muted playsinline controls style="width: 500px; border: 2px solid #505050; border-radius: 3px;">Your browser does not support the video tag. Please upgrade to a modern browser.</video>
+
+As a teaser for later, you might notice that the equipment count is higher in the permit case than BAU. This is because we are assuming displaced volumes of substance. As the initial charge for R-600a is lower than HFC-134a, that results in more equipment. Depending on what you assume economically, this might be incorrect.
+
+We will investigate this topic in more detail in [Tutorial 8](/guide/tutorial_08.html) but you can modify this behavior already if you would like. When we used "displacing" in our permitting policy, we relied on default "equivalent" behavior that matches whatever units were last used. As we are working in kg and mt right now, this used "displacing by volume" in the change tab. Switching to "displacing by units" in that dropdown allows you to diplace equivalent equipment population rather than substance volumes.
 
 ## Conclusion
 
@@ -82,11 +88,9 @@ You've successfully implemented ABC Country's first policy intervention! The sal
 
 The permitting system shows how a relatively simple policy can achieve significant impacts. This is also a very simple model but we are already incorporating socioeconomic projections and substance interactions.
 
-**Download the completed tutorial**: [tutorial_05.qta](tutorial_05.qta) - this contains the complete model with sales permitting policies and displacement effects
+**Download the completed tutorial** result at [tutorial_05.qta](tutorial_05.qta) which contains the complete model with sales permitting policies and displacement effects. It differs from the [prior tutorial result](tutorial_04.qta) in that it adds a policy intervention.
 
 ## Next Steps
-
-**Understanding Displacement Types**: When we used "displacing" in our permitting policy, we relied on default "equivalent" behavior that matches whatever units were last used. In Tutorial 8, you'll learn about explicit displacement types. Specifically, changing to "displacing by units" in the dropdown allows you to maintain equipment population rather than substance volumes—useful when equipment tracking is your primary concern.
 
 [Tutorial 6](/guide/tutorial_06.html) will add a recovery and recycling program targeting the same HFC-134a domestic refrigeration sector. You'll learn how recycling policies complement demand-side restrictions by providing alternative supply sources, and explore how multiple policies work together to achieve comprehensive overall outcomes.
 
