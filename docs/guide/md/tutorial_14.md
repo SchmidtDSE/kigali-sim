@@ -2,15 +2,6 @@
 
 How to use Kigali Sim when you have longitudinal bank estimates. 
 
-## Contents
-
-- [Motivation](#motivation)
-- [Specifying the bank level](#specifying-the-bank-level)
-- [Understand translation](#understand-translation)
-- [Changing the bank level](#changing-the-bank-level)
-- [Conclusion](#conclusion)
-- [Next Steps](#next-steps)
-
 ## Motivation
 
 Sometimes also called the reservoir, the bank refers to the amount of substance held within the country. This is a "stock" of substance which may not have been used yet but already exists distributed across tanks and in individual units before it is emitted. Typically Kigali Sim calculates this bank by looking at the amount of equipment at the start of the year, the amount lost to retirement (scrap), the servicing needs which may indicate some emissions, recycling or recovery if active, and sales including through trade. That said, some countries might have estimates of the bank either in terms of number of units of equipment or volume of substance and, from that, need to go the other way to determine what Kigali Sim typically treats as inputs. We refer to this as "bank-based" tracking and it can be used both in the historic and future sections of a dataset.
@@ -30,7 +21,7 @@ If you are building this simulation in the UI-based designer, select "bank" for 
 
 If you are using QubecTalk, it can be specified like so:
 
-```
+```qubectalk
 uses substance "HFC-134a"
   enable import
   initial charge with 0 kg / unit for domestic
@@ -63,7 +54,7 @@ However, what will that 10% be an increase over? Recall from recent tutorials th
 
 This might be appropriate given how your forecasting model is designed but, for this tutorial, let's assume we are forecasting the bank size without that assumed continued sales. Therefore, let's set the default sales assumption to recharge only. For those working in the UI-based editor, change "Default sales assumption in a new year" to "Cover only servicing" in the General tab. Alternatively, for those in QubecTalk, add an `assume` command like as follows:
 
-```
+```qubectalk
 assume only recharge sales
 ```
 
@@ -75,19 +66,17 @@ In this tutorial, we used a bank measured in volume (mt) but we can also measure
 
 One last thing to consider is that currently we assume retired equipment is not replaced so the 10% increase in bank is after retirement from the year prior. In most simulations, this doesn't have a large effect but, if you want to assume that retired equipment is replaced such that it is strictly a 10% increase over the bank level specified in the year prior, you can turn on this automatic back fill. For those using the UI-based designer, please uncheck "Retirement reduces in-service equipment" in the Equipment tab. For those working with QubecTalk, change retirement like as follows:
 
-```
+```qubectalk
 retire 5 % / year with replacement
 ```
 
 Nevertheless, bank-based tracking provides a valuable alternative if you have overall metrics for your system but need to calculate what that means in terms of different streams like imports.
 
-**Download the completed tutorial**: [tutorial_14.qta](tutorial_14.qta) - this contains the complete bank-based modeling example
+**Download the completed tutorial**: [tutorial_14.qta](../tutorial_14.qta) - this contains the complete bank-based modeling example
 
 ## Next Steps
 
 [Tutorial 15](/guide/tutorial_15.html) will explore variable retirement and servicing rates. You'll learn how to specify hazard rates that change according to equipment age for more sophisticated lifecycle modeling.
-
-[Previous: Tutorial 13](/guide/tutorial_13.html) | [Next: Tutorial 15](/guide/tutorial_15.html)
 
 [Previous: Tutorial 13](/guide/tutorial_13.html) | [Return to Guide Index](/guide) | [Next: Tutorial 15](/guide/tutorial_15.html)
 

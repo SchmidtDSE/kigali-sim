@@ -14,19 +14,21 @@ If you did the AI version of Tutorial 3, you probably are already familiar with 
 
 **If you did Tutorial 3 with AI** and the output from your assistant looked good, just continue your same chat session! Continue with [Adding imports for HFC-134a](#adding-imports-for-hfc-134a) section.
 
-**If you are new to the AI** or just want to start fresh,  create a new chat session and then give it your Tutorial 3 file by going to the Save File button at the top of the screen before adding it to the chat as an attachment. Finally, tell it to look up information about Kigali Sim through a message like this:
+**If you are new to the AI** or just want to start fresh, create a new chat session. Then, tell it to look up information about Kigali Sim through a message like this:
 
 ```
-Hello! I would like help with the attached Kigali Sim simulation. Please
-read https://kigalisim.org/llms-full.txt?v=20260128 to learn more. Please
-stick to only features compatible with the UI editor.
+Hello! I would like help with building a Kigali Sim simulation. Please read https://kigalisim.org/llms-full.txt?v=20260128 to learn more. Please stick to only features compatible with the UI editor.
 ```
 
-Need a little cheat? [Download the Tutorial 3](tutorial_03.qta) file here.
+Need a little cheat? [Download the Tutorial 3](tutorial_03.qta) file here. Also, for more capable assistants like Claude, this is enough. However, some assistants cannot access the full internet or won't know how to work with this kind of file out of the box. If your assistant is having issues, instead, attach the [Kigali Sim llms-full.txt](https://kigalisim.org/llms-full.txt?v=20260128) file as an attachment!
 
-For more capable assistants like Claude, this is enough. However, some assistants cannot access the full internet or won't know how to work with this kind of file out of the box. If your assistant is having issues, instead, attach the [Kigali Sim llms-full.txt](https://kigalisim.org/llms-full.txt?v=20260128) file as an attachment!
+When your assistant is ready, next give it your Tutorial 3 file. This can be done by going to the Save File button at the top of the Kigali Sim application and adding it to the chat as an attachment with a message like this:
 
-Note that we are telling the AI assistant to avoid advanced features which require programming. More details about this are available in [Tutorial 11](https://kigalisim.org/guide/tutorial_11.html).
+```
+Great! The attached is the simulation I started working on.
+```
+
+**Note**: More details and troubleshooting steps specific to individual AI assistants are available in [Tutorial 11](/guide/tutorial_11.html).
 
 ## Adding imports for HFC-134a
 Before we add in growth rates, let's consider trade. Specifically, for brevity, let's have just one substance with imports.
@@ -34,10 +36,7 @@ Before we add in growth rates, let's consider trade. Specifically, for brevity, 
 Let's say that ABC imports some but not all of their HFC-134a. Therefore, for **Domestic Refrigeration**, modify your **HFC-134a** consumption record with a prompt like this:
 
 ```
-Please modify HFC-134a to enable imports in addition to the domestic
-manufacture already present. For charge, let's use 0.2 kg / unit for
-import. Then, let's reduce domestic to 13 mt / year for this substance
-in 2025. However, also add 11 mt / year in year 2025. Thanks!
+Please modify HFC-134a to enable imports in addition to the domestic manufacture already present. For charge, let's use 0.2 kg / unit for import. Then, let's reduce domestic to 13 mt / year for this substance in 2025. However, also add 11 mt / year in year 2025. Thanks!
 ```
 
 When the AI is done, check its work by downloading the file it creates and using the Load File button in Kigali Sim. You should see changes when you click "edit" next to HFC-134a (domestic refrigeration).
@@ -46,15 +45,24 @@ When the AI is done, check its work by downloading the file it creates and using
 In addition to trade, let's also add in economic growth. For example, these projections might come from industry surveys or from outside modeling efforts. Let's continue with HFC-134a:
 
 ```
-Great! Let's continue with HFC-134a. Next, please expect growth +6% of
-current for all sales (domestic manufacture and import) from 2025 to
-2030. Then, have this decrease to +4% of current for all sales from
-2031 to 2035.
+Great! Let's continue with HFC-134a. Next, please expect growth +6% of current for all sales (domestic manufacture and import) from 2025 to 2030. Then, have this decrease to +4% of current for all sales from 2031 to 2035.
 ```
 
-Note: You can use `% current` instead of `%` for growth rates to make it explicit that the percentage applies to the current year's value. This distinction doesn't matter in this simulation but we say % of current year so that the AI knows for sure we mean % of current year's value though Claude would just use the default % if we didn't specify. This could come up in simulations with multiple change directives due to complex economic modeling.
+Be sure to open the resulting simulation again and see how the AI's edits translate to changes in the configuration seen in the editor. You'll want to open up the "change" tab after clicking "edit" next to HFC-134a again.
 
-Regardless, be sure to open the resulting simulation again and see how the AI's edits translate to changes in the configuration seen in the editor. You'll want to open up the "change" tab after clicking "edit" next to HFC-134a again.
+<details>
+<summary>More about percentages</summary>
+
+Note: You can use `% current` instead of `%` for growth rates to make it explicit that the percentage applies to the current year's value. The system supports three percentage formats: `%` (equivalent to `% current`) applies the percentage to the current year's value, `% current` explicitly applies to the current year's value, and `% prior year` applies the percentage to the previous year's value. This flexibility allows you to match your data source's reference year convention. This could come up in simulations with multiple change directives due to complex economic modeling.
+</details>
+
+<details>
+<summary>More about the sales stream</summary>
+
+This refers to all consumption in the country. So, having Kigali Sim set / change sales impacts overall consumption. More specifically, it includes domestic and import but excludes export. When applying changes through the sales keyword, Kigali Sim will try to keep the ratio between domestic and import the same for the substance.
+
+Note that this may also include "secondary" substance if recycling is active. That said, indicated by the recover command, recycling capacity is assumed to be limited. So, domestic and import will be modified to satisfy a set or change command after taking the unchanged recycling stream into account. However, using sales with cap/floor (like for permitting) places lower or upper limits on all consumption including recycling. For virgin only, replace sales with individual commands on domestic and import. This will exclude secondary production.
+</details>
 
 ## Expanding the Growth
 Let's continue by applying these growth rates to other substances.
@@ -90,6 +98,10 @@ Note that the drop down menu under the Consumption radio button which can flip b
 Does the imports part of HFC-134a seem small? It's important to note that, by default, initial charge for new equipment is attributed to the exporting country. We can temporarily change this behavior to get a fuller picture of our global consumption by checking **Attribute initial charge to importer**. However, to stay consistent with Montreal Protocol standards, uncheck it to review treaty-aligned numbers. When authoring simulations, often it helps to consider both perspectives.
 
 Zooming out, we should see the acceleration in HFC-134a and HFC-32. With the **Emissions** radio button, things still remain quite dominated by HFC-134a. In contrast, the two are closer when selecting the **Consumption** radio button as that 10% increase compounds over time for HFC-32.
+
+<video src="/webm/tutorial_04_04.webm" autoplay loop muted playsinline controls style="width: 500px; border: 2px solid #505050; border-radius: 3px;">
+Your browser does not support the video tag. Please upgrade to a modern browser.
+</video>
 
 ## Conclusion
 
