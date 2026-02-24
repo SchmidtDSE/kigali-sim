@@ -77,17 +77,6 @@ You should now see your baseline simulation running.
 
 This view shows HFC-134a as the dominant refrigerant.
 
-<video
-  src="/webm/tutorial_09_01.webm"
-  loop
-  muted
-  playsinline
-  controls
-  style="width: 500px; border: 2px solid #505050; border-radius: 3px;"
->
-  Your browser does not support the video tag. Please upgrade to a modern browser.
-</video>
-
 ## Adding the GWP Reduction Policy
 
 Now let's create a policy that gradually replaces HFC-134a consumption with R-600a. This will demonstrate how a substance substitution policy can reduce overall climate impact.
@@ -107,17 +96,6 @@ Now let's create a policy that gradually replaces HFC-134a consumption with R-60
 
 This policy will progressively reduce HFC-134a consumption by 10% each year starting in 2028, with that demand being met by R-600a instead. Over time, this creates a significant shift in the refrigerant mix while maintaining overall service levels.
 
-<video
-  src="/webm/tutorial_09_02.webm"
-  loop
-  muted
-  playsinline
-  controls
-  style="width: 500px; border: 2px solid #505050; border-radius: 3px;"
->
-  Your browser does not support the video tag. Please upgrade to a modern browser.
-</video>
-
 ## Creating the Simulation
 
 Now let's create a simulation to compare the policy scenario with our business-as-usual baseline.
@@ -129,17 +107,6 @@ Now let's create a simulation to compare the policy scenario with our business-a
 - Click **Finish**.
 
 You should now see both your **BAU** and **Replacement** scenarios displayed side by side in the results panel.
-
-<video
-  src="/webm/tutorial_09_03.webm"
-  loop
-  muted
-  playsinline
-  controls
-  style="width: 500px; border: 2px solid #505050; border-radius: 3px;"
->
-  Your browser does not support the video tag. Please upgrade to a modern browser.
-</video>
 
 ## Results
 
@@ -160,17 +127,6 @@ The dramatic emissions reduction demonstrates the power of GWP-focused policies.
 - Ensure **mt/ year** is selected.
 
 Indeed, despite the reduction in GWP, the overall consumption remains unchanged.
-
-<video
-  src="/webm/tutorial_09_04.webm"
-  loop
-  muted
-  playsinline
-  controls
-  style="width: 500px; border: 2px solid #505050; border-radius: 3px;"
->
-  Your browser does not support the video tag. Please upgrade to a modern browser.
-</video>
 
 ## Conclusion
 

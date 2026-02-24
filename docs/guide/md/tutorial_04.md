@@ -20,8 +20,6 @@ Let's say that ABC imports some but not all of their HFC-134a. Therefore, for **
 
 Our tutorial later will expand this further but this gives us a good starting point.
 
-<video src="/webm/tutorial_04_01.webm" autoplay loop muted playsinline style="width: 500px; border: 2px solid #505050; border-radius: 3px;">Your browser does not support the video tag. Please upgrade to a modern browser.</video>
-
 ## First Economic Growth
 
 In addition to trade, let's also add in economic growth. For example, these projections might come from industry surveys or from outside modeling efforts. Let's start with HFC-134a:
@@ -36,8 +34,6 @@ In addition to trade, let's also add in economic growth. For example, these proj
 >
 > Note that this may also include "secondary" substance if recycling is active. That said, indicated by the recover command, recycling capacity is assumed to be limited. So, domestic and import will be modified to satisfy a set or change command after taking the unchanged recycling stream into account. However, using sales with cap/floor (like for permitting) places lower or upper limits on all consumption including recycling. For virgin only, replace sales with individual commands on domestic and import. This will exclude secondary production.
 
-<video src="/webm/tutorial_04_02.webm" autoplay loop muted playsinline style="width: 500px; border: 2px solid #505050; border-radius: 3px;">Your browser does not support the video tag. Please upgrade to a modern browser.</video>
-
 ## Expanding the Growth
 
 Let's continue by applying these growth rates using the **Change** tab for the consumption records. Below is a table of everything that should be present after you are done. However, remember that you already did HFC-134a!
@@ -51,8 +47,6 @@ Let's continue by applying these growth rates using the **Change** tab for the c
 
 You can go to **Change** tab and add changes for domestic manufacture stream or all sales, both have the same effect in this case.
 
-<video src="/webm/tutorial_04_03.webm" autoplay loop muted playsinline style="width: 500px; border: 2px solid #505050; border-radius: 3px;">Your browser does not support the video tag. Please upgrade to a modern browser.</video>
-
 ## Results
 
 Note that the drop down menu under the Consumption radio button which can flip between domestic and imports. Just as we did with the custom metric under emissions before, we can click configure custom to combine imports and domestic together.
@@ -60,8 +54,6 @@ Note that the drop down menu under the Consumption radio button which can flip b
 Does the imports part of HFC-134a seem small? It's important to note that, by default, initial charge for new equipment is attributed to the exporting country. We can temporarily change this behavior to get a fuller picture of our global consumption by checking **Attribute initial charge to importer**. However, to stay consistent with Montreal Protocol standards, uncheck it to review treaty-aligned numbers. When authoring simulations, often it helps to consider both perspectives.
 
 Zooming out, we should see the acceleration in HFC-134a and HFC-32. With the **Emissions** radio button, things still remain quite dominated by HFC-134a. In contrast, the two are closer when selecting the **Consumption** radio button as that 10% increase compounds over time for HFC-32.
-
-<video src="/webm/tutorial_04_04.webm" autoplay loop muted playsinline style="width: 500px; border: 2px solid #505050; border-radius: 3px;">Your browser does not support the video tag. Please upgrade to a modern browser.</video>
 
 ## Conclusion
 

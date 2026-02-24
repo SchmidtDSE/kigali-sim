@@ -55,17 +55,6 @@ Let's create our baseline scenario with both high-energy and low-energy models o
 
 You should now see your baseline simulation running. We expect that the high-energy model is the dominant equipment with much higher consumption volumes than the low-energy alternative. To see this, select the **Bank** and **Equipment** radio buttons (make sure **All** is selected in the equipment panel). With the specific values we entered, given the production numbers and recharge demands, there is a very slight decrease in high energy equipment over time and a gradual increase in low energy. However, overall population is increasing. Switch to **GWh / year** to see energy.
 
-<video
-  src="/webm/tutorial_10_01.webm"
-  loop
-  muted
-  playsinline
-  controls
-  style="width: 500px; border: 2px solid #505050; border-radius: 3px;"
->
-  Your browser does not support the video tag. Please upgrade to a modern browser.
-</video>
-
 ## Adding the Energy Efficiency Policy
 
 Now let's create a policy that accelerates this replacement of high-energy equipment consumption with low-energy models. This will demonstrate how an equipment efficiency policy can reduce overall energy consumption without changing refrigerant type.
@@ -86,17 +75,6 @@ Now let's create a policy that accelerates this replacement of high-energy equip
 
 This policy will progressively reduce high-energy equipment consumption relative to the BAU. Specifically, we change 20% of high energy sales each year starting in 2028 with that demand being met by low-energy equipment instead. This accelerates that change we saw earlier. However, before we can see the effects, we need to make an additional simulation.
 
-<video
-  src="/webm/tutorial_10_02.webm"
-  loop
-  muted
-  playsinline
-  controls
-  style="width: 500px; border: 2px solid #505050; border-radius: 3px;"
->
-  Your browser does not support the video tag. Please upgrade to a modern browser.
-</video>
-
 ## Creating the Simulation
 
 Next, let's create a simulation to compare the policy scenario with our business-as-usual baseline.
@@ -108,17 +86,6 @@ Next, let's create a simulation to compare the policy scenario with our business
 - Click **Finish**
 
 Kigali Sim is now simulating both options but we need to configure the visualizations to do a comparison.
-
-<video
-  src="/webm/tutorial_10_03.webm"
-  loop
-  muted
-  playsinline
-  controls
-  style="width: 500px; border: 2px solid #505050; border-radius: 3px;"
->
-  Your browser does not support the video tag. Please upgrade to a modern browser.
-</video>
 
 ## Results
 
@@ -139,17 +106,6 @@ Compare the **BAU** and **Efficiency Policy** simulations and notice how overall
 - To better see the results, change **Absolute Value** to **Relative to BAU**
 
 Taken together, even though total equipment population and refrigerant consumption stay roughly constant, the overall kWh consumption drops substantially. This is because we're replacing equipment that consumes 500 kWh/year with units that consume only 350 kWh/year.
-
-<video
-  src="/webm/tutorial_10_04.webm"
-  loop
-  muted
-  playsinline
-  controls
-  style="width: 500px; border: 2px solid #505050; border-radius: 3px;"
->
-  Your browser does not support the video tag. Please upgrade to a modern browser.
-</video>
 
 ## Conclusion
 

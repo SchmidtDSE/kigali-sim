@@ -18,8 +18,6 @@ Let's start by creating a new simulation for ABC:
 
 You won't see results yet because we haven't added any substances or equipment data.
 
-<video src="/webm/tutorial_02_01.webm" autoplay loop muted playsinline style="width: 500px; border: 2px solid #505050; border-radius: 3px;">Your browser does not support the video tag. Please upgrade to a modern browser.</video>
-
 ## Adding HFC-134a Substance
 
 Next, let's add our refrigerant substance:
@@ -35,8 +33,6 @@ Don't click save yet! We need to configure equipment properties first.
 
 > **More about greenhouse gas emissions**: In Kigali Sim the GHG equivalency or intensity is the same as the global warming potential (GWP) of the substance. Our value means 1430 kg of CO2 equivalent per kilogram of substance. You can also use other units like 1.43 tCO2e/kg.
 
-<video src="/webm/tutorial_02_02.webm" autoplay loop muted playsinline style="width: 500px; border: 2px solid #505050; border-radius: 3px;">Your browser does not support the video tag. Please upgrade to a modern browser.</video>
-
 ## Equipment Properties
 
 Now let's define the equipment characteristics that drive HFC consumption:
@@ -51,8 +47,6 @@ Now let's define the equipment characteristics that drive HFC consumption:
 
 These basic parameters are enough to start modeling, but we also will want to account for servicing existing equipment.
 
-<video src="/webm/tutorial_02_03.webm" autoplay loop muted playsinline style="width: 500px; border: 2px solid #505050; border-radius: 3px;">Your browser does not support the video tag. Please upgrade to a modern browser.</video>
-
 ## Servicing Configuration
 
 Refrigerants are needed both for new equipment (initial charge) and maintenance of existing equipment:
@@ -65,8 +59,6 @@ Refrigerants are needed both for new equipment (initial charge) and maintenance 
 
 We're almost ready to run our first simulation! We just need initial conditions.
 
-<video src="/webm/tutorial_02_04.webm" autoplay loop muted playsinline style="width: 500px; border: 2px solid #505050; border-radius: 3px;">Your browser does not support the video tag. Please upgrade to a modern browser.</video>
-
 ## Initial Conditions
 
 Head to the **Set tab** to specify ABC Country's starting conditions:
@@ -76,8 +68,6 @@ Head to the **Set tab** to specify ABC Country's starting conditions:
 - Set **domestic** manufacture to **25 mt / yr** in year 2025
 
 This 25 mt/year gives us a good demonstrative curve showing how consumption patterns evolve. However, until we specify changes in later tutorials, this production rate will remain steady based on tonnage. It will be used both for initial charge and recharge.
-
-<video src="/webm/tutorial_02_05.webm" autoplay loop muted playsinline style="width: 500px; border: 2px solid #505050; border-radius: 3px;">Your browser does not support the video tag. Please upgrade to a modern browser.</video>
 
 > **More about default sales assumptions**: Below the setpoints, you may see a "Default sales assumption in a new year" dropdown. For this tutorial (and most simulations), leave this set to "Continue from last year (recommended)" which is the default. This setting controls how sales carry over from one year to the next. The default option maintains existing sales patterns, allowing the model to automatically balance substance allocation between initial charge and recharge based on equipment population dynamics. In other words, it assumes that prior sales levels persist until other indication is provided.
 
@@ -90,8 +80,6 @@ Now let's see our model in action. After clicking save for our consumption recor
 - Set no policies (we'll add those later).
 - Indicate a duration from **2025 to 2035**
 - Click **Finish**
-
-<video src="/webm/tutorial_02_06.webm" autoplay loop muted playsinline style="width: 500px; border: 2px solid #505050; border-radius: 3px;">Your browser does not support the video tag. Please upgrade to a modern browser.</video>
 
 ## Interpreting Results
 
@@ -114,8 +102,6 @@ We will add additional dynamics but this starts building an intuition for how Ki
 > In any case, emissions excludes substance captured prior to emitting. A topic revisited in a later tutorial, this includes substance captured and destroyed or recycled.
 
 > **More about bank**: We will return to the concept of the bank in later sections of this tutorial series. However, at a high level, this refers to all of the equipment and substance not yet emitted within the country. The "bank measures" allow us to see what that population of machinery and reservoir of substance looks like. Even if policies and treaty mechanisms often do not directly address these metrics, this may be important to understand when modeling.
-
-<video src="/webm/tutorial_02_07.webm" autoplay loop muted playsinline style="width: 500px; border: 2px solid #505050; border-radius: 3px;">Your browser does not support the video tag. Please upgrade to a modern browser.</video>
 
 ## Conclusion
 
