@@ -22,13 +22,9 @@ Let's create ABC's recovery program:
 
 Please leave **induced demand at 100%** (the default). We will revisit this in just a minute.
 
-<video src="/webm/tutorial_06_01.webm" autoplay loop muted playsinline style="width: 500px; border: 2px solid #505050; border-radius: 3px;">Your browser does not support the video tag. Please upgrade to a modern browser.</video>
-
 ## Add Simulations
 
 Add both a Recycling simulation with just Domestic Recycling selected. Then, add a combined simulation with both Sales Permit and Domestic Recycling included. Again, use years 2025 to 2035.
-
-<video src="/webm/tutorial_06_02.webm" autoplay loop muted playsinline style="width: 500px; border: 2px solid #505050; border-radius: 3px;">Your browser does not support the video tag. Please upgrade to a modern browser.</video>
 
 Note: The domestic recycling is applied prior to the sales permit (should appear in the checkbox list of policies first). If not, please use the specify policy order link.
 
@@ -42,8 +38,6 @@ Piecing together what is going on with multiple policies can take a little work 
 
 Next, the **Emissions** radio button tells an interesting story where recycling captures some of those emissions. Also, this is where the combination of policies may be effective. Once we add in the cap as well, the two complement each other to achieve a higher impact than either on their own.
 
-<video src="/webm/tutorial_06_03.webm" autoplay loop muted playsinline style="width: 500px; border: 2px solid #505050; border-radius: 3px;">Your browser does not support the video tag. Please upgrade to a modern browser.</video>
-
 > **More on induced demand**: Note that we said 100% induced demand. This means that virgin consumption does not on its own decrease because recycling is present. This is common in recycling programs where recycling does not 1:1 offset virgin production. Determining the correct rate of displacement (100% - induced demand) can require a bit of work.
 >
 > For comparison, try setting the induced demand to **0%** instead. With 0% induced demand, every kg of recycled substance means one less kg of virgin substance produced, a direct 1:1 offset. First, check the **Bank** view with million units of equipment selected. Notice that BAU and recycling scenarios now have the same amount of equipment, since recycling no longer drives additional demand. Next, switch to **Consumption** and observe that virgin domestic production is now lower in the recycling scenario. Finally, return to **Emissions** to see that they remain lower with recycling in either case, though the mechanism differs between 0% and 100% induced demand. For the purposes of the later tutorials, let's leave induced demand at 100%, but remember that you can try out different values along the way.
@@ -51,8 +45,6 @@ Next, the **Emissions** radio button tells an interesting story where recycling 
 > All that in mind, induced demand is likely neither 0% nor 100% in practice. However, this ambiguity largely goes away when we add the cap policy. When both are employed together, we see a stronger response in terms of emissions. In this case though, it is important to have recycling followed by permit. This is because we want recycling effects calculated first. After all, if there's enough servicing activity, demand is higher than it would be without recycling! Then, the cap policy can reduce whatever virgin sales were after recycling to the mandated levels, offsetting any induced demand over the cap into R-600a instead of leaving it in HFC-134a.
 
 > **More about terminology / bank**: **Bank** refers to all of the equipment and substance (not yet emitted to the atmosphere) in a country. Some call this reservoir. This can be expressed in terms of number of units of equipment, substance volumes, and tCO2e. Kigali Sim uses Bank to refer to the full population of equipment and substance in the country at any given time. This is also where metrics derived from operating characteristics (like energy consumption) are reported.
-
-<video src="/webm/tutorial_06_04.webm" autoplay loop muted playsinline style="width: 500px; border: 2px solid #505050; border-radius: 3px;">Your browser does not support the video tag. Please upgrade to a modern browser.</video>
 
 ## Conclusion
 

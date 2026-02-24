@@ -19,8 +19,6 @@ For **Domestic Refrigeration**, modify your **R-600a** consumption record:
 
 This gives R-600a a similar import/domestic split as HFC-134a, making the displacement mechanism clearer when we implement the policy.
 
-<video src="/webm/tutorial_05_01.webm" loop muted playsinline controls style="width: 500px; border: 2px solid #505050; border-radius: 3px;">Your browser does not support the video tag. Please upgrade to a modern browser.</video>
-
 ## Adding the Sales Permitting Policy
 
 Now let's create ABC's permitting system that targets HFC-134a in domestic refrigeration, where displaced demand will shift to R-600a.
@@ -32,8 +30,6 @@ Now let's create ABC's permitting system that targets HFC-134a in domestic refri
 - Click **Finish** to finish the policy
 
 > **More about percentages in cap and floor**: Note that percentage caps and floors are relative to the prior year's value by default. You can make this explicit by using `% prior year` instead of `%`.
-
-<video src="/webm/tutorial_05_02.webm" loop muted playsinline controls style="width: 500px; border: 2px solid #505050; border-radius: 3px;">Your browser does not support the video tag. Please upgrade to a modern browser.</video>
 
 ## Creating the Permit Simulation
 
@@ -47,8 +43,6 @@ Now let's create a simulation to see how the permitting policy compares to busin
 
 The simulation will now show both your original **BAU** and new **Permit** scenarios side by side.
 
-<video src="/webm/tutorial_05_03.webm" loop muted playsinline controls style="width: 500px; border: 2px solid #505050; border-radius: 3px;">Your browser does not support the video tag. Please upgrade to a modern browser.</video>
-
 ## Results
 
 Let's observe how:
@@ -59,8 +53,6 @@ Let's observe how:
 
 Specifically, under the **Substances** view with Permit selected under the **Simulations** radio button, you can see how displacement works: as HFC-134a is restricted, R-600a scales up proportionally. Since R-600a now has both domestic and import sources, the displaced demand gets distributed across both supply chains.
 
-<video src="/webm/tutorial_05_04.webm" loop muted playsinline controls style="width: 500px; border: 2px solid #505050; border-radius: 3px;">Your browser does not support the video tag. Please upgrade to a modern browser.</video>
-
 All that said, remember that without **Attribute initial charge to importer** checked, the visualizations show only the substance flows for servicing imported equipment, not their initial charge. Before finishing up, let's just quickly check that box once more and:
 
 - Select the **Simulations** radio button
@@ -69,8 +61,6 @@ All that said, remember that without **Attribute initial charge to importer** ch
 - Use the **configure custom** link to combine imports and domestic production.
 
 The lines almost perfectly overlap when **Attribute initial charge to importer** is checked but are a little further off without it, especially in 2035. This is because, as the import / domestic ratios (and their growth rates) are slightly different for R-600a and HFC-134a, the trade attribution causes the numbers to shift around a bit even though the total global-level picture is essentially balanced. That said, in any case, there are very minor differences expected due to servicing differences between equipment.
-
-<video src="/webm/tutorial_05_05.webm" loop muted playsinline controls style="width: 500px; border: 2px solid #505050; border-radius: 3px;">Your browser does not support the video tag. Please upgrade to a modern browser.</video>
 
 As a teaser for later, you might notice that the equipment count is higher in the permit case than BAU. This is because we are assuming displaced volumes of substance. As the initial charge for R-600a is lower than HFC-134a, that results in more equipment. Depending on what you assume economically, this might be incorrect.
 
