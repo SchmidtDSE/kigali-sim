@@ -231,6 +231,7 @@ recover 30 % with 95 % reuse with 100 % induction at eol  # Full induced demand
 ```
 
 ## Example QubecTalk Program
+Note that the about stanza would not appear if using UI-compatible features only.
 
 ```
 start about
