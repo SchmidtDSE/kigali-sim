@@ -2,7 +2,7 @@
 
 Adding economic growth projections and import flows to create more nuanced business-as-usual scenarios.
 
-**Note that this is the conventional version of this tutorial.** An AI-assisted alternative is available at [Tutorial 4a](/guide/tutorial_04a.html).
+**Note that this is the conventional version of this tutorial.** An AI-assisted alternative is available at [Tutorial 4a](/guide/md/tutorial_04a.md).
 
 ## Motivation
 
@@ -65,9 +65,9 @@ Finally, for those with **local assembly**, domestic can be used to model in-cou
 
 ## Next Steps
 
-[Tutorial 5](/guide/tutorial_05.html) will start to add new sophistication by modeling policies. You'll learn to create sales permitting systems that progressively reduce HFC consumption while managing market displacement to lower-GWP alternatives.
+[Tutorial 5](/guide/md/tutorial_05.md) will start to add new sophistication by modeling policies. You'll learn to create sales permitting systems that progressively reduce HFC consumption while managing market displacement to lower-GWP alternatives.
 
-[Previous: Tutorial 3](/guide/tutorial_03.html) | [Return to Guide Index](/guide) | [Next: Tutorial 5](/guide/tutorial_05.html)
+[Previous: Tutorial 3](/guide/md/tutorial_03.md) | [Return to Guide Index](/guide/md/index.md) | [Next: Tutorial 5](/guide/md/tutorial_05.md)
 
 ---
 
