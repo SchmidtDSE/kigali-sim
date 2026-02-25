@@ -50,12 +50,12 @@ We think of the user's guide as a book and each tutorial like a chapter. We reco
 
 Complete reference documentation for Kigali Sim and QubecTalk, the domain-specific language used by Kigali Sim for advanced modeling and policy analysis.
 
-- [**Glossary**](glossary.md) - Definitions of key terms used throughout Kigali Sim documentation and QubecTalk
+- [**Glossary**](../glossary.html) - Definitions of key terms used throughout Kigali Sim documentation and QubecTalk
 - [**Stanzas Reference**](qubectalk_stanzas.md) - Program structure including default, policy, and simulations blocks
 - [**Commands Reference**](qubectalk_commands.md) - Executable statements for substance properties, consumption, and policy interventions
 - [**Language Features Reference**](qubectalk_language_features.md) - Advanced features including conditional logic, probabilistic sampling, and mathematical operations
-- [**Engine and Language Specification**](qubectalk.pdf) - Formal technical specification of the QubecTalk language and simulation engine
-- [**Credits**](credits.md) - Acknowledgments and contributors to the Kigali Sim project
+- [**Engine and Language Specification**](../qubectalk.pdf) - Formal technical specification of the QubecTalk language and simulation engine
+- [**Credits**](../credits.html) - Acknowledgments and contributors to the Kigali Sim project
 
 ## Get help
 

@@ -2,7 +2,7 @@
 
 Exploring secondary material through recycling programs.
 
-**Note that this is the conventional version of this tutorial.** An AI-assisted alternative is available at [Tutorial 6a](/guide/tutorial_06a.html).
+**Note that this is the conventional version of this tutorial.** An AI-assisted alternative is available at [Tutorial 6a](/guide/md/tutorial_06a.md).
 
 ## Motivation
 
@@ -50,13 +50,13 @@ Next, the **Emissions** radio button tells an interesting story where recycling 
 
 You've successfully implemented ABC Country's comprehensive HFC-134a strategy combining permitting and recycling policies. This tutorial demonstrated how recycling appears as an alternative supply source and complements demand-side restrictions for maximum policy effectiveness.
 
-**Download the completed tutorial** result at [tutorial_06.qta](tutorial_06.qta) which contains the complete model with combined permitting and recycling policies. It differs from the [prior tutorial result](tutorial_05.qta) in that it adds recycling, the results of which are most apparent when looking at emissions.
+**Download the completed tutorial** result at [tutorial_06.qta](../tutorial_06.qta) which contains the complete model with combined permitting and recycling policies. It differs from the [prior tutorial result](../tutorial_05.qta) in that it adds recycling, the results of which are most apparent when looking at emissions.
 
 ## Next Steps
 
-[Tutorial 7](/guide/tutorial_07.html) will transition from the UI-based interface to direct QubecTalk programming. You'll discover that you've been programming all along and learn to implement advanced multi-substance policies only possible through direct coding. QubecTalk also makes it easier to modify simulations faster. For example, this can help with switching from tonnes of substance to equipment unit counts. While technically possible in the UI, we will find in Tutorial 8 that those kinds of changes may be much more efficient through code.
+[Tutorial 7](/guide/md/tutorial_07.md) will transition from the UI-based interface to direct QubecTalk programming. You'll discover that you've been programming all along and learn to implement advanced multi-substance policies only possible through direct coding. QubecTalk also makes it easier to modify simulations faster. For example, this can help with switching from tonnes of substance to equipment unit counts. While technically possible in the UI, we will find in Tutorial 8 that those kinds of changes may be much more efficient through code.
 
-[Previous: Tutorial 5](/guide/tutorial_05.html) | [Return to Guide Index](/guide) | [Next: Tutorial 7](/guide/tutorial_07.html)
+[Previous: Tutorial 5](/guide/md/tutorial_05.md) | [Return to Guide Index](/guide/md/index.md) | [Next: Tutorial 7](/guide/md/tutorial_07.md)
 
 ---
 

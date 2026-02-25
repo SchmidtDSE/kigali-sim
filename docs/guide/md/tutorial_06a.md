@@ -1,7 +1,7 @@
 # Tutorial 6a: Recycling with AI
 Exploring secondary material through recycling programs, aided by AI to help design the intervention.
 
-**Note that this is the AI version of this tutorial.** You can find a version of this tutorial without AI at [Tutorial 6](/guide/tutorial_06.html).
+**Note that this is the AI version of this tutorial.** You can find a version of this tutorial without AI at [Tutorial 6](/guide/md/tutorial_06.md).
 
 ## Motivation
 Building on ABC Country's sales permitting system from Tutorial 5, we'll now add a recovery and recycling program targeting the same HFC-134a domestic refrigeration sector. This demonstrates how recycling policies work and explores the introduction of secondary substance in addition to the virgin substance we've been manipulating so far.
@@ -17,7 +17,7 @@ In this case, let's create a new chat session. Then, tell it to look up informat
 Hello! I would like help with building a Kigali Sim simulation. Please read https://kigalisim.org/llms-full.txt?v=20260128 to learn more. Please stick to only features compatible with the UI editor.
 ```
 
-Need a little cheat? [Download the Tutorial 5](tutorial_05.qta) file here. Also, for more capable assistants like Claude, this is enough. However, some assistants cannot access the full internet or won't know how to work with this kind of file out of the box. If your assistant is having issues, instead, attach the [Kigali Sim llms-full.txt](https://kigalisim.org/llms-full.txt?v=20260128) file as an attachment!
+Need a little cheat? [Download the Tutorial 5](../tutorial_05.qta) file here. Also, for more capable assistants like Claude, this is enough. However, some assistants cannot access the full internet or won't know how to work with this kind of file out of the box. If your assistant is having issues, instead, attach the [Kigali Sim llms-full.txt](https://kigalisim.org/llms-full.txt?v=20260128) file as an attachment!
 
 When your assistant is ready, next give it your Tutorial 5 file. This can be done by going to the Save File button at the top of the Kigali Sim application and adding it to the chat as an attachment with a message like this:
 
@@ -25,7 +25,7 @@ When your assistant is ready, next give it your Tutorial 5 file. This can be don
 Great! The attached is the simulation I started working on.
 ```
 
-**Note**: More details and troubleshooting steps specific to individual AI assistants are available in [Tutorial 11](/guide/tutorial_11.html).
+**Note**: More details and troubleshooting steps specific to individual AI assistants are available in [Tutorial 11](/guide/md/tutorial_11.md).
 
 ## Asking about Recycling
 There's quite a few parameters to specify for recycling. So, let's actually start this time by asking the AI assistant for help. Here's an example prompt:
@@ -78,8 +78,6 @@ Piecing together what is going on with multiple policies can take a little work 
 
 Next, the **Emissions** radio button tells an interesting story where recycling captures some of those emissions. Also, this is where the combination of policies may be effective. Once we add in the cap as well, the two complement each other to achieve a higher impact than either on their own.
 
-[Video: tutorial_06_03.webm - demonstration of results across scenarios](/webm/tutorial_06_03.webm)
-
 > **More on induced demand**
 >
 > Note that we said 100% induced demand. This means that virgin consumption does not on its own decrease because recycling is present. This is common in recycling programs where recycling does not 1:1 offset virgin production. Determining the correct rate of displacement (100% - induced demand) can require a bit of work.
@@ -92,19 +90,17 @@ Next, the **Emissions** radio button tells an interesting story where recycling 
 >
 > **Bank** refers to all of the equipment and substance (not yet emitted to the atmosphere) in a country. Some call this reservoir. This can be expressed in terms of number of units of equipment, substance volumes, and tCO2e. Kigali Sim uses Bank to refer to the full population of equipment and substance in the country at any given time. This is also where metrics derived from operating characteristics (like energy consumption) are reported.
 
-[Video: tutorial_06_04.webm - demonstration of bank and emissions views](/webm/tutorial_06_04.webm)
-
 ## Conclusion
 
 You've successfully implemented ABC Country's comprehensive HFC-134a strategy combining permitting and recycling policies. This tutorial demonstrated how recycling appears as an alternative supply source and complements demand-side restrictions for maximum policy effectiveness. Along the way, used AI assistance to help understand what each of the recycling parameters meant.
 
-**Download the completed tutorial** result at [tutorial_06.qta](tutorial_06.qta) which contains the complete model with combined permitting and recycling policies. It differs from the [prior tutorial result](tutorial_05.qta) in that it adds recycling, the results of which are most apparent when looking at emissions.
+**Download the completed tutorial** result at [tutorial_06.qta](../tutorial_06.qta) which contains the complete model with combined permitting and recycling policies. It differs from the [prior tutorial result](../tutorial_05.qta) in that it adds recycling, the results of which are most apparent when looking at emissions.
 
 ## Next Steps
 
-[Tutorial 7](/guide/tutorial_07.html) will transition from the UI-based interface to direct QubecTalk programming. You'll discover that you've been programming all along and learn to implement advanced multi-substance policies only possible through direct coding. QubecTalk also makes it easier to modify simulations faster. For example, this can help with switching from tonnes of substance to equipment unit counts. While technically possible in the UI, we will find in Tutorial 8 that those kinds of changes may be much more efficient through code.
+[Tutorial 7](/guide/md/tutorial_07.md) will transition from the UI-based interface to direct QubecTalk programming. You'll discover that you've been programming all along and learn to implement advanced multi-substance policies only possible through direct coding. QubecTalk also makes it easier to modify simulations faster. For example, this can help with switching from tonnes of substance to equipment unit counts. While technically possible in the UI, we will find in Tutorial 8 that those kinds of changes may be much more efficient through code.
 
-[Previous: Tutorial 5](/guide/tutorial_05.html) | [Return to Guide Index](/guide) | [Next: Tutorial 7](/guide/tutorial_07.html)
+[Previous: Tutorial 5](/guide/md/tutorial_05.md) | [Return to Guide Index](/guide/md/index.md) | [Next: Tutorial 7](/guide/md/tutorial_07.md)
 
 ---
 

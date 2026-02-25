@@ -64,7 +64,7 @@ The lines almost perfectly overlap when **Attribute initial charge to importer**
 
 As a teaser for later, you might notice that the equipment count is higher in the permit case than BAU. This is because we are assuming displaced volumes of substance. As the initial charge for R-600a is lower than HFC-134a, that results in more equipment. Depending on what you assume economically, this might be incorrect.
 
-We will investigate this topic in more detail in [Tutorial 8](/guide/tutorial_08.html) but you can modify this behavior already if you would like. When we used "displacing" in our permitting policy, we relied on default "equivalent" behavior that matches whatever units were last used. As we are working in kg and mt right now, this used "displacing by volume" in the change tab. Switching to "displacing by units" in that dropdown allows you to diplace equivalent equipment population rather than substance volumes.
+We will investigate this topic in more detail in [Tutorial 8](/guide/md/tutorial_08.md) but you can modify this behavior already if you would like. When we used "displacing" in our permitting policy, we relied on default "equivalent" behavior that matches whatever units were last used. As we are working in kg and mt right now, this used "displacing by volume" in the change tab. Switching to "displacing by units" in that dropdown allows you to diplace equivalent equipment population rather than substance volumes.
 
 ## Conclusion
 
@@ -78,13 +78,13 @@ You've successfully implemented ABC Country's first policy intervention! The sal
 
 The permitting system shows how a relatively simple policy can achieve significant impacts. This is also a very simple model but we are already incorporating socioeconomic projections and substance interactions.
 
-**Download the completed tutorial** result at [tutorial_05.qta](tutorial_05.qta) which contains the complete model with sales permitting policies and displacement effects. It differs from the [prior tutorial result](tutorial_04.qta) in that it adds a policy intervention.
+**Download the completed tutorial** result at [tutorial_05.qta](../tutorial_05.qta) which contains the complete model with sales permitting policies and displacement effects. It differs from the [prior tutorial result](../tutorial_04.qta) in that it adds a policy intervention.
 
 ## Next Steps
 
-[Tutorial 6](/guide/tutorial_06.html) will add a recovery and recycling program targeting the same HFC-134a domestic refrigeration sector. You'll learn how recycling policies complement demand-side restrictions by providing alternative supply sources, and explore how multiple policies work together to achieve comprehensive overall outcomes.
+[Tutorial 6](/guide/md/tutorial_06.md) will add a recovery and recycling program targeting the same HFC-134a domestic refrigeration sector. You'll learn how recycling policies complement demand-side restrictions by providing alternative supply sources, and explore how multiple policies work together to achieve comprehensive overall outcomes.
 
-[Previous: Tutorial 4](/guide/tutorial_04.html) | [Return to Guide Index](/guide) | [Next: Tutorial 6](/guide/tutorial_06.html)
+[Previous: Tutorial 4](/guide/md/tutorial_04.md) | [Return to Guide Index](/guide/md/index.md) | [Next: Tutorial 6](/guide/md/tutorial_06.md)
 
 ---
 
