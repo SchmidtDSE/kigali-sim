@@ -7,60 +7,23 @@ Open source web-based simulation engine for Montreal Protocol policy modeling. I
 
 - [Full Documentation](llms-full.txt) - Comprehensive KigaliSim documentation including QubecTalk language specification
 - [Tutorial Series](guide/md/index.md) - Step-by-step tutorials for policy simulation modeling
-- [Getting Started](guide/md/tutorial_01.md) - Basic introduction to KigaliSim interface and concepts
 - [QubecTalk Language](guide/md/qubectalk_commands.md) - Domain-specific language command reference
 - [QubecTalk Language Features](guide/md/qubectalk_language_features.md) - Advanced programming constructs and features
 - [QubecTalk Program Structure](guide/md/qubectalk_stanzas.md) - Stanza organization and simulation structure
-- [Policy Modeling](guide/md/tutorial_07.md) - Advanced policy intervention techniques using code-based interface
-- [Equipment Units-Based Modeling](guide/md/tutorial_08.md) - Alternative consumption specification using equipment sales data
-- [GWP Analysis](guide/md/tutorial_09.md) - Global warming potential refrigerant comparison analysis
-- [AI Coding Assistants](guide/md/tutorial_11.md) - Using AI assistants to help build or modify simulations through code
 - [Getting Help](guide/md/get_help.md) - Support resources and troubleshooting guides
-
-## Tutorial Series Overview
-
-**Introduction (1):** HFC background and Kigali Sim basics
-- [Tutorial 1](guide/md/tutorial_01.md) - Introduction to Kigali Sim: Understanding HFCs
-
-**UI-based Authoring (2-6a):** Point-and-click simulation building
-- [Tutorial 2](guide/md/tutorial_02.md) - Single Application and Substance
-- [Tutorial 3](guide/md/tutorial_03.md) - Multiple Applications and Substances
-- [Tutorial 3a](guide/md/tutorial_03a.md) - Multiple Substances with AI
-- [Tutorial 4](guide/md/tutorial_04.md) - Growth and Trade
-- [Tutorial 4a](guide/md/tutorial_04a.md) - Growth and Trade with AI
-- [Tutorial 5](guide/md/tutorial_05.md) - Simple Policies
-- [Tutorial 6](guide/md/tutorial_06.md) - Recycling
-- [Tutorial 6a](guide/md/tutorial_06a.md) - Recycling with AI
-
-**Code-based Authoring (7-8):** QubecTalk programming
-- [Tutorial 7](guide/md/tutorial_07.md) - First Code: QubecTalk and multi-substance recycling
-- [Tutorial 8](guide/md/tutorial_08.md) - Equipment Units-Based Modeling
-
-**Modeling Co-benefits (9-10):** Environmental and energy impact
-- [Tutorial 9](guide/md/tutorial_09.md) - Global Warming Potential
-- [Tutorial 10](guide/md/tutorial_10.md) - Equipment Energy Efficiency
-
-**Artificial Intelligence (11):** AI-assisted coding
-- [Tutorial 11](guide/md/tutorial_11.md) - AI Coding Assistants
-
-**Advanced Modeling (12-17):** Bank tracking, variable hazards, exports
-- [Tutorial 12](guide/md/tutorial_12.md) - Advanced Sales Assumptions
-- [Tutorial 13](guide/md/tutorial_13.md) - Assumed Replacement
-- [Tutorial 14](guide/md/tutorial_14.md) - Bank-Based Modeling
-- [Tutorial 15](guide/md/tutorial_15.md) - Variable Retirement and Servicing
-- [Tutorial 16](guide/md/tutorial_16.md) - Command Line and Monte Carlo Analysis
-- [Tutorial 17](guide/md/tutorial_17.md) - Exports
 
 ## Key Capabilities
 
-**Substance Modeling:** HFCs, HCFCs, and alternative refrigerants with Global Warming Potential (GWP) values and automatic unit conversions
+**Substance Modeling:** HFCs, HCFCs, and alternative refrigerants with Global Warming Potential (GWP) values and automatic unit conversions.
 
-**Application Modeling:** Equipment types including domestic refrigeration, commercial refrigeration, residential AC, mobile AC with lifecycle management
+**Application Modeling:** Equipment types including domestic refrigeration, commercial refrigeration, residential AC, mobile AC with lifecycle management.
 
-**Policy Simulation:** Import restrictions, manufacturing caps, substance phase-outs, recycling requirements, and regulatory scenario modeling
+**Policy Simulation:** Import restrictions, manufacturing caps, substance phase-outs, recycling requirements, and regulatory scenario modeling.
 
-**Business Scenarios:** Manufacturing, imports, equipment lifecycles, service activities, energy consumption with probabilistic projections
+**Business Scenarios:** Manufacturing, imports, equipment lifecycles, service activities, energy consumption with probabilistic projections.
 
-**QubecTalk DSL:** Human-readable domain-specific language for simulation definition with natural language constructs and automated calculations
+**QubecTalk DSL:** Human-readable domain-specific language for simulation definition with natural language constructs and automated calculations.
 
-**Web Interface:** Browser-based tool with Basic (UI) and Advanced (code) editing modes, no server-side computation required
+**Web Interface:** Browser-based tool with Basic (UI) and Advanced (code) editing modes, no server-side computation required.
+
+**Local Execution:** Software can [downloaded as a jar](https://kigalisim.org/kigalisim-fat.jar) for local execution.
