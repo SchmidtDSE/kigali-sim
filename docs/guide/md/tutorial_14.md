@@ -76,9 +76,9 @@ Nevertheless, bank-based tracking provides a valuable alternative if you have ov
 
 ## Next Steps
 
-[Tutorial 15](/guide/tutorial_15.html) will explore variable retirement and servicing rates. You'll learn how to specify hazard rates that change according to equipment age for more sophisticated lifecycle modeling.
+[Tutorial 15](/guide/md/tutorial_15.md) will explore variable retirement and servicing rates. You'll learn how to specify hazard rates that change according to equipment age for more sophisticated lifecycle modeling.
 
-[Previous: Tutorial 13](/guide/tutorial_13.html) | [Return to Guide Index](/guide) | [Next: Tutorial 15](/guide/tutorial_15.html)
+[Previous: Tutorial 13](/guide/md/tutorial_13.md) | [Return to Guide Index](/guide/md/index.md) | [Next: Tutorial 15](/guide/md/tutorial_15.md)
 
 ---
 
