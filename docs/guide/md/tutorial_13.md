@@ -39,13 +39,13 @@ Now, we still see the servicing consumption but, under total units of equipment 
 
 This option to retire with replacement can be helpful in a number of modeling circumstances. For example, let's say you have estimates of how much kg is in bank for a substance but don't know the servicing or new equipment consumption. Kigali Sim can automatically calculate what servicing demands were and what retirement happened which required replacement.
 
-**Download the completed tutorial**: [tutorial_13.qta](tutorial_13.qta) - this contains the complete assumed replacement model
+**Download the completed tutorial**: [tutorial_13.qta](../tutorial_13.qta) - this contains the complete assumed replacement model
 
 ## Next Steps
 
-[Tutorial 14](/guide/tutorial_14.html) will explore bank-based modeling. You'll learn how to use Kigali Sim when you have longitudinal bank estimates and need to work backwards to determine consumption patterns.
+[Tutorial 14](/guide/md/tutorial_14.md) will explore bank-based modeling. You'll learn how to use Kigali Sim when you have longitudinal bank estimates and need to work backwards to determine consumption patterns.
 
-[Previous: Tutorial 12](/guide/tutorial_12.html) | [Return to Guide Index](/guide) | [Next: Tutorial 14](/guide/tutorial_14.html)
+[Previous: Tutorial 12](/guide/md/tutorial_12.md) | [Return to Guide Index](/guide/md/index.md) | [Next: Tutorial 14](/guide/md/tutorial_14.md)
 
 ---
 

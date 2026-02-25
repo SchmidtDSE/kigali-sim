@@ -93,9 +93,9 @@ There's no single correct assumption for what sales should be assumed in years i
 
 ## Next Steps
 
-[Tutorial 13](/guide/tutorial_13.html) will explore assumed replacement for retired equipment. You'll learn how to configure automatic replacement of retired equipment on top of other sales values when your sales data excludes replacement equipment.
+[Tutorial 13](/guide/md/tutorial_13.md) will explore assumed replacement for retired equipment. You'll learn how to configure automatic replacement of retired equipment on top of other sales values when your sales data excludes replacement equipment.
 
-[Previous: Tutorial 11](/guide/tutorial_11.html) | [Return to Guide Index](/guide) | [Next: Tutorial 13](/guide/tutorial_13.html)
+[Previous: Tutorial 11](/guide/md/tutorial_11.md) | [Return to Guide Index](/guide/md/index.md) | [Next: Tutorial 13](/guide/md/tutorial_13.md)
 
 ---
 

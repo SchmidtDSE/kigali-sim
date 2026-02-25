@@ -89,13 +89,13 @@ You've successfully transitioned from UI-based to code-based modeling while impl
 
 QubecTalk provides the foundation for advanced analysis techniques we'll explore in later tutorials, including uncertainty assessment and complex policy interactions.
 
-**Download the completed tutorial** result at [tutorial_07.qta](tutorial_07.qta) which contains the complete model with enhanced multi-substance recycling policies. It differs from the [prior tutorial result](tutorial_06.qta) in that it expands recycling, like to R-600a.
+**Download the completed tutorial** result at [tutorial_07.qta](../tutorial_07.qta) which contains the complete model with enhanced multi-substance recycling policies. It differs from the [prior tutorial result](../tutorial_06.qta) in that it expands recycling, like to R-600a.
 
 ## Next Steps
 
-[Tutorial 8](/guide/tutorial_08.html) will demonstrate equipment unit-based modeling as an alternative to volume-based consumption specification. You'll learn when to use unit sales data versus volume data and how QubecTalk handles both approaches seamlessly.
+[Tutorial 8](/guide/md/tutorial_08.md) will demonstrate equipment unit-based modeling as an alternative to volume-based consumption specification. You'll learn when to use unit sales data versus volume data and how QubecTalk handles both approaches seamlessly.
 
-[Previous: Tutorial 6](/guide/tutorial_06.html) | [Return to Guide Index](/guide) | [Next: Tutorial 8](/guide/tutorial_08.html)
+[Previous: Tutorial 6](/guide/md/tutorial_06.md) | [Return to Guide Index](/guide/md/index.md) | [Next: Tutorial 8](/guide/md/tutorial_08.md)
 
 ---
 

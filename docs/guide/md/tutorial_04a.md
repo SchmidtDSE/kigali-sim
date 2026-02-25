@@ -2,7 +2,7 @@
 
 Adding economic growth projections and import flows to create more nuanced business-as-usual scenarios, aided by AI.
 
-**Note that this is the AI version of this tutorial.** You can find a version of this tutorial without AI at [Tutorial 4](https://kigalisim.org/guide/tutorial_04.html).
+**Note that this is the AI version of this tutorial.** You can find a version of this tutorial without AI at [Tutorial 4](/guide/md/tutorial_04.md).
 
 ## Motivation
 Let's say ABC has economic growth forecasts and data on equipment imports. In this tutorial, we will add growth patterns and import flows to our multi-application model from Tutorial 3, creating a more nuanced business-as-usual baseline to help aid policy analysis. In addition to adding more sophistication to our model, this also demonstrates use of multiple sales streams.
@@ -20,7 +20,7 @@ If you did the AI version of Tutorial 3, you probably are already familiar with 
 Hello! I would like help with building a Kigali Sim simulation. Please read https://kigalisim.org/llms-full.txt?v=20260128 to learn more. Please stick to only features compatible with the UI editor.
 ```
 
-Need a little cheat? [Download the Tutorial 3](tutorial_03.qta) file here. Also, for more capable assistants like Claude, this is enough. However, some assistants cannot access the full internet or won't know how to work with this kind of file out of the box. If your assistant is having issues, instead, attach the [Kigali Sim llms-full.txt](https://kigalisim.org/llms-full.txt?v=20260128) file as an attachment!
+Need a little cheat? [Download the Tutorial 3](../tutorial_03.qta) file here. Also, for more capable assistants like Claude, this is enough. However, some assistants cannot access the full internet or won't know how to work with this kind of file out of the box. If your assistant is having issues, instead, attach the [Kigali Sim llms-full.txt](https://kigalisim.org/llms-full.txt?v=20260128) file as an attachment!
 
 When your assistant is ready, next give it your Tutorial 3 file. This can be done by going to the Save File button at the top of the Kigali Sim application and adding it to the chat as an attachment with a message like this:
 
@@ -28,7 +28,7 @@ When your assistant is ready, next give it your Tutorial 3 file. This can be don
 Great! The attached is the simulation I started working on.
 ```
 
-**Note**: More details and troubleshooting steps specific to individual AI assistants are available in [Tutorial 11](/guide/tutorial_11.html).
+**Note**: More details and troubleshooting steps specific to individual AI assistants are available in [Tutorial 11](/guide/md/tutorial_11.md).
 
 ## Adding imports for HFC-134a
 Before we add in growth rates, let's consider trade. Specifically, for brevity, let's have just one substance with imports.
@@ -81,7 +81,7 @@ R-410A (domestic AC): +6% (2025-2035)
 
 You could choose to say just `%` instead of `% of current` and the result should be the same. Once more, be sure to load the resulting simulation into Kigali Sim to double check the work.
 
-Note: If Kigali Sim reports that a simulation requires use of the code editor, see [Tutorial 7](https://kigalisim.org/guide/tutorial_07.html) or remind the AI assistant to only stick to UI editor compatible features.
+Note: If Kigali Sim reports that a simulation requires use of the code editor, see [Tutorial 7](/guide/md/tutorial_07.md) or remind the AI assistant to only stick to UI editor compatible features.
 
 ## Results
 
@@ -97,13 +97,13 @@ You now have ABC Country's realistic business-as-usual scenario incorporating ec
 
 Note that, for those with **local assembly**, domestic can be used to model in-country initial charge. In other words, for substance which is equipment and then initial charged within the country, you can move the "sales" of that substance from import to domestic and the correct trade attribution will apply.
 
-**Download the completed tutorial**: [tutorial_04.qta](tutorial_04.qta) - this contains the complete model with economic growth and trade flows
+**Download the completed tutorial**: [tutorial_04.qta](../tutorial_04.qta) - this contains the complete model with economic growth and trade flows
 
 ## Next Steps
 
-[Tutorial 5](/guide/tutorial_05.html) will start to add new sophistication by modeling policies. You'll learn to create sales permitting systems that progressively reduce HFC consumption while managing market displacement to lower-GWP alternatives.
+[Tutorial 5](/guide/md/tutorial_05.md) will start to add new sophistication by modeling policies. You'll learn to create sales permitting systems that progressively reduce HFC consumption while managing market displacement to lower-GWP alternatives.
 
-[Previous: Tutorial 3a](/guide/tutorial_03a.html) | [Return to Guide Index](/guide) | [Next: Tutorial 5](/guide/tutorial_05.html)
+[Previous: Tutorial 3a](/guide/md/tutorial_03a.md) | [Return to Guide Index](/guide/md/index.md) | [Next: Tutorial 5](/guide/md/tutorial_05.md)
 
 ---
 

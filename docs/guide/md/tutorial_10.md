@@ -4,7 +4,7 @@ Demonstrating energy consumption reduction through equipment efficiency improvem
 
 ## Motivation
 
-In the [previous tutorial](/guide/tutorial_09.html), we explored GWP but equipment energy efficiency also plays a crucial role in environmental impact. Energy-efficient equipment consumes less electricity, reducing both operational costs and indirect emissions from power generation. In this tutorial, we'll model an energy efficiency policy that gradually replaces high-energy equipment with low-energy alternatives. To narrow our focus to these effects, we'll examine how this transition can significantly reduce overall energy consumption (measured in kWh) while maintaining the same refrigerant type and cooling capacity. However, in practice, you can model both changes in substance and changes in equipment simultaneously.
+In the [previous tutorial](/guide/md/tutorial_09.md), we explored GWP but equipment energy efficiency also plays a crucial role in environmental impact. Energy-efficient equipment consumes less electricity, reducing both operational costs and indirect emissions from power generation. In this tutorial, we'll model an energy efficiency policy that gradually replaces high-energy equipment with low-energy alternatives. To narrow our focus to these effects, we'll examine how this transition can significantly reduce overall energy consumption (measured in kWh) while maintaining the same refrigerant type and cooling capacity. However, in practice, you can model both changes in substance and changes in equipment simultaneously.
 
 Note that instructions are a bit more brief under the assumption that the earlier tutorials have been completed.
 
@@ -124,9 +124,9 @@ You've successfully modeled an equipment energy efficiency policy! This tutorial
 
 You've now completed both Feature-Specific tutorials! You've learned how to model GWP-focused refrigerant substitution (Tutorial 9) and energy efficiency equipment transitions (Tutorial 10). These tutorials complement each other to provide a comprehensive understanding of environmental impact assessment in cooling systems.
 
-[Previous: Tutorial 9](/guide/tutorial_09.html) |
-[Return to Guide Index](/guide) |
-[Next: Tutorial 11](/guide/tutorial_11.html)
+[Previous: Tutorial 9](/guide/md/tutorial_09.md) |
+[Return to Guide Index](/guide/md/index.md) |
+[Next: Tutorial 11](/guide/md/tutorial_11.md)
 
 ---
 

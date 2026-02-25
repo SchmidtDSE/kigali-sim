@@ -110,7 +110,7 @@ Finally, note that QubecTalk allows flexibility to mix units. Specifically, our 
 
 Continue exploring the Kigali Sim guide with additional tutorials on modeling co-benefits, AI assistants, and advanced modeling techniques.
 
-[Previous: Tutorial 7](/guide/tutorial_07.html) | [Return to Guide Index](/guide) | [Next: Tutorial 9](/guide/tutorial_09.html)
+[Previous: Tutorial 7](/guide/md/tutorial_07.md) | [Return to Guide Index](/guide/md/index.md) | [Next: Tutorial 9](/guide/md/tutorial_09.md)
 
 ---
 

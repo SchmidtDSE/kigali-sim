@@ -12,7 +12,7 @@ Note that instructions are a bit more brief under the assumption that the earlie
 
 ## Setting Up the Business-as-Usual Scenario
 
-In this tutorial, we will move away from our ABC Country case study. If you are continuing from [Tutorial 8](/guide/tutorial_08.html), go ahead and click **New File** at the top of the web editor. This will give you a fresh simulation.
+In this tutorial, we will move away from our ABC Country case study. If you are continuing from [Tutorial 8](/guide/md/tutorial_08.md), go ahead and click **New File** at the top of the web editor. This will give you a fresh simulation.
 
 First, let's create our baseline scenario with both HFC-134a and R-600a refrigerants in domestic refrigeration. We'll start with HFC-134a as the dominant refrigerant and minimal R-600a consumption.
 
@@ -143,11 +143,11 @@ The GWP reduction policy shows how focusing on substance characteristics rather 
 
 ## Next Steps
 
-[Tutorial 10](/guide/tutorial_10.html) will explore energy efficiency comparisons between different equipment models. You'll learn how energy consumption trade-offs interact with refrigerant choice to provide a more comprehensive environmental impact assessment.
+[Tutorial 10](/guide/md/tutorial_10.md) will explore energy efficiency comparisons between different equipment models. You'll learn how energy consumption trade-offs interact with refrigerant choice to provide a more comprehensive environmental impact assessment.
 
-[Previous: Tutorial 8](/guide/tutorial_08.html) |
-[Return to Guide Index](/guide) |
-[Next: Tutorial 10](/guide/tutorial_10.html)
+[Previous: Tutorial 8](/guide/md/tutorial_08.md) |
+[Return to Guide Index](/guide/md/index.md) |
+[Next: Tutorial 10](/guide/md/tutorial_10.md)
 
 ---
 
