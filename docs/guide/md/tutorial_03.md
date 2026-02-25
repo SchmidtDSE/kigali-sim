@@ -45,7 +45,7 @@ You've successfully expanded ABC Country's model to include multiple application
 
 The model now provides a foundation for understanding how substance choice and application type interact to determine overall consumption and climate impact patterns.
 
-**Download the completed tutorial** result at [tutorial_03.qta](tutorial_03.qta) which contains the complete multi-application and multi-substance model. It differs from the [prior tutorial result](tutorial_02.qta) in that it adds new substances and applications.
+**Download the completed tutorial** result at [tutorial_03.qta](../tutorial_03.qta) which contains the complete multi-application and multi-substance model. It differs from the [prior tutorial result](../tutorial_02.qta) in that it adds new substances and applications.
 
 ## Next Steps
 
