@@ -59,7 +59,7 @@ Complete reference documentation for Kigali Sim and QubecTalk, the domain-specif
 
 ## Get help
 
-Need assistance? Email us at [hello@kigalisim.org](mailto:hello@kigalisim.org) or [learn about all of the support options](https://vimeo.com/1061085671?share=copy) offered by our University of California Berkeley team.
+Need assistance? Email us at [hello@kigalisim.org](mailto:hello@kigalisim.org) or [learn about all of the support options](https://vimeo.com/1061085671?share=copy) offered by our University of California Berkeley team. See also [get_help.md](get_help.md).
 
 ## License and Dedication
 
