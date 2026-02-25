@@ -99,10 +99,6 @@ Does the imports part of HFC-134a seem small? It's important to note that, by de
 
 Zooming out, we should see the acceleration in HFC-134a and HFC-32. With the **Emissions** radio button, things still remain quite dominated by HFC-134a. In contrast, the two are closer when selecting the **Consumption** radio button as that 10% increase compounds over time for HFC-32.
 
-<video src="/webm/tutorial_04_04.webm" autoplay loop muted playsinline controls style="width: 500px; border: 2px solid #505050; border-radius: 3px;">
-Your browser does not support the video tag. Please upgrade to a modern browser.
-</video>
-
 ## Conclusion
 
 You now have ABC Country's realistic business-as-usual scenario incorporating economic growth, trade flows, and technology transitions. You even sped this up through AI! Anyway, this foundation shows how consumption evolves without intervention. Later, we will try out different policies on this of this baseline.

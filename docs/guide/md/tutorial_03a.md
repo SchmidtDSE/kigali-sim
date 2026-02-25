@@ -80,11 +80,7 @@ As you work, the simulation will update automatically.
 
 Examine the results to understand how multiple applications and substances add together. You can do this by looking at results by selecting the **Application** or **Substances** radio buttons. To get a complete picture with the **Emissions** radio button, try clicking **"configure custom"** under emissions and combining both end-of-life and recharge emissions. This represents the total leakage throughout the equipment lifetime.
 
-<video src="/webm/tutorial_03_02.webm" loop muted playsinline controls style="width: 500px; border: 2px solid #505050; border-radius: 3px;">Your browser does not support the video tag. Please upgrade to a modern browser.</video>
-
 Before concluding, let's also pause to understand if these results make sense. First, the custom emissions which combines both end of life and recharge emissions is higher than either alone. Second, consider that the HFC-134a has higher volume and higher GWP than R-600a. Therefore, focusing on HFC-134a, we notice that these two factors intersect through a larger gap to R-600a in emissions relative to consumption when we have selected the **Substances** radio button.
-
-<video src="/webm/tutorial_03_03.webm" loop muted playsinline controls style="width: 500px; border: 2px solid #505050; border-radius: 3px;">Your browser does not support the video tag. Please upgrade to a modern browser.</video>
 
 ## Conclusion
 
