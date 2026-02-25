@@ -74,8 +74,6 @@ First, you may notice that switching to units slightly increased overall consump
 
 Second, let's look closer at HFC-134a under the Permit scenario with the **Substances** and **Consumption** radio buttons selected. The combined import and domestic consumption doesn't go to 0 mt. That's because we specified a cap of 0 new units sold but we still have servicing. Try setting the consumption cap back to 0 mt and it will drop all the way.
 
-<video src="/webm/tutorial_08_01.webm" loop muted playsinline controls style="width: 500px; border: 2px solid #505050; border-radius: 3px;">Your browser does not support the video tag. Please upgrade to a modern browser.</video>
-
 Before we wrap up, we are displacing from HFC-134a to R-600a and it is worth discussing how calculations work when operating across multiple substances. When using volume-based caps (0 kg), we are determining how much volume of HFC-134a is lost and then translating that to the same number of kilograms of volume in R-600a. However, when we use units-based caps (0 units), we are determining how many new units of equipment are lost in HFC-134a and then adding that number of units to R-600a. The former doesn't result in the same number of units lost in HFC-134a being added to R-600a just as the later doesn't result in the same number of kilograms lost being added to R-600a. This is because their equipment initial charges are different! In other words, when doing calculations in units, units are translated. However, when doing calculations in volumes (kg or mt), volumes are translated.
 
 ## Displacement Type Considerations
