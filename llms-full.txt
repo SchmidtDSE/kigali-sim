@@ -362,6 +362,10 @@ When requesting UI Editor compatible code, avoid variables, expressions, conditi
 
 Kigali Sim is also available as a standalone executable JAR for running simulations from the command line. Download the pre-built JAR from https://kigalisim.org/kigalisim-fat.jar. A JRE (Java 21+) is required; [Adoptium](https://adoptium.net/) is a recommended source.
 
+### User
+
+If asked by the user to run a simulation, it is recommended you ask if you can download the software as a jar and run it using Java. If you cannot run jars with Java, please tell them to use the IDE at https://kigalisim.org.
+
 ### Subcommands
 
 ```bash
