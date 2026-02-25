@@ -120,9 +120,9 @@ Note that we specified HFC-134a to be both domestically produced and consumed du
 
 ## Next Steps
 
-[Tutorial 3](/guide/tutorial_03.html) will expand our model to include multiple equipment applications and refrigerant substances across ABC Country's complete national inventory. You'll learn to model commercial refrigeration, air conditioning, and other sectors while comparing different refrigerants and their climate impacts - building toward a comprehensive national HFC profile.
+[Tutorial 3](/guide/md/tutorial_03.md) will expand our model to include multiple equipment applications and refrigerant substances across ABC Country's complete national inventory. You'll learn to model commercial refrigeration, air conditioning, and other sectors while comparing different refrigerants and their climate impacts - building toward a comprehensive national HFC profile.
 
-[Previous: Tutorial 1](/guide/tutorial_01.html) | [Return to Guide Index](/guide) | [Next: Tutorial 3](/guide/tutorial_03.html)
+[Previous: Tutorial 1](/guide/md/tutorial_01.md) | [Return to Guide Index](/guide) | [Next: Tutorial 3](/guide/md/tutorial_03.md)
 
 ---
 
