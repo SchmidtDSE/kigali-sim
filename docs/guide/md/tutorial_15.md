@@ -107,9 +107,9 @@ Finally, please note that, in this tutorial, we still specify hazard rates (rate
 
 ## Next Steps
 
-You've learned how to leverage sophisticated features like variable retirement rates, bank-based modeling, and advanced sales assumptions. [In the next step, we look at Monte Carlo](/guide/tutorial_16.html).
+You've learned how to leverage sophisticated features like variable retirement rates, bank-based modeling, and advanced sales assumptions. [In the next step, we look at Monte Carlo](/guide/md/tutorial_16.md).
 
-[Previous: Tutorial 14](/guide/tutorial_14.html) | [Return to Guide Index](/guide) | [Next: Tutorial 16](/guide/tutorial_16.html)
+[Previous: Tutorial 14](/guide/md/tutorial_14.md) | [Return to Guide Index](/guide/md/index.md) | [Next: Tutorial 16](/guide/md/tutorial_16.md)
 
 ---
 
