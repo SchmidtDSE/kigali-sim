@@ -50,19 +50,11 @@ Great! Let's continue with HFC-134a. Next, please expect growth +6% of current f
 
 Be sure to open the resulting simulation again and see how the AI's edits translate to changes in the configuration seen in the editor. You'll want to open up the "change" tab after clicking "edit" next to HFC-134a again.
 
-<details>
-<summary>More about percentages</summary>
+**More about percentages:** You can use `% current` instead of `%` for growth rates to make it explicit that the percentage applies to the current year's value. The system supports three percentage formats: `%` (equivalent to `% current`) applies the percentage to the current year's value, `% current` explicitly applies to the current year's value, and `% prior year` applies the percentage to the previous year's value. This flexibility allows you to match your data source's reference year convention. This could come up in simulations with multiple change directives due to complex economic modeling.
 
-Note: You can use `% current` instead of `%` for growth rates to make it explicit that the percentage applies to the current year's value. The system supports three percentage formats: `%` (equivalent to `% current`) applies the percentage to the current year's value, `% current` explicitly applies to the current year's value, and `% prior year` applies the percentage to the previous year's value. This flexibility allows you to match your data source's reference year convention. This could come up in simulations with multiple change directives due to complex economic modeling.
-</details>
-
-<details>
-<summary>More about the sales stream</summary>
-
-This refers to all consumption in the country. So, having Kigali Sim set / change sales impacts overall consumption. More specifically, it includes domestic and import but excludes export. When applying changes through the sales keyword, Kigali Sim will try to keep the ratio between domestic and import the same for the substance.
+**More about the sales stream:** This refers to all consumption in the country. So, having Kigali Sim set / change sales impacts overall consumption. More specifically, it includes domestic and import but excludes export. When applying changes through the sales keyword, Kigali Sim will try to keep the ratio between domestic and import the same for the substance.
 
 Note that this may also include "secondary" substance if recycling is active. That said, indicated by the recover command, recycling capacity is assumed to be limited. So, domestic and import will be modified to satisfy a set or change command after taking the unchanged recycling stream into account. However, using sales with cap/floor (like for permitting) places lower or upper limits on all consumption including recycling. For virgin only, replace sales with individual commands on domestic and import. This will exclude secondary production.
-</details>
 
 ## Expanding the Growth
 Let's continue by applying these growth rates to other substances.
