@@ -10,9 +10,9 @@ Note that videos are provided along the way but there is no audio: it is a scree
 
 ## Background
 
-HFCs are potent greenhouse gases used in air conditioners, refrigerators, aerosols, foams, and other products. While they offer important improvements over the [CFCs and HCFCs](https://www.unep.org/ozonaction/who-we-are/about-montreal-protocol) which came before, these HFCs can be hundreds or thousands of times more potent than CO2 in terms of climate warming impact. For example, [HFC-134a has a global warming potential of 1,430](https://www.infraserv.com/en/services/facility-management/expertise/f-gas/gwp-calculator/), meaning that one kilogram of HFC-134a contributes 1,430 times as much to the greenhouse effect as one kilogram of CO₂ over a 100-year period.
+HFCs are potent greenhouse gases used in air conditioners, refrigerators, aerosols, foams, and other products. While they offer important improvements over the [CFCs and HCFCs](https://www.unep.org/ozonaction/who-we-are/about-montreal-protocol) which came before, these HFCs can be hundreds or thousands of times more potent than CO2 in terms of climate warming impact. For example, [HFC-134a has a global warming potential of 1,430](https://www.infraserv.com/en/services/facility-management/expertise/f-gas/gwp-calculator/), meaning that one kilogram of HFC-134a contributes 1,430 times as much to the greenhouse effect as one kilogram of CO2 over a 100-year period.
 
-[In 2016, 197 countries adopted the Kigali Amendment](https://www.epa.gov/ozone-layer-protection/recent-international-developments-under-montreal-protocol) to the Montreal Protocol in Rwanda to phase down HFCs. Under the agreement, countries committed to cut the production and consumption of HFCs by more than 80 percent over the next 30 years, aiming to [avoid more than 80 billion metric tons of carbon dioxide equivalent emissions by 2050](https://www.epa.gov/ozone-layer-protection/recent-international-developments-under-montreal-protocol). This would avoid up to 0.5° Celsius warming by the end of the century.
+[In 2016, 197 countries adopted the Kigali Amendment](https://www.epa.gov/ozone-layer-protection/recent-international-developments-under-montreal-protocol) to the Montreal Protocol in Rwanda to phase down HFCs. Under the agreement, countries committed to cut the production and consumption of HFCs by more than 80 percent over the next 30 years, aiming to [avoid more than 80 billion metric tons of carbon dioxide equivalent emissions by 2050](https://www.epa.gov/ozone-layer-protection/recent-international-developments-under-montreal-protocol). This would avoid up to 0.5 degrees Celsius warming by the end of the century.
 
 [In 2023, 24 Kigali HFC Implementation Plans (KIPs) were approved](https://www.multilateralfund.org/news/kigali-amendment), mobilizing more than 53 million USD to foster the shift towards eco-friendly alternatives. Kigali Sim enters this picture because countries developing Implementation Plans (KIPs) need to understand complex policy trade-offs and interactions. Therefore, simulation tools like Kigali Sim help policymakers explore KIP scenarios to inform decisions at each step of the way.
 
@@ -22,7 +22,7 @@ Kigali Sim uses an stock-flow modeling approach that tracks HFC consumption thro
 
 The tool operates by establishing business-as-usual baselines and then "stacking" policy interventions on top to compare scenarios. This allows testing individual policies or combinations against the same baseline. This approach can also evaluate different assumptions like under different climate change (SSP) scenarios.
 
-Finally, Kigali Sim uniquely allows specification of the system either where equipment population data is provided or where substance sales (or even tCO2e estimates) seed the model. This allows for flexibility in which users can provide the data they have and the system will try to fill in the gaps as best it can until more specific data become available later. 
+Finally, Kigali Sim uniquely allows specification of the system either where equipment population data is provided or where substance sales (or even tCO2e estimates) seed the model. This allows for flexibility in which users can provide the data they have and the system will try to fill in the gaps as best it can until more specific data become available later.
 
 ## Guide
 
@@ -40,9 +40,9 @@ Kigali Sim is available as a free, open-source web application at [https://kigal
 
 ## Next Steps
 
-[Tutorial 2](/guide/tutorial_02.html) will begin hands-on modeling by creating ABC Country's first simulation focusing on domestic refrigeration. You'll learn how to set up equipment populations, configure consumption patterns, run simulations, and interpret results, building the foundation for comprehensive HFC phase-down analysis.
+[Tutorial 2](/guide/md/tutorial_02.md) will begin hands-on modeling by creating ABC Country's first simulation focusing on domestic refrigeration. You'll learn how to set up equipment populations, configure consumption patterns, run simulations, and interpret results, building the foundation for comprehensive HFC phase-down analysis.
 
-[Return to Guide Index](/guide) | [Next: Tutorial 2](/guide/tutorial_02.html)
+[Return to Guide Index](/guide/md/index.md) | [Next: Tutorial 2](/guide/md/tutorial_02.md)
 
 ---
 
@@ -60,3 +60,7 @@ Kigali Sim is available as a free, open-source web application at [https://kigal
     
 
 _This tutorial is part of the ABC Country case study series demonstrating progressive HFC policy analysis using Kigali Sim._
+
+---
+
+[View HTML version](../tutorial_01.html)

@@ -1,12 +1,12 @@
 # Kigali Sim Guide
 
-Hello! This website provides a series of tutorials intended to help you get started with the [Kigali Sim](https://kigalisim.org). If you are new, consider starting with the [first tutorial](tutorial_01.md).
+Hello! This website provides a series of tutorials and other resources intended to help you both get started and master [Kigali Sim](https://kigalisim.org). If you are new, consider beginning your journey with the [first tutorial](tutorial_01.md). Already a pro? See [reference materials](#reference).
 
-This tutorial series follows a progressive learning path using ABC Country, a hypothetical medium-sized nation where we build up an increasingly sophisticated model together. You'll learn both point-and-click interface techniques and QubecTalk programming to master comprehensive HFC phase-down analysis.
+**Prefer a video?** On external websites, we have a quick [5 minute introduction](https://youtu.be/gDfe7bG8Ppk) ([YouTube terms of service](https://www.youtube.com/static?template=terms&noapp=1)) or a [1 hour extended guided tutorial experience](https://vimeo.com/1159005072) ([Vimeo terms of service](https://vimeo.com/legal)).
 
 ## Tutorials
 
-All numbers are intentionally fake and used only for demonstrative purposes. Please keep in mind that this software is still under development. We encourage your ideas as our living software continues to grow based on your feedback. However, please note that things may also change and this guide may be refined.
+We think of the user's guide as a book and each tutorial like a chapter. We recommend that readers start here before using [reference materials](#reference).
 
 ### Introduction
 
@@ -35,7 +35,7 @@ All numbers are intentionally fake and used only for demonstrative purposes. Ple
 
 ### Artificial Intelligence
 
-- [**Tutorial 11:** AI Assistants](tutorial_11.md) - Using AI assistants to help build or modify simulations
+- [**Tutorial 11:** AI Coding Assistants](tutorial_11.md) - Using AI assistants to help build or modify simulations through code
 
 ### Advanced Modeling
 
@@ -43,33 +43,28 @@ All numbers are intentionally fake and used only for demonstrative purposes. Ple
 - [**Tutorial 13:** Assumed Replacement](tutorial_13.md) - Modeling equipment replacement patterns in business-as-usual scenarios
 - [**Tutorial 14:** Bank-Based Modeling](tutorial_14.md) - Tracking substance banks and equipment populations over time
 - [**Tutorial 15:** Variable Retirement and Servicing](tutorial_15.md) - Implementing dynamic retirement rates and service patterns
-- [**Tutorial 16:** Command Line and Monte Carlo Analysis](tutorial_16.md) - Advanced uncertainty analysis using probabilistic programming
+- [**Tutorial 16:** Command Line and Monte Carlo](tutorial_16.md) - Advanced uncertainty analysis using probabilistic programming
+- [**Tutorial 17:** Exports](tutorial_17.md) - Producing countries with exports
 
-## QubecTalk Reference
+## Reference
 
-Complete reference documentation for QubecTalk, the domain-specific language used by Kigali Sim for advanced modeling and policy analysis.
+Complete reference documentation for Kigali Sim and QubecTalk, the domain-specific language used by Kigali Sim for advanced modeling and policy analysis.
 
+- [**Glossary**](../glossary.html) - Definitions of key terms used throughout Kigali Sim documentation and QubecTalk
 - [**Stanzas Reference**](qubectalk_stanzas.md) - Program structure including default, policy, and simulations blocks
 - [**Commands Reference**](qubectalk_commands.md) - Executable statements for substance properties, consumption, and policy interventions
 - [**Language Features Reference**](qubectalk_language_features.md) - Advanced features including conditional logic, probabilistic sampling, and mathematical operations
+- [**Engine and Language Specification**](../qubectalk.pdf) - Formal technical specification of the QubecTalk language and simulation engine
+- [**Credits**](../credits.html) - Acknowledgments and contributors to the Kigali Sim project
 
-## Get Help
+## Get help
 
-Need assistance? Email us at [hello@kigalisim.org](mailto:hello@kigalisim.org) or [learn about all of the support options](https://vimeo.com/1061085671?share=copy) offered by our University of California Berkeley team.
-
-## Formal Documentation
-
-In addition to the tutorials, [formal documentation on the engine](qubectalk.pdf) is also available. This living specification document provides a robust technical description of this work.
-
-## Coming Soon
-
-Some parts of our documentation are still under construction. Please see below:
-
-- Custom policy logic
-- Examples / gallery
-
-Some of these features may be available within the tool but tutorials are not yet available. Please watch this page for additional updates.
+Need assistance? Email us at [hello@kigalisim.org](mailto:hello@kigalisim.org) or [learn about all of the support options](https://vimeo.com/1061085671?share=copy) offered by our University of California Berkeley team. See also [get_help.md](get_help.md).
 
 ## License and Dedication
 
 Code is released under the [BSD 3-Clause License](https://opensource.org/license/bsd-3-clause). Everything else in this guide is released under the [CC-BY License](https://creativecommons.org/licenses/by/4.0/). This guide is dedicated to Barbara Berke and her dedication to making computation available to everyone.
+
+---
+
+[View HTML version](../index.html)
