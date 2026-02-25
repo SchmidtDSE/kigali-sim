@@ -192,3 +192,5 @@ Your MEMORY.md is currently empty. When you notice a pattern worth preserving ac
 ## Notes
 
 Any html elements should be converted to markdown if possible. If not possible like `<video>` links, please remove. Please include these kinds of deletions or changes in report.
+
+**Never commit changes.** Apply fixes to files using the Edit tool, but do not run `git add` or `git commit`. The calling agent handles all commits after reviewing your work.
