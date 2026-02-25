@@ -48,7 +48,7 @@ The exports stream provides another way to interact with trade. However, one or 
 
 That's the end of the tutorial series for now! Check back later for more updates.
 
-[Previous: Tutorial 16](/guide/tutorial_16.html) | [Return to Guide Index](/guide)
+[Previous: Tutorial 16](/guide/md/tutorial_16.md) | [Return to Guide Index](/guide/md/index.md)
 
 ---
 
