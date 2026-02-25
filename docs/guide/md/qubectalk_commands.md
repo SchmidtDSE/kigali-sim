@@ -301,3 +301,7 @@ set priorEquipment to 1000000 units during year 2025
 - [QubecTalk Stanzas Reference](qubectalk_stanzas.md)
 - [QubecTalk Language Features Reference](qubectalk_language_features.md)
 - [Return to Guide Index](index.md)
+
+---
+
+[View HTML version](../qubectalk_commands.html)
