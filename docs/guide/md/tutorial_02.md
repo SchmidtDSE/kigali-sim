@@ -116,7 +116,7 @@ For some readers, this may seem like a lot of data to specify. Still, don't forg
 
 Note that we specified HFC-134a to be both domestically produced and consumed during this first tutorial. This simplifies our ability to reason about the results: we don't have to consider trade attribution rules yet. However, a later tutorial will consider trade and how to analyze results under treaty conventions.
 
-**Download the completed tutorial**: [tutorial_02.qta](tutorial_02.qta) - this contains the complete single application and substance model
+**Download the completed tutorial**: [tutorial_02.qta](../tutorial_02.qta) - this contains the complete single application and substance model
 
 ## Next Steps
 

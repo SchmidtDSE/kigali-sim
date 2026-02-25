@@ -61,7 +61,7 @@ You now have ABC Country's realistic business-as-usual scenario incorporating ec
 
 Finally, for those with **local assembly**, domestic can be used to model in-country initial charge. In other words, for substance which is equipment and then initial charged within the country, you can move the "sales" of that substance from import to domestic and the correct trade attribution will apply.
 
-**Download the completed tutorial** result at [tutorial_04.qta](tutorial_04.qta) which contains the complete model with economic growth and trade flows. This differs from the [prior tutorial result](tutorial_03.qta) in that it now has the consumption change over time.
+**Download the completed tutorial** result at [tutorial_04.qta](../tutorial_04.qta) which contains the complete model with economic growth and trade flows. This differs from the [prior tutorial result](../tutorial_03.qta) in that it now has the consumption change over time.
 
 ## Next Steps
 
