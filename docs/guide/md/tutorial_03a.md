@@ -2,7 +2,7 @@
 
 Expanding to multiple sectors and refrigerants using AI.
 
-**Note that this is the AI version of this tutorial.** You can find a version of this tutorial without AI at [Tutorial 3](/guide/tutorial_03.html).
+**Note that this is the AI version of this tutorial.** You can find a version of this tutorial without AI at [Tutorial 3](/guide/md/tutorial_03.md).
 
 ## Motivation
 
@@ -18,7 +18,7 @@ In this tutorial series, we have used [Claude](https://claude.ai/). However, in 
 Hello! I would like help with building a Kigali Sim simulation. Please read https://kigalisim.org/llms-full.txt?v=20260128 to learn more. Please stick to only features compatible with the UI editor.
 ```
 
-Need a little cheat? [Download the Tutorial 2](tutorial_02.qta) file here. Also, for more capable assistants like Claude, this is enough. However, some assistants cannot access the full internet or won't know how to work with this kind of file out of the box. If your assistant is having issues, instead, attach the [Kigali Sim llms-full.txt](https://kigalisim.org/llms-full.txt?v=20260128) file as an attachment!
+Need a little cheat? [Download the Tutorial 2](../tutorial_02.qta) file here. Also, for more capable assistants like Claude, this is enough. However, some assistants cannot access the full internet or won't know how to work with this kind of file out of the box. If your assistant is having issues, instead, attach the [Kigali Sim llms-full.txt](https://kigalisim.org/llms-full.txt?v=20260128) file as an attachment!
 
 When your assistant is ready, next give it your Tutorial 2 file. This can be done by going to the Save File button at the top of the Kigali Sim application and adding it to the chat as an attachment with a message like this:
 
@@ -26,7 +26,7 @@ When your assistant is ready, next give it your Tutorial 2 file. This can be don
 Great! The attached is the simulation I started working on.
 ```
 
-**Note**: More details and troubleshooting steps specific to individual AI assistants are available in [Tutorial 11](/guide/tutorial_11.html).
+**Note**: More details and troubleshooting steps specific to individual AI assistants are available in [Tutorial 11](/guide/md/tutorial_11.md).
 
 ## Add a new substance
 
@@ -40,9 +40,9 @@ After the AI is done, download the resulting file and click "Load File" in the U
 
 ## Check the work
 
-Using what you learned in [Tutorial 2](/guide/tutorial_02.html), go ahead and click on edit next to the new consumption record. Is it what you expected? These kinds of simple prompts are almost always successful with more capable AI assistants like Claude but be careful to double check the output of any AI.
+Using what you learned in [Tutorial 2](/guide/md/tutorial_02.md), go ahead and click on edit next to the new consumption record. Is it what you expected? These kinds of simple prompts are almost always successful with more capable AI assistants like Claude but be careful to double check the output of any AI.
 
-Note that, if Kigali Sim reports that a simulation requires use of the code editor, see [Tutorial 7](/guide/tutorial_07.html) or remind the AI assistant to only stick to UI editor compatible features.
+Note that, if Kigali Sim reports that a simulation requires use of the code editor, see [Tutorial 7](/guide/md/tutorial_07.md) or remind the AI assistant to only stick to UI editor compatible features.
 
 ## Adding multiple substances
 
@@ -93,13 +93,13 @@ You've successfully expanded ABC Country's model to include multiple application
 
 The model now provides a foundation for understanding how substance choice and application type interact to determine overall consumption and climate impact patterns.
 
-**Download the completed tutorial** result at [tutorial_03.qta](tutorial_03.qta) which contains the complete multi-application and multi-substance model. It differs from the [prior tutorial result](tutorial_02.qta) in that it adds new substances and applications.
+**Download the completed tutorial** result at [tutorial_03.qta](../tutorial_03.qta) which contains the complete multi-application and multi-substance model. It differs from the [prior tutorial result](../tutorial_02.qta) in that it adds new substances and applications.
 
 ## Next Steps
 
-[Tutorial 4a](/guide/tutorial_04a.html) will add economic growth projections and business-as-usual forecasting to your multi-application model. You'll learn to model how economic expansion drives consumption changes over time, creating realistic baseline scenarios for policy comparison.
+[Tutorial 4a](/guide/md/tutorial_04a.md) will add economic growth projections and business-as-usual forecasting to your multi-application model. You'll learn to model how economic expansion drives consumption changes over time, creating realistic baseline scenarios for policy comparison.
 
-[Previous: Tutorial 2](/guide/tutorial_02.html) | [Return to Guide Index](/guide) | [Next: Tutorial 4a](/guide/tutorial_04a.html)
+[Previous: Tutorial 2](/guide/md/tutorial_02.md) | [Return to Guide Index](/guide/md/index.md) | [Next: Tutorial 4a](/guide/md/tutorial_04a.md)
 
 ---
 
