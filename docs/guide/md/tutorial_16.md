@@ -128,13 +128,13 @@ Go ahead and give this another run. When you open up the resulting CSV file, not
 
 You've successfully implemented Monte Carlo uncertainty analysis for ABC Country's HFC strategy. This kind of simulation provides policymakers with confidence intervals and risk assessments that support more informed decision-making under uncertainty. Rather than single projections, they now have probability distributions that show both best-case and worst-case scenarios.
 
-**Download the complete case study**: [case_study.qta](case_study.qta) - this contains the full ABC Country model with Monte Carlo uncertainty analysis
+**Download the complete case study**: [case_study.qta](../case_study.qta) - this contains the full ABC Country model with Monte Carlo uncertainty analysis
 
 ## Next Steps
 
 Explore how to model countries with exports.
 
-[Previous: Tutorial 15](/guide/tutorial_15.html) | [Return to Guide Index](/guide) | [Next: Tutorial 17](/guide/tutorial_17.html)
+[Previous: Tutorial 15](/guide/md/tutorial_15.md) | [Return to Guide Index](/guide/md/index.md) | [Next: Tutorial 17](/guide/md/tutorial_17.md)
 
 ---
 
