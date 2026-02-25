@@ -40,9 +40,9 @@ Kigali Sim is available as a free, open-source web application at [https://kigal
 
 ## Next Steps
 
-[Tutorial 2](/guide/tutorial_02.html) will begin hands-on modeling by creating ABC Country's first simulation focusing on domestic refrigeration. You'll learn how to set up equipment populations, configure consumption patterns, run simulations, and interpret results, building the foundation for comprehensive HFC phase-down analysis.
+[Tutorial 2](/guide/tutorial_02.md) will begin hands-on modeling by creating ABC Country's first simulation focusing on domestic refrigeration. You'll learn how to set up equipment populations, configure consumption patterns, run simulations, and interpret results, building the foundation for comprehensive HFC phase-down analysis.
 
-[Return to Guide Index](/guide) | [Next: Tutorial 2](/guide/tutorial_02.html)
+[Return to Guide Index](/guide) | [Next: Tutorial 2](/guide/tutorial_02.md)
 
 ---
 
