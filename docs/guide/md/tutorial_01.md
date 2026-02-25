@@ -60,3 +60,7 @@ Kigali Sim is available as a free, open-source web application at [https://kigal
     
 
 _This tutorial is part of the ABC Country case study series demonstrating progressive HFC policy analysis using Kigali Sim._
+
+---
+
+[View HTML version](../tutorial_01.html)

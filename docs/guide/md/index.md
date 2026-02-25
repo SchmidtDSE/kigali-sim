@@ -64,3 +64,7 @@ Need assistance? Email us at [hello@kigalisim.org](mailto:hello@kigalisim.org) o
 ## License and Dedication
 
 Code is released under the [BSD 3-Clause License](https://opensource.org/license/bsd-3-clause). Everything else in this guide is released under the [CC-BY License](https://creativecommons.org/licenses/by/4.0/). This guide is dedicated to Barbara Berke and her dedication to making computation available to everyone.
+
+---
+
+[View HTML version](../index.html)

@@ -131,3 +131,7 @@ You've now completed both Feature-Specific tutorials! You've learned how to mode
 ---
 
 *This tutorial is part of the Feature-Specific series demonstrating specialized aspects of Montreal Protocol policy modeling using Kigali Sim.*
+
+---
+
+[View HTML version](../tutorial_10.html)

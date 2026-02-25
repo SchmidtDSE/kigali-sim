@@ -114,3 +114,7 @@ You've learned how to leverage sophisticated features like variable retirement r
 ---
 
 *This tutorial is part of the Advanced Techniques series demonstrating specialized aspects of Montreal Protocol policy modeling using Kigali Sim.*
+
+---
+
+[View HTML version](../tutorial_15.html)

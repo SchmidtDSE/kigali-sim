@@ -108,3 +108,7 @@ Note that, for those with **local assembly**, domestic can be used to model in-c
 ---
 
 _This tutorial is part of the ABC Country case study series demonstrating progressive HFC policy analysis using Kigali Sim._
+
+---
+
+[View HTML version](../tutorial_04a.html)

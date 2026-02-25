@@ -135,3 +135,7 @@ This tutorial completes the specialized topic series! You've learned how to leve
 ---
 
 _This tutorial is part of the Feature-Specific series demonstrating specialized aspects of Montreal Protocol policy modeling using Kigali Sim._
+
+---
+
+[View HTML version](../tutorial_11.html)

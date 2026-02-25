@@ -104,3 +104,7 @@ The model now provides a foundation for understanding how substance choice and a
 ---
 
 *This tutorial is part of the ABC Country case study series demonstrating progressive HFC policy analysis using Kigali Sim.*
+
+---
+
+[View HTML version](../tutorial_03a.html)
