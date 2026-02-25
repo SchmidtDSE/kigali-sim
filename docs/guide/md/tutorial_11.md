@@ -8,11 +8,11 @@ AI assistants can help express your ideas in Kigali Sim and analyze outputs. Thi
 
 **AI for UI-based authoring**
 
-Sometimes there is just quite a bit of typing and clicking involved to define all of the substances and policies. Of course, AI assistants can help take the natural language we use to describe simulations and convert them into structured Kigali Sim simulations that you can then read and refine using UI-based authoring. However, AI assistants can also help read data files and convert them to Kigali Sim's preferred format or walk through the defining of complex policy scenarios, helping describe those ideas in a way that Kigali Sim can understand. Just be sure that, when working with UI-based authoring, you let your assistant know like we saw in [Tutorial 3a](/guide/tutorial_03a.html).
+Sometimes there is just quite a bit of typing and clicking involved to define all of the substances and policies. Of course, AI assistants can help take the natural language we use to describe simulations and convert them into structured Kigali Sim simulations that you can then read and refine using UI-based authoring. However, AI assistants can also help read data files and convert them to Kigali Sim's preferred format or walk through the defining of complex policy scenarios, helping describe those ideas in a way that Kigali Sim can understand. Just be sure that, when working with UI-based authoring, you let your assistant know like we saw in [Tutorial 3a](/guide/md/tutorial_03a.md).
 
 **AI for programming in code**
 
-If you recall [Tutorial 7](/guide/tutorial_07.html), we revealed that you are actually writing computer code when you use the UI-based authoring **Designer** tab. Kigali Sim uses a programming language built just for Montreal Protocol models called QubecTalk. In addition to allowing you to make more sophisticated simulations, this programming option also allows you to use AI (LLM) assistants. This includes many different options like [ChatGPT](https://chatgpt.com/) or, for example, we use [Claude](https://claude.ai/).
+If you recall [Tutorial 7](/guide/md/tutorial_07.md), we revealed that you are actually writing computer code when you use the UI-based authoring **Designer** tab. Kigali Sim uses a programming language built just for Montreal Protocol models called QubecTalk. In addition to allowing you to make more sophisticated simulations, this programming option also allows you to use AI (LLM) assistants. This includes many different options like [ChatGPT](https://chatgpt.com/) or, for example, we use [Claude](https://claude.ai/).
 
 **How Kigali Sim works with AI**
 
@@ -78,9 +78,9 @@ One of the best performing models in our testing, typically no additional steps 
 
 This walkthrough complements prior tutorials that included AI:
 
-- [Tutorial 3a](/guide/tutorial_03a.html): Modifying an existing simulation to add new substances.
-- [Tutorial 4a](/guide/tutorial_04a.html): Using AI to incorporate information for business as usual forecasting.
-- [Tutorial 6a](/guide/tutorial_06a.html): Using AI to walkthrough adding policy interventions.
+- [Tutorial 3a](/guide/md/tutorial_03a.md): Modifying an existing simulation to add new substances.
+- [Tutorial 4a](/guide/md/tutorial_04a.md): Using AI to incorporate information for business as usual forecasting.
+- [Tutorial 6a](/guide/md/tutorial_06a.md): Using AI to walkthrough adding policy interventions.
 
 This tutorial specifically adds additional information specific to individual AI assistants as well as guidance on using AI with more advanced features of Kigali Sim. To explore those advanced features, the rest of this tutorial will focus on code. However, the earlier tutorials can provide guidance if you want to stick to UI-based authoring.
 
@@ -98,7 +98,7 @@ Hello! Please review https://preview.kigalisim.org/llms-full.txt?v=20260128. The
 
 ## Building the basic simulation
 
-Next, let's instruct the AI to make a simulation called Business as Usual with HFC-134a with the similar information to [Tutorial 2](/guide/tutorial_02.html).
+Next, let's instruct the AI to make a simulation called Business as Usual with HFC-134a with the similar information to [Tutorial 2](/guide/md/tutorial_02.md).
 
 ```
 Thanks! Please make a simulation without any policies called Business as Usual which runs from 2025 to 2035. Please have this include HFC-134a with a GWP of 1430 kgCO2e / kg that is both domestically produced and consumed. Please initial charge with 0.15 kg / unit and have 5% of the equipment retire each year. Furthermore, please recharge 10% of equipment during all years with 0.15 kg / unit. Finally, please have there be sales of 25 mt in 2025 but have those sales increase 5% each year.
@@ -124,13 +124,13 @@ Select the **Consumption** radio button with **domestic** and **mt / year**. The
 
 ## Conclusion
 
-This tutorial demonstrated the use of AI assistants to build models in Kigali Sim. You are now ready to use LLMs to explore other functionality of Kigali Sim and move faster in prototyping new simulations. Remember, you can also use [Kigali Sim on the command line](/guide/tutorial_16.html). In addition to taking advantage of version control and automation, this can also enable use of tools like [Claude Code](https://www.anthropic.com/claude-code).
+This tutorial demonstrated the use of AI assistants to build models in Kigali Sim. You are now ready to use LLMs to explore other functionality of Kigali Sim and move faster in prototyping new simulations. Remember, you can also use [Kigali Sim on the command line](/guide/md/tutorial_16.md). In addition to taking advantage of version control and automation, this can also enable use of tools like [Claude Code](https://www.anthropic.com/claude-code).
 
 ## Next Steps
 
-This tutorial completes the specialized topic series! You've learned how to leverage AI assistants to accelerate your simulation development workflow. For next steps, consider exploring the other tutorials in the series or dive deeper into the QubecTalk programming language using the command line interface from [Tutorial 16](/guide/tutorial_16.html).
+This tutorial completes the specialized topic series! You've learned how to leverage AI assistants to accelerate your simulation development workflow. For next steps, consider exploring the other tutorials in the series or dive deeper into the QubecTalk programming language using the command line interface from [Tutorial 16](/guide/md/tutorial_16.md).
 
-[Previous: Tutorial 10](/guide/tutorial_10.html) | [Return to Guide Index](/guide) | [Next: Tutorial 12](/guide/tutorial_12.html)
+[Previous: Tutorial 10](/guide/md/tutorial_10.md) | [Return to Guide Index](/guide/md/index.md) | [Next: Tutorial 12](/guide/md/tutorial_12.md)
 
 ---
 
