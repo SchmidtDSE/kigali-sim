@@ -83,7 +83,7 @@ cap sales to 100 kg displacing by units "R-600a" during years 2027 to 2030
 
 **Note:** When using `displacing by volume`, total substance mass is preserved but equipment counts may change. When using `displacing by units`, equipment population is preserved but substance mass may change. Use `displacing by units` when equipment tracking is critical (e.g., equipment bank management). Use `displacing by volume` when substance consumption limits are the primary concern.
 
-**Units Tracking Behavior:** When a percentage-based cap triggers (reduces the stream value), it preserves units tracking from the last specified value if that value was in equipment units. For example, if you "set domestic to 10 units" and then "cap domestic to 0%", the cap result will be in units (0 units), which allows recharge calculations to add equipment. If the cap does not trigger (current value is already below the cap), tracking mode remains unchanged. This enables unit-based policies to maintain equipment population tracking even when using percentage-based caps.
+**Units Tracking Behavior:** When a percentage-based cap triggers (reduces the stream value), it preserves units tracking from the last specified value if that value was in equipment units. For example, if you "set domestic to 10 units" and then "cap domestic to 0%", the cap result will be in units (0 units), which allows recharge calculations to add equipment. If the cap does not trigger (current value is already below the cap), tracking mode remains unchanged.
 
 ## Change
 
