@@ -230,3 +230,7 @@ recharge 10% with 0.15 kg / unit in all years
 - [QubecTalk Stanzas Reference](qubectalk_stanzas.md)
 - [QubecTalk Commands Reference](qubectalk_commands.md)
 - [Return to Guide Index](index.md)
+
+---
+
+[View HTML version](../qubectalk_language_features.html)
