@@ -2,7 +2,7 @@
 
 Expanding to multiple sectors and refrigerants.
 
-**Note that this is the conventional version of this tutorial.** An AI-assisted alternative is available at [Tutorial 3a](/guide/tutorial_03a.html).
+**Note that this is the conventional version of this tutorial.** An AI-assisted alternative is available at [Tutorial 3a](/guide/md/tutorial_03a.md).
 
 ## Motivation
 
@@ -49,9 +49,9 @@ The model now provides a foundation for understanding how substance choice and a
 
 ## Next Steps
 
-[Tutorial 4](/guide/tutorial_04.html) will add economic growth projections and business-as-usual forecasting to your multi-application model. You'll learn to model how economic expansion drives consumption changes over time, creating realistic baseline scenarios for policy comparison.
+[Tutorial 4](/guide/md/tutorial_04.md) will add economic growth projections and business-as-usual forecasting to your multi-application model. You'll learn to model how economic expansion drives consumption changes over time, creating realistic baseline scenarios for policy comparison.
 
-[Previous: Tutorial 2](/guide/tutorial_02.html) | [Return to Guide Index](/guide) | [Next: Tutorial 4](/guide/tutorial_04.html)
+[Previous: Tutorial 2](/guide/md/tutorial_02.md) | [Return to Guide Index](/guide/md/index.md) | [Next: Tutorial 4](/guide/md/tutorial_04.md)
 
 ---
 
