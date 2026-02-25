@@ -1,55 +1,29 @@
 # Kigali Sim
-v=20250926
+v=20260224
 
-Open source web-based simulation engine for Montreal Protocol policy modeling. It is **storngly** recommended to review [llms-full.txt](llms-full.txt) which can be found at http://kigalisim.org/llms-full.txt.
+Open source web-based simulation engine for Montreal Protocol policy modeling. It is **strongly** recommended to review [llms-full.txt](llms-full.txt) which can be found at http://kigalisim.org/llms-full.txt.
 
 ## Resources
 
 - [Full Documentation](llms-full.txt) - Comprehensive KigaliSim documentation including QubecTalk language specification
 - [Tutorial Series](guide/md/index.md) - Step-by-step tutorials for policy simulation modeling
-- [Getting Started](guide/md/tutorial_01.md) - Basic introduction to KigaliSim interface and concepts
 - [QubecTalk Language](guide/md/qubectalk_commands.md) - Domain-specific language command reference
 - [QubecTalk Language Features](guide/md/qubectalk_language_features.md) - Advanced programming constructs and features
 - [QubecTalk Program Structure](guide/md/qubectalk_stanzas.md) - Stanza organization and simulation structure
-- [Policy Modeling](guide/md/tutorial_07.md) - Advanced policy intervention techniques using code-based interface
-- [Energy Analysis](guide/md/tutorial_12.md) - Equipment energy efficiency modeling and analysis
-- [GWP Analysis](guide/md/tutorial_11.md) - Global warming potential refrigerant comparison analysis
-- [AI Assistants](guide/md/tutorial_13.md) - Using AI assistants for simulation development
 - [Getting Help](guide/md/get_help.md) - Support resources and troubleshooting guides
-
-## Tutorial Series Overview
-
-**Beginner Tutorials (1-3):** Basic interface, substance definition, application modeling
-- [Tutorial 1](guide/md/tutorial_01.md) - Interface overview and basic concepts
-- [Tutorial 2](guide/md/tutorial_02.md) - Substance definition and global warming potential
-- [Tutorial 3](guide/md/tutorial_03.md) - Application modeling and equipment types
-
-**Intermediate Tutorials (4-6):** Equipment lifecycle, business scenarios, imports/exports  
-- [Tutorial 4](guide/md/tutorial_04.md) - Equipment lifecycle and retirement modeling
-- [Tutorial 5](guide/md/tutorial_05.md) - Business scenarios and service activities
-- [Tutorial 6](guide/md/tutorial_06.md) - Import/export trade modeling
-
-**Advanced Tutorials (7-9):** Code-based editing, policy interventions, probabilistic analysis
-- [Tutorial 7](guide/md/tutorial_07.md) - Advanced code editor and QubecTalk programming
-- [Tutorial 8](guide/md/tutorial_08.md) - Policy interventions and regulatory scenarios
-- [Tutorial 9](guide/md/tutorial_09.md) - Command line usage and probabilistic simulations
-
-**Specialized Tutorials (10-13):** Advanced topics and specific analysis types
-- [Tutorial 10](guide/md/tutorial_10.md) - Recycling and end-of-life substance recovery
-- [Tutorial 11](guide/md/tutorial_11.md) - GWP analysis comparing refrigerant alternatives
-- [Tutorial 12](guide/md/tutorial_12.md) - Energy efficiency analysis and electricity consumption modeling
-- [Tutorial 13](guide/md/tutorial_13.md) - AI assistants for simulation development
 
 ## Key Capabilities
 
-**Substance Modeling:** HFCs, HCFCs, and alternative refrigerants with Global Warming Potential (GWP) values and automatic unit conversions
+**Substance Modeling:** HFCs, HCFCs, and alternative refrigerants with Global Warming Potential (GWP) values and automatic unit conversions. See [Tutorial 2: Single Application and Substance](guide/md/tutorial_02.md), [Tutorial 3: Multiple Applications and Substances](guide/md/tutorial_03.md), and [Tutorial 9: Global Warming Potential](guide/md/tutorial_09.md).
 
-**Application Modeling:** Equipment types including domestic refrigeration, commercial refrigeration, residential AC, mobile AC with lifecycle management
+**Application Modeling:** Equipment types including domestic refrigeration, commercial refrigeration, residential AC, mobile AC with lifecycle management. See [Tutorial 2: Single Application and Substance](guide/md/tutorial_02.md), [Tutorial 8: Equipment Units-Based Modeling](guide/md/tutorial_08.md), and [Tutorial 14: Bank-Based Modeling](guide/md/tutorial_14.md).
 
-**Policy Simulation:** Import restrictions, manufacturing caps, substance phase-outs, recycling requirements, and regulatory scenario modeling
+**Policy Simulation:** Import restrictions, manufacturing caps, substance phase-outs, recycling requirements, and regulatory scenario modeling. See [Tutorial 5: Simple Policies](guide/md/tutorial_05.md), [Tutorial 6: Recycling](guide/md/tutorial_06.md), and [Tutorial 17: Exports](guide/md/tutorial_17.md).
 
-**Business Scenarios:** Manufacturing, imports, equipment lifecycles, service activities, energy consumption with probabilistic projections
+**Business Scenarios:** Manufacturing, imports, equipment lifecycles, service activities, energy consumption with probabilistic projections. See [Tutorial 4: Growth and Trade](guide/md/tutorial_04.md), [Tutorial 10: Equipment Energy Efficiency](guide/md/tutorial_10.md), [Tutorial 15: Variable Retirement and Servicing](guide/md/tutorial_15.md), and [Tutorial 16: Command Line and Monte Carlo](guide/md/tutorial_16.md).
 
-**QubecTalk DSL:** Human-readable domain-specific language for simulation definition with natural language constructs and automated calculations
+**QubecTalk DSL:** Human-readable domain-specific language for simulation definition with natural language constructs and automated calculations. See [Tutorial 7: First Code](guide/md/tutorial_07.md), [Commands Reference](guide/md/qubectalk_commands.md), [Language Features Reference](guide/md/qubectalk_language_features.md), and [Stanzas Reference](guide/md/qubectalk_stanzas.md).
 
-**Web Interface:** Browser-based tool with Basic (UI) and Advanced (code) editing modes, no server-side computation required
+**Web Interface:** Browser-based tool with Basic (UI) and Advanced (code) editing modes, no server-side computation required. See [Tutorial 1: Introduction to Kigali Sim](guide/md/tutorial_01.md) and [Tutorial 2: Single Application and Substance](guide/md/tutorial_02.md).
+
+**Local Execution:** Software can [downloaded as a jar](https://kigalisim.org/kigalisim-fat.jar) for local execution. See [Tutorial 16: Command Line and Monte Carlo](guide/md/tutorial_16.md).

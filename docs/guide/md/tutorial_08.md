@@ -29,7 +29,7 @@ For **R-600a** (0.07 kg/unit initial charge):
 
 Your code should now look like this:
 
-```
+```qubectalk
 define application "Domestic Refrigeration"
   uses substance "HFC-134a"
     # ... other configuration ...
@@ -53,7 +53,7 @@ You may also use `units / year`.
 
 Since we're now thinking in terms of equipment units, let's also update our Sales Permit policy to use unit-based caps:
 
-```
+```qubectalk
 start policy "Sales Permit"
   modify application "Domestic Refrigeration"
     modify substance "HFC-134a"
@@ -74,9 +74,11 @@ First, you may notice that switching to units slightly increased overall consump
 
 Second, let's look closer at HFC-134a under the Permit scenario with the **Substances** and **Consumption** radio buttons selected. The combined import and domestic consumption doesn't go to 0 mt. That's because we specified a cap of 0 new units sold but we still have servicing. Try setting the consumption cap back to 0 mt and it will drop all the way.
 
+Before we wrap up, we are displacing from HFC-134a to R-600a and it is worth discussing how calculations work when operating across multiple substances. When using volume-based caps (0 kg), we are determining how much volume of HFC-134a is lost and then translating that to the same number of kilograms of volume in R-600a. However, when we use units-based caps (0 units), we are determining how many new units of equipment are lost in HFC-134a and then adding that number of units to R-600a. The former doesn't result in the same number of units lost in HFC-134a being added to R-600a just as the later doesn't result in the same number of kilograms lost being added to R-600a. This is because their equipment initial charges are different! In other words, when doing calculations in units, units are translated. However, when doing calculations in volumes (kg or mt), volumes are translated.
+
 ## Displacement Type Considerations
 
-When working with unit-based modeling, you may want to explicitly control how displacement operates. By default, `displacing` uses "equivalent" behavior—it preserves units when you specify in units, or volume when you specify in kg. However, you can override this:
+When working with unit-based modeling, you may want to explicitly control how displacement operates. By default, `displacing` uses "equivalent" behavior. In other words, it preserves units when you specify in units, or volume when you specify in kg. However, you can override this:
 
 - Use `displacing by units` to always maintain equipment population, regardless of how consumption is specified
 - Use `displacing by volume` to always maintain substance mass, regardless of specification units
@@ -100,14 +102,20 @@ You've successfully demonstrated equipment unit-based modeling as an alternative
 
 The choice between unit-based and volume-based approaches depends on your data sources and policy questions, with each offering distinct advantages for different analytical needs.
 
-Before we finish up, note that QubecTalk allows flexibility to mix units. Specifically, our simulation now uses both unit-based and volume-based specifications simultaneously. We can do the same even within the same substance! For example, this may be helpful when specifying domestic manufacturing in units but imports in mass terms based on your available data.
+Finally, note that QubecTalk allows flexibility to mix units. Specifically, our simulation now uses both unit-based and volume-based specifications simultaneously. We can do the same even within the same substance! For example, this may be helpful when specifying domestic manufacturing in units but imports in mass terms based on your available data.
+
+**Download the completed tutorial** result at [tutorial_08.qta](../tutorial_08.qta) which uses unit-based modeling for domestic refrigeration. It differs from the [prior tutorial result](../tutorial_07.qta) in that the consumption numbers are different so, for example, the emissions numbers under the combined policy are different.
 
 ## Next Steps
 
-**Tutorial 9** will introduce command line tools and Monte Carlo simulation for advanced uncertainty analysis. You'll learn to test model sensitivity to key assumptions and develop robust policy recommendations under uncertainty using probabilistic QubecTalk programming.
+Continue exploring the Kigali Sim guide with additional tutorials on modeling co-benefits, AI assistants, and advanced modeling techniques.
 
-[Previous: Tutorial 7](/guide/tutorial_07.html) | [Return to Guide Index](/guide) | [Next: Tutorial 9](/guide/tutorial_09.html)
+[Previous: Tutorial 7](/guide/md/tutorial_07.md) | [Return to Guide Index](/guide/md/index.md) | [Next: Tutorial 9](/guide/md/tutorial_09.md)
 
 ---
 
 _This tutorial is part of the ABC Country case study series demonstrating progressive HFC policy analysis using Kigali Sim._
+
+---
+
+[View HTML version](../tutorial_08.html)

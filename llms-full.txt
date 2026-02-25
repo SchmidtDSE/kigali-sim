@@ -1,7 +1,7 @@
 # Kigali Sim - Montreal Protocol Policy Simulation Tool
 v=20251226
 
-Kigali Sim is an open source web-based simulation engine for modeling substances, applications, and policies related to the Montreal Protocol and Kigali Amendment. It can model high global warming potential greenhouse gases such as HFCs and supports business-as-usual scenarios as well as policy interventions.
+Kigali Sim is an open source web-based simulation engine for modeling substances, applications, and policies related to the Montreal Protocol and Kigali Amendment. See [llms.txt](llms.txt) (http://kigalisim.org/llms.txt) for an index of additional documentation and tutorials. It can model high global warming potential greenhouse gases such as HFCs and supports business-as-usual scenarios as well as policy interventions.
 
 ## Project Purpose
 This tool provides simulation capabilities for:
@@ -93,9 +93,11 @@ The `assume` command is particularly useful for bank (equipment) tracking scenar
 - `replace {amount} of {stream} with "substance" <during>` - Substance transitions
 - `recover {amount} with {amount} reuse <at {stage}> <during>` - Recycling with optional stage (eol or recharge) and duration
 
-**Note**: When using units (of equipment) in cap, floor, and set commands, those limits apply after recharge calculations. So a cap of 100 units means 100 units on top of recharge for prior equipment.
+**Recharge**: When using units (of equipment) in cap, floor, and set commands, those limits apply after recharge calculations. So a cap of 100 units means 100 units on top of recharge for prior equipment.
 
 **Units Tracking**: Percentage-based cap/floor operations preserve the last specified tracking mode (units vs kg) when triggered, enabling continued recharge calculations. Change and displacement operations always preserve current tracking mode.
+
+**Conventions**: A cap of 0 (units or volume) typically implies the user wants it applied from the start year onwards. Confirm the intended time range if a different duration was specified.
 
 #### Units System
 Supports automatic unit conversion: kg, mt (metric tons), tCO2e (tons CO2 equivalent), kwh (kilowatt hours), units (equipment), years/months/days (time), % (percentages).
@@ -221,24 +223,14 @@ The `recover` command supports specifying when recycling occurs and how much ind
 - **Non-units specs (kg/mt)**: Default 100% induction (induced demand behavior) - recycling adds on top of existing demand
 - **Explicit specification**: Users can override defaults by specifying exact percentages (0-100%)
 
-**100% Induction Recommendations**:
-- **100% induction means recycled material does not displace virgin material** - it adds to total supply
-- **100% is recommended for users who are uncertain** as induction is a complex economic phenomenon that can be hard to predict
-- **Can be paired with other policies**, for example, a cap on virgin (import, domestic) to ensure desired reduction in virgin material alongside increasing supply through expanded recycling stream
+**100% Induction Recommendations**: 100% induction means recycled material does not displace virgin material — it adds to total supply. This is recommended when uncertain, as induction is a complex economic phenomenon. It can be paired with caps on virgin material (import, domestic) to ensure desired reductions alongside expanded recycling.
 
 Examples:
 ```
 recover 20 % with 80 % reuse at recharge              # Uses default: 0% for units, 100% for volume
 recover 15 % with 75 % reuse with 50 % induction at eol   # Explicit 50% induction
-recover 10 % with 90 % reuse with default induction during years 3 to 5   # Uses default behavior
-recover 25 % with 85 % reuse with 0 % induction during year 2027 to onwards   # Full displacement
 recover 30 % with 95 % reuse with 100 % induction at eol  # Full induced demand
 ```
-
-**Behavioral Differences**:
-- **0% Induction (Displacement)**: Recycled material reduces virgin material demand. Total equipment population stays constant.
-- **100% Induction (Induced Demand)**: Recycled material adds to total supply. Equipment population increases due to additional material availability.
-- **Partial Induction (Mixed)**: Combines both behaviors proportionally.
 
 ## Example QubecTalk Program
 Note that the about stanza would not appear if using UI-compatible features only.
@@ -326,19 +318,10 @@ When working with AI assistants, you may want to specify that only UI Editor com
 
 **Not Supported in UI Editor (Advanced Editor Only):**
 - **About stanza**: Metadata and descriptions (`start about`/`end about`)
-- **Variables**: `define identifier as expression` and `get identifier`
-- **Mathematical expressions**: Complex calculations, arithmetic operations in commands
-- **Conditional logic**: `if`/`else`/`endif` constructs, ternary operations
-- **Boolean operators**: `and`, `or`, `xor` for logical combinations
-- **Comparison operators**: `==`, `!=`, `<`, `>`, `<=`, `>=` in conditions
-- **Constraints**: `limit expression to [min,max]` operations
-- **Probabilistic features**: `sample normally`, `sample uniformly` distributions
-- **Monte Carlo simulations**: `across X trials` for multiple simulation runs
-- **Stream access**: `get {stream}` and `get {stream} as {units}` operations
-- **Age stream**: `get age as years` for equipment age tracking and age-dependent policies
-- **Complex expressions**: Any mathematical or logical expressions beyond simple numeric values
+- **Code expressions**: Variables (`define`/`get`), arithmetic, conditionals (`if`/`else`/`endif`), boolean/comparison operators (`and`, `or`, `xor`, `==`, `!=`, `<`, `>`, `<=`, `>=`), constraints (`limit`), and complex mathematical expressions
+- **Probabilistic features**: Distributions (`sample normally`, `sample uniformly`) and Monte Carlo trials (`across X trials`)
+- **Advanced streams**: `get {stream}`, unit conversions (`get {stream} as {units}`), and age stream (`get age as years`) for age-dependent policies
 - **Multi-substance policies**: Policies affecting multiple substances simultaneously
-- **Advanced unit conversions**: Dynamic unit conversion expressions
 
 **Example UI-Compatible Code:**
 ```
@@ -374,6 +357,38 @@ end simulations
 ```
 
 When requesting UI Editor compatible code, avoid variables, expressions, conditional logic, and probabilistic features.
+
+## Command Line / JAR Engine
+
+Kigali Sim is also available as a standalone executable JAR for running simulations from the command line. Download the pre-built JAR from https://kigalisim.org/kigalisim-fat.jar. A JRE (Java 21+) is required; [Adoptium](https://adoptium.net/) is a recommended source.
+
+### Subcommands
+
+```bash
+# Show help
+java -jar kigalisim-fat.jar --help
+
+# Check version
+java -jar kigalisim-fat.jar version
+
+# Validate a QubecTalk file (checks syntax without running simulations)
+java -jar kigalisim-fat.jar validate simulation.qbt
+
+# Run a simulation and write results to CSV
+java -jar kigalisim-fat.jar run simulation.qbt -o results.csv
+
+# Run with multiple Monte Carlo replicates
+java -jar kigalisim-fat.jar run simulation.qbt -o results.csv -r 100
+```
+
+The `run` subcommand accepts:
+- `<file>` - Path to the QubecTalk simulation file (required, positional)
+- `-o` / `--output` - Path to CSV output file (required)
+- `-r` / `--replicates` - Number of times to run each scenario (default: 1)
+
+The `validate` subcommand parses and interprets the file without executing simulations, useful for checking QubecTalk syntax before running.
+
+**When to use replicates**: Use `-r 1` (the default) unless the simulation uses probabilistic features (`sample normally`, `sample uniformly`) or the user has explicitly requested Monte Carlo analysis. Multiple replicates only add value when randomness is present.
 
 ## Technical Implementation
 

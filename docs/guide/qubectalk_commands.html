@@ -101,7 +101,7 @@ cap sales to 100 kg displacing by units "R-600a" during years 2027 to 2030
 
           <p><strong>Note:</strong> When using <code>displacing by volume</code>, total substance mass is preserved but equipment counts may change. When using <code>displacing by units</code>, equipment population is preserved but substance mass may change. Use <code>displacing by units</code> when equipment tracking is critical (e.g., equipment bank management). Use <code>displacing by volume</code> when substance consumption limits are the primary concern.</p>
 
-          <p><strong>Units Tracking Behavior:</strong> When a percentage-based cap triggers (reduces the stream value), it preserves units tracking from the last specified value if that value was in equipment units. For example, if you "set domestic to 10 units" and then "cap domestic to 0%", the cap result will be in units (0 units), which allows recharge calculations to add equipment. If the cap does not trigger (current value is already below the cap), tracking mode remains unchanged. This enables unit-based policies to maintain equipment population tracking even when using percentage-based caps.</p>
+          <p><strong>Units Tracking Behavior:</strong> When a percentage-based cap triggers (reduces the stream value), it preserves units tracking from the last specified value if that value was in equipment units. For example, if you "set domestic to 10 units" and then "cap domestic to 0%", the cap result will be in units (0 units), which allows recharge calculations to add equipment. If the cap does not trigger (current value is already below the cap), tracking mode remains unchanged.</p>
         </section>
       </section>
 
@@ -331,6 +331,10 @@ set priorEquipment to 1000000 units during year 2025</code></pre>
         </ul>
       </section>
     </main>
+
+    <footer>
+      <p><a href="md/qubectalk_commands.md">View Markdown version</a></p>
+    </footer>
 
     <script src="/third_party/prism-core.min.js"></script>
     <script src="/third_party/prism-autoloader.min.js"></script>
