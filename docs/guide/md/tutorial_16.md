@@ -139,3 +139,7 @@ Explore how to model countries with exports.
 ---
 
 *This tutorial is part of the Advanced Techniques series demonstrating specialized aspects of Montreal Protocol policy modeling using Kigali Sim.*
+
+---
+
+[View HTML version](../tutorial_16.html)

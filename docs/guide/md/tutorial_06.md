@@ -61,3 +61,7 @@ You've successfully implemented ABC Country's comprehensive HFC-134a strategy co
 ---
 
 _This tutorial is part of the ABC Country case study series demonstrating progressive HFC policy analysis using Kigali Sim._
+
+---
+
+[View HTML version](../tutorial_06.html)
