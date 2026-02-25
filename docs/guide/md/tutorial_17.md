@@ -53,3 +53,7 @@ That's the end of the tutorial series for now! Check back later for more updates
 ---
 
 *This tutorial is part of the Advanced Techniques series demonstrating specialized aspects of Montreal Protocol policy modeling using Kigali Sim.*
+
+---
+
+[View HTML version](../tutorial_17.html)
