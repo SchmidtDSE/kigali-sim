@@ -26,7 +26,7 @@ We caution that you should be sure to read the privacy policy and terms of servi
 
 All that in mind, here are some AI assistants with which we have tested along with troubleshooting steps if needed:
 
-**ChatGPT**
+### ChatGPT
 
 [ChatGPT](https://chatgpt.com/) tends to perform well if given an example. Consider providing a tutorial qta file in your initial prompt like so:
 
@@ -36,11 +36,11 @@ Hello! Please review https://preview.kigalisim.org/llms-full.txt?v=20260128 and 
 
 Depending on where you use ChatGPT, it may just give you back code instead of a file. This can be copied and pasted into the **Editor** tab. If you instructed ChatGPT to only use UI-editor compatible code, you can update the code and go back to the **Designer** tab to continue with UI-based authoring.
 
-**Claude**
+### Claude
 
 The best performing model in our testing, typically no additional steps are needed for Claude to perform well. See [claude.ai](https://claude.ai/).
 
-**Copilot**
+### Copilot
 
 Different versions of copilot might perform differently. See [copilot.microsoft.com](https://copilot.microsoft.com/). In general, Copilot tends to work best when working from an example so you may want to start with a prompt like this:
 
@@ -50,9 +50,7 @@ Hello! Please review https://preview.kigalisim.org/llms-full.txt?v=20260128 and 
 
 Depending on where you use Copilot, it may just give you back code instead of a file. This can be copied and pasted into the **Editor** tab. If you instructed Copilot to only use UI-editor compatible code, you can update the code and go back to the **Designer** tab to continue with UI-based authoring.
 
-**Caution**: As of January 2026, Copilot has performed poorly in a number of tasks using Kigali Sim in our testing. If you encounter issues, you may consider switching to a different assistant.
-
-**DeepSeek**
+### DeepSeek
 
 Visit [chat.deepseek.com](https://chat.deepseek.com/). DeepSeek tends to work fairly well but may require a reminder to add the simulations stanza like so:
 
@@ -60,7 +58,7 @@ Visit [chat.deepseek.com](https://chat.deepseek.com/). DeepSeek tends to work fa
 Hello! Please review https://preview.kigalisim.org/llms-full.txt?v=20260128. Then, we will build a simulation together. Please be sure to include the simulation stanza like seen in https://kigalisim.org/guide/tutorial_02.qta.
 ```
 
-**Gemini**
+### Gemini
 
 Available at [gemini.google.com](https://gemini.google.com/), Gemini may have issues directly accessing the llms-full.txt file depending on your organization's settings. It also sometimes tries to add links in brackets which are not compatible with Kigali Sim. Therefore, you may wish to [download llms-full.txt](/llms-full.txt) and add it as an attachment in your initial prompt. To take care of both of these potential issues, here is an example initial message:
 
@@ -70,7 +68,7 @@ Hello! Please review the attached llms-full.txt for information about Kigali Sim
 
 Depending on where you use Gemini, it may just give you back code instead of a file. This can be copied and pasted into the **Editor** tab. If you instructed Gemini to only use UI-editor compatible code, you can update the code and go back to the **Designer** tab to continue with UI-based authoring.
 
-**Mistral**
+### Mistral
 
 One of the best performing models in our testing, typically no additional steps are needed for Mistral to perform well. See [chat.mistral.ai](https://chat.mistral.ai/). That said, if using Le Chat without login, you may need to [download llms-full.txt](/llms-full.txt) and add it as an attachment in your initial prompt. Also, depending on where you use Mistral, it may just give you back code instead of a file. This can be copied and pasted into the **Editor** tab. If you instructed Mistral to only use UI-editor compatible code, you can update the code and go back to the **Designer** tab to continue with UI-based authoring.
 
