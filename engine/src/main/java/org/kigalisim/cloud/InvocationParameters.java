@@ -17,16 +17,16 @@ import java.util.Optional;
  */
 public class InvocationParameters {
 
-  private final String script;
-  private final String simulation;
+  private final Optional<String> script;
+  private final Optional<String> simulation;
 
   /**
    * Constructs a new InvocationParameters.
    *
-   * @param script The QubecTalk script string, or {@code null} if not provided.
-   * @param simulation The simulation name, or {@code null} if not provided.
+   * @param script An {@link Optional} containing the QubecTalk script, or empty if not provided.
+   * @param simulation An {@link Optional} containing the simulation name, or empty if not provided.
    */
-  public InvocationParameters(String script, String simulation) {
+  public InvocationParameters(Optional<String> script, Optional<String> simulation) {
     this.script = script;
     this.simulation = simulation;
   }
@@ -37,7 +37,7 @@ public class InvocationParameters {
    * @return An {@link Optional} containing the script, or empty if not provided.
    */
   public Optional<String> getScript() {
-    return Optional.ofNullable(script);
+    return script;
   }
 
   /**
@@ -46,7 +46,7 @@ public class InvocationParameters {
    * @return An {@link Optional} containing the simulation name, or empty if not provided.
    */
   public Optional<String> getSimulation() {
-    return Optional.ofNullable(simulation);
+    return simulation;
   }
 
 }

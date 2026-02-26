@@ -7,6 +7,7 @@
 package org.kigalisim.cloud;
 
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Builds {@link InvocationParameters} from a raw query string parameter map.
@@ -27,7 +28,7 @@ public class InvocationParametersFactory {
    */
   public static InvocationParameters build(Map<String, String> params) {
     if (params == null) {
-      return new InvocationParameters(null, null);
+      return new InvocationParameters(Optional.empty(), Optional.empty());
     }
 
     String script = params.get("script");
@@ -37,7 +38,10 @@ public class InvocationParametersFactory {
 
     String simulation = params.get("simulation");
 
-    return new InvocationParameters(script, simulation);
+    return new InvocationParameters(
+        Optional.ofNullable(script),
+        Optional.ofNullable(simulation)
+    );
   }
 
 }
