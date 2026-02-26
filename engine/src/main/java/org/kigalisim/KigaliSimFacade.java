@@ -301,10 +301,6 @@ public class KigaliSimFacade {
    * @return A CSV string representation of the results.
    */
   public static String convertResultsToCsv(List<EngineResult> results) {
-    if (results.isEmpty()) {
-      return "";
-    }
-
     // Estimate capacity: header + (rows * estimated_chars_per_row)
     // With export and bank fields: 25 decimal fields (15 chars each) + strings (~45) + integers (~6) + overhead = ~430 chars per row
     int estimatedCapacity = 450 + (results.size() * 430);

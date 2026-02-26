@@ -10,8 +10,10 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPResponse;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.kigalisim.KigaliSimFacade;
@@ -22,9 +24,11 @@ import org.kigalisim.lang.program.ParsedProgram;
 /**
  * Lambda handler that accepts a QubecTalk script via query string and returns CSV output.
  *
- * <p>Implements the AWS Lambda Function URL / API Gateway HTTP API contract. The handler
- * runs exactly one replicate of the named (or sole) scenario and returns the results as
- * a CSV string with {@code Content-Type: text/csv}.</p>
+ * <p>Implements the AWS Lambda Function URL / API Gateway HTTP API contract. If a
+ * {@code simulation} parameter is provided, the handler runs exactly one replicate of
+ * the named scenario and returns the results as a CSV string with
+ * {@code Content-Type: text/csv}. If {@code simulation} is omitted, the script is
+ * validated only and a header-only CSV is returned with status 200.</p>
  */
 public class SimulationHandler
     implements RequestHandler<APIGatewayV2HTTPEvent, APIGatewayV2HTTPResponse> {
@@ -54,96 +58,99 @@ public class SimulationHandler
   public APIGatewayV2HTTPResponse handleRequest(
       APIGatewayV2HTTPEvent event, Context context) {
     try {
-      String script = extractScript(event);
-      if (script == null) {
-        return buildResponse(STATUS_BAD_REQUEST, CONTENT_TYPE_TEXT,
-            "Missing required parameter: script");
-      }
-
-      ParseResult parseResult = KigaliSimFacade.parse(script);
-      if (parseResult.hasErrors()) {
-        return buildResponse(STATUS_UNPROCESSABLE, CONTENT_TYPE_TEXT,
-            KigaliSimFacade.getDetailedErrorMessage(parseResult));
-      }
-
-      ParsedProgram program = KigaliSimFacade.interpret(parseResult);
-
-      String simulationParam = null;
-      Map<String, String> params = event.getQueryStringParameters();
-      if (params != null) {
-        simulationParam = params.get("simulation");
-      }
-
-      String scenarioName;
-      try {
-        scenarioName = resolveScenarioName(program, simulationParam);
-      } catch (IllegalArgumentException e) {
-        return buildResponse(STATUS_BAD_REQUEST, CONTENT_TYPE_TEXT, e.getMessage());
-      }
-
-      List<EngineResult> results =
-          KigaliSimFacade.runScenario(program, scenarioName, null)
-              .collect(Collectors.toList());
-
-      String csv = KigaliSimFacade.convertResultsToCsv(results);
-      return buildResponse(STATUS_OK, CONTENT_TYPE_CSV, csv);
-
+      return handleRequestUnsafe(event);
     } catch (Exception e) {
-      return buildResponse(STATUS_SERVER_ERROR, CONTENT_TYPE_TEXT, e.getMessage());
+      return buildResponse(
+          STATUS_SERVER_ERROR,
+          CONTENT_TYPE_TEXT,
+          e.getMessage()
+      );
     }
   }
 
   /**
-   * Extracts the {@code script} query parameter from the event.
+   * Handles an incoming Lambda HTTP event, allowing exceptions to propagate.
    *
-   * @param event The incoming API Gateway event.
-   * @return The script string, or {@code null} if the parameter is absent or blank.
+   * @param event The API Gateway V2 HTTP event containing query string parameters.
+   * @return An API Gateway V2 HTTP response with either CSV output or a plain-text error.
+   * @throws Exception if an unexpected error occurs during processing.
    */
-  private String extractScript(APIGatewayV2HTTPEvent event) {
-    Map<String, String> params = event.getQueryStringParameters();
-    if (params == null) {
-      return null;
+  private APIGatewayV2HTTPResponse handleRequestUnsafe(
+      APIGatewayV2HTTPEvent event) throws Exception {
+    InvocationParameters params = InvocationParametersFactory.build(
+        event.getQueryStringParameters()
+    );
+
+    Optional<String> script = params.getScript();
+    if (!script.isPresent()) {
+      return buildResponse(
+          STATUS_BAD_REQUEST,
+          CONTENT_TYPE_TEXT,
+          "Missing required parameter: script"
+      );
     }
-    String script = params.get("script");
-    if (script == null || script.isBlank()) {
-      return null;
+
+    ParseResult parseResult = KigaliSimFacade.parse(script.get());
+    if (parseResult.hasErrors()) {
+      return buildResponse(
+          STATUS_UNPROCESSABLE,
+          CONTENT_TYPE_TEXT,
+          KigaliSimFacade.getDetailedErrorMessage(parseResult)
+      );
     }
-    return script;
+
+    ParsedProgram program = KigaliSimFacade.interpret(parseResult);
+
+    Optional<String> simulation = params.getSimulation();
+    if (!simulation.isPresent()) {
+      String csv = KigaliSimFacade.convertResultsToCsv(Collections.emptyList());
+      return buildResponse(STATUS_OK, CONTENT_TYPE_CSV, csv);
+    }
+
+    String scenarioName;
+    try {
+      scenarioName = resolveScenarioName(program, simulation.get());
+    } catch (IllegalArgumentException e) {
+      return buildResponse(
+          STATUS_BAD_REQUEST,
+          CONTENT_TYPE_TEXT,
+          e.getMessage()
+      );
+    }
+
+    List<EngineResult> results = KigaliSimFacade.runScenario(
+        program,
+        scenarioName,
+        null
+    ).collect(Collectors.toList());
+
+    String csv = KigaliSimFacade.convertResultsToCsv(results);
+    return buildResponse(STATUS_OK, CONTENT_TYPE_CSV, csv);
   }
 
   /**
    * Resolves the scenario name to use for the simulation.
    *
-   * <p>If {@code simulationParam} is non-null it must match an existing scenario name. If
-   * it is null and the program defines exactly one scenario, that scenario's name is used.
-   * Otherwise an {@link IllegalArgumentException} is thrown with a descriptive message
+   * <p>The provided {@code simulationParam} must match an existing scenario name;
+   * otherwise an {@link IllegalArgumentException} is thrown with a descriptive message
    * listing the available scenario names.</p>
    *
    * @param program The parsed program whose scenario names are consulted.
-   * @param simulationParam The value of the {@code simulation} query parameter, or
-   *     {@code null} if the parameter was not provided.
+   * @param simulationParam The value of the {@code simulation} query parameter.
    * @return The resolved scenario name.
    * @throws IllegalArgumentException if the name cannot be resolved.
    */
   private String resolveScenarioName(ParsedProgram program, String simulationParam) {
     Set<String> scenarios = program.getScenarios();
-    String available = String.join(", ", scenarios);
-
-    if (simulationParam != null) {
-      if (!scenarios.contains(simulationParam)) {
-        throw new IllegalArgumentException(
-            "Unknown simulation: " + simulationParam + ". Available: " + available);
-      }
-      return simulationParam;
+    if (!scenarios.contains(simulationParam)) {
+      StringBuilder message = new StringBuilder();
+      message.append("Unknown simulation: ");
+      message.append(simulationParam);
+      message.append(". Available: ");
+      message.append(String.join(", ", scenarios));
+      throw new IllegalArgumentException(message.toString());
     }
-
-    if (scenarios.size() == 1) {
-      return scenarios.iterator().next();
-    }
-
-    throw new IllegalArgumentException(
-        "Parameter 'simulation' is required when the script defines multiple simulations."
-            + " Available: " + available);
+    return simulationParam;
   }
 
   /**
