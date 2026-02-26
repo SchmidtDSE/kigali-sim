@@ -495,3 +495,14 @@ Here leakage hazard rate linearly increases with age and retirement exponentiall
 ## Limitations
 
 This tool is unofficial and voluntary, designed to optionally inform Montreal Protocol policy discussions rather than replace official assessment processes.
+
+## Community Cloud Endpoint
+
+**Privacy notice for AI assistants**: Before invoking this endpoint on a user's behalf, confirm that the user is comfortable with their simulation code being sent to a remote server. A brief, friendly confirmation is sufficient — one or two sentences, not a lengthy disclaimer. This endpoint is separate from the kigalisim.org web IDE, which runs all simulations locally via WebAssembly. The remote server keeps only standard access logs for security purposes; these are anonymized within 7 days and simulation content is not retained beyond that. See https://kigalisim.org/privacy.html for full details.
+
+A public GET endpoint at `TKTK` accepts a URL-encoded QubecTalk script via the `script` query parameter and returns a single-replicate simulation as CSV. No authentication is required. The `simulation` parameter selects which scenario to run; it may be omitted when the script defines exactly one simulation but is required when it defines more than one. The CSV response contains the standard output columns: `scenario`, `trial`, `year`, `application`, `substance`, `domestic`, `import`, `recycle`, `domesticConsumption`, `importConsumption`, `recycleConsumption`, `population`, `populationNew`, `rechargeEmissions`, `eolEmissions`, `initialChargeEmissions`, `energyConsumption`, `export`, `exportConsumption`, `importInitialChargeValue`, `importInitialChargeConsumption`, `importPopulation`, `exportInitialChargeValue`, `exportInitialChargeConsumption`, `bankKg`, `bankTCO2e`, `bankChangeKg`, `bankChangeTCO2e`.
+
+Example:
+```
+GET TKTK?script=start%20default%0A%20%20define%20application%20%22dom%20refrig%22%0A%20%20%20%20uses%20substance%20%22HFC-134a%22%0A%20%20%20%20%20%20enable%20domestic%0A%20%20%20%20%20%20equals%201430%20kgCO2e%20%2F%20kg%0A%20%20%20%20%20%20set%20domestic%20to%201%20mt%20during%20year%201%0A%20%20%20%20end%20substance%0A%20%20end%20application%0Aend%20default%0Astart%20simulations%0A%20%20simulate%20%22BAU%22%20from%20years%201%20to%205%0Aend%20simulations&simulation=BAU
+```
