@@ -10,6 +10,7 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPResponse;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -24,10 +25,10 @@ import org.kigalisim.lang.program.ParsedProgram;
 /**
  * Lambda handler that accepts a QubecTalk script via query string and returns CSV output.
  *
- * <p>Implements the AWS Lambda Function URL / API Gateway HTTP API contract. If a
- * {@code simulation} parameter is provided, the handler runs exactly one replicate of
- * the named scenario and returns the results as a CSV string with
- * {@code Content-Type: text/csv}. If {@code simulation} is omitted, the script is
+ * <p>Implements the AWS Lambda Function URL / API Gateway HTTP API contract. If one or more
+ * comma-separated {@code simulation} names are provided, the handler runs one replicate of
+ * each named scenario in order and returns all results combined in a single CSV response
+ * with {@code Content-Type: text/csv}. If {@code simulation} is omitted, the script is
  * validated only and a header-only CSV is returned with status 200.</p>
  */
 public class SimulationHandler
@@ -105,28 +106,24 @@ public class SimulationHandler
 
     ParsedProgram program = KigaliSimFacade.interpret(parseResult);
 
-    Optional<String> simulation = params.getSimulation();
-    if (!simulation.isPresent()) {
+    List<String> simulations = params.getSimulations();
+    if (simulations.isEmpty()) {
       String csv = KigaliSimFacade.convertResultsToCsv(Collections.emptyList());
       return buildResponse(STATUS_OK, CONTENT_TYPE_CSV, csv);
     }
 
-    String scenarioName;
-    try {
-      scenarioName = resolveScenarioName(program, simulation.get());
-    } catch (IllegalArgumentException e) {
-      return buildResponse(
-          STATUS_BAD_REQUEST,
-          CONTENT_TYPE_TEXT,
-          e.getMessage()
-      );
+    List<String> resolvedNames = new ArrayList<>();
+    for (String simulationParam : simulations) {
+      try {
+        resolvedNames.add(resolveScenarioName(program, simulationParam));
+      } catch (IllegalArgumentException e) {
+        return buildResponse(STATUS_BAD_REQUEST, CONTENT_TYPE_TEXT, e.getMessage());
+      }
     }
 
-    List<EngineResult> results = KigaliSimFacade.runScenario(
-        program,
-        scenarioName,
-        null
-    ).collect(Collectors.toList());
+    List<EngineResult> results = resolvedNames.stream()
+        .flatMap(scenarioName -> KigaliSimFacade.runScenario(program, scenarioName, null))
+        .collect(Collectors.toList());
 
     String csv = KigaliSimFacade.convertResultsToCsv(results);
     return buildResponse(STATUS_OK, CONTENT_TYPE_CSV, csv);

@@ -94,7 +94,7 @@ docker run -v $(pwd):/working kigalisim run -o output.csv script.qta
 Note: Windows users should replace `$(pwd)` with `%cd%` for Command Prompt or `${PWD}` for PowerShell.
 
 ### Community Cloud Endpoint
-For programmatic or AI-assisted use, a public GET endpoint is available that runs a single-replicate simulation on a remote server and returns CSV output. Unlike the kigalisim.org web IDE (which runs simulations locally via WebAssembly) or jar file (which runs simulations locally via JVM), this endpoint transmits your QubecTalk script to a remote server for processing. See [privacy policy](https://kigalisim.org/privacy.html) for details on data handling.
+For programmatic or AI-assisted use, a public GET endpoint is available that runs one or more single-replicate simulations on a remote server and returns CSV output. Unlike the kigalisim.org web IDE (which runs simulations locally via WebAssembly) or jar file (which runs simulations locally via JVM), this endpoint transmits your QubecTalk script to a remote server for processing. See [privacy policy](https://kigalisim.org/privacy.html) for details on data handling.
 
 Endpoint: `https://bbaagift7g5fsza7xzxksl7uny0jjwvn.lambda-url.us-east-2.on.aws/`
 
@@ -102,6 +102,8 @@ Example request (URL-encoded):
 ```
 GET https://bbaagift7g5fsza7xzxksl7uny0jjwvn.lambda-url.us-east-2.on.aws/?script=start%20default%0A...%0Aend%20default%0A...&simulation=Business%20as%20Usual
 ```
+
+The `simulation` parameter accepts comma-separated scenario names (e.g., `simulation=Scenario+One,Scenario+Two`) to run multiple simulations in a single call and receive their results combined in one CSV response.
 
 The `script` parameter accepts `|` in place of spaces to produce shorter URLs. The server replaces all pipes with spaces before parsing, so the script executes identically. Use this only when scripts are too long for URL limits, as it makes scripts less readable.
 

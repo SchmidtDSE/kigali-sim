@@ -166,4 +166,63 @@ public class SimulationHandlerTest {
         "Unknown simulation name should return 400");
   }
 
+  /**
+   * Test that a comma-separated list of two valid simulation names returns HTTP 200.
+   */
+  @Test
+  public void testTwoSimsCommaSeparatedReturns200() {
+    Map<String, String> params = new HashMap<>();
+    params.put("script", twoScenarioScript);
+    params.put("simulation", "Business as Usual,Scenario Two");
+    APIGatewayV2HTTPEvent event = buildEvent(params);
+    APIGatewayV2HTTPResponse response = handler.handleRequest(event, null);
+    assertEquals(200, response.getStatusCode(),
+        "Comma-separated valid simulation names should return 200");
+  }
+
+  /**
+   * Test that results from both scenarios appear in the CSV when two names are requested.
+   */
+  @Test
+  public void testTwoSimsCommaSeparatedContainsBothScenarios() {
+    Map<String, String> params = new HashMap<>();
+    params.put("script", twoScenarioScript);
+    params.put("simulation", "Business as Usual,Scenario Two");
+    APIGatewayV2HTTPEvent event = buildEvent(params);
+    APIGatewayV2HTTPResponse response = handler.handleRequest(event, null);
+    assertEquals(200, response.getStatusCode());
+    assertTrue(response.getBody().contains("Business as Usual"),
+        "Combined CSV should contain results for first scenario");
+    assertTrue(response.getBody().contains("Scenario Two"),
+        "Combined CSV should contain results for second scenario");
+  }
+
+  /**
+   * Test that an unknown simulation name anywhere in a comma-separated list returns HTTP 400.
+   */
+  @Test
+  public void testOneUnknownInCommaSeparatedListReturns400() {
+    Map<String, String> params = new HashMap<>();
+    params.put("script", twoScenarioScript);
+    params.put("simulation", "Business as Usual,Nonexistent");
+    APIGatewayV2HTTPEvent event = buildEvent(params);
+    APIGatewayV2HTTPResponse response = handler.handleRequest(event, null);
+    assertEquals(400, response.getStatusCode(),
+        "Unknown simulation name in comma-separated list should return 400");
+  }
+
+  /**
+   * Test that spaces around commas in the simulation parameter are trimmed correctly.
+   */
+  @Test
+  public void testSimParamWithSpacesAroundCommaReturns200() {
+    Map<String, String> params = new HashMap<>();
+    params.put("script", twoScenarioScript);
+    params.put("simulation", "Business as Usual , Scenario Two");
+    APIGatewayV2HTTPEvent event = buildEvent(params);
+    APIGatewayV2HTTPResponse response = handler.handleRequest(event, null);
+    assertEquals(200, response.getStatusCode(),
+        "Spaces around comma delimiter in simulation param should be trimmed");
+  }
+
 }
