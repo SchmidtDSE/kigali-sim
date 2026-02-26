@@ -103,6 +103,8 @@ Example request (URL-encoded):
 GET https://bbaagift7g5fsza7xzxksl7uny0jjwvn.lambda-url.us-east-2.on.aws/?script=start%20default%0A...%0Aend%20default%0A...&simulation=Business%20as%20Usual
 ```
 
+The `script` parameter accepts `|` in place of spaces to produce shorter URLs. The server replaces all pipes with spaces before parsing, so the script executes identically. Use this only when scripts are too long for URL limits, as it makes scripts less readable.
+
 ### Local UI-based editor
 For information about running the Kigali Sim IDE locally on your machine, see the [development section of this README](https://github.com/SchmidtDSE/kigali-sim?tab=readme-ov-file#development) for various options including Docker, GitHub Codespaces, or a manual local setup.
 
