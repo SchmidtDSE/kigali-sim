@@ -8,9 +8,13 @@ package org.kigalisim.cloud;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPResponse;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,60 +26,19 @@ import org.junit.jupiter.api.Test;
 public class SimulationHandlerTest {
 
   private SimulationHandler handler;
-
-  // Minimal valid QubecTalk script defining exactly one simulation scenario.
-  private static final String ONE_SCENARIO_SCRIPT =
-      "start default\n"
-      + "  define application \"Test App\"\n"
-      + "    uses substance \"HFC-134a\"\n"
-      + "      enable domestic\n"
-      + "      initial charge with 1 kg / unit for domestic\n"
-      + "      initial charge with 0 kg / unit for import\n"
-      + "      initial charge with 0 kg / unit for export\n"
-      + "      equals 1430 kgCO2e / kg\n"
-      + "      equals 1 kwh / unit\n"
-      + "      set sales to 1 mt during year 1\n"
-      + "      retire 5 % / year\n"
-      + "    end substance\n"
-      + "  end application\n"
-      + "end default\n"
-      + "\n"
-      + "start simulations\n"
-      + "  simulate \"Business as Usual\"\n"
-      + "  from years 1 to 3\n"
-      + "end simulations\n";
-
-  // Valid QubecTalk script defining two simulation scenarios.
-  private static final String TWO_SCENARIO_SCRIPT =
-      "start default\n"
-      + "  define application \"Test App\"\n"
-      + "    uses substance \"HFC-134a\"\n"
-      + "      enable domestic\n"
-      + "      initial charge with 1 kg / unit for domestic\n"
-      + "      initial charge with 0 kg / unit for import\n"
-      + "      initial charge with 0 kg / unit for export\n"
-      + "      equals 1430 kgCO2e / kg\n"
-      + "      equals 1 kwh / unit\n"
-      + "      set sales to 1 mt during year 1\n"
-      + "      retire 5 % / year\n"
-      + "    end substance\n"
-      + "  end application\n"
-      + "end default\n"
-      + "\n"
-      + "start simulations\n"
-      + "  simulate \"Business as Usual\"\n"
-      + "  from years 1 to 3\n"
-      + "\n"
-      + "  simulate \"Scenario Two\"\n"
-      + "  from years 1 to 3\n"
-      + "end simulations\n";
+  private String oneScenarioScript;
+  private String twoScenarioScript;
 
   /**
-   * Set up a fresh SimulationHandler before each test.
+   * Set up a fresh SimulationHandler and load test scripts before each test.
+   *
+   * @throws IOException if the example QTA files cannot be read.
    */
   @BeforeEach
-  public void setUp() {
+  public void setUp() throws IOException {
     handler = new SimulationHandler();
+    oneScenarioScript = Files.readString(Paths.get("../examples/cloud_one_scenario.qta"));
+    twoScenarioScript = Files.readString(Paths.get("../examples/cloud_two_scenario.qta"));
   }
 
   /**
@@ -130,28 +93,44 @@ public class SimulationHandlerTest {
   }
 
   /**
-   * Test that a valid single-scenario script with no simulation param returns HTTP 200 with CSV.
+   * Test that a valid script with no simulation param validates only and returns HTTP 200.
    */
   @Test
   public void testOneScenarioNoSimParamReturns200() {
     Map<String, String> params = new HashMap<>();
-    params.put("script", ONE_SCENARIO_SCRIPT);
+    params.put("script", oneScenarioScript);
     APIGatewayV2HTTPEvent event = buildEvent(params);
     APIGatewayV2HTTPResponse response = handler.handleRequest(event, null);
     assertEquals(200, response.getStatusCode(),
-        "Valid single-scenario script should return 200");
+        "Valid script with no simulation param should return 200");
     assertFalse(response.getBody().isBlank(),
-        "Response body should contain CSV output");
+        "Validate-only response should contain CSV header row");
+  }
+
+  /**
+   * Test that omitting the simulation param always validates only, returning the CSV
+   * header row regardless of how many scenarios the script defines.
+   */
+  @Test
+  public void testNoSimParamReturnsHeaderOnlyCsv() {
+    Map<String, String> params = new HashMap<>();
+    params.put("script", twoScenarioScript);
+    APIGatewayV2HTTPEvent event = buildEvent(params);
+    APIGatewayV2HTTPResponse response = handler.handleRequest(event, null);
+    assertEquals(200, response.getStatusCode(),
+        "No simulation param should return 200 regardless of scenario count");
+    assertTrue(response.getBody().contains("scenario,trial,year"),
+        "Validate-only response body should contain CSV header row");
   }
 
   /**
    * Test that a valid single-scenario script with an explicit matching simulation param
-   * returns HTTP 200.
+   * returns HTTP 200 with CSV data.
    */
   @Test
   public void testOneScenarioExplicitSimParamReturns200() {
     Map<String, String> params = new HashMap<>();
-    params.put("script", ONE_SCENARIO_SCRIPT);
+    params.put("script", oneScenarioScript);
     params.put("simulation", "Business as Usual");
     APIGatewayV2HTTPEvent event = buildEvent(params);
     APIGatewayV2HTTPResponse response = handler.handleRequest(event, null);
@@ -160,25 +139,12 @@ public class SimulationHandlerTest {
   }
 
   /**
-   * Test that a two-scenario script with no simulation param returns HTTP 400.
-   */
-  @Test
-  public void testTwoScenariosNoSimParamReturns400() {
-    Map<String, String> params = new HashMap<>();
-    params.put("script", TWO_SCENARIO_SCRIPT);
-    APIGatewayV2HTTPEvent event = buildEvent(params);
-    APIGatewayV2HTTPResponse response = handler.handleRequest(event, null);
-    assertEquals(400, response.getStatusCode(),
-        "Two-scenario script without simulation param should return 400");
-  }
-
-  /**
    * Test that a two-scenario script with a valid simulation param returns HTTP 200.
    */
   @Test
   public void testTwoScenariosValidSimParamReturns200() {
     Map<String, String> params = new HashMap<>();
-    params.put("script", TWO_SCENARIO_SCRIPT);
+    params.put("script", twoScenarioScript);
     params.put("simulation", "Scenario Two");
     APIGatewayV2HTTPEvent event = buildEvent(params);
     APIGatewayV2HTTPResponse response = handler.handleRequest(event, null);
@@ -192,7 +158,7 @@ public class SimulationHandlerTest {
   @Test
   public void testUnknownSimParamReturns400() {
     Map<String, String> params = new HashMap<>();
-    params.put("script", ONE_SCENARIO_SCRIPT);
+    params.put("script", oneScenarioScript);
     params.put("simulation", "Nonexistent Scenario");
     APIGatewayV2HTTPEvent event = buildEvent(params);
     APIGatewayV2HTTPResponse response = handler.handleRequest(event, null);
