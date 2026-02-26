@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import org.kigalisim.KigaliSimFacade;
 import org.kigalisim.engine.serializer.EngineResult;
 import org.kigalisim.lang.parse.ParseResult;
@@ -26,10 +27,10 @@ import org.kigalisim.lang.program.ParsedProgram;
  * Lambda handler that accepts a QubecTalk script via query string and returns CSV output.
  *
  * <p>Implements the AWS Lambda Function URL / API Gateway HTTP API contract. If one or more
- * comma-separated {@code simulation} names are provided, the handler runs one replicate of
- * each named scenario in order and returns all results combined in a single CSV response
- * with {@code Content-Type: text/csv}. If {@code simulation} is omitted, the script is
- * validated only and a header-only CSV is returned with status 200.</p>
+ * comma-separated {@code simulation} names are provided, the handler runs the requested
+ * number of replicates of each named scenario in order and returns all results combined in a
+ * single CSV response with {@code Content-Type: text/csv}. If {@code simulation} is omitted,
+ * the script is validated only and a header-only CSV is returned with status 200.</p>
  */
 public class SimulationHandler
     implements RequestHandler<APIGatewayV2HTTPEvent, APIGatewayV2HTTPResponse> {
@@ -106,6 +107,15 @@ public class SimulationHandler
 
     ParsedProgram program = KigaliSimFacade.interpret(parseResult);
 
+    int replicates = params.getReplicates();
+    if (replicates < 1) {
+      return buildResponse(
+          STATUS_BAD_REQUEST,
+          CONTENT_TYPE_TEXT,
+          "Invalid replicates value: must be at least 1"
+      );
+    }
+
     List<String> simulations = params.getSimulations();
     if (simulations.isEmpty()) {
       String csv = KigaliSimFacade.convertResultsToCsv(Collections.emptyList());
@@ -122,7 +132,11 @@ public class SimulationHandler
     }
 
     List<EngineResult> results = resolvedNames.stream()
-        .flatMap(scenarioName -> KigaliSimFacade.runScenario(program, scenarioName, null))
+        .flatMap(scenarioName ->
+            IntStream.range(0, replicates)
+                .boxed()
+                .flatMap(i -> KigaliSimFacade.runScenario(program, scenarioName, null))
+        )
         .collect(Collectors.toList());
 
     String csv = KigaliSimFacade.convertResultsToCsv(results);

@@ -225,4 +225,95 @@ public class SimulationHandlerTest {
         "Spaces around comma delimiter in simulation param should be trimmed");
   }
 
+  /**
+   * Test that a negative replicates parameter returns HTTP 400.
+   */
+  @Test
+  public void testNegativeReplicatesReturns400() {
+    Map<String, String> params = new HashMap<>();
+    params.put("script", oneScenarioScript);
+    params.put("simulation", "Business as Usual");
+    params.put("replicates", "-1");
+    APIGatewayV2HTTPEvent event = buildEvent(params);
+    APIGatewayV2HTTPResponse response = handler.handleRequest(event, null);
+    assertEquals(400, response.getStatusCode(),
+        "Negative replicates should return 400");
+  }
+
+  /**
+   * Test that a zero replicates parameter returns HTTP 400.
+   */
+  @Test
+  public void testZeroReplicatesReturns400() {
+    Map<String, String> params = new HashMap<>();
+    params.put("script", oneScenarioScript);
+    params.put("simulation", "Business as Usual");
+    params.put("replicates", "0");
+    APIGatewayV2HTTPEvent event = buildEvent(params);
+    APIGatewayV2HTTPResponse response = handler.handleRequest(event, null);
+    assertEquals(400, response.getStatusCode(),
+        "Zero replicates should return 400");
+  }
+
+  /**
+   * Test that a non-integer replicates parameter returns HTTP 400.
+   */
+  @Test
+  public void testNonIntegerReplicatesReturns400() {
+    Map<String, String> params = new HashMap<>();
+    params.put("script", oneScenarioScript);
+    params.put("simulation", "Business as Usual");
+    params.put("replicates", "abc");
+    APIGatewayV2HTTPEvent event = buildEvent(params);
+    APIGatewayV2HTTPResponse response = handler.handleRequest(event, null);
+    assertEquals(400, response.getStatusCode(),
+        "Non-integer replicates should return 400");
+  }
+
+  /**
+   * Test that omitting the replicates parameter defaults to 1 and returns HTTP 200.
+   */
+  @Test
+  public void testDefaultReplicatesReturns200() {
+    Map<String, String> params = new HashMap<>();
+    params.put("script", oneScenarioScript);
+    params.put("simulation", "Business as Usual");
+    APIGatewayV2HTTPEvent event = buildEvent(params);
+    APIGatewayV2HTTPResponse response = handler.handleRequest(event, null);
+    assertEquals(200, response.getStatusCode(),
+        "Omitted replicates should default to 1 and return 200");
+  }
+
+  /**
+   * Test that an explicit replicates value of 1 returns HTTP 200.
+   */
+  @Test
+  public void testExplicitOneReplicateReturns200() {
+    Map<String, String> params = new HashMap<>();
+    params.put("script", oneScenarioScript);
+    params.put("simulation", "Business as Usual");
+    params.put("replicates", "1");
+    APIGatewayV2HTTPEvent event = buildEvent(params);
+    APIGatewayV2HTTPResponse response = handler.handleRequest(event, null);
+    assertEquals(200, response.getStatusCode(),
+        "Explicit replicates=1 should return 200");
+  }
+
+  /**
+   * Test that requesting three replicates produces CSV output containing a third trial.
+   */
+  @Test
+  public void testThreeReplicatesProducesThreeTrialsInCsv() {
+    Map<String, String> params = new HashMap<>();
+    params.put("script", oneScenarioScript);
+    params.put("simulation", "Business as Usual");
+    params.put("replicates", "3");
+    APIGatewayV2HTTPEvent event = buildEvent(params);
+    APIGatewayV2HTTPResponse response = handler.handleRequest(event, null);
+    assertEquals(200, response.getStatusCode(),
+        "Three replicates should return 200");
+    assertTrue(response.getBody().contains(",3,"),
+        "CSV output should contain a row for trial 3");
+  }
+
 }

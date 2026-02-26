@@ -105,6 +105,8 @@ GET https://bbaagift7g5fsza7xzxksl7uny0jjwvn.lambda-url.us-east-2.on.aws/?script
 
 The `simulation` parameter accepts comma-separated scenario names (e.g., `simulation=Scenario+One,Scenario+Two`) to run multiple simulations in a single call and receive their results combined in one CSV response.
 
+An optional `replicates` integer parameter (e.g., `replicates=5`) controls how many times each simulation is run per call, with results for all replicates combined in the response; values less than 1 return HTTP 400.
+
 The `script` parameter accepts `|` in place of spaces to produce shorter URLs. The server replaces all pipes with spaces before parsing, so the script executes identically. Use this only when scripts are too long for URL limits, as it makes scripts less readable.
 
 ### Local UI-based editor
