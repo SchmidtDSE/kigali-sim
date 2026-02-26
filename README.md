@@ -94,7 +94,7 @@ docker run -v $(pwd):/working kigalisim run -o output.csv script.qta
 Note: Windows users should replace `$(pwd)` with `%cd%` for Command Prompt or `${PWD}` for PowerShell.
 
 ### Community Cloud Endpoint
-For programmatic or AI-assisted use, a public GET endpoint is available that runs one or more single-replicate simulations on a remote server and returns CSV output. Unlike the kigalisim.org web IDE (which runs simulations locally via WebAssembly) or jar file (which runs simulations locally via JVM), this endpoint transmits your QubecTalk script to a remote server for processing. See [privacy policy](https://kigalisim.org/privacy.html) for details on data handling.
+For programmatic or AI-assisted use, a public GET endpoint is available that runs one or more simulations on a remote server and returns CSV output. Unlike the kigalisim.org web IDE (which runs simulations locally via WebAssembly) or jar file (which runs simulations locally via JVM), this endpoint transmits your QubecTalk script to a remote server for processing. See [privacy policy](https://kigalisim.org/privacy.html) for details on data handling.
 
 Endpoint: `https://bbaagift7g5fsza7xzxksl7uny0jjwvn.lambda-url.us-east-2.on.aws/`
 
