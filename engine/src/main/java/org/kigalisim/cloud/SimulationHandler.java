@@ -132,11 +132,11 @@ public class SimulationHandler
     }
 
     List<EngineResult> results = resolvedNames.stream()
-        .flatMap(scenarioName ->
-            IntStream.range(0, replicates)
-                .boxed()
-                .flatMap(i -> KigaliSimFacade.runScenario(program, scenarioName, null))
-        )
+        .flatMap(scenarioName -> {
+          return IntStream.range(0, replicates)
+              .boxed()
+              .flatMap(i -> KigaliSimFacade.runScenario(program, scenarioName, null));
+        })
         .collect(Collectors.toList());
 
     String csv = KigaliSimFacade.convertResultsToCsv(results);

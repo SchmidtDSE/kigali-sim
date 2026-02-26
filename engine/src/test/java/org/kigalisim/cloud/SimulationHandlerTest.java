@@ -60,8 +60,11 @@ public class SimulationHandlerTest {
   public void testMissingScriptReturns400() {
     APIGatewayV2HTTPEvent event = buildEvent(null);
     APIGatewayV2HTTPResponse response = handler.handleRequest(event, null);
-    assertEquals(400, response.getStatusCode(),
-        "Missing script param should return 400");
+    assertEquals(
+        400,
+        response.getStatusCode(),
+        "Missing script param should return 400"
+    );
   }
 
   /**
@@ -73,8 +76,11 @@ public class SimulationHandlerTest {
     params.put("script", "   ");
     APIGatewayV2HTTPEvent event = buildEvent(params);
     APIGatewayV2HTTPResponse response = handler.handleRequest(event, null);
-    assertEquals(400, response.getStatusCode(),
-        "Blank script param should return 400");
+    assertEquals(
+        400,
+        response.getStatusCode(),
+        "Blank script param should return 400"
+    );
   }
 
   /**
@@ -86,10 +92,15 @@ public class SimulationHandlerTest {
     params.put("script", "not valid qubectalk");
     APIGatewayV2HTTPEvent event = buildEvent(params);
     APIGatewayV2HTTPResponse response = handler.handleRequest(event, null);
-    assertEquals(422, response.getStatusCode(),
-        "Invalid QubecTalk should return 422");
-    assertFalse(response.getBody().isBlank(),
-        "Response body should contain a parse error message");
+    assertEquals(
+        422,
+        response.getStatusCode(),
+        "Invalid QubecTalk should return 422"
+    );
+    assertFalse(
+        response.getBody().isBlank(),
+        "Response body should contain a parse error message"
+    );
   }
 
   /**
@@ -101,10 +112,15 @@ public class SimulationHandlerTest {
     params.put("script", oneScenarioScript);
     APIGatewayV2HTTPEvent event = buildEvent(params);
     APIGatewayV2HTTPResponse response = handler.handleRequest(event, null);
-    assertEquals(200, response.getStatusCode(),
-        "Valid script with no simulation param should return 200");
-    assertFalse(response.getBody().isBlank(),
-        "Validate-only response should contain CSV header row");
+    assertEquals(
+        200,
+        response.getStatusCode(),
+        "Valid script with no simulation param should return 200"
+    );
+    assertFalse(
+        response.getBody().isBlank(),
+        "Validate-only response should contain CSV header row"
+    );
   }
 
   /**
@@ -117,10 +133,15 @@ public class SimulationHandlerTest {
     params.put("script", twoScenarioScript);
     APIGatewayV2HTTPEvent event = buildEvent(params);
     APIGatewayV2HTTPResponse response = handler.handleRequest(event, null);
-    assertEquals(200, response.getStatusCode(),
-        "No simulation param should return 200 regardless of scenario count");
-    assertTrue(response.getBody().contains("scenario,trial,year"),
-        "Validate-only response body should contain CSV header row");
+    assertEquals(
+        200,
+        response.getStatusCode(),
+        "No simulation param should return 200 regardless of scenario count"
+    );
+    assertTrue(
+        response.getBody().contains("scenario,trial,year"),
+        "Validate-only response body should contain CSV header row"
+    );
   }
 
   /**
@@ -134,8 +155,11 @@ public class SimulationHandlerTest {
     params.put("simulation", "Business as Usual");
     APIGatewayV2HTTPEvent event = buildEvent(params);
     APIGatewayV2HTTPResponse response = handler.handleRequest(event, null);
-    assertEquals(200, response.getStatusCode(),
-        "Explicit matching simulation param should return 200");
+    assertEquals(
+        200,
+        response.getStatusCode(),
+        "Explicit matching simulation param should return 200"
+    );
   }
 
   /**
@@ -148,8 +172,11 @@ public class SimulationHandlerTest {
     params.put("simulation", "Scenario Two");
     APIGatewayV2HTTPEvent event = buildEvent(params);
     APIGatewayV2HTTPResponse response = handler.handleRequest(event, null);
-    assertEquals(200, response.getStatusCode(),
-        "Two-scenario script with valid simulation param should return 200");
+    assertEquals(
+        200,
+        response.getStatusCode(),
+        "Two-scenario script with valid simulation param should return 200"
+    );
   }
 
   /**
@@ -162,8 +189,11 @@ public class SimulationHandlerTest {
     params.put("simulation", "Nonexistent Scenario");
     APIGatewayV2HTTPEvent event = buildEvent(params);
     APIGatewayV2HTTPResponse response = handler.handleRequest(event, null);
-    assertEquals(400, response.getStatusCode(),
-        "Unknown simulation name should return 400");
+    assertEquals(
+        400,
+        response.getStatusCode(),
+        "Unknown simulation name should return 400"
+    );
   }
 
   /**
@@ -176,8 +206,11 @@ public class SimulationHandlerTest {
     params.put("simulation", "Business as Usual,Scenario Two");
     APIGatewayV2HTTPEvent event = buildEvent(params);
     APIGatewayV2HTTPResponse response = handler.handleRequest(event, null);
-    assertEquals(200, response.getStatusCode(),
-        "Comma-separated valid simulation names should return 200");
+    assertEquals(
+        200,
+        response.getStatusCode(),
+        "Comma-separated valid simulation names should return 200"
+    );
   }
 
   /**
@@ -190,11 +223,18 @@ public class SimulationHandlerTest {
     params.put("simulation", "Business as Usual,Scenario Two");
     APIGatewayV2HTTPEvent event = buildEvent(params);
     APIGatewayV2HTTPResponse response = handler.handleRequest(event, null);
-    assertEquals(200, response.getStatusCode());
-    assertTrue(response.getBody().contains("Business as Usual"),
-        "Combined CSV should contain results for first scenario");
-    assertTrue(response.getBody().contains("Scenario Two"),
-        "Combined CSV should contain results for second scenario");
+    assertEquals(
+        200,
+        response.getStatusCode()
+    );
+    assertTrue(
+        response.getBody().contains("Business as Usual"),
+        "Combined CSV should contain results for first scenario"
+    );
+    assertTrue(
+        response.getBody().contains("Scenario Two"),
+        "Combined CSV should contain results for second scenario"
+    );
   }
 
   /**
@@ -207,8 +247,11 @@ public class SimulationHandlerTest {
     params.put("simulation", "Business as Usual,Nonexistent");
     APIGatewayV2HTTPEvent event = buildEvent(params);
     APIGatewayV2HTTPResponse response = handler.handleRequest(event, null);
-    assertEquals(400, response.getStatusCode(),
-        "Unknown simulation name in comma-separated list should return 400");
+    assertEquals(
+        400,
+        response.getStatusCode(),
+        "Unknown simulation name in comma-separated list should return 400"
+    );
   }
 
   /**
@@ -221,8 +264,11 @@ public class SimulationHandlerTest {
     params.put("simulation", "Business as Usual , Scenario Two");
     APIGatewayV2HTTPEvent event = buildEvent(params);
     APIGatewayV2HTTPResponse response = handler.handleRequest(event, null);
-    assertEquals(200, response.getStatusCode(),
-        "Spaces around comma delimiter in simulation param should be trimmed");
+    assertEquals(
+        200,
+        response.getStatusCode(),
+        "Spaces around comma delimiter in simulation param should be trimmed"
+    );
   }
 
   /**
@@ -236,8 +282,11 @@ public class SimulationHandlerTest {
     params.put("replicates", "-1");
     APIGatewayV2HTTPEvent event = buildEvent(params);
     APIGatewayV2HTTPResponse response = handler.handleRequest(event, null);
-    assertEquals(400, response.getStatusCode(),
-        "Negative replicates should return 400");
+    assertEquals(
+        400,
+        response.getStatusCode(),
+        "Negative replicates should return 400"
+    );
   }
 
   /**
@@ -251,8 +300,11 @@ public class SimulationHandlerTest {
     params.put("replicates", "0");
     APIGatewayV2HTTPEvent event = buildEvent(params);
     APIGatewayV2HTTPResponse response = handler.handleRequest(event, null);
-    assertEquals(400, response.getStatusCode(),
-        "Zero replicates should return 400");
+    assertEquals(
+        400,
+        response.getStatusCode(),
+        "Zero replicates should return 400"
+    );
   }
 
   /**
@@ -266,8 +318,11 @@ public class SimulationHandlerTest {
     params.put("replicates", "abc");
     APIGatewayV2HTTPEvent event = buildEvent(params);
     APIGatewayV2HTTPResponse response = handler.handleRequest(event, null);
-    assertEquals(400, response.getStatusCode(),
-        "Non-integer replicates should return 400");
+    assertEquals(
+        400,
+        response.getStatusCode(),
+        "Non-integer replicates should return 400"
+    );
   }
 
   /**
@@ -280,8 +335,11 @@ public class SimulationHandlerTest {
     params.put("simulation", "Business as Usual");
     APIGatewayV2HTTPEvent event = buildEvent(params);
     APIGatewayV2HTTPResponse response = handler.handleRequest(event, null);
-    assertEquals(200, response.getStatusCode(),
-        "Omitted replicates should default to 1 and return 200");
+    assertEquals(
+        200,
+        response.getStatusCode(),
+        "Omitted replicates should default to 1 and return 200"
+    );
   }
 
   /**
@@ -295,25 +353,46 @@ public class SimulationHandlerTest {
     params.put("replicates", "1");
     APIGatewayV2HTTPEvent event = buildEvent(params);
     APIGatewayV2HTTPResponse response = handler.handleRequest(event, null);
-    assertEquals(200, response.getStatusCode(),
-        "Explicit replicates=1 should return 200");
+    assertEquals(
+        200,
+        response.getStatusCode(),
+        "Explicit replicates=1 should return 200"
+    );
   }
 
   /**
-   * Test that requesting three replicates produces CSV output containing a third trial.
+   * Test that requesting three replicates produces three times as many CSV data rows.
    */
   @Test
-  public void testThreeReplicatesProducesThreeTrialsInCsv() {
+  public void testThreeReplicatesProducesThreeTimesRows() {
     Map<String, String> params = new HashMap<>();
     params.put("script", oneScenarioScript);
     params.put("simulation", "Business as Usual");
-    params.put("replicates", "3");
+    params.put("replicates", "1");
     APIGatewayV2HTTPEvent event = buildEvent(params);
     APIGatewayV2HTTPResponse response = handler.handleRequest(event, null);
-    assertEquals(200, response.getStatusCode(),
-        "Three replicates should return 200");
-    assertTrue(response.getBody().contains(",3,"),
-        "CSV output should contain a row for trial 3");
+    assertEquals(
+        200,
+        response.getStatusCode(),
+        "One replicate should return 200"
+    );
+    int oneReplicateRows = response.getBody().split("\n").length;
+
+    params.put("replicates", "3");
+    event = buildEvent(params);
+    response = handler.handleRequest(event, null);
+    assertEquals(
+        200,
+        response.getStatusCode(),
+        "Three replicates should return 200"
+    );
+    int threeReplicateRows = response.getBody().split("\n").length;
+
+    assertEquals(
+        (oneReplicateRows - 1) * 3 + 1,
+        threeReplicateRows,
+        "Three replicates should produce three times the data rows plus one header"
+    );
   }
 
 }

@@ -22,8 +22,11 @@ public class CloudQubectalkPreprocessorTest {
   public void testPipeReplacedWithSpace() {
     CloudQubectalkPreprocessor preprocessor = new CloudQubectalkPreprocessor();
     String result = preprocessor.preprocess("start|default");
-    assertEquals("start default", result,
-        "A single pipe should be replaced with a space");
+    assertEquals(
+        "start default",
+        result,
+        "A single pipe should be replaced with a space"
+    );
   }
 
   /**
@@ -33,8 +36,11 @@ public class CloudQubectalkPreprocessorTest {
   public void testMultiplePipesReplacedWithSpaces() {
     CloudQubectalkPreprocessor preprocessor = new CloudQubectalkPreprocessor();
     String result = preprocessor.preprocess("start|default|end|default");
-    assertEquals("start default end default", result,
-        "All pipe characters should be replaced with spaces");
+    assertEquals(
+        "start default end default",
+        result,
+        "All pipe characters should be replaced with spaces"
+    );
   }
 
   /**
@@ -45,8 +51,11 @@ public class CloudQubectalkPreprocessorTest {
     CloudQubectalkPreprocessor preprocessor = new CloudQubectalkPreprocessor();
     String input = "start default end default";
     String result = preprocessor.preprocess(input);
-    assertEquals(input, result,
-        "A script with no pipes should be returned unchanged");
+    assertEquals(
+        input,
+        result,
+        "A script with no pipes should be returned unchanged"
+    );
   }
 
   /**
@@ -56,8 +65,11 @@ public class CloudQubectalkPreprocessorTest {
   public void testEmptyStringUnchanged() {
     CloudQubectalkPreprocessor preprocessor = new CloudQubectalkPreprocessor();
     String result = preprocessor.preprocess("");
-    assertEquals("", result,
-        "An empty string input should return an empty string");
+    assertEquals(
+        "",
+        result,
+        "An empty string input should return an empty string"
+    );
   }
 
   /**
@@ -67,8 +79,11 @@ public class CloudQubectalkPreprocessorTest {
   public void testOnlyPipesBecomesSpaces() {
     CloudQubectalkPreprocessor preprocessor = new CloudQubectalkPreprocessor();
     String result = preprocessor.preprocess("|||");
-    assertEquals("   ", result,
-        "A string of only pipes should become an equal-length string of spaces");
+    assertEquals(
+        "   ",
+        result,
+        "A string of only pipes should become an equal-length string of spaces"
+    );
   }
 
   /**
@@ -78,8 +93,11 @@ public class CloudQubectalkPreprocessorTest {
   public void testPipeAtBoundaries() {
     CloudQubectalkPreprocessor preprocessor = new CloudQubectalkPreprocessor();
     String result = preprocessor.preprocess("|hello|");
-    assertEquals(" hello ", result,
-        "Pipes at the start and end of the string should be replaced with spaces");
+    assertEquals(
+        " hello ",
+        result,
+        "Pipes at the start and end of the string should be replaced with spaces"
+    );
   }
 
 }

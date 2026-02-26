@@ -13,12 +13,16 @@ import java.util.Optional;
  * Holds the parameters for a cloud simulation invocation.
  *
  * <p>Wraps the {@code script}, {@code simulation}, and {@code replicates} query parameters
- * extracted from an incoming HTTP request. The {@code script} field uses {@link Optional} to
- * distinguish an absent script from a blank one. The {@code simulations} field holds a
- * {@link List} of comma-separated scenario names; an empty list indicates a validate-only
- * request (no simulation names were provided). The {@code replicates} field holds the number
- * of times each scenario should be run; it defaults to 1 and is validated by the handler
- * (not the factory).</p>
+ * extracted from an incoming HTTP request.</p>
+ *
+ * <ul>
+ *   <li>{@code script} uses {@link Optional} to distinguish an absent script from a blank
+ *       one.</li>
+ *   <li>{@code simulations} holds a {@link List} of comma-separated scenario names. An empty
+ *       list indicates a validate-only request.</li>
+ *   <li>{@code replicates} holds the number of times each scenario should be run. It defaults
+ *       to 1 and is validated by the handler, not the factory.</li>
+ * </ul>
  */
 public class InvocationParameters {
 
@@ -31,9 +35,9 @@ public class InvocationParameters {
    *
    * @param script An {@link Optional} containing the QubecTalk script, or empty if not provided.
    * @param simulations A {@link List} of simulation names parsed from the {@code simulation}
-   *     query parameter; empty if the parameter was absent or blank.
-   * @param replicates The number of replicates to run per simulation; 1 when the
-   *     {@code replicates} query parameter was absent or blank, 0 when the value was present
+   *     query parameter. Empty if the parameter was absent or blank.
+   * @param replicates The number of replicates to run per simulation. 1 when the
+   *     {@code replicates} query parameter was absent or blank. 0 when the value was present
    *     but not a valid positive integer.
    */
   public InvocationParameters(Optional<String> script, List<String> simulations, int replicates) {
@@ -57,7 +61,7 @@ public class InvocationParameters {
    * <p>Returns an empty list when no {@code simulation} query parameter was provided,
    * indicating that the request is validate-only.</p>
    *
-   * @return An unmodifiable {@link List} of simulation names; never {@code null}.
+   * @return The list of simulation names.
    */
   public List<String> getSimulations() {
     return simulations;
@@ -70,7 +74,7 @@ public class InvocationParameters {
    * A value less than 1 indicates an invalid request; the caller is responsible for
    * returning an appropriate error response.</p>
    *
-   * @return The number of replicates; 1 by default.
+   * @return The number of replicates, or 1 by default if not given.
    */
   public int getReplicates() {
     return replicates;
