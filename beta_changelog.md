@@ -16,7 +16,7 @@ The following changes have been adopted and released.
 
 ### Community cloud endpoint
 
-**Status**: Released February 27, 2025
+**Status**: Released February 27, 2026
 
 **Classification**: Enhancement
 
