@@ -31,7 +31,7 @@ All that in mind, here are some AI assistants with which we have tested along wi
 [ChatGPT](https://chatgpt.com/) tends to perform well if given an example. Consider providing a tutorial qta file in your initial prompt like so:
 
 ```
-Hello! Please review https://preview.kigalisim.org/llms-full.txt?v=20260128 and an example simulation at https://kigalisim.org/guide/tutorial_02.qta. Please follow the structure of that Tutorial 2 with similar keywords and layout in order to write correct QubecTalk code though you may use the other keywords and language features mentioned in llms-full.txt. Please review and then we will build a simulation together.
+Hello! Please review https://preview.kigalisim.org/llms-full.txt?v=20260227 and an example simulation at https://kigalisim.org/guide/tutorial_02.qta. Please follow the structure of that Tutorial 2 with similar keywords and layout in order to write correct QubecTalk code though you may use the other keywords and language features mentioned in llms-full.txt. Please review and then we will build a simulation together.
 ```
 
 Depending on where you use ChatGPT, it may just give you back code instead of a file. This can be copied and pasted into the **Editor** tab. If you instructed ChatGPT to only use UI-editor compatible code, you can update the code and go back to the **Designer** tab to continue with UI-based authoring.
@@ -45,7 +45,7 @@ The best performing model in our testing, typically no additional steps are need
 Different versions of copilot might perform differently. See [copilot.microsoft.com](https://copilot.microsoft.com/). In general, Copilot tends to work best when working from an example so you may want to start with a prompt like this:
 
 ```
-Hello! Please review https://preview.kigalisim.org/llms-full.txt?v=20260128 and an example simulation at https://kigalisim.org/guide/tutorial_02.qta. Please follow the structure of that Tutorial 2 with similar keywords and layout in order to write correct QubecTalk code though you may use the other keywords and language features mentioned in llms-full.txt. Please review and then we will build a simulation together.
+Hello! Please review https://preview.kigalisim.org/llms-full.txt?v=20260227 and an example simulation at https://kigalisim.org/guide/tutorial_02.qta. Please follow the structure of that Tutorial 2 with similar keywords and layout in order to write correct QubecTalk code though you may use the other keywords and language features mentioned in llms-full.txt. Please review and then we will build a simulation together.
 ```
 
 Depending on where you use Copilot, it may just give you back code instead of a file. This can be copied and pasted into the **Editor** tab. If you instructed Copilot to only use UI-editor compatible code, you can update the code and go back to the **Designer** tab to continue with UI-based authoring.
@@ -55,7 +55,7 @@ Depending on where you use Copilot, it may just give you back code instead of a 
 Visit [chat.deepseek.com](https://chat.deepseek.com/). DeepSeek tends to work fairly well but may require a reminder to add the simulations stanza like so:
 
 ```
-Hello! Please review https://preview.kigalisim.org/llms-full.txt?v=20260128. Then, we will build a simulation together. Please be sure to include the simulation stanza like seen in https://kigalisim.org/guide/tutorial_02.qta.
+Hello! Please review https://preview.kigalisim.org/llms-full.txt?v=20260227. Then, we will build a simulation together. Please be sure to include the simulation stanza like seen in https://kigalisim.org/guide/tutorial_02.qta.
 ```
 
 ### Gemini
@@ -87,10 +87,10 @@ This tutorial specifically adds additional information specific to individual AI
 At minimum, you should tell your AI to read [kigalisim.org/llms.txt](https://kigalisim.org/llms.txt) but we find that providing both `llms.txt` and `llms-full.txt` is helpful. Here is how you might want to start.
 
 ```
-Hello! Please review https://preview.kigalisim.org/llms-full.txt?v=20260128. Then, we will build a simulation together.
+Hello! Please review https://preview.kigalisim.org/llms-full.txt?v=20260227. Then, we will build a simulation together.
 ```
 
-**Note**: You may want to review the [assistants](#assistants) section for tips on making your specific AI assistant work well. Also, the use of the version (v=20260127) is optional but we recommend it to ensure you have the latest copy.
+**Note**: You may want to review the [assistants](#assistants) section for tips on making your specific AI assistant work well. Also, the use of the version (v=20260227) is optional but we recommend it to ensure you have the latest copy.
 
 **Tip:** For LLMs which cannot access the internet, you can [download llms-full.txt](/llms-full.txt) and provide it as an attachment to your AI assistant.
 

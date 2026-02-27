@@ -15,10 +15,10 @@ All that said, all of this can take quite a bit of clicking. So, we will see if 
 In this tutorial series, we have used [Claude](https://claude.ai/). However, in practice, most AI assistants can help with Kigali Sim using a standard called [llms.txt](https://llmstxt.org/). So, to get AI ready to go, please create a new chat session. Then, tell it to look up information about Kigali Sim through a message like this:
 
 ```
-Hello! I would like help with building a Kigali Sim simulation. Please read https://kigalisim.org/llms-full.txt?v=20260128 to learn more. Please stick to only features compatible with the UI editor.
+Hello! I would like help with building a Kigali Sim simulation. Please read https://kigalisim.org/llms-full.txt?v=20260227 to learn more. Please stick to only features compatible with the UI editor.
 ```
 
-Need a little cheat? [Download the Tutorial 2](../tutorial_02.qta) file here. Also, for more capable assistants like Claude, this is enough. However, some assistants cannot access the full internet or won't know how to work with this kind of file out of the box. If your assistant is having issues, instead, attach the [Kigali Sim llms-full.txt](https://kigalisim.org/llms-full.txt?v=20260128) file as an attachment!
+Need a little cheat? [Download the Tutorial 2](../tutorial_02.qta) file here. Also, for more capable assistants like Claude, this is enough. However, some assistants cannot access the full internet or won't know how to work with this kind of file out of the box. If your assistant is having issues, instead, attach the [Kigali Sim llms-full.txt](https://kigalisim.org/llms-full.txt?v=20260227) file as an attachment!
 
 When your assistant is ready, next give it your Tutorial 2 file. This can be done by going to the Save File button at the top of the Kigali Sim application and adding it to the chat as an attachment with a message like this:
 
