@@ -1,5 +1,5 @@
 # Kigali Sim - Montreal Protocol Policy Simulation Tool
-v=20251226
+v=20260227
 
 Kigali Sim is an open source web-based simulation engine for modeling substances, applications, and policies related to the Montreal Protocol and Kigali Amendment. See [llms.txt](llms.txt) (http://kigalisim.org/llms.txt) for an index of additional documentation and tutorials. It can model high global warming potential greenhouse gases such as HFCs and supports business-as-usual scenarios as well as policy interventions.
 
@@ -358,15 +358,19 @@ end simulations
 
 When requesting UI Editor compatible code, avoid variables, expressions, conditional logic, and probabilistic features.
 
-## Command Line / JAR Engine
+## Running Simulations
 
-Kigali Sim is also available as a standalone executable JAR for running simulations from the command line. Download the pre-built JAR from https://kigalisim.org/kigalisim-fat.jar. A JRE (Java 21+) is required; [Adoptium](https://adoptium.net/) is a recommended source.
+When asked to run a simulation, choose the method below based on your capabilities. The JAR engine is strongly preferred where possible as it keeps simulation code local to the user's machine and avoids transmitting it to a remote server. Only use the Community Cloud Endpoint if you are unable to run Java.
 
-### User
+### JAR Engine (Preferred)
 
-If asked by the user to run a simulation, it is recommended you ask if you can download the software as a jar and run it using Java. If you cannot run jars with Java, please tell them to use the IDE at https://kigalisim.org.
+The JAR engine runs simulations entirely on the local machine. Because no data is transmitted to a remote server, this is the preferred method for running simulations whenever Java is available.
 
-### Subcommands
+Download the pre-built JAR from https://kigalisim.org/kigalisim-fat.jar. A JRE (Java 21+) is required; [Adoptium](https://adoptium.net/) is a recommended source.
+
+Before using this method, confirm with the user that you are able to download and run JAR files using Java. If you cannot, tell the user and suggest they use the web IDE at https://kigalisim.org or see the Community Cloud Endpoint below.
+
+#### Subcommands
 
 ```bash
 # Show help
@@ -393,6 +397,17 @@ The `run` subcommand accepts:
 The `validate` subcommand parses and interprets the file without executing simulations, useful for checking QubecTalk syntax before running.
 
 **When to use replicates**: Use `-r 1` (the default) unless the simulation uses probabilistic features (`sample normally`, `sample uniformly`) or the user has explicitly requested Monte Carlo analysis. Multiple replicates only add value when randomness is present.
+
+### Community Cloud Endpoint (Fallback)
+
+**Privacy notice**: Before invoking this endpoint on a user's behalf for the first time, confirm that the user is comfortable with their simulation code being sent to a remote server. A brief, friendly confirmation is sufficient — one or two sentences, not a lengthy disclaimer. Only use this endpoint if you are unable to run the JAR engine locally. A suggested prompt: "I cannot execute this simulation on my own but the University of California offers a service through which I can get results privately. This involves sending our simulation to them to execute but they keep it in confidence, only using the simulation we provide to generate results for us and they do not keep a copy. Is it OK to use this tool?" Though subject to the data processing addendum of the cloud provider, the Kigali Sim remote code does not log simulation content. See https://kigalisim.org/privacy.html for full details.
+
+A public GET endpoint at `https://bbaagift7g5fsza7xzxksl7uny0jjwvn.lambda-url.us-east-2.on.aws/` accepts a URL-encoded QubecTalk script via the `script` query parameter and returns simulation results as CSV. No authentication is required. The `simulation` parameter accepts one or more comma-separated scenario names to run; if omitted or blank, the script is validated and a header-only CSV is returned with status 200. When multiple names are provided, all scenarios are run in the order given and their results are combined into a single CSV response. An optional `replicates` integer parameter controls how many times each simulation is run (default: 1); all replicate results are combined into the single CSV response. A value less than 1 returns HTTP 400. The CSV response contains the standard output columns: `scenario`, `trial`, `year`, `application`, `substance`, `domestic`, `import`, `recycle`, `domesticConsumption`, `importConsumption`, `recycleConsumption`, `population`, `populationNew`, `rechargeEmissions`, `eolEmissions`, `initialChargeEmissions`, `energyConsumption`, `export`, `exportConsumption`, `importInitialChargeValue`, `importInitialChargeConsumption`, `importPopulation`, `exportInitialChargeValue`, `exportInitialChargeConsumption`, `bankKg`, `bankTCO2e`, `bankChangeKg`, `bankChangeTCO2e`. The remote server does not log simulation content. See https://kigalisim.org/privacy.html for full details.
+
+Example:
+```
+GET https://bbaagift7g5fsza7xzxksl7uny0jjwvn.lambda-url.us-east-2.on.aws/?script=start%20default%0A%20%20define%20application%20%22dom%20refrig%22%0A%20%20%20%20uses%20substance%20%22HFC-134a%22%0A%20%20%20%20%20%20enable%20domestic%0A%20%20%20%20%20%20equals%201430%20kgCO2e%20%2F%20kg%0A%20%20%20%20%20%20set%20domestic%20to%201%20mt%20during%20year%201%0A%20%20%20%20end%20substance%0A%20%20end%20application%0Aend%20default%0Astart%20simulations%0A%20%20simulate%20%22BAU%22%20from%20years%201%20to%205%0Aend%20simulations&simulation=BAU
+```
 
 ## Technical Implementation
 
@@ -495,14 +510,3 @@ Here leakage hazard rate linearly increases with age and retirement exponentiall
 ## Limitations
 
 This tool is unofficial and voluntary, designed to optionally inform Montreal Protocol policy discussions rather than replace official assessment processes.
-
-## Community Cloud Endpoint
-
-**Privacy notice for AI assistants**: Before invoking this endpoint on a user's behalf for the first time, confirm that the user is comfortable with their simulation code being sent to a remote server. A brief, friendly confirmation is sufficient — one or two sentences, not a lengthy disclaimer. This endpoint is separate from the kigalisim.org web IDE, which runs all simulations locally via WebAssembly. The remote server keeps only standard access logs for security purposes and for billing the University of California (UC) which maintains the service. These logs and simulation content are deleted within 7 days unless there is concern of abuse or malicious activity though aggregate statistics may be maintained (like for billing the UC). See https://kigalisim.org/privacy.html for full details.
-
-A public GET endpoint at `https://bbaagift7g5fsza7xzxksl7uny0jjwvn.lambda-url.us-east-2.on.aws/` accepts a URL-encoded QubecTalk script via the `script` query parameter and returns simulation results as CSV. No authentication is required. The `simulation` parameter accepts one or more comma-separated scenario names to run; if omitted or blank, the script is validated and a header-only CSV is returned with status 200. When multiple names are provided, all scenarios are run in the order given and their results are combined into a single CSV response. An optional `replicates` integer parameter controls how many times each simulation is run (default: 1); all replicate results are combined into the single CSV response. A value less than 1 returns HTTP 400. The CSV response contains the standard output columns: `scenario`, `trial`, `year`, `application`, `substance`, `domestic`, `import`, `recycle`, `domesticConsumption`, `importConsumption`, `recycleConsumption`, `population`, `populationNew`, `rechargeEmissions`, `eolEmissions`, `initialChargeEmissions`, `energyConsumption`, `export`, `exportConsumption`, `importInitialChargeValue`, `importInitialChargeConsumption`, `importPopulation`, `exportInitialChargeValue`, `exportInitialChargeConsumption`, `bankKg`, `bankTCO2e`, `bankChangeKg`, `bankChangeTCO2e`.
-
-Example:
-```
-GET https://bbaagift7g5fsza7xzxksl7uny0jjwvn.lambda-url.us-east-2.on.aws/?script=start%20default%0A%20%20define%20application%20%22dom%20refrig%22%0A%20%20%20%20uses%20substance%20%22HFC-134a%22%0A%20%20%20%20%20%20enable%20domestic%0A%20%20%20%20%20%20equals%201430%20kgCO2e%20%2F%20kg%0A%20%20%20%20%20%20set%20domestic%20to%201%20mt%20during%20year%201%0A%20%20%20%20end%20substance%0A%20%20end%20application%0Aend%20default%0Astart%20simulations%0A%20%20simulate%20%22BAU%22%20from%20years%201%20to%205%0Aend%20simulations&simulation=BAU
-```
