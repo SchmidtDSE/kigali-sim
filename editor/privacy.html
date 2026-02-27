@@ -8,7 +8,7 @@
     <body class="tos">
         <h1>Terms and Privacy</h1>
         This document describes the terms of service and privacy policy for
-        <a href="https://mlf-policy-explorer.org/">mlf-policy-explorer.org</a>. By using this
+        <a href="https://kigalisim.org/">kigalisim.org</a>. By using this
         website, you agree to the following.
 
         <section class="major">
@@ -41,15 +41,19 @@
         <section class="major">
             <h2>Privacy</h2>
             This webpage respects your privacy and collects as little information as possible while
-            still providing a positive user experience. By using the application, you agree to the
-            following. Note that there is also
-            <a href="#get-help">additional information about Get Help feature</a>.
+            still providing a positive user experience. Simulations built and run through the
+            web-based IDE or the JAR engine are executed entirely on your device and are never
+            transmitted to our servers. Our only features that transmit simulation code over the
+            internet are the <a href="#get-help">Get Help feature</a> and the
+            <a href="#community-cloud-endpoint">Community Cloud Endpoint</a>, both of which are
+            optional and described in detail below. By using the application, you agree to the
+            following.
 
             <section class="minor">
                 <h3>Data Collection</h3>
                 This application records standard server access logs for security and stability
                 reasons, including to prevent abuse. This is a common practice employed by many
-                websites necessary for maintaing application function. This information includes:
+                websites necessary for maintaining application function. This information includes:
 
                 <ul>
                     <li>
@@ -61,17 +65,19 @@
                         software ("browser") used to access the site.
                     </li>
                     <li>
-                        The requested URLs which are unique identifiers for data and other resources
-                        requested from our servers.
+                        Timestamps indicating when the application was accessed.
+                    </li>
+                    <li>
+                        The pages and resources requested from our servers.
                     </li>
                 </ul>
 
                 These logs are maintained for security reasons and to ensure strong application
                 performance but are anonymized within 7 days of collection. These anonymized
-                statistics are maintained indefinently as aggregated information for us to
+                statistics are maintained indefinitely as aggregated information for us to
                 understand usage patterns in order to improve the service and maintain its
                 performance. The anonymized data may also include error or bug reports. That said,
-                and no other presonal identifying information is collected including email address,
+                no other personal identifying information is collected including email address,
                 phone number, race, ethnicity, age, etc. Furthermore, please note that:
 
                 <ul>
@@ -79,7 +85,7 @@
                     <li>Anonymized data do not include specific IP addresses.</li>
                     <li>
                         IP address is not retained past 7 days except for security / abuse
-                        prevention purposes if potential unusual behavior is deteced like in the
+                        prevention purposes if potential unusual behavior is detected like in the
                         case of a large number of requests.
                     </li>
                     <li>No information we collect is used for advertising.</li>
@@ -92,7 +98,14 @@
                 Finally, if technical issues are encountered, error reports may be sent back to us.
                 However, we do not intend to collect personally identifying information through that
                 mechanism. IP addresses and simulation code / configuration are not retained through
-                these reports.
+                these reports. We do not capture simulation code is our server access logs. Our only
+                features that transmit simulation code to a remote server are the
+                <a href="#get-help">Get Help feature</a> and the
+                <a href="#community-cloud-endpoint">Community Cloud Endpoint</a>, both of which
+                are optional. However, of these, only Get Help retains a copy of your simulation code
+                (so that we can review it and respond). That said, Our cloud service providers' data
+                handling practices are subject to their respective data processing addendums as
+                described in the <a href="#subprocessors">Subprocessors</a> section below.
             </section>
 
             <section class="minor">
@@ -133,21 +146,32 @@
             <section class="minor">
                 <h3>Security and Access</h3>
                 We take security seriously. Communication between your device and our servers is
-                encrypted with secure socket layer SSL. Access to non-anonymized logs and the
-                configuration / code for the application is limited to the current maintainers of
-                the project, automated systems we've constructed for running the application, and
-                our subprocessors. Note that anonymized data may be shared with project partners for
-                the purposes of tracking project success and impact.
+                encrypted with secure socket layer SSL. Access to non-anonymized access logs and
+                the deployment configuration of the application is limited to the current
+                maintainers of the project, automated systems we've constructed for running the
+                application, and our subprocessors. We will not disclose these except as required
+                by law. As noted above, these access logs contain IP addresses, timestamps,
+                pages requested, and user agent strings. They do not contain simulation code.
+                Note that anonymized data may be shared with project partners for the purposes of
+                tracking project success and impact.
             </section>
 
-            <section class="minor">
+            <section id="subprocessors" class="minor">
                 <h3>Subprocessors</h3>
                 See
                 <a href="https://www.dreamhost.com/legal/customer-data-processing-addendum/"
                     >DreamHost CDPA</a
                 >
-                for more information about our web host / subprocessor. Anonymized bug reports may
-                be managed with with <a href="https://sentry.io">Sentry</a> which also has its own
+                for more information about our web host / subprocessor. United States-based servers
+                within Amazon Web Services (AWS) are used to provide the
+                <a href="#get-help">Get Help feature</a> and the
+                <a href="#community-cloud-endpoint">Community Cloud Endpoint</a>. See the
+                <a
+                    href="https://docs.aws.amazon.com/whitepapers/latest/navigating-gdpr-compliance/aws-data-processing-addendum-dpa.html"
+                    >AWS Data Processing Addendum</a
+                >
+                for more information. Anonymized bug reports may be managed with
+                <a href="https://sentry.io">Sentry</a> which also has its own
                 <a href="https://sentry.io/legal/dpa/">Sentry DPA</a>. Note that Sentry is currently
                 disabled but may be enabled in the future with an update to these terms.
             </section>
@@ -157,7 +181,7 @@
                 Note that external sites linked from this application maintain their own privacy
                 policies, terms of service, and licensing. This website is not responsible for any
                 external content. We define external content to include any content at any domain
-                other than ag-adaptation-study.pub.
+                other than kigalisim.org.
             </section>
         </section>
 
@@ -175,25 +199,17 @@
             <p>
                 Using the <a href="/guide/get_help.html">Get Help feature</a> will send your
                 simulation code to us by email. United States-based servers within Amazon Web
-                Services are used to send that message. Data required to send your message may
-                include your IP address and information about your browser such as your client
-                string. This information along with your email address (required to reply to you),
-                your simulation, and your message body are not persisted except for loging as
-                required by AWS or for security / fraud prevention purposes. We ask that AWS removes
-                any CloudWatch logs of this information within 7 days, except that logs may be
-                retained for longer in cases of potential abuse or malicious activity. However, for
-                more information about AWS, see their
+                Services are used to send that message. Your simulation code, email address, and
+                message body are retained for the purpose of providing you with support. This
+                information is kept in confidence, access is limited to the team maintaining this
+                tool and our subprocessors, and it will not be disclosed except as required by law.
+                We ask that AWS removes any CloudWatch logs of this information within
+                7 days, except that logs may be retained for longer in cases of potential abuse
+                or malicious activity. For more information about AWS, see their
                 <a
                     href="https://docs.aws.amazon.com/whitepapers/latest/navigating-gdpr-compliance/aws-data-processing-addendum-dpa.html"
                     >Data Processing Addendum</a
-                >. Anonymous aggregate statistics may be retained like by our cloud provider
-                for billing us.
-            </p>
-
-            <p>
-                After recieving your information, we will keep it in confidence. Except as described
-                above, access to this information will be limited to the team working on maintaining
-                this tool.
+                >. Anonymous aggregate statistics may be retained by our cloud provider for billing us.
             </p>
 
             <p>
@@ -203,7 +219,7 @@
             </p>
         </section>
 
-        <section class="major">
+        <section id="community-cloud-endpoint" class="major">
             <h2>Community Cloud Endpoint</h2>
 
             <p>
@@ -216,14 +232,11 @@
 
             <p>
                 When the endpoint is invoked, the QubecTalk simulation script submitted in the
-                request is transmitted to and processed on a remote server. Standard server
-                access logs are recorded for security and stability reasons, consistent with the
-                logging practices described elsewhere in this policy. This includes IP address,
-                user agent, and requested URL. These logs are removed within 7 days and
-                simulation content is not retained beyond those logging requirements. However,
-                logs may be retained for longer in cases of potential abuse or malicious activity.
-                Anonymous aggregate statistics may be retained like by our cloud provider for
-                billing us. For more information about AWS, see their
+                request is transmitted to and processed on a remote server. CloudWatch logging has
+                been disabled for this endpoint. As a result, simulation code submitted in requests
+                is not logged or retained by our code. However, our servers may retain anonymous
+                aggregate statistics such as invocation counts for billing and service monitoring
+                purposes as run by our cloud provider. For more information about AWS, see their
                 <a
                     href="https://docs.aws.amazon.com/whitepapers/latest/navigating-gdpr-compliance/aws-data-processing-addendum-dpa.html"
                     >Data Processing Addendum</a
@@ -239,7 +252,7 @@
 
         <section class="major">
             <h2>Updates</h2>
-            This page's content was last updated on 2026-02-26. Updates to this policy will be
+            This page's content was last updated on 2026-02-27. Updates to this policy will be
             posted to this page.
         </section>
     </body>
