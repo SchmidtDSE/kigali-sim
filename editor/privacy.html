@@ -62,8 +62,10 @@
                         software ("browser") used to access the site.
                     </li>
                     <li>
-                        The requested URLs which are unique identifiers for data and other resources
-                        requested from our servers.
+                        Timestamps indicating when the application was accessed.
+                    </li>
+                    <li>
+                        The pages and resources requested from our servers.
                     </li>
                 </ul>
 
@@ -93,7 +95,10 @@
                 Finally, if technical issues are encountered, error reports may be sent back to us.
                 However, we do not intend to collect personally identifying information through that
                 mechanism. IP addresses and simulation code / configuration are not retained through
-                these reports.
+                these reports. Simulation code is not captured in any server access logs. The only
+                mechanism through which we receive a copy of your simulation code is the
+                <a href="#get-help">Get Help feature</a>, which requires your explicit action to
+                send.
             </section>
 
             <section class="minor">
@@ -134,12 +139,14 @@
             <section class="minor">
                 <h3>Security and Access</h3>
                 We take security seriously. Communication between your device and our servers is
-                encrypted with secure socket layer SSL. Access to non-anonymized logs and the
-                configuration / code for the application is limited to the current maintainers of
-                the project, automated systems we've constructed for running the application, and
-                our subprocessors, and will not be disclosed except as required by law. Note that
-                anonymized data may be shared with project partners for the purposes of tracking
-                project success and impact.
+                encrypted with secure socket layer SSL. Access to non-anonymized access logs and
+                the deployment configuration of the application is limited to the current
+                maintainers of the project, automated systems we've constructed for running the
+                application, and our subprocessors, and will not be disclosed except as required
+                by law. As noted above, these access logs contain only IP addresses, timestamps,
+                pages requested, and user agent strings; they do not contain simulation code.
+                Note that anonymized data may be shared with project partners for the purposes of
+                tracking project success and impact.
             </section>
 
             <section class="minor">
