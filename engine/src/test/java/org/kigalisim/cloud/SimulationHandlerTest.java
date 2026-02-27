@@ -376,7 +376,7 @@ public class SimulationHandlerTest {
         response.getStatusCode(),
         "One replicate should return 200"
     );
-    int oneReplicateRows = response.getBody().split("\n").length;
+    final int oneReplicateRows = response.getBody().split("\n").length;
 
     params.put("replicates", "3");
     event = buildEvent(params);
@@ -386,11 +386,10 @@ public class SimulationHandlerTest {
         response.getStatusCode(),
         "Three replicates should return 200"
     );
-    int threeReplicateRows = response.getBody().split("\n").length;
 
     assertEquals(
         (oneReplicateRows - 1) * 3 + 1,
-        threeReplicateRows,
+        response.getBody().split("\n").length,
         "Three replicates should produce three times the data rows plus one header"
     );
   }
