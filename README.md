@@ -93,6 +93,9 @@ docker run -v $(pwd):/working kigalisim run -o output.csv script.qta
 
 Note: Windows users should replace `$(pwd)` with `%cd%` for Command Prompt or `${PWD}` for PowerShell.
 
+### AI / Programmatic Access
+For programmatic or AI-assisted use, some tools are available. See [engine readme](https://github.com/SchmidtDSE/kigali-sim/blob/main/engine/README.md).
+
 ### Local UI-based editor
 For information about running the Kigali Sim IDE locally on your machine, see the [development section of this README](https://github.com/SchmidtDSE/kigali-sim?tab=readme-ov-file#development) for various options including Docker, GitHub Codespaces, or a manual local setup.
 
@@ -174,7 +177,7 @@ This can be run using the editor tab at https://kigalisim.org/ or locally via `j
 Developers can continue their work by going to the [User Guide](https://kigalisim.org/guide/) which had information on other features. See also the [formal QubecTalk language specification](https://kigalisim.org/guide/qubectalk.pdf).
 
 ### LLM assistants
-If desired, AI coding assistants or chatbots can help in using Kigali Sim. We implement the [llms.txt specification](https://llmstxt.org), a standard that allows users to bring their own LLM assistants to the tool. Direct your AI to read `https://kigalisim.org/llms-full.txt?v=20260128` and / or `https://kigalisim.org/llms.txt?v=20260128`.
+If desired, AI coding assistants or chatbots can help in using Kigali Sim. We implement the [llms.txt specification](https://llmstxt.org), a standard that allows users to bring their own LLM assistants to the tool. Direct your AI to read `https://kigalisim.org/llms-full.txt?v=20260227` and / or `https://kigalisim.org/llms.txt?v=20260227`.
 
 <br>
 
@@ -311,6 +314,8 @@ We thank the following Open Source libraries and resources:
 - [ACE Editor](https://ace.c9.io/) under [BSD-3](https://github.com/ajaxorg/ace/blob/master/LICENSE).
 - [ANTLR4](https://www.antlr.org/) under [BSD-3](https://www.antlr.org/license.html).
 - [Apache Commons CSV](https://commons.apache.org/proper/commons-csv/) under [Apache-2.0](https://github.com/apache/commons-csv/blob/master/LICENSE.txt).
+- [AWS Lambda Java Core](https://github.com/aws/aws-lambda-java-libs) under [Apache-2.0](https://github.com/aws/aws-lambda-java-libs/blob/main/LICENSE).
+- [AWS Lambda Java Events](https://github.com/aws/aws-lambda-java-libs) under [Apache-2.0](https://github.com/aws/aws-lambda-java-libs/blob/main/LICENSE).
 - [Chart.js](https://www.chartjs.org/) under [MIT](https://github.com/chartjs/Chart.js/blob/master/LICENSE.md).
 - [D3](https://d3js.org/) under [ISC](https://github.com/d3/d3/blob/main/LICENSE).
 - [ESLint]((https://eslint.org/)) under [MIT](https://github.com/eslint/eslint/blob/main/LICENSE).

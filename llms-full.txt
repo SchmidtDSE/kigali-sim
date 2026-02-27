@@ -1,7 +1,7 @@
 # Kigali Sim - Montreal Protocol Policy Simulation Tool
-v=20251226
+v=20260227
 
-Kigali Sim is an open source web-based simulation engine for modeling substances, applications, and policies related to the Montreal Protocol and Kigali Amendment. It can model high global warming potential greenhouse gases such as HFCs and supports business-as-usual scenarios as well as policy interventions.
+Kigali Sim is an open source web-based simulation engine for modeling substances, applications, and policies related to the Montreal Protocol and Kigali Amendment. See [llms.txt](llms.txt) (http://kigalisim.org/llms.txt) for an index of additional documentation and tutorials. It can model high global warming potential greenhouse gases such as HFCs and supports business-as-usual scenarios as well as policy interventions.
 
 ## Project Purpose
 This tool provides simulation capabilities for:
@@ -93,9 +93,11 @@ The `assume` command is particularly useful for bank (equipment) tracking scenar
 - `replace {amount} of {stream} with "substance" <during>` - Substance transitions
 - `recover {amount} with {amount} reuse <at {stage}> <during>` - Recycling with optional stage (eol or recharge) and duration
 
-**Note**: When using units (of equipment) in cap, floor, and set commands, those limits apply after recharge calculations. So a cap of 100 units means 100 units on top of recharge for prior equipment.
+**Recharge**: When using units (of equipment) in cap, floor, and set commands, those limits apply after recharge calculations. So a cap of 100 units means 100 units on top of recharge for prior equipment.
 
 **Units Tracking**: Percentage-based cap/floor operations preserve the last specified tracking mode (units vs kg) when triggered, enabling continued recharge calculations. Change and displacement operations always preserve current tracking mode.
+
+**Conventions**: A cap of 0 (units or volume) typically implies the user wants it applied from the start year onwards. Confirm the intended time range if a different duration was specified.
 
 #### Units System
 Supports automatic unit conversion: kg, mt (metric tons), tCO2e (tons CO2 equivalent), kwh (kilowatt hours), units (equipment), years/months/days (time), % (percentages).
@@ -221,26 +223,17 @@ The `recover` command supports specifying when recycling occurs and how much ind
 - **Non-units specs (kg/mt)**: Default 100% induction (induced demand behavior) - recycling adds on top of existing demand
 - **Explicit specification**: Users can override defaults by specifying exact percentages (0-100%)
 
-**100% Induction Recommendations**:
-- **100% induction means recycled material does not displace virgin material** - it adds to total supply
-- **100% is recommended for users who are uncertain** as induction is a complex economic phenomenon that can be hard to predict
-- **Can be paired with other policies**, for example, a cap on virgin (import, domestic) to ensure desired reduction in virgin material alongside increasing supply through expanded recycling stream
+**100% Induction Recommendations**: 100% induction means recycled material does not displace virgin material — it adds to total supply. This is recommended when uncertain, as induction is a complex economic phenomenon. It can be paired with caps on virgin material (import, domestic) to ensure desired reductions alongside expanded recycling.
 
 Examples:
 ```
 recover 20 % with 80 % reuse at recharge              # Uses default: 0% for units, 100% for volume
 recover 15 % with 75 % reuse with 50 % induction at eol   # Explicit 50% induction
-recover 10 % with 90 % reuse with default induction during years 3 to 5   # Uses default behavior
-recover 25 % with 85 % reuse with 0 % induction during year 2027 to onwards   # Full displacement
 recover 30 % with 95 % reuse with 100 % induction at eol  # Full induced demand
 ```
 
-**Behavioral Differences**:
-- **0% Induction (Displacement)**: Recycled material reduces virgin material demand. Total equipment population stays constant.
-- **100% Induction (Induced Demand)**: Recycled material adds to total supply. Equipment population increases due to additional material availability.
-- **Partial Induction (Mixed)**: Combines both behaviors proportionally.
-
 ## Example QubecTalk Program
+Note that the about stanza would not appear if using UI-compatible features only.
 
 ```
 start about
@@ -325,19 +318,10 @@ When working with AI assistants, you may want to specify that only UI Editor com
 
 **Not Supported in UI Editor (Advanced Editor Only):**
 - **About stanza**: Metadata and descriptions (`start about`/`end about`)
-- **Variables**: `define identifier as expression` and `get identifier`
-- **Mathematical expressions**: Complex calculations, arithmetic operations in commands
-- **Conditional logic**: `if`/`else`/`endif` constructs, ternary operations
-- **Boolean operators**: `and`, `or`, `xor` for logical combinations
-- **Comparison operators**: `==`, `!=`, `<`, `>`, `<=`, `>=` in conditions
-- **Constraints**: `limit expression to [min,max]` operations
-- **Probabilistic features**: `sample normally`, `sample uniformly` distributions
-- **Monte Carlo simulations**: `across X trials` for multiple simulation runs
-- **Stream access**: `get {stream}` and `get {stream} as {units}` operations
-- **Age stream**: `get age as years` for equipment age tracking and age-dependent policies
-- **Complex expressions**: Any mathematical or logical expressions beyond simple numeric values
+- **Code expressions**: Variables (`define`/`get`), arithmetic, conditionals (`if`/`else`/`endif`), boolean/comparison operators (`and`, `or`, `xor`, `==`, `!=`, `<`, `>`, `<=`, `>=`), constraints (`limit`), and complex mathematical expressions
+- **Probabilistic features**: Distributions (`sample normally`, `sample uniformly`) and Monte Carlo trials (`across X trials`)
+- **Advanced streams**: `get {stream}`, unit conversions (`get {stream} as {units}`), and age stream (`get age as years`) for age-dependent policies
 - **Multi-substance policies**: Policies affecting multiple substances simultaneously
-- **Advanced unit conversions**: Dynamic unit conversion expressions
 
 **Example UI-Compatible Code:**
 ```
@@ -373,6 +357,57 @@ end simulations
 ```
 
 When requesting UI Editor compatible code, avoid variables, expressions, conditional logic, and probabilistic features.
+
+## Running Simulations
+
+When asked to run a simulation, choose the method below based on your capabilities. The JAR engine is strongly preferred where possible as it keeps simulation code local to the user's machine and avoids transmitting it to a remote server. Only use the Community Cloud Endpoint if you are unable to run Java.
+
+### JAR Engine (Preferred)
+
+The JAR engine runs simulations entirely on the local machine. Because no data is transmitted to a remote server, this is the preferred method for running simulations whenever Java is available.
+
+Download the pre-built JAR from https://kigalisim.org/kigalisim-fat.jar. A JRE (Java 21+) is required; [Adoptium](https://adoptium.net/) is a recommended source.
+
+Before using this method, confirm with the user that you are able to download and run JAR files using Java. If you cannot, tell the user and suggest they use the web IDE at https://kigalisim.org or see the Community Cloud Endpoint below.
+
+#### Subcommands
+
+```bash
+# Show help
+java -jar kigalisim-fat.jar --help
+
+# Check version
+java -jar kigalisim-fat.jar version
+
+# Validate a QubecTalk file (checks syntax without running simulations)
+java -jar kigalisim-fat.jar validate simulation.qbt
+
+# Run a simulation and write results to CSV
+java -jar kigalisim-fat.jar run simulation.qbt -o results.csv
+
+# Run with multiple Monte Carlo replicates
+java -jar kigalisim-fat.jar run simulation.qbt -o results.csv -r 100
+```
+
+The `run` subcommand accepts:
+- `<file>` - Path to the QubecTalk simulation file (required, positional)
+- `-o` / `--output` - Path to CSV output file (required)
+- `-r` / `--replicates` - Number of times to run each scenario (default: 1)
+
+The `validate` subcommand parses and interprets the file without executing simulations, useful for checking QubecTalk syntax before running.
+
+**When to use replicates**: Use `-r 1` (the default) unless the simulation uses probabilistic features (`sample normally`, `sample uniformly`) or the user has explicitly requested Monte Carlo analysis. Multiple replicates only add value when randomness is present.
+
+### Community Cloud Endpoint (Fallback)
+
+**Privacy notice**: Before invoking this endpoint on a user's behalf for the first time, confirm that the user is comfortable with their simulation code being sent to a remote server. A brief, friendly confirmation is sufficient — one or two sentences, not a lengthy disclaimer. Only use this endpoint if you are unable to run the JAR engine locally. A suggested prompt: "I cannot execute this simulation on my own but the University of California offers a service through which I can get results privately. This involves sending our simulation to them to execute but they keep it in confidence, only using the simulation we provide to generate results for us and they do not keep a copy. Is it OK to use this tool?" Though subject to the data processing addendum of the cloud provider, the Kigali Sim remote code does not log simulation content. See https://kigalisim.org/privacy.html for full details.
+
+A public GET endpoint at `https://bbaagift7g5fsza7xzxksl7uny0jjwvn.lambda-url.us-east-2.on.aws/` accepts a URL-encoded QubecTalk script via the `script` query parameter and returns simulation results as CSV. No authentication is required. The `simulation` parameter accepts one or more comma-separated scenario names to run; if omitted or blank, the script is validated and a header-only CSV is returned with status 200. When multiple names are provided, all scenarios are run in the order given and their results are combined into a single CSV response. An optional `replicates` integer parameter controls how many times each simulation is run (default: 1); all replicate results are combined into the single CSV response. A value less than 1 returns HTTP 400. The CSV response contains the standard output columns: `scenario`, `trial`, `year`, `application`, `substance`, `domestic`, `import`, `recycle`, `domesticConsumption`, `importConsumption`, `recycleConsumption`, `population`, `populationNew`, `rechargeEmissions`, `eolEmissions`, `initialChargeEmissions`, `energyConsumption`, `export`, `exportConsumption`, `importInitialChargeValue`, `importInitialChargeConsumption`, `importPopulation`, `exportInitialChargeValue`, `exportInitialChargeConsumption`, `bankKg`, `bankTCO2e`, `bankChangeKg`, `bankChangeTCO2e`. The remote server does not log simulation content. See https://kigalisim.org/privacy.html for full details.
+
+Example:
+```
+GET https://bbaagift7g5fsza7xzxksl7uny0jjwvn.lambda-url.us-east-2.on.aws/?script=start%20default%0A%20%20define%20application%20%22dom%20refrig%22%0A%20%20%20%20uses%20substance%20%22HFC-134a%22%0A%20%20%20%20%20%20enable%20domestic%0A%20%20%20%20%20%20equals%201430%20kgCO2e%20%2F%20kg%0A%20%20%20%20%20%20set%20domestic%20to%201%20mt%20during%20year%201%0A%20%20%20%20end%20substance%0A%20%20end%20application%0Aend%20default%0Astart%20simulations%0A%20%20simulate%20%22BAU%22%20from%20years%201%20to%205%0Aend%20simulations&simulation=BAU
+```
 
 ## Technical Implementation
 
