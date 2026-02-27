@@ -43,13 +43,10 @@ public class SimulationHandler
   private static final String CONTENT_TYPE_CSV = "text/csv";
   private static final String CONTENT_TYPE_TEXT = "text/plain";
 
-  private final CloudQubectalkPreprocessor preprocessor;
-
   /**
-   * Constructs a new SimulationHandler with a default {@link CloudQubectalkPreprocessor}.
+   * Constructs a new SimulationHandler.
    */
   public SimulationHandler() {
-    this.preprocessor = new CloudQubectalkPreprocessor();
   }
 
   /**
@@ -95,8 +92,7 @@ public class SimulationHandler
       );
     }
 
-    String processedScript = preprocessor.preprocess(script.get());
-    ParseResult parseResult = KigaliSimFacade.parse(processedScript);
+    ParseResult parseResult = KigaliSimFacade.parse(script.get());
     if (parseResult.hasErrors()) {
       return buildResponse(
           STATUS_UNPROCESSABLE,
