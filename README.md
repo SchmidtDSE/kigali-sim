@@ -94,7 +94,7 @@ docker run -v $(pwd):/working kigalisim run -o output.csv script.qta
 Note: Windows users should replace `$(pwd)` with `%cd%` for Command Prompt or `${PWD}` for PowerShell.
 
 ### AI / Programmatic Access
-For programmatic or AI-assisted, some tools are available. SSopee [engine readme](https://github.com/SchmidtDSE/kigali-sim/blob/main/engine/README.md).
+For programmatic or AI-assisted use, some tools are available. See [engine readme](https://github.com/SchmidtDSE/kigali-sim/blob/main/engine/README.md).
 
 ### Local UI-based editor
 For information about running the Kigali Sim IDE locally on your machine, see the [development section of this README](https://github.com/SchmidtDSE/kigali-sim?tab=readme-ov-file#development) for various options including Docker, GitHub Codespaces, or a manual local setup.
