@@ -54,6 +54,10 @@ dependencies {
 
   // Command line parsing
   implementation("info.picocli:picocli:4.7.6")
+
+  // AWS Lambda dependencies
+  implementation("com.amazonaws:aws-lambda-java-core:1.2.3")
+  implementation("com.amazonaws:aws-lambda-java-events:3.14.0")
 }
 
 teavm {

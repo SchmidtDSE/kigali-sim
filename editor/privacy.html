@@ -180,12 +180,14 @@
                 string. This information along with your email address (required to reply to you),
                 your simulation, and your message body are not persisted except for loging as
                 required by AWS or for security / fraud prevention purposes. We ask that AWS removes
-                any CloudWatch logs of this information within 7 days. However, for more information
-                about AWS, see their
+                any CloudWatch logs of this information within 7 days, except that logs may be
+                retained for longer in cases of potential abuse or malicious activity. However, for
+                more information about AWS, see their
                 <a
                     href="https://docs.aws.amazon.com/whitepapers/latest/navigating-gdpr-compliance/aws-data-processing-addendum-dpa.html"
                     >Data Processing Addendum</a
-                >.
+                >. Anonymous aggregate statistics may be retained like by our cloud provider
+                for billing us.
             </p>
 
             <p>
@@ -202,8 +204,42 @@
         </section>
 
         <section class="major">
+            <h2>Community Cloud Endpoint</h2>
+
+            <p>
+                The community cloud endpoint is an optional HTTP GET endpoint that allows
+                QubecTalk simulations to be run on a remote server. It is intended for
+                programmatic use and is typically invoked by AI assistants, scripts, or automated
+                integrations. It is not used by the kigalisim.org web-based IDE or the Kigali Sim
+                jar, which run all simulations locally on your device.
+            </p>
+
+            <p>
+                When the endpoint is invoked, the QubecTalk simulation script submitted in the
+                request is transmitted to and processed on a remote server. Standard server
+                access logs are recorded for security and stability reasons, consistent with the
+                logging practices described elsewhere in this policy. This includes IP address,
+                user agent, and requested URL. These logs are removed within 7 days and
+                simulation content is not retained beyond those logging requirements. However,
+                logs may be retained for longer in cases of potential abuse or malicious activity.
+                Anonymous aggregate statistics may be retained like by our cloud provider for
+                billing us. For more information about AWS, see their
+                <a
+                    href="https://docs.aws.amazon.com/whitepapers/latest/navigating-gdpr-compliance/aws-data-processing-addendum-dpa.html"
+                    >Data Processing Addendum</a
+                >.
+            </p>
+
+            <p>
+                Users who are uncertain whether a tool or AI assistant they are using may invoke
+                this endpoint are encouraged to review the tool's documentation or ask the
+                assistant directly.
+            </p>
+        </section>
+
+        <section class="major">
             <h2>Updates</h2>
-            This page's content was last updated on 2025-02-28. Updates to this policy will be
+            This page's content was last updated on 2026-02-26. Updates to this policy will be
             posted to this page.
         </section>
     </body>

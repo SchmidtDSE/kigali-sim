@@ -1,0 +1,22 @@
+start default
+  define application "Test App"
+    uses substance "HFC-134a"
+      enable domestic
+      initial charge with 1 kg / unit for domestic
+      initial charge with 0 kg / unit for import
+      initial charge with 0 kg / unit for export
+      equals 1430 kgCO2e / kg
+      equals 1 kwh / unit
+      set sales to 1 mt during year 1
+      retire 5 % / year
+    end substance
+  end application
+end default
+
+start simulations
+  simulate "Business as Usual"
+  from years 1 to 3
+
+  simulate "Scenario Two"
+  from years 1 to 3
+end simulations
