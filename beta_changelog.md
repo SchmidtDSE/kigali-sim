@@ -14,6 +14,14 @@ Finally, we want to again express our gratitude for your feedback and time.
 
 The following changes have been adopted and released.
 
+### Community cloud endpoint
+
+**Status**: Released February 27, 2025
+
+**Classification**: Enhancement
+
+Released the community cloud endpoint, an optional HTTP GET endpoint that allows QubecTalk simulations to be run on a remote server. It is intended for programmatic use and is typically invoked by AI assistants. CloudWatch logging has been disabled for improved privacy. Updated privacy policy and LLM documentation accordingly.
+
 ### Emissions details in documentation
 
 **Status**: Released Feburary 18, 2026
