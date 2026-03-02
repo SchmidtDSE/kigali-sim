@@ -156,3 +156,7 @@ end variables
 - [QubecTalk Commands Reference](qubectalk_commands.md)
 - [QubecTalk Language Features Reference](qubectalk_language_features.md)
 - [Return to Guide Index](index.md)
+
+---
+
+[View HTML version](../qubectalk_stanzas.html)

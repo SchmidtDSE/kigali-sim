@@ -2,7 +2,7 @@
 
 Expanding to multiple sectors and refrigerants.
 
-**Note that this is the conventional version of this tutorial.** An AI-assisted alternative is available at [Tutorial 3a](https://kigalisim.org/guide/tutorial_03a.html).
+**Note that this is the conventional version of this tutorial.** An AI-assisted alternative is available at [Tutorial 3a](/guide/md/tutorial_03a.md).
 
 ## Motivation
 
@@ -24,9 +24,7 @@ Let's practice the functionality we explored in the prior tutorial. Use the same
 
 We will add in socioeconomic projections soon but, for now, consumption volumes will continue unchanged into the future.
 
-<video src="/webm/tutorial_03_01.webm" autoplay loop muted playsinline style="width: 500px; border: 2px solid #505050; border-radius: 3px;">Your browser does not support the video tag. Please upgrade to a modern browser.</video>
-
-**Note**: Kigali Sim requires decmal point number formatting (comma for thousands separator, period for decimal point, ex: `123,456.7` or `40,000.0`). If you use alternative formatting (ex: `123.456,7`), Kigali Sim will display a message with a suggestion for the equivalent supported format. Both formatting conventions are internationally valid, but Kigali Sim uses the DecimalFormat format for consistency with the technologies it leverages. This means `40,000` is interpreted as forty thousand.
+**Note**: Kigali Sim requires decimal point number formatting (comma for thousands separator, period for decimal point, ex: `123,456.7` or `40,000.0`). If you use alternative formatting (ex: `123.456,7`), Kigali Sim will display a message with a suggestion for the equivalent supported format. Both formatting conventions are internationally valid, but Kigali Sim uses the DecimalFormat format for consistency with the technologies it leverages. This means `40,000` is interpreted as forty thousand.
 
 ## Interpreting Multi-Application Results
 
@@ -34,11 +32,7 @@ As you work, the simulation will update automatically.
 
 Examine the results to understand how multiple applications and substances add together. You can do this by looking at results by selecting the **Application** or **Substances** radio buttons. To get a complete picture with the **Emissions** radio button, try clicking **"configure custom"** under emissions and combining both end-of-life and recharge emissions. This represents the total leakage throughout the equipment lifetime.
 
-<video src="/webm/tutorial_03_02.webm" autoplay loop muted playsinline style="width: 500px; border: 2px solid #505050; border-radius: 3px;">Your browser does not support the video tag. Please upgrade to a modern browser.</video>
-
 Before concluding, let's also pause to understand if these results make sense. First, the custom emissions which combines both end of life and recharge emissions is higher than either alone. Second, consider that the HFC-134a has higher volume and higher GWP than R-600a. Therefore, focusing on HFC-134a, we notice that these two factors intersect through a larger gap to R-600a in emissions relative to consumption when we have selected the **Substances** radio button.
-
-<video src="/webm/tutorial_03_03.webm" autoplay loop muted playsinline style="width: 500px; border: 2px solid #505050; border-radius: 3px;">Your browser does not support the video tag. Please upgrade to a modern browser.</video>
 
 ## Conclusion
 
@@ -51,14 +45,18 @@ You've successfully expanded ABC Country's model to include multiple application
 
 The model now provides a foundation for understanding how substance choice and application type interact to determine overall consumption and climate impact patterns.
 
-**Download the completed tutorial**: [tutorial_03.qta](tutorial_03.qta) - this contains the complete multi-application and multi-substance model
+**Download the completed tutorial** result at [tutorial_03.qta](../tutorial_03.qta) which contains the complete multi-application and multi-substance model. It differs from the [prior tutorial result](../tutorial_02.qta) in that it adds new substances and applications.
 
 ## Next Steps
 
-[Tutorial 4](/guide/tutorial_04.html) will add economic growth projections and business-as-usual forecasting to your multi-application model. You'll learn to model how economic expansion drives consumption changes over time, creating realistic baseline scenarios for policy comparison.
+[Tutorial 4](/guide/md/tutorial_04.md) will add economic growth projections and business-as-usual forecasting to your multi-application model. You'll learn to model how economic expansion drives consumption changes over time, creating realistic baseline scenarios for policy comparison.
 
-[Previous: Tutorial 2](/guide/tutorial_02.html) | [Return to Guide Index](/guide) | [Next: Tutorial 4](/guide/tutorial_04.html)
+[Previous: Tutorial 2](/guide/md/tutorial_02.md) | [Return to Guide Index](/guide/md/index.md) | [Next: Tutorial 4](/guide/md/tutorial_04.md)
 
 ---
 
 _This tutorial is part of the ABC Country case study series demonstrating progressive HFC policy analysis using Kigali Sim._
+
+---
+
+[View HTML version](../tutorial_03.html)
