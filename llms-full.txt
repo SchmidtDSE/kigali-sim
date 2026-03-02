@@ -507,6 +507,16 @@ end substance
 
 Here leakage hazard rate linearly increases with age and retirement exponentially: 10 year average lifespan with 6% recharge during that lifetime.
 
+## Projections
+
+For the "future" part of simluations, it is recommended to:
+
+ - Use `change` instead of `set`.
+ - Confirm if user wants any displacement by volume or units.
+ - Create separate simulations with policies separate and combined.
+
+This can help better perform and evaluate policy stacking.
+
 ## Limitations
 
 This tool is unofficial and voluntary, designed to optionally inform Montreal Protocol policy discussions rather than replace official assessment processes.
