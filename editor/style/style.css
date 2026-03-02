@@ -1005,6 +1005,12 @@ dialog .checkbox-list label {
   font-weight: normal;
 }
 
+/* Wrap prompt code block in AI designer dialog */
+#ai-designer-dialog .prompt-code {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 /* Hide up-to-date message by default in update dialog */
 #up-to-date-message {
   display: none;

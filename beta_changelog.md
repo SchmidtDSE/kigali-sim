@@ -20,7 +20,7 @@ The following changes have been adopted and released.
 
 **Classification**: Enhancement
 
-Released the community cloud endpoint, an optional HTTP GET endpoint that allows QubecTalk simulations to be run on a remote server. It is intended for programmatic use and is typically invoked by AI assistants. CloudWatch logging has been disabled for improved privacy. Updated privacy policy and LLM documentation accordingly.
+Released the community cloud endpoint, an optional HTTP GET endpoint that allows QubecTalk simulations to be run on a remote server. It is intended for programmatic use and is typically invoked by AI assistants. CloudWatch logging has been disabled for improved privacy. Updated privacy policy and LLM documentation accordingly. Minor documentation issue fixed March 2.
 
 ### Emissions details in documentation
 
