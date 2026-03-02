@@ -481,3 +481,27 @@ jobs:
           PUBLISH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: cd engine; ./gradlew publish
         continue-on-error: true  # Allow jar reject on documentation-only deploys
+  deployLambda:
+    environment: awsdeploy
+    if: github.ref == 'refs/heads/deploy'
+    runs-on: ubuntu-latest
+    name: Deploy Lambda
+    needs: [runEngineDockerSanity]
+    steps:
+      - name: Download fat jar
+        uses: actions/download-artifact@v4
+        with:
+          name: fatJar
+          path: ./
+      - name: Deploy to Lambda
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_ACCESS_SECRET }}
+          AWS_LAMBDA_NAME: mlf-community-cloud
+          AWS_LAMBDA_REGION: us-east-2
+        run: |
+          aws lambda update-function-code \
+            --function-name "$AWS_LAMBDA_NAME" \
+            --region "$AWS_LAMBDA_REGION" \
+            --zip-file "fileb://kigalisim-fat.jar"
+

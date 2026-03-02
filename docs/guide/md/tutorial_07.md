@@ -23,8 +23,6 @@ You'll see that all your work from Tutorials 2-6 has been translated into QubecT
 
 Within each stanza, there are **commands** like `initial charge with 0.07 kg / unit for domestic`.
 
-<video src="/webm/tutorial_07_01.webm" autoplay loop muted playsinline style="width: 500px; border: 2px solid #505050; border-radius: 3px;">Your browser does not support the video tag. Please upgrade to a modern browser.</video>
-
 ## Editing Code Directly
 
 Let's make a simple change to get comfortable with code editing:
@@ -34,8 +32,6 @@ Let's make a simple change to get comfortable with code editing:
 - Return to the **Design** tab and verify the change appears in the UI by clicking **edit** for HFC-134a
 
 This demonstrates the two-way connection between UI and code - changes in either location update the model.
-
-<video src="/webm/tutorial_07_02.webm" autoplay loop muted playsinline style="width: 500px; border: 2px solid #505050; border-radius: 3px;">Your browser does not support the video tag. Please upgrade to a modern browser.</video>
 
 ## Implementing R-600a Recycling
 
@@ -87,22 +83,24 @@ In 2035, combined import and domestic for the combined policy case is higher wit
 
 Now, the combined version sees closer consumption to recycling alone because the demand "displaced" from HFC-134a to R-600a now has a pathway to reuse.
 
-<video src="/webm/tutorial_07_03.webm" autoplay loop muted playsinline style="width: 500px; border: 2px solid #505050; border-radius: 3px;">Your browser does not support the video tag. Please upgrade to a modern browser.</video>
-
 ## Conclusion
 
 You've successfully transitioned from UI-based to code-based modeling while implementing a comprehensive multi-substance recycling strategy. This tutorial revealed that you've been programming: all UI actions generate QubecTalk code automatically. However, we also saw that code enables complexity like, for example, multi-substance policies.
 
 QubecTalk provides the foundation for advanced analysis techniques we'll explore in later tutorials, including uncertainty assessment and complex policy interactions.
 
-**Download the completed tutorial**: [tutorial_07.qta](tutorial_07.qta) - this contains the complete model with enhanced multi-substance recycling policies
+**Download the completed tutorial** result at [tutorial_07.qta](../tutorial_07.qta) which contains the complete model with enhanced multi-substance recycling policies. It differs from the [prior tutorial result](../tutorial_06.qta) in that it expands recycling, like to R-600a.
 
 ## Next Steps
 
-[Tutorial 8](/guide/tutorial_08.html) will demonstrate equipment unit-based modeling as an alternative to volume-based consumption specification. You'll learn when to use unit sales data versus volume data and how QubecTalk handles both approaches seamlessly.
+[Tutorial 8](/guide/md/tutorial_08.md) will demonstrate equipment unit-based modeling as an alternative to volume-based consumption specification. You'll learn when to use unit sales data versus volume data and how QubecTalk handles both approaches seamlessly.
 
-[Previous: Tutorial 6](/guide/tutorial_06.html) | [Return to Guide Index](/guide) | [Next: Tutorial 8](/guide/tutorial_08.html)
+[Previous: Tutorial 6](/guide/md/tutorial_06.md) | [Return to Guide Index](/guide/md/index.md) | [Next: Tutorial 8](/guide/md/tutorial_08.md)
 
 ---
 
 _This tutorial is part of the ABC Country case study series demonstrating progressive HFC policy analysis using Kigali Sim._
+
+---
+
+[View HTML version](../tutorial_07.html)
