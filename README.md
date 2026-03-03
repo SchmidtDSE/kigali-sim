@@ -13,6 +13,7 @@ While it can certainly can also run locally on the JVM, the fastest way to try K
  - Click "Add Application" to create a "Commerical Refrigeration" application
  - Click "Add Consumption" to create HFC-134a (click lookup for GHG equivalency, leave energy consumption at default, check domestic)
  - In your HFC-134a record, add a set record for 1 metric tonne (mt) sales in year 1.
+ - In your HFC-134a record, add a change record of +5% each year starting in year 2 to onwards.
  - Click "Add Simulation" and make "Business as Usual" from year 1 to 10.
  - Click the "Bank" radio button for total million units of equipment and see population increase over time.
 
@@ -31,6 +32,7 @@ start default
       equals 1430 kgCO2e / kg
       equals 1 kwh / unit
       set sales to 1 mt during year 1
+      change sales by +5 % during year 2 to onwards
       retire 5 % / year
     end substance
   
