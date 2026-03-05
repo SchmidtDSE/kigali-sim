@@ -44,6 +44,11 @@ Kigali Sim provides the first open source reusable lifecycle modeling toolkit fo
 ## Research impact statement
 Kigali Sim serves Article 5 nations [@article5], Implementing Agencies, analysts, researchers, and related organizations. We particularly focus on National Ozone Units (NOUs), espeically those with limited resources [@noo] for whom developing ad-hoc models may be burdensome. More than a dozen nations and supporting organizations co-designed Kigali Sim over more than a year. This effort spanned scientists, analysts, and policy-makers. Participating in many international meetings [@oweg; @excom; @pacificnetwork; @seasianetwork], multiple governments publicly acknowledge contributing to this community project [@credits] which also received media coverage [@nbc].
 
+# Implementation
+Migrated from an original JavaScript implementation for performance and portability, Kigali Sim runs via WASM [@teavm] which is browser-based without requiring install or via JVM. Without transmitting simulations to external servers, both enable privacy-preserving parallel local computation with BigDecimal [@bigdecimal] after ANTLR [@antlr] interpretation.
+
+![Diagram describing multi-modal execution in which simulations run across different platforms.\label{fig:execution}](KigaliExecution.svg){width="100%"}
+
 # Software Design
 Kigali Sim's engine supports domain experts in atmospheric science and environmental policy with varied programming expertise through a dual-interface design.
 
@@ -65,11 +70,6 @@ Many Kigali Sim users do not identify as programmers and, reflecting empirical f
 
 ## Limitations and future work
 Kigali Sim can model energy consumption but only estimates direct emissions. Users may calculate indirect emissions using outside energy mix data [@energy_mix]. Additionally, it embodies Montreal Protocol definitions and rules such as initial charge to exporter and it will receive updates as official guidance changes in the future [@mlf_guidelines]. Therefore, substances not subject to Montreal Protocol accounting norms are out of scope.
-
-# Implementation
-Migrated from an original JavaScript implementation for performance and portability, Kigali Sim runs via WASM [@teavm] which is browser-based without requiring install or via JVM. Without transmitting simulations to external servers, both enable privacy-preserving parallel local computation with BigDecimal [@bigdecimal] after ANTLR [@antlr] interpretation.
-
-![Diagram describing multi-modal execution in which simulations run across different platforms.\label{fig:execution}](KigaliExecution.svg){width="100%"}
 
 # Acknowledgments
 BSD-licensed.
