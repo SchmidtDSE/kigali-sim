@@ -82,12 +82,34 @@ Kigali Sim can model energy consumption but only estimates direct emissions. Use
 BSD-licensed.
 
 ## Thanks
-Amanda Anderson-You, Tina Birmpili, Matt Fisher, Ava Hu, Kevin Koy, Douglas McCauley, Alejandro Ramirez-Pabon, Frederico San Martini, Annie Snyder, Suzanne Spencer, Elina Yuen, runtime dependencies [@aceeditor; @antlr; @apachecsv; @chartjs; @colorbrewer; @d3; @papaparse; @prism; @qunit; @tabby; @webpack; @teavm], drawio [@drawio], and valued community members [@credits].
+Amanda Anderson-You, Tina Birmpili, Matt Fisher, Ava Hu, Kevin Koy, Douglas McCauley, Alejandro Ramirez-Pabon, Frederico San Martini, Annie Snyder, Suzanne Spencer, and Elina Yuen. Thank you to runtime dependencies:
+
+ - Ace Editor [@aceeditor]
+ - ANTLR [@antlr]
+ - Apache CSV [@apachecsv]
+ - Chart.js [@chartjs]
+ - ColorBrewer [@colorbrewer]
+ - D3 [@d3]
+ - Papa Parse [@papaparse]
+ - Prism.js [@prism]
+ - QUnit [@qunit]
+ - Tabby [@tabby]
+ - Webpack [@webpack]
+ - TeaVM [@teavm].
+
+Also, thank you to drawio [@drawio] and valued community members [@credits].
 
 ## Funding
 Ongoing funding and maintenance provided by the Eric and Wendy Schmidt Center for Data Science and the Environment at UC Berkeley. We have no conflicts to disclose.
 
 ## AI usage disclosure
-As described in-repo, AI used with constrained tasks and strict human review [@claude_ai; @copilot; @intellij_ai; @replit_ai]. No substantial LLM use in original JavaScript implementation.
+As described in-repo, AI providers used with constrained tasks and strict human review:
+
+ - Claude [@claude_ai]
+ - Copilot [@copilot]
+ - IntelliJ [@intellij_ai]
+ - Replit @replit_ai].
+
+No substantial LLM use in original JavaScript implementation.
 
 # References
