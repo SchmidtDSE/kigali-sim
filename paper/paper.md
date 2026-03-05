@@ -65,7 +65,7 @@ To support beginning programmers, the UI-based point-and-click editor acclimates
 
  - **Introduction**: With vocabulary visible in the starting state for orientation but with controls disabled or hidden, the application specification button introduces the primary loop [@core_loops].
  - **Development**: Specification of consumption offers first modeling decisions.
- - **Twist**: The interface reveals that multiple scenarios can run with different policies.
+ - **Twist**: The interface reveals that multiple scenarios can run with different policies, introducing the secondary loop.
  - **Conclusion**: Specification of policies continues using the mechanics first introduced in development.
 
 This sequence runs if the user does not have a simulation loaded in the tool when opening the app. This includes a user visiting for the first time. GUI-based changes automatically translate to code run for immediate feedback and eventual transition to code-based authoring.
