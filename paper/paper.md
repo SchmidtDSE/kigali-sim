@@ -82,7 +82,7 @@ Kigali Sim can model energy consumption but only estimates direct emissions. Use
 BSD-licensed.
 
 ## Thanks
-Amanda Anderson-You, Tina Birmpili, Matt Fisher, Ava Hu, Kevin Koy, Douglas McCauley, Alejandro Ramirez-Pabon, Frederico San Martini, Annie Snyder, Suzanne Spencer, and Elina Yuen. Thank you to runtime dependencies:
+Thank you to Amanda Anderson-You, Tina Birmpili, Matt Fisher, Ava Hu, Kevin Koy, Douglas McCauley, Alejandro Ramirez-Pabon, Frederico San Martini, Annie Snyder, Suzanne Spencer, and Elina Yuen. Thank you to runtime dependencies:
 
  - Ace Editor [@aceeditor]
  - ANTLR [@antlr]
