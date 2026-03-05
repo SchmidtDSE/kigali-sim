@@ -47,7 +47,7 @@ Kigali Sim serves Article 5 nations [@article5], Implementing Agencies, analysts
 # Implementation
 Migrated from an original JavaScript implementation for performance and portability, Kigali Sim runs via WASM [@teavm] which is browser-based without requiring install or via JVM. Without transmitting simulations to external servers, both enable privacy-preserving parallel local computation with BigDecimal [@bigdecimal] after ANTLR [@antlr] interpretation.
 
-![Diagram describing multi-modal execution in which simulations run across different platforms.\label{fig:execution}](KigaliExecution.svg){width="100%"}
+![Diagram describing multi-modal execution in which simulations run across different platforms with simulation results displayed in web browser.\label{fig:execution}](KigaliExecution.svg){width="100%"}
 
 # Software Design
 Kigali Sim's engine supports domain experts in atmospheric science and environmental policy with varied programming expertise through a dual-interface design.
@@ -55,7 +55,7 @@ Kigali Sim's engine supports domain experts in atmospheric science and environme
 ## Flexible engine
 Countries and supporting organizations work with varied information from trade records to industry census data to observed emissions. Given diverse methodologies, Kigali Sim pushes information from known to unknown stocks, providing automated unit conversions dependent on equipment properties. As opposed to a unidirectional structure with a single entry-point, this propagates limited user-provided values through substance flows and lifecycles to estimate unmeasured quantities. It then layers complex policy interventions such as permitting and recycling on top of the triangulated "business as usual" scenario.
 
-![Diagram showing data flow through Kigali Sim simulation engine from input data (trade records, bank estimates, or equipment surveys) through stock and flow calculations to output metrics.\label{fig:architecture}](KigaliEngine.svg){width="100%"}
+![Diagram showing data flow through Kigali Sim simulation engine from input data (trade records, bank estimates, or equipment surveys) through stock and flow calculations. Any value can be an input or output with Kigali Sim calculating the values not provided through equipment properties.\label{fig:architecture}](KigaliEngine.svg){width="100%"}
 
 ## Dual-interface design
 Most simulations can be modified either by the UI-based editor or the code-based editor where changes in one reflect in the other, attempting to bridge preferences and skill sets.
