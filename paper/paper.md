@@ -61,22 +61,22 @@ Countries and supporting organizations work with varied information from trade r
 Most simulations can be modified either by the UI-based editor or the code-based editor where changes in one reflect in the other. This may help bridge preferences and skill sets.
 
 ### UI-based authoring
-To support beginning programmers, the UI-based point-and-click editor acclimates users to Kigali Sim. This web interface exposes functionality through a 4-step Hayashida tutorial [@hayashida_structure; @hayashida_video]. This sequenced disclosure builds up the tool UI over time [@pyafscgap]:
+To support beginning programmers, the UI-based point-and-click editor acclimates users to Kigali Sim. This web interface exposes functionality through a 4-step Hayashida sequence [@hayashida_structure; @hayashida_video]. This series of disclosures builds up the tool UI over time [@pyafscgap]:
 
- - **Introduction**: With vocabulary visible in the starting state for orientation but with controls disabled or hidden, the application specification button introduces the primary loop [@core_loops].
+ - **Introduction**: With vocabulary visible in the starting state for orientation but with controls disabled or hidden, the application specification button introduces the primary loop.
  - **Development**: Specification of consumption offers first modeling decisions.
  - **Twist**: The interface reveals that multiple scenarios can run with different policies, introducing the secondary loop.
- - **Conclusion**: Specification of policies continues using the mechanics first introduced in development.
+ - **Conclusion**: Specification of additional simulations for comparison continues using the mechanics first introduced in development.
 
-This sequence runs if the user does not have a simulation loaded in the tool when opening the app. This includes a user visiting for the first time. GUI-based changes automatically translate to code run for immediate feedback and eventual transition to code-based authoring.
+Given the goal to introduce the user loops [@core_loops], this sequence only runs if the user does not have a simulation loaded in the tool when opening the app like, for example, if they are visiting for the first time. GUI-based changes automatically translate to code run for immediate feedback and eventual transition to code-based authoring.
 
 ![Screenshot of the UI-based editor modifying an example simulation.\label{fig:ui_editor}](KigaliEditor.png)
 
 ### Code-based authoring
-Many Kigali Sim users do not identify as programmers and, reflecting empirical findings that domain experts with "limited programming knowledge" benefit from DSLs [@dsl_evaluation], we created the QubecTalk domain-specific language to facilitate expression of complex models in human-readable syntax inspired by but distinct from HyperTalk [@smallhypertalk]. Mirrored by the UI-editor, QubecTalk speaks in treaty terminology, translating terms of art into simulations. This also supports uncertainty quantification, conditional logic, and policy stacking. With optional AI assistant compatibility via the llms.txt specification [@llmstxt], users may author scripts in a web-based programming portal [@portal] or outside with direct JVM invocation.
+Many Kigali Sim users do not identify as programmers and, reflecting empirical findings that domain experts with "limited programming knowledge" benefit from DSLs [@dsl_evaluation], we created the QubecTalk domain-specific language to facilitate expression of complex models in human-readable syntax. This DSL is inspired by but distinct from HyperTalk [@smallhypertalk]. Mirrored by the UI-editor, QubecTalk speaks in treaty terminology, translating terms of art into simulations. This also supports uncertainty quantification, conditional logic, and policy stacking. With optional AI assistant compatibility via the llms.txt specification [@llmstxt], users may author scripts in a web-based programming portal [@portal] or outside with direct JVM invocation.
 
 ## Limitations and future work
-Kigali Sim can model energy consumption but only estimates direct emissions. Users may calculate indirect emissions using outside energy mix data [@energy_mix]. Additionally, it embodies Montreal Protocol definitions such as trade attribution rules and it will receive updates as official guidance changes in the future [@mlf_guidelines]. Therefore, substances not subject to Montreal Protocol accounting norms are out of scope.
+Kigali Sim focuses only on the Montral Protocol. First, it can model energy consumption but only estimates direct emissions. Users may use Kigali Sim to calculate indirect emissions by exporting from the tool to join with outside energy mix data [@energy_mix]. Additionally, it embodies Montreal Protocol definitions such as trade attribution rules and it will receive updates as official guidance changes in the future [@mlf_guidelines]. Therefore, substances not subject to Montreal Protocol conventions are out of scope.
 
 # Acknowledgments
 BSD-licensed.
