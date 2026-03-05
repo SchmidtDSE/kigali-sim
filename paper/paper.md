@@ -61,9 +61,9 @@ Countries and supporting organizations work with varied information from trade r
 Most simulations can be modified either by the UI-based editor or the code-based editor where changes in one reflect in the other, attempting to bridge preferences and skill sets.
 
 ### UI-based authoring
-To support beginning programmers, the UI-based point-and-click editor acclimates users to Kigali Sim. This web interface exposes functionality through a 4-step Hayashida sequenced disclosure [@hayashida_structure; @hayashida_video], building up the tool UI elements over time [@pyafscgap]:
+To support beginning programmers, the UI-based point-and-click editor acclimates users to Kigali Sim. This web interface exposes functionality through a 4-step Hayashida tutorial [@hayashida_structure; @hayashida_video], sequenced disclosure building up the tool UI elements over time [@pyafscgap]:
 
- - **Introduction**: User sees vocabulary in the app starting state in which many controls are disabled or hidden but where the application specification button introduces the primary loop [@loop_based_design; @core_loops] dialog flow.
+ - **Introduction**: User sees vocabulary in the app starting state in which many controls are disabled or hidden but where the application specification button introduces the primary loop [@core_loops] dialog flow.
  - **Development**: Specification of consumption offers first modeling decisions.
  - **Twist**: The interface reveals that multiple scenarios can run with different policies, introducing the secondary loop.
  - **Conclusion**: Specification of policies continues using the mechanics first introduced in development.
