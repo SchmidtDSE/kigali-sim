@@ -53,7 +53,7 @@ Migrated from an original JavaScript implementation for performance and portabil
 Kigali Sim's engine supports domain experts in atmospheric science and environmental policy with varied programming expertise through a dual-interface design.
 
 ## Flexible engine
-Countries and supporting organizations work with varied information from trade records to industry census data. Given resulting diverse methodologies, Kigali Sim pushes information from known to unknown stocks, providing automated unit conversions dependent on equipment properties. As opposed to a unidirectional structure with a single entry-point, this propagates limited user-provided values through substance flows and lifecycles to estimate unmeasured quantities. It then layers complex policy interventions such as permitting and recycling on top of the triangulated "business as usual" scenario.
+Countries and supporting organizations work with varied information from trade records to industry census data. Kigali Sim pushes information from known to unknown stocks, providing automated unit conversions dependent on equipment properties. As opposed to a unidirectional structure with a single entry-point, this propagates limited user-provided values through substance flows and lifecycles to estimate unmeasured quantities. It then layers complex policy interventions such as permitting and recycling on top of the triangulated "business as usual" scenario.
 
 ![Kigali Sim data flow diagram with bi-directional stock and flow calculations. Any value shown can be an output. Kigali Sim calculates values not provided through equipment properties and input stock data.\label{fig:architecture}](KigaliEngine.svg){width="100%"}
 
