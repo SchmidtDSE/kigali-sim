@@ -36,7 +36,7 @@ Kigali Sim offers stock and flow modeling of Montreal Protocol-controlled substa
 Signed by all UN member states, the Montreal Protocol phased out 99% of ozone-depleting substances [@ozone]. Already the most successful international environmental treaty [@montreal_protocol_success], its ambitious 2016 Kigali Amendment extends this multilateral framework to hydrofluorocarbons which contribute significantly to climate change [@kigali_amendment; @contribute]. However, research and policy analysis for these substances involves modeling complex economic, technological, energy, and policy interactions [@complex].
 
 ## State of field
-On the current public market, only the proprietary HFC Outlook offers a full lifecycle reusable model for the Monteral Protocol [@hfcoutlook]. Otherwise, organizations typically build private ad-hoc models [@complex].
+On the current public market, only the proprietary HFC Outlook offers a full lifecycle reusable model for the Montreal Protocol [@hfcoutlook]. Otherwise, organizations typically build private ad-hoc models [@complex].
 
 ## Contribution
 Kigali Sim provides the first open source reusable lifecycle modeling toolkit focused on Montreal Protocol-controlled substances. The Multilateral Fund for the Implementation of the Montreal Protocol (MLF) approached the University of California Schmidt Center for Data Science and Environment (DSE) during a workshop for our global plastics pollution treaty interactive simulation tool [@plasticssci]. Co-design sessions sought to make that prior project's game design-inspired techniques for participatory data science [@plastics] available to the Montreal Protocol's science and policy communities. Those sessions identified needs in modeling emissions, energy, consumption, equipment populations, trade, and policy while following treaty conventions [@mlf_guidelines]. Finally, after joint design by the MLF and the DSE, Kigali Sim was implemented by DSE in collaboration with users from various governments and supporting organizations [@credits].
@@ -45,7 +45,7 @@ Kigali Sim provides the first open source reusable lifecycle modeling toolkit fo
 Kigali Sim serves Article 5 nations [@article5], Implementing Agencies, analysts, researchers, and related organizations. This includes National Ozone Units (NOUs) with limited resources [@noo] for whom developing ad-hoc models may be burdensome. More than a dozen nations and supporting organizations co-designed Kigali Sim over more than a year. This effort spanned scientists, analysts, and policy-makers. Participating in many international meetings [@oweg; @excom; @pacificnetwork; @seasianetwork], multiple governments publicly acknowledge contributing to this community project [@credits] which also received media coverage [@nbc].
 
 # Implementation
-Migrated from an original JavaScript implementation for performance and portability, Kigali Sim runs via WASM [@teavm] which is browser-based without requiring install or via JVM. Without transmitting simulations to external servers, both modalities enable privacy-preserving parallel local computation with BigDecimal [@bigdecimal] after ANTLR [@antlr] interpretation.
+Migrated from an original JavaScript implementation for performance and portability, Kigali Sim runs via WASM [@teavm] which is browser-based without requiring installation or via JVM. Without transmitting simulations to external servers, both modalities enable privacy-preserving parallel local computation with BigDecimal [@bigdecimal] after ANTLR [@antlr] interpretation.
 
 ![Diagram describing multi-modal execution in which simulations run across different platforms with simulation results displayed in web browser.\label{fig:execution}](KigaliExecution.svg){width="100%"}
 
@@ -61,19 +61,19 @@ Countries and supporting organizations work with varied information from trade r
 Most simulations can be modified either by the UI-based editor or the code-based editor where changes in one reflect in the other, attempting to bridge preferences and skill sets.
 
 ### UI-based authoring
-To support beginning programmers, the UI-based point-and-click editor acclimates users to Kigali Sim. This web interface progressively exposes functionality through 4-step Hayashida sequenced disclosure [@hayashida_structure; @hayashida_video; @pyafscgap]:
+To support beginning programmers, the UI-based point-and-click editor acclimates users to Kigali Sim. This web interface progressively exposes functionality through a 4-step Hayashida sequenced disclosure [@hayashida_structure; @hayashida_video; @pyafscgap]:
 
  - **Introduction**: User sees vocabulary in the app starting state in which many controls are disabled or hidden but where the application specification button introduces the primary loop [@loop_based_design; @core_loops] dialog flow.
  - **Development**: Specification of consumption offers first modeling decisions.
  - **Twist**: The interface reveals that multiple scenarios can run with different policies, introducing the secondary loop.
  - **Conclusion**: Specification of policies continues using the mechanics first introduced in development.
 
-This Hayashida sequence runs if the user does not have a simluation loaded in the tool when opening the app. This includes a user visiting for the first time. GUI-based changes automatically translate to code run for immediate feedback and eventual transition to code-based authoring.
+This Hayashida sequence runs if the user does not have a simulation loaded in the tool when opening the app. This includes a user visiting for the first time. GUI-based changes automatically translate to code run for immediate feedback and eventual transition to code-based authoring.
 
 ![Screenshot of the UI-based editor modifying an example simulation.\label{fig:ui_editor}](KigaliEditor.png)
 
 ### Code-based authoring
-Many Kigali Sim users do not identify as programmers and, reflecting empirical findings that domain experts with "limited programming knowledge" benefit from DSLs [@dsl_evaluation], we created the QubecTalk domain-specific language to facilitate expression of complex models in human-readable syntax inspired by but distinct to HyperTalk [@smallhypertalk]. Mirrored by the UI-editor, QubecTalk speaks in treaty terminology, translating terms of art into simulations. This also supports uncertainty quantification, conditional logic, and policy stacking. With optional AI assistant compatibility via the llms.txt specification [@llmstxt], users may author scripts in a web-based programming portal [@portal] or outside with direct JVM invocation.
+Many Kigali Sim users do not identify as programmers and, reflecting empirical findings that domain experts with "limited programming knowledge" benefit from DSLs [@dsl_evaluation], we created the QubecTalk domain-specific language to facilitate expression of complex models in human-readable syntax inspired by but distinct from HyperTalk [@smallhypertalk]. Mirrored by the UI-editor, QubecTalk speaks in treaty terminology, translating terms of art into simulations. This also supports uncertainty quantification, conditional logic, and policy stacking. With optional AI assistant compatibility via the llms.txt specification [@llmstxt], users may author scripts in a web-based programming portal [@portal] or outside with direct JVM invocation.
 
 ## Limitations and future work
 Kigali Sim can model energy consumption but only estimates direct emissions. Users may calculate indirect emissions using outside energy mix data [@energy_mix]. Additionally, it embodies Montreal Protocol definitions and rules such as trade attribution rules and it will receive updates as official guidance changes in the future [@mlf_guidelines]. Therefore, substances not subject to Montreal Protocol accounting norms are out of scope.
@@ -108,7 +108,7 @@ As described in-repo, AI providers used with constrained tasks and strict human 
  - Claude [@claude_ai]
  - Copilot [@copilot]
  - IntelliJ [@intellij_ai]
- - Replit @replit_ai].
+ - Replit [@replit_ai].
 
 No substantial LLM use in original JavaScript implementation.
 
