@@ -68,7 +68,7 @@ To support beginning programmers, the UI-based point-and-click editor acclimates
  - **Twist**: The interface reveals that multiple scenarios can run with different policies, introducing the secondary loop.
  - **Conclusion**: Specification of policies continues using the mechanics first introduced in development.
 
-This Hayashida sequence runs if the user does not have a simulation loaded in the tool when opening the app. This includes a user visiting for the first time. GUI-based changes automatically translate to code run for immediate feedback and eventual transition to code-based authoring.
+This sequence runs if the user does not have a simulation loaded in the tool when opening the app. This includes a user visiting for the first time. GUI-based changes automatically translate to code run for immediate feedback and eventual transition to code-based authoring.
 
 ![Screenshot of the UI-based editor modifying an example simulation.\label{fig:ui_editor}](KigaliEditor.png)
 
