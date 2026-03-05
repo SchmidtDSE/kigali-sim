@@ -45,7 +45,7 @@ Kigali Sim provides the first open source reusable lifecycle modeling toolkit fo
 Kigali Sim serves Article 5 nations [@article5], Implementing Agencies, analysts, researchers, and related organizations. This includes National Ozone Units (NOUs) with limited resources [@noo] for whom developing ad-hoc models may be burdensome. More than a dozen nations and supporting organizations co-designed Kigali Sim over more than a year. This effort spanned scientists, analysts, and policy-makers. Participating in many international meetings [@oweg; @excom; @pacificnetwork; @seasianetwork], multiple governments publicly acknowledge contributing to this community project [@credits]. This open source effort also received media coverage [@nbc].
 
 # Implementation
-Migrated from an original JavaScript implementation for performance and portability, Kigali Sim runs via browser-based WASM [@teavm] or via JVM. Without transmitting simulations to external servers, both modalities enable privacy-preserving parallel local computation with BigDecimal [@bigdecimal] after ANTLR [@antlr] interpretation.
+Migrated from an original JavaScript implementation for performance and portability, Kigali Sim runs via JVM or browser-based WASM through TeaVM [@teavm]. Without transmitting simulations to external servers, both modalities enable privacy-preserving parallel local computation with BigDecimal [@bigdecimal] after ANTLR [@antlr] interpretation.
 
 ![Diagram describing multi-modal execution in which simulations run across different platforms with simulation results displayed via a web browser.\label{fig:execution}](KigaliExecution.svg){width="100%"}
 
@@ -55,7 +55,7 @@ Kigali Sim's engine supports domain experts in atmospheric science and environme
 ## Flexible engine
 Countries and supporting organizations work with varied information from trade records to industry census data. Kigali Sim pushes information from known to unknown stocks, providing automated unit conversions dependent on equipment properties. As opposed to a unidirectional structure with a single entry-point, this propagates limited user-provided values through substance flows and lifecycles to estimate unmeasured quantities. It then layers complex policy interventions such as permitting and recycling on top of the triangulated "business as usual" scenario.
 
-![Kigali Sim data flow diagram with bi-directional stock and flow calculations. Any value shown can be an output. Kigali Sim calculates values not provided through equipment properties and input stock data.\label{fig:architecture}](KigaliEngine.svg){width="100%"}
+![Kigali Sim bi-directional stock and flow graph. Kigali Sim can output an unknown value by traversing this graph using equipment properties to reach known values. All values can be outputs except exports which cannot be inferred by other country values under treaty definitions.\label{fig:architecture}](KigaliEngine.svg){width="100%"}
 
 ## Dual-interface design
 Most simulations can be modified either by the UI-based editor or the code-based editor where changes in one reflect in the other, attempting to bridge preferences and skill sets.
