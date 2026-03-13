@@ -12,7 +12,7 @@ jobs:
     name: Build Paper
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Build JOSS preview
         uses: openjournals/openjournals-draft-action@master
         with:
@@ -29,9 +29,9 @@ jobs:
     name: JS Lint
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Install Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
@@ -51,9 +51,9 @@ jobs:
     name: Cache Busters Check
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Install Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
@@ -249,9 +249,9 @@ jobs:
     needs: [ buildWasm ]
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Install Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
@@ -287,7 +287,7 @@ jobs:
         working-directory: ./engine
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
@@ -307,9 +307,9 @@ jobs:
     needs: [ lintJs, unitTestsBrowser, checkCacheBusters, buildWasm, runMonteCarloReplicates, generateJavadoc ]
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Install Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
@@ -440,7 +440,7 @@ jobs:
     needs: [deploy]
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Build Docker image
         run: docker build -t kigalisim .
       - name: Run example QTA file via Docker
@@ -469,7 +469,7 @@ jobs:
       packages: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
