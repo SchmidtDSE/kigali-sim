@@ -47,7 +47,7 @@ jobs:
             --toc
 
       - name: Upload PDF artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: qubectalk-spec-pdf
           path: docs/spec/qubectalk.pdf
@@ -61,7 +61,7 @@ jobs:
     needs: [buildSpecPDF]
     steps:
       - name: Download PDF artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: qubectalk-spec-pdf
           path: ./pdf
