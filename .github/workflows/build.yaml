@@ -19,7 +19,7 @@ jobs:
           journal: joss
           paper-path: paper/paper.md
       - name: Upload JOSS preview
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: paper
           path: paper/paper.pdf
@@ -59,7 +59,7 @@ jobs:
         with:
           version: 8
       - name: Install Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: '21'
@@ -87,16 +87,16 @@ jobs:
         working-directory: ./engine
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
       - name: Setup Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: '21'
       - name: Build fat jar
         run: ./gradlew fatJar
       - name: Upload jar
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: fatJar
           path: engine/build/libs/kigalisim-fat.jar
@@ -111,9 +111,9 @@ jobs:
         working-directory: ./engine
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
       - name: Setup Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: '21'
@@ -134,9 +134,9 @@ jobs:
         working-directory: ./engine
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
       - name: Setup Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: '21'
@@ -153,14 +153,14 @@ jobs:
         working-directory: ./engine
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
       - name: Setup Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: '21'
       - name: Download fat jar
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: fatJar
           path: engine/build/libs/
@@ -190,14 +190,14 @@ jobs:
         working-directory: ./engine
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
       - name: Setup Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: '21'
       - name: Download fat jar
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: fatJar
           path: engine/build/libs/
@@ -229,16 +229,16 @@ jobs:
         working-directory: ./engine
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
       - name: Setup Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: '21'
       - name: Build war
         run: ./gradlew warUnversioned
       - name: Upload war
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: war
           path: engine/build/libs/KigaliSim.war
@@ -257,12 +257,12 @@ jobs:
         with:
           version: 8
       - name: Install Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: '21'
       - name: Download WASM war
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: war
           path: ./
@@ -289,14 +289,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
       - name: Setup Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: '21'
       - name: Generate Javadoc
         run: ./gradlew javadoc
       - name: Upload Javadoc
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: javadoc
           path: engine/build/docs/javadoc
@@ -315,17 +315,17 @@ jobs:
         with:
           version: 8
       - name: Install Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: '21'
       - name: Download WASM war
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: war
           path: ./
       - name: Download fat JAR
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: fatJar
           path: ./
@@ -343,7 +343,7 @@ jobs:
       - name: Copy humans.txt to deploy root
         run: cp ./humans.txt ./editor/deploy/humans.txt
       - name: Download Javadoc
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: javadoc
           path: ./editor/deploy/guide/javadoc
@@ -373,7 +373,7 @@ jobs:
         run: bash ./support/update_version.sh
         working-directory: ./editor
       - name: Upload deploy artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: deploy-files
           path: ./editor/deploy
@@ -386,7 +386,7 @@ jobs:
     needs: [deployPrep]
     steps:
       - name: Download deploy artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: deploy-files
           path: ./deploy
@@ -413,7 +413,7 @@ jobs:
     needs: [deployPrep]
     steps:
       - name: Download deploy artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: deploy-files
           path: ./deploy
@@ -471,7 +471,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
       - name: Setup Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: '21'
@@ -489,7 +489,7 @@ jobs:
     needs: [runEngineDockerSanity]
     steps:
       - name: Download fat jar
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: fatJar
           path: ./
