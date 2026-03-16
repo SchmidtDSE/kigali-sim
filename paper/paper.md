@@ -57,7 +57,7 @@ Countries and supporting organizations work with varied information from trade r
 
 A graph structure depicted in Figure \ref{fig:architecture} achieves this flexibility. Equipment characteristics allow the engine to calculate between sales, population, consumption, and emissions. Given one of these values, the engine can calculate the value of the others through a traversal where equipment properties enable moving between edges connecting variables. Note that all values can be outputs except exports which, under treaty trade attribution rules, cannot be fully inferred by the other values from the same country [@article3; @decisioni12a].
 
-![Bi-directional graph diagram for calculating between simluation variables using equipment properties.\label{fig:architecture}](KigaliEngine.svg){width="100%"}
+![Bi-directional graph diagram for calculating between simulation variables using equipment properties.\label{fig:architecture}](KigaliEngine.svg){width="100%"}
 
 ## Dual-interface design
 Most simulations can be modified either with the UI-based editor or the code-based editor where changes in one reflect in the other. This may help bridge preferences and skill sets.
