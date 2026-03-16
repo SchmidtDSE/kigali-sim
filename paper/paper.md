@@ -60,7 +60,7 @@ A graph structure depicted in Figure \ref{fig:architecture} achieves this flexib
 ![Bi-directional graph diagram for calculating between simluation variables using equipment properties.\label{fig:architecture}](KigaliEngine.svg){width="100%"}
 
 ## Dual-interface design
-Most simulations can be modified either by the UI-based editor or the code-based editor where changes in one reflect in the other. This may help bridge preferences and skill sets.
+Most simulations can be modified either with the UI-based editor or the code-based editor where changes in one reflect in the other. This may help bridge preferences and skill sets.
 
 ### UI-based authoring
 To support beginning programmers, the UI-based point-and-click editor acclimates users to Kigali Sim. This web interface exposes functionality through a 4-step Hayashida sequence [@hayashida_structure; @hayashida_video]. This series of disclosures builds up the tool UI over time [@pyafscgap]:
