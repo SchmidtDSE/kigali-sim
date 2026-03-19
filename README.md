@@ -10,7 +10,7 @@ While it can certainly can also run locally on the JVM, the fastest way to try K
 
 **No code?** Go to https://kigalisim.org and then in the Designer tab:
 
- - Click "Add Application" to create a "Commerical Refrigeration" application
+ - Click "Add Application" to create a "Commercial Refrigeration" application
  - Click "Add Consumption" to create HFC-134a (click lookup for GHG equivalency, leave energy consumption at default, check domestic)
  - In your HFC-134a record, add a set record for 1 metric tonne (mt) sales in year 1.
  - In your HFC-134a record, add a change record of +5% each year starting in year 2 to onwards.
@@ -51,7 +51,7 @@ end simulations
 
 **Can't decide?** The UI-based authoring steps we provided generate the code seen above so you can move between UI-based and code-based authoring. Just go between the designer and editor tabs.
 
-Note: We use [WebAssembly](https://webassembly.org/) so simluations run privately on your machine. Continue your journey with a [tutorial](https://kigalisim.org/guide/tutorial_02.html).
+Note: We use [WebAssembly](https://webassembly.org/) so simulations run privately on your machine. Continue your journey with a [tutorial](https://kigalisim.org/guide/tutorial_02.html).
 
 <br>
 
@@ -200,7 +200,7 @@ For those with a bug report or a suggestion to improve Kigali Sim, please [open 
 
 For those seeking help with using Kigali Sim, we recommend that you consider starting with the "Get Help" button within the application if you are comfortable sharing your work with us. This free and private support channel offered by the project maintainers (currently the University of California DSE). If you do not want to share your simulation with us or are instructed to file a public help request, please [open an issue](https://github.com/SchmidtDSE/kigali-sim/issues/new) and try your best to fill in the issue template. Please note that this issue will be public.
 
-For those interested in contributing to the Kigali Sim open source project as a developer, thank you and please review [CONTRIBUTING.md](https://github.com/SchmidtDSE/kigali-sim/blob/main/CONTRIBUTING.md). Also, please see [our credits page](https://kigalisim.org/guide/credits.html) and our [humans.txt](https://kigalisim.org/humans.txt) for more information about the community behind this open source project. If you are unsure which issue might be best for getting started, please look for the "good first issue" tag. For information about community standards and expectations, please see [CODE_OF_CONDUCT.md](https://github.com/SchmidtDSE/kigali-sim/blob/main/CODE_OF_CONDDUCT.md).
+For those interested in contributing to the Kigali Sim open source project as a developer, thank you and please review [CONTRIBUTING.md](https://github.com/SchmidtDSE/kigali-sim/blob/main/CONTRIBUTING.md). Also, please see [our credits page](https://kigalisim.org/guide/credits.html) and our [humans.txt](https://kigalisim.org/humans.txt) for more information about the community behind this open source project. If you are unsure which issue might be best for getting started, please look for the "good first issue" tag. For information about community standards and expectations, please see [CODE_OF_CONDUCT.md](https://github.com/SchmidtDSE/kigali-sim/blob/main/CODE_OF_CONDUCT.md).
 
 <br>
 
