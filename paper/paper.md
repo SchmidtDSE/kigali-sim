@@ -63,7 +63,7 @@ A graph structure depicted in Figure \ref{fig:architecture} achieves this flexib
 Most simulations can be modified either with the UI-based editor or the code-based editor where changes in one reflect in the other. This may help bridge preferences and skill sets.
 
 ### UI-based authoring
-To support beginning programmers, the UI-based point-and-click editor acclimates users to Kigali Sim. This web interface exposes functionality through a 4-step Hayashida sequence [@hayashida_structure; @hayashida_video]. This series of disclosures builds up the tool UI over time [@pyafscgap]:
+To support beginning programmers, the UI-based point-and-click editor acclimates users to Kigali Sim. This web interface exposes functionality through a 4-step Kishōtenketsu sequence [@hayashida_structure]. This series of disclosures builds up the tool UI over time:
 
  - **Introduction**: With vocabulary visible in the starting state for orientation but with controls disabled or hidden, the application specification button introduces the primary loop.
  - **Development**: Specification of consumption offers first modeling decisions.
