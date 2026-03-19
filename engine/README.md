@@ -38,7 +38,7 @@ Build standalone JAR:
 
 Build WebAssembly for browser:
 
-```
+```bash
 ./gradlew war
 ```
 
