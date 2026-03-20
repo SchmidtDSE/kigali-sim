@@ -38,7 +38,7 @@ Build standalone JAR:
 
 Build WebAssembly for browser:
 
-```
+```bash
 ./gradlew war
 ```
 
@@ -78,7 +78,7 @@ To update the web editor with engine changes:
 
 ## Development Standards
 
-Please see DEVELOPING.md but, breifly, do not forget to:
+Please see DEVELOPING.md but, briefly, do not forget to:
 
 - Follow Google Java Style Guide conventions
 - Maintain comprehensive unit test coverage
