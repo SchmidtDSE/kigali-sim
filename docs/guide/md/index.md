@@ -54,6 +54,7 @@ Complete reference documentation for Kigali Sim and QubecTalk, the domain-specif
 - [**Stanzas Reference**](qubectalk_stanzas.md) - Program structure including default, policy, and simulations blocks
 - [**Commands Reference**](qubectalk_commands.md) - Executable statements for substance properties, consumption, and policy interventions
 - [**Language Features Reference**](qubectalk_language_features.md) - Advanced features including conditional logic, probabilistic sampling, and mathematical operations
+- [**Engine JavaDoc**](../javadoc/) - API documentation for the Java simulation engine
 - [**Engine and Language Specification**](../qubectalk.pdf) - Formal technical specification of the QubecTalk language and simulation engine
 - [**Credits**](../credits.html) - Acknowledgments and contributors to the Kigali Sim project
 
