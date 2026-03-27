@@ -429,7 +429,7 @@ class MetaSerializer {
    * initialChargeImport, initialChargeExport, retirement, key.
    *
    * @param {SubstanceMetadata[]} metadataArray - Array of metadata objects
-   * @returns {Map<string, string>[]} Array of Maps with CSV column mappings
+   * @returns {Array.<Map.<string, string>>} Array of Maps with CSV column mappings
    */
   serialize(metadataArray) {
     const self = this;
@@ -486,7 +486,7 @@ class MetaSerializer {
    * Creates a complete CSV string with header row and data rows,
    * properly escaping values that contain special CSV characters.
    *
-   * @param {Map<string, string>[]} serializedMaps - Array of row Maps
+   * @param {Array.<Map.<string, string>>} serializedMaps - Array of row Maps
    * @returns {string} Complete CSV content string
    * @private
    */
@@ -547,7 +547,7 @@ class MetaSerializer {
    * Empty or missing values are handled gracefully with defaults. Parsing errors
    * are collected and returned in the result rather than throwing exceptions.
    *
-   * @param {Map<string, string>[]} arrayOfMaps - Array of Maps with CSV data
+   * @param {Array.<Map.<string, string>>} arrayOfMaps - Array of Maps with CSV data
    * @returns {SubstanceMetadataParseResult} Result containing parsed metadata and errors
    */
   deserialize(arrayOfMaps) {
