@@ -10,7 +10,7 @@ Note that, in addition to this documentation and [CONTRIBUTING.md](https://githu
 
 Kigali Sim is organized into three main components and most have additional READMEs within:
 
-The **Java Engine** (`engine` directory) provides the primary computational mechanism for running simulations. There are different entrypoints depending on how Kiglai Sim is running like via WASM or JVM. That said, developers may wish to review the [Engine JavaDoc](https://kigalisim.org/guide/javadoc/org/kigalisim/engine/Engine.html). At a glance:
+The **Java Engine** (`engine` directory) provides the primary computational mechanism for running simulations. There are different entrypoints depending on how Kiglai Sim is running like via WASM or JVM. That said, developers may wish to review the [Engine JavaDoc](https://kigalisim.org/guide/javadoc/org/kigalisim/engine/Engine.html). The **ECMAScript Editor** (`editor` directory) may be explored via the [Editor JSDoc](https://kigalisim.org/guide/jsdoc/). At a glance:
 
 - Core simulation engine built with Java 21+
 - Uses ANTLR4 for parsing the QubecTalk domain specific language (DSL)
@@ -296,3 +296,4 @@ Please review `build.gradle` for information about output being suppressed durin
 - [QUnit Testing Framework](https://qunitjs.com/)
 - [Grunt Task Runner](https://gruntjs.com/)
 - [Project JavaDoc](https://kigalisim.org/guide/javadoc)
+- [Project JSDoc](https://kigalisim.org/guide/jsdoc)
