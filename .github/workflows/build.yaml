@@ -33,9 +33,7 @@ jobs:
       - name: Install Node
         uses: actions/setup-node@v6
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 8
+        uses: pnpm/action-setup@v5
       - name: Install node deps
         run: pnpm install
         working-directory: ./editor
@@ -55,9 +53,7 @@ jobs:
       - name: Install Node
         uses: actions/setup-node@v6
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 8
+        uses: pnpm/action-setup@v5
       - name: Install Java
         uses: actions/setup-java@v5
         with:
@@ -253,9 +249,7 @@ jobs:
       - name: Install Node
         uses: actions/setup-node@v6
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 8
+        uses: pnpm/action-setup@v5
       - name: Install Java
         uses: actions/setup-java@v5
         with:
@@ -311,9 +305,7 @@ jobs:
       - name: Install Node
         uses: actions/setup-node@v6
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 8
+        uses: pnpm/action-setup@v5
       - name: Install Java
         uses: actions/setup-java@v5
         with:
