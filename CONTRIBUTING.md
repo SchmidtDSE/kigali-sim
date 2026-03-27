@@ -25,7 +25,7 @@ For **ECMAScript (Editor)**:
 
  - Please follow the [Google JavaScript Style Guide](https://google.github.io/styleguide/jsguide.html).
  - Tests are encouraged using QUnit.
- - Use JSDoc comments for documentation.
+ - Use JSDoc comments for documentation. We generate JSDoc at https://kigalisim.org/guide/jsdoc/.
  - Use 2-space indentation.
  - Use double quotes for strings.
  - Maximum line length: 100 characters.
@@ -152,7 +152,7 @@ When adding new features or changing existing functionality:
 
  - Update relevant documentation in the tutorial and user's guide if appropriate.
  - Add JavaDoc comments for Java classes and methods
- - Add JSDoc comments for JavaScript functions
+ - Add JSDoc comments for JavaScript functions (see https://kigalisim.org/guide/jsdoc/)
  - Update [DEVELOPING.md](https://github.com/SchmidtDSE/kigali-sim/blob/main/DEVELOPING.md) if you change development workflows
 
 <br>

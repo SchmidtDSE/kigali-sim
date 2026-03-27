@@ -364,11 +364,50 @@ jobs:
           sshpass -e scp -o StrictHostKeyChecking=no \
             /tmp/guide-md.zip \
             ${{ secrets.BUILDSFTPUSER }}@${{ secrets.BUILDSFTPHOST }}:./build.kigalisim.org/artifacts/${{ github.sha }}/guide-md.zip
+  generateJsdoc:
+    environment: build
+    runs-on: ubuntu-latest
+    name: Generate JSDoc
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./editor
+    steps:
+      - name: Checkout
+        run: |
+          git clone https://github.com/SchmidtDSE/kigali-sim.git .
+          git checkout ${{ github.sha }}
+      - name: Setup pnpm
+        run: npm install -g pnpm@8
+      - name: Install dependencies
+        run: pnpm install
+      - name: Generate JSDoc
+        run: pnpm exec jsdoc -c jsdoc.json
+      - name: Install sshpass
+        run: sudo apt-get install -y sshpass
+      - name: Upload jsdoc to SFTP
+        env:
+          SSHPASS: ${{ secrets.BUILDSFTPPASSWORD }}
+        run: |
+          sshpass -e ssh -o StrictHostKeyChecking=no \
+            ${{ secrets.BUILDSFTPUSER }}@${{ secrets.BUILDSFTPHOST }} \
+            "mkdir -p ./build.kigalisim.org/artifacts/${{ github.sha }}/jsdoc"
+          sshpass -e scp -r -o StrictHostKeyChecking=no \
+            build/docs/jsdoc/. \
+            ${{ secrets.BUILDSFTPUSER }}@${{ secrets.BUILDSFTPHOST }}:./build.kigalisim.org/artifacts/${{ github.sha }}/jsdoc/
+      - name: Upload jsdoc zip to SFTP
+        env:
+          SSHPASS: ${{ secrets.BUILDSFTPPASSWORD }}
+        run: |
+          cd build/docs/jsdoc && zip -r /tmp/jsdoc.zip .
+          sshpass -e scp -o StrictHostKeyChecking=no \
+            /tmp/jsdoc.zip \
+            ${{ secrets.BUILDSFTPUSER }}@${{ secrets.BUILDSFTPHOST }}:./build.kigalisim.org/artifacts/${{ github.sha }}/jsdoc.zip
   deployPrep:
     environment: build
     runs-on: ubuntu-latest
     name: Deploy Prep
-    needs: [ lintJs, unitTestsBrowser, checkCacheBusters, buildWasm, runMonteCarloReplicates, generateJavadoc, generateGuideMd ]
+    needs: [ lintJs, unitTestsBrowser, checkCacheBusters, buildWasm, runMonteCarloReplicates, generateJavadoc, generateGuideMd, generateJsdoc ]
     steps:
       - name: Checkout
         run: |
@@ -417,6 +456,12 @@ jobs:
             https://build.kigalisim.org/artifacts/${{ github.sha }}/javadoc.zip
           mkdir -p ./editor/deploy/guide/javadoc
           unzip -q /tmp/javadoc.zip -d ./editor/deploy/guide/javadoc/
+      - name: Download JSDoc
+        run: |
+          curl -o /tmp/jsdoc.zip \
+            https://build.kigalisim.org/artifacts/${{ github.sha }}/jsdoc.zip
+          mkdir -p ./editor/deploy/guide/jsdoc
+          unzip -q /tmp/jsdoc.zip -d ./editor/deploy/guide/jsdoc/
       - name: Copy case study QTA file to guide
         run: cp ./examples/case_study.qta ./editor/deploy/guide/case_study.qta
       - name: Copy tutorial QTA files to guide
