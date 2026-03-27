@@ -300,11 +300,38 @@ jobs:
         with:
           name: javadoc
           path: engine/build/docs/javadoc
+  generateGuideMd:
+    environment: build
+    runs-on: ubuntu-latest
+    name: Generate Guide Markdown
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Install Pandoc
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pandoc
+      - name: Convert HTML guide to GFM markdown
+        run: |
+          mkdir -p docs/guide/md
+          for html_file in docs/guide/*.html; do
+            filename=$(basename "$html_file" .html)
+            pandoc "$html_file" \
+              --from html \
+              --to gfm \
+              -o "docs/guide/md/${filename}.md"
+          done
+      - name: Upload guide markdown artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: guide-md
+          path: docs/guide/md/
+          retention-days: 1
   deployPrep:
     environment: build
     runs-on: ubuntu-latest
     name: Deploy Prep
-    needs: [ lintJs, unitTestsBrowser, checkCacheBusters, buildWasm, runMonteCarloReplicates, generateJavadoc ]
+    needs: [ lintJs, unitTestsBrowser, checkCacheBusters, buildWasm, runMonteCarloReplicates, generateJavadoc, generateGuideMd ]
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -338,6 +365,11 @@ jobs:
       - name: Prepare deploy
         run: bash ./support/prepare_deploy.sh
         working-directory: ./editor
+      - name: Download guide markdown
+        uses: actions/download-artifact@v7
+        with:
+          name: guide-md
+          path: ./docs/guide/md
       - name: Copy guide
         run: cp -r ./docs/guide ./editor/deploy/guide
       - name: Copy humans.txt to deploy root
