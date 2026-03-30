@@ -12,7 +12,9 @@ jobs:
     name: Build Paper
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        run: |
+          git clone https://github.com/SchmidtDSE/kigali-sim.git .
+          git checkout ${{ github.sha }}
       - name: Build JOSS preview
         uses: openjournals/openjournals-draft-action@master
         with:
@@ -29,13 +31,11 @@ jobs:
     name: JS Lint
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
-      - name: Install Node
-        uses: actions/setup-node@v6
+        run: |
+          git clone https://github.com/SchmidtDSE/kigali-sim.git .
+          git checkout ${{ github.sha }}
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 8
+        run: npm install -g pnpm@8
       - name: Install node deps
         run: pnpm install
         working-directory: ./editor
@@ -51,18 +51,15 @@ jobs:
     name: Cache Busters Check
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
-      - name: Install Node
-        uses: actions/setup-node@v6
+        run: |
+          git clone https://github.com/SchmidtDSE/kigali-sim.git .
+          git checkout ${{ github.sha }}
+      - name: Setup Java
+        run: |
+          echo "JAVA_HOME=$JAVA_HOME_21_X64" >> $GITHUB_ENV
+          echo "$JAVA_HOME_21_X64/bin" >> $GITHUB_PATH
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 8
-      - name: Install Java
-        uses: actions/setup-java@v5
-        with:
-          distribution: 'temurin'
-          java-version: '21'
+        run: npm install -g pnpm@8
       - name: Install node deps
         run: pnpm install
         working-directory: ./editor
@@ -87,12 +84,14 @@ jobs:
         working-directory: ./engine
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        working-directory: ${{ github.workspace }}
+        run: |
+          git clone https://github.com/SchmidtDSE/kigali-sim.git .
+          git checkout ${{ github.sha }}
       - name: Setup Java
-        uses: actions/setup-java@v5
-        with:
-          distribution: 'temurin'
-          java-version: '21'
+        run: |
+          echo "JAVA_HOME=$JAVA_HOME_21_X64" >> $GITHUB_ENV
+          echo "$JAVA_HOME_21_X64/bin" >> $GITHUB_PATH
       - name: Build fat jar
         run: ./gradlew fatJar
       - name: Install sshpass
@@ -118,12 +117,14 @@ jobs:
         working-directory: ./engine
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        working-directory: ${{ github.workspace }}
+        run: |
+          git clone https://github.com/SchmidtDSE/kigali-sim.git .
+          git checkout ${{ github.sha }}
       - name: Setup Java
-        uses: actions/setup-java@v5
-        with:
-          distribution: 'temurin'
-          java-version: '21'
+        run: |
+          echo "JAVA_HOME=$JAVA_HOME_21_X64" >> $GITHUB_ENV
+          echo "$JAVA_HOME_21_X64/bin" >> $GITHUB_PATH
       - name: Check grammar
         run: ./gradlew generateGrammarSource
       - name: Check main style
@@ -141,12 +142,14 @@ jobs:
         working-directory: ./engine
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        working-directory: ${{ github.workspace }}
+        run: |
+          git clone https://github.com/SchmidtDSE/kigali-sim.git .
+          git checkout ${{ github.sha }}
       - name: Setup Java
-        uses: actions/setup-java@v5
-        with:
-          distribution: 'temurin'
-          java-version: '21'
+        run: |
+          echo "JAVA_HOME=$JAVA_HOME_21_X64" >> $GITHUB_ENV
+          echo "$JAVA_HOME_21_X64/bin" >> $GITHUB_PATH
       - name: Run tests
         run: ./gradlew test
   runEngineLocal:
@@ -160,12 +163,14 @@ jobs:
         working-directory: ./engine
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        working-directory: ${{ github.workspace }}
+        run: |
+          git clone https://github.com/SchmidtDSE/kigali-sim.git .
+          git checkout ${{ github.sha }}
       - name: Setup Java
-        uses: actions/setup-java@v5
-        with:
-          distribution: 'temurin'
-          java-version: '21'
+        run: |
+          echo "JAVA_HOME=$JAVA_HOME_21_X64" >> $GITHUB_ENV
+          echo "$JAVA_HOME_21_X64/bin" >> $GITHUB_PATH
       - name: Download fatJar
         run: |
           mkdir -p build/libs
@@ -197,12 +202,14 @@ jobs:
         working-directory: ./engine
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        working-directory: ${{ github.workspace }}
+        run: |
+          git clone https://github.com/SchmidtDSE/kigali-sim.git .
+          git checkout ${{ github.sha }}
       - name: Setup Java
-        uses: actions/setup-java@v5
-        with:
-          distribution: 'temurin'
-          java-version: '21'
+        run: |
+          echo "JAVA_HOME=$JAVA_HOME_21_X64" >> $GITHUB_ENV
+          echo "$JAVA_HOME_21_X64/bin" >> $GITHUB_PATH
       - name: Download fatJar
         run: |
           mkdir -p build/libs
@@ -236,12 +243,14 @@ jobs:
         working-directory: ./engine
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        working-directory: ${{ github.workspace }}
+        run: |
+          git clone https://github.com/SchmidtDSE/kigali-sim.git .
+          git checkout ${{ github.sha }}
       - name: Setup Java
-        uses: actions/setup-java@v5
-        with:
-          distribution: 'temurin'
-          java-version: '21'
+        run: |
+          echo "JAVA_HOME=$JAVA_HOME_21_X64" >> $GITHUB_ENV
+          echo "$JAVA_HOME_21_X64/bin" >> $GITHUB_PATH
       - name: Build war
         run: ./gradlew warUnversioned
       - name: Install sshpass
@@ -263,18 +272,15 @@ jobs:
     needs: [ buildWasm ]
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
-      - name: Install Node
-        uses: actions/setup-node@v6
+        run: |
+          git clone https://github.com/SchmidtDSE/kigali-sim.git .
+          git checkout ${{ github.sha }}
+      - name: Setup Java
+        run: |
+          echo "JAVA_HOME=$JAVA_HOME_21_X64" >> $GITHUB_ENV
+          echo "$JAVA_HOME_21_X64/bin" >> $GITHUB_PATH
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 8
-      - name: Install Java
-        uses: actions/setup-java@v5
-        with:
-          distribution: 'temurin'
-          java-version: '21'
+        run: npm install -g pnpm@8
       - name: Download war
         run: |
           curl -o ./KigaliSim.war \
@@ -300,12 +306,14 @@ jobs:
         working-directory: ./engine
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        working-directory: ${{ github.workspace }}
+        run: |
+          git clone https://github.com/SchmidtDSE/kigali-sim.git .
+          git checkout ${{ github.sha }}
       - name: Setup Java
-        uses: actions/setup-java@v5
-        with:
-          distribution: 'temurin'
-          java-version: '21'
+        run: |
+          echo "JAVA_HOME=$JAVA_HOME_21_X64" >> $GITHUB_ENV
+          echo "$JAVA_HOME_21_X64/bin" >> $GITHUB_PATH
       - name: Generate Javadoc
         run: ./gradlew javadoc
       - name: Install sshpass
@@ -327,18 +335,15 @@ jobs:
     needs: [ lintJs, unitTestsBrowser, checkCacheBusters, buildWasm, runMonteCarloReplicates, generateJavadoc ]
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
-      - name: Install Node
-        uses: actions/setup-node@v6
+        run: |
+          git clone https://github.com/SchmidtDSE/kigali-sim.git .
+          git checkout ${{ github.sha }}
+      - name: Setup Java
+        run: |
+          echo "JAVA_HOME=$JAVA_HOME_21_X64" >> $GITHUB_ENV
+          echo "$JAVA_HOME_21_X64/bin" >> $GITHUB_PATH
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 8
-      - name: Install Java
-        uses: actions/setup-java@v5
-        with:
-          distribution: 'temurin'
-          java-version: '21'
+        run: npm install -g pnpm@8
       - name: Install SSH client and sshpass
         run: |
           sudo apt-get update
@@ -466,7 +471,9 @@ jobs:
     needs: [deploy]
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        run: |
+          git clone https://github.com/SchmidtDSE/kigali-sim.git .
+          git checkout ${{ github.sha }}
       - name: Build Docker image
         run: docker build -t kigalisim .
       - name: Run example QTA file via Docker
@@ -495,12 +502,13 @@ jobs:
       packages: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        run: |
+          git clone https://github.com/SchmidtDSE/kigali-sim.git .
+          git checkout ${{ github.sha }}
       - name: Setup Java
-        uses: actions/setup-java@v5
-        with:
-          distribution: 'temurin'
-          java-version: '21'
+        run: |
+          echo "JAVA_HOME=$JAVA_HOME_21_X64" >> $GITHUB_ENV
+          echo "$JAVA_HOME_21_X64/bin" >> $GITHUB_PATH
       - name: Publish
         env:
           USERNAME: ${{ github.actor }}
