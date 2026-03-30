@@ -99,10 +99,10 @@ jobs:
         run: |
           sshpass -e ssh -o StrictHostKeyChecking=no \
             ${{ secrets.BUILDSFTPUSER }}@${{ secrets.BUILDSFTPHOST }} \
-            "mkdir -p ./artifacts/${{ github.sha }}/fatJar"
+            "mkdir -p ./build.kigalisim.org/artifacts/${{ github.sha }}/fatJar"
           sshpass -e scp -o StrictHostKeyChecking=no \
             build/libs/kigalisim-fat.jar \
-            ${{ secrets.BUILDSFTPUSER }}@${{ secrets.BUILDSFTPHOST }}:./artifacts/${{ github.sha }}/fatJar/kigalisim-fat.jar
+            ${{ secrets.BUILDSFTPUSER }}@${{ secrets.BUILDSFTPHOST }}:./build.kigalisim.org/artifacts/${{ github.sha }}/fatJar/kigalisim-fat.jar
   checkEngine:
     needs: buildEngine
     runs-on: ubuntu-latest
@@ -254,10 +254,10 @@ jobs:
         run: |
           sshpass -e ssh -o StrictHostKeyChecking=no \
             ${{ secrets.BUILDSFTPUSER }}@${{ secrets.BUILDSFTPHOST }} \
-            "mkdir -p ./artifacts/${{ github.sha }}/war"
+            "mkdir -p ./build.kigalisim.org/artifacts/${{ github.sha }}/war"
           sshpass -e scp -o StrictHostKeyChecking=no \
             build/libs/KigaliSim.war \
-            ${{ secrets.BUILDSFTPUSER }}@${{ secrets.BUILDSFTPHOST }}:./artifacts/${{ github.sha }}/war/KigaliSim.war
+            ${{ secrets.BUILDSFTPUSER }}@${{ secrets.BUILDSFTPHOST }}:./build.kigalisim.org/artifacts/${{ github.sha }}/war/KigaliSim.war
   unitTestsBrowser:
     runs-on: ubuntu-latest
     name: Web Tests
@@ -316,10 +316,10 @@ jobs:
         run: |
           sshpass -e ssh -o StrictHostKeyChecking=no \
             ${{ secrets.BUILDSFTPUSER }}@${{ secrets.BUILDSFTPHOST }} \
-            "mkdir -p ./artifacts/${{ github.sha }}/javadoc"
+            "mkdir -p ./build.kigalisim.org/artifacts/${{ github.sha }}/javadoc"
           sshpass -e scp -r -o StrictHostKeyChecking=no \
             build/docs/javadoc/. \
-            ${{ secrets.BUILDSFTPUSER }}@${{ secrets.BUILDSFTPHOST }}:./artifacts/${{ github.sha }}/javadoc/
+            ${{ secrets.BUILDSFTPUSER }}@${{ secrets.BUILDSFTPHOST }}:./build.kigalisim.org/artifacts/${{ github.sha }}/javadoc/
   deployPrep:
     environment: build
     runs-on: ubuntu-latest
@@ -397,10 +397,10 @@ jobs:
         run: |
           sshpass -e ssh -o StrictHostKeyChecking=no \
             ${{ secrets.BUILDSFTPUSER }}@${{ secrets.BUILDSFTPHOST }} \
-            "mkdir -p ./artifacts/${{ github.sha }}/deploy-files"
+            "mkdir -p ./build.kigalisim.org/artifacts/${{ github.sha }}/deploy-files"
           sshpass -e scp -r -o StrictHostKeyChecking=no \
             ./editor/deploy/. \
-            ${{ secrets.BUILDSFTPUSER }}@${{ secrets.BUILDSFTPHOST }}:./artifacts/${{ github.sha }}/deploy-files/
+            ${{ secrets.BUILDSFTPUSER }}@${{ secrets.BUILDSFTPHOST }}:./build.kigalisim.org/artifacts/${{ github.sha }}/deploy-files/
   deployPreview:
     environment: deploy
     if: github.ref == 'refs/heads/main'

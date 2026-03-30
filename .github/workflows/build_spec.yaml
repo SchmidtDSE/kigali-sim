@@ -56,10 +56,10 @@ jobs:
         run: |
           sshpass -e ssh -o StrictHostKeyChecking=no \
             ${{ secrets.BUILDSFTPUSER }}@${{ secrets.BUILDSFTPHOST }} \
-            "mkdir -p ./artifacts/${{ github.sha }}/qubectalk-spec-pdf"
+            "mkdir -p ./build.kigalisim.org/artifacts/${{ github.sha }}/qubectalk-spec-pdf"
           sshpass -e scp -o StrictHostKeyChecking=no \
             docs/spec/qubectalk.pdf \
-            ${{ secrets.BUILDSFTPUSER }}@${{ secrets.BUILDSFTPHOST }}:./artifacts/${{ github.sha }}/qubectalk-spec-pdf/qubectalk.pdf
+            ${{ secrets.BUILDSFTPUSER }}@${{ secrets.BUILDSFTPHOST }}:./build.kigalisim.org/artifacts/${{ github.sha }}/qubectalk-spec-pdf/qubectalk.pdf
 
   deploySpecPDF:
     environment: deploy
