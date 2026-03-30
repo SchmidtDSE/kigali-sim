@@ -7,7 +7,6 @@ permissions:
 
 jobs:
   paper:
-    environment: build
     runs-on: ubuntu-latest
     name: Build Paper
     steps:
@@ -26,7 +25,6 @@ jobs:
           name: paper
           path: paper/paper.pdf
   lintJs:
-    environment: build
     runs-on: ubuntu-latest
     name: JS Lint
     steps:
@@ -46,7 +44,6 @@ jobs:
         run: pnpm exec eslint ./test/*.js
         working-directory: ./editor
   checkCacheBusters:
-    environment: build
     runs-on: ubuntu-latest
     name: Cache Busters Check
     steps:
@@ -108,7 +105,6 @@ jobs:
             ${{ secrets.BUILDSFTPUSER }}@${{ secrets.BUILDSFTPHOST }}:./artifacts/${{ github.sha }}/fatJar/kigalisim-fat.jar
   checkEngine:
     needs: buildEngine
-    environment: build
     runs-on: ubuntu-latest
     name: Static Engine Checks
     defaults:
@@ -133,7 +129,6 @@ jobs:
         run: ./gradlew checkstyleTest
   testEngine:
     needs: buildEngine
-    environment: build
     runs-on: ubuntu-latest
     name: Engine Tests
     defaults:
@@ -154,7 +149,6 @@ jobs:
         run: ./gradlew test
   runEngineLocal:
     needs: buildEngine
-    environment: build
     runs-on: ubuntu-latest
     name: Run Engine Locally
     defaults:
@@ -193,7 +187,6 @@ jobs:
           cat /tmp/minimal_interpreter.csv
   runMonteCarloReplicates:
     needs: [ checkEngine, testEngine, runEngineLocal ]
-    environment: build
     runs-on: ubuntu-latest
     name: Run Monte Carlo Replicates Test
     defaults:
@@ -266,7 +259,6 @@ jobs:
             build/libs/KigaliSim.war \
             ${{ secrets.BUILDSFTPUSER }}@${{ secrets.BUILDSFTPHOST }}:./artifacts/${{ github.sha }}/war/KigaliSim.war
   unitTestsBrowser:
-    environment: build
     runs-on: ubuntu-latest
     name: Web Tests
     needs: [ buildWasm ]
@@ -429,7 +421,7 @@ jobs:
           mkdir -p ./deploy
           wget -r -nH --cut-dirs=3 --no-parent -P ./deploy \
             https://build.kigalisim.org/artifacts/${{ github.sha }}/deploy-files/
-      - name: Upload files via SCP with password
+      - name: Upload files via SCP
         env:
           SSHPASS: ${{ secrets.SFTPPASSWORD }}
         run: |
@@ -456,7 +448,7 @@ jobs:
           mkdir -p ./deploy
           wget -r -nH --cut-dirs=3 --no-parent -P ./deploy \
             https://build.kigalisim.org/artifacts/${{ github.sha }}/deploy-files/
-      - name: Upload files via SCP with password
+      - name: Upload files via SCP
         env:
           SSHPASS: ${{ secrets.SFTPPASSWORD }}
         run: |
@@ -464,7 +456,6 @@ jobs:
             ./deploy/* \
             ${{ secrets.SFTPUSER }}@${{ secrets.SFTPHOST }}:./kigalisim.org/
   runEngineDockerSanity:
-    environment: build
     if: github.ref == 'refs/heads/deploy'
     runs-on: ubuntu-latest
     name: Docker Prod Check
