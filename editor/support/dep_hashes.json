@@ -1,0 +1,96 @@
+{
+  "generated": "2026-03-30",
+  "note": "SHA256 hashes for third-party dependencies downloaded by install_deps.sh. To verify: sha256sum third_party/*.js third_party/*.css test/qunit.* and compare against these values.",
+  "files": {
+    "test/qunit.css": {
+      "url": "https://cdnjs.cloudflare.com/ajax/libs/qunit/2.22.0/qunit.min.css",
+      "version": "2.22.0",
+      "sha256": "f368b5ef8eba815465b3dab13eadc2aaf8b3e69aec6430bb83d2a18b6d507c02"
+    },
+    "test/qunit.min.js": {
+      "url": "https://cdnjs.cloudflare.com/ajax/libs/qunit/2.22.0/qunit.min.js",
+      "version": "2.22.0",
+      "sha256": "7cfd8ad2c052b2d01cbe7be43210f0f1f5872b2a1223c99fc7b1cee63b024ff0"
+    },
+    "third_party/d3.min.js": {
+      "url": "https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js",
+      "version": "7.9.0",
+      "sha256": "f2094bbf6141b359722c4fe454eb6c4b0f0e42cc10cc7af921fc158fceb86539"
+    },
+    "third_party/ace.min.js": {
+      "url": "https://cdnjs.cloudflare.com/ajax/libs/ace/1.36.2/ace.min.js",
+      "version": "1.36.2",
+      "sha256": "b24e2bac09c1f844dfc767888fec9ba528358862ca2d3141dd68518f7177b2a8"
+    },
+    "third_party/theme-textmate.js": {
+      "url": "https://cdnjs.cloudflare.com/ajax/libs/ace/1.36.2/theme-textmate.min.js",
+      "version": "1.36.2",
+      "sha256": "20ed102ed1b9ceaf72e703fa2687db559108701129a31679d62eeadb77ba093a"
+    },
+    "third_party/ext-searchbox.js": {
+      "url": "https://cdnjs.cloudflare.com/ajax/libs/ace/1.36.2/ext-searchbox.js",
+      "version": "1.36.2",
+      "sha256": "4c4fe745e7f7354e82ed5e7440564f0e4cb736d4e847cc53aadf3b336e54b593"
+    },
+    "third_party/ext-options.js": {
+      "url": "https://cdnjs.cloudflare.com/ajax/libs/ace/1.36.2/ext-options.js",
+      "version": "1.36.2",
+      "sha256": "7f42fa9e75ae5a8a34416648cd574974b842d603eef9e3397db4173bcbfbdf08"
+    },
+    "third_party/ext-prompt.js": {
+      "url": "https://cdnjs.cloudflare.com/ajax/libs/ace/1.36.2/ext-prompt.js",
+      "version": "1.36.2",
+      "sha256": "40accebb9c6dd11c6d1e4409f2b9b6a0009565647e1ebfd915bbf73f96a8cc67"
+    },
+    "third_party/ext-language_tools.js": {
+      "url": "https://cdnjs.cloudflare.com/ajax/libs/ace/1.36.2/ext-language_tools.js",
+      "version": "1.36.2",
+      "sha256": "f3f59632b6c897f8f6fe2803b730ec42758aa2e89aa314f388031c57eb98b14c"
+    },
+    "third_party/chart.min.js": {
+      "url": "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.0/chart.min.js",
+      "version": "4.5.0",
+      "sha256": "bf8374840088264cb8b56c4abbe74694d63777c7dba5153c0b855855027c21b8"
+    },
+    "third_party/tabby-ui.min.css": {
+      "url": "https://cdnjs.cloudflare.com/ajax/libs/tabby/12.0.3/css/tabby-ui.min.css",
+      "version": "12.0.3",
+      "sha256": "4048f6bedd8ee0d494fb9c84d14167272d45484223ca37a6371ecadf48538f2c"
+    },
+    "third_party/tabby.min.js": {
+      "url": "https://cdnjs.cloudflare.com/ajax/libs/tabby/12.0.3/js/tabby.min.js",
+      "version": "12.0.3",
+      "sha256": "6d31fd6da9a6187884f054baf823f48f9938c10ac8ab0c500828e2f3df5a1eaa"
+    },
+    "third_party/prism-tomorrow.min.css": {
+      "url": "https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/themes/prism-tomorrow.min.css",
+      "version": "1.30.0",
+      "sha256": "1b15fe2971998a048aebb60f26f6eed76122071db9ef3b995abd003224f52a98"
+    },
+    "third_party/prism-core.min.js": {
+      "url": "https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/components/prism-core.min.js",
+      "version": "1.30.0",
+      "sha256": "6caad316dd991f24f8004e0b9c19c055cb5829ff65e973fbee406f96d81b8e7e"
+    },
+    "third_party/prism-autoloader.min.js": {
+      "url": "https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/plugins/autoloader/prism-autoloader.min.js",
+      "version": "1.30.0",
+      "sha256": "0233342795c86e2079f7406bce72c481918b9ce416aedeb6b37044abae50fc8d"
+    },
+    "third_party/popper.min.js": {
+      "url": "https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.11.8/umd/popper.min.js",
+      "version": "2.11.8",
+      "sha256": "c212f4b505a86352aed62b24a8f16f999f821ecbe6456c7f3c8a04bc87968782"
+    },
+    "third_party/tippy-bundle.umd.min.js": {
+      "url": "https://cdnjs.cloudflare.com/ajax/libs/tippy.js/6.3.7/tippy-bundle.umd.min.js",
+      "version": "6.3.7",
+      "sha256": "3f0fe70eb26ccf28f6887a192e29d38dd7ef7c2f079a73304ad42ddc7bed37de"
+    },
+    "third_party/papaparse.min.js": {
+      "url": "https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js",
+      "version": "5.4.1",
+      "sha256": "b8e870c5d2b29772f10c9fa9a693c8b896aac8540ed6701e3cc6304c683febdb"
+    }
+  }
+}
