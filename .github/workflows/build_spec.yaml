@@ -9,7 +9,6 @@ on:
       - '.github/workflows/build_spec.yaml'
 
 permissions:
-  actions: read
   contents: read
 
 jobs:
@@ -46,12 +45,19 @@ jobs:
             --number-sections \
             --toc
 
-      - name: Upload PDF artifact
-        uses: actions/upload-artifact@v6
-        with:
-          name: qubectalk-spec-pdf
-          path: docs/spec/qubectalk.pdf
-          retention-days: 90
+      - name: Install sshpass
+        run: sudo apt-get install -y sshpass
+
+      - name: Upload spec PDF to SFTP
+        env:
+          SSHPASS: ${{ secrets.BUILDSFTPPASSWORD }}
+        run: |
+          sshpass -e ssh -o StrictHostKeyChecking=no \
+            ${{ secrets.BUILDSFTPUSER }}@${{ secrets.BUILDSFTPHOST }} \
+            "mkdir -p ./artifacts/${{ github.sha }}/qubectalk-spec-pdf"
+          sshpass -e scp -o StrictHostKeyChecking=no \
+            docs/spec/qubectalk.pdf \
+            ${{ secrets.BUILDSFTPUSER }}@${{ secrets.BUILDSFTPHOST }}:./artifacts/${{ github.sha }}/qubectalk-spec-pdf/qubectalk.pdf
 
   deploySpecPDF:
     environment: deploy
@@ -60,12 +66,6 @@ jobs:
     name: Deploy Specification PDF
     needs: [buildSpecPDF]
     steps:
-      - name: Download PDF artifact
-        uses: actions/download-artifact@v7
-        with:
-          name: qubectalk-spec-pdf
-          path: ./pdf
-
       - name: Install SSH client and sshpass
         run: |
           sudo apt-get update
@@ -75,6 +75,12 @@ jobs:
         run: |
           mkdir -p ~/.ssh
           ssh-keyscan -H -p 22 ${{ secrets.SFTPHOST }} >> ~/.ssh/known_hosts
+
+      - name: Download spec PDF
+        run: |
+          mkdir -p ./pdf
+          curl -o ./pdf/qubectalk.pdf \
+            https://build.kigalisim.org/artifacts/${{ github.sha }}/qubectalk-spec-pdf/qubectalk.pdf
 
       - name: Upload PDF via SCP with password
         env:
