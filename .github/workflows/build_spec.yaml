@@ -18,7 +18,9 @@ jobs:
     name: Build QubecTalk Specification PDF
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        run: |
+          git clone https://github.com/SchmidtDSE/kigali-sim.git .
+          git checkout ${{ github.sha }}
 
       - name: Install Pandoc
         run: |
