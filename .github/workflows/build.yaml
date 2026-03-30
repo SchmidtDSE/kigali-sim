@@ -320,6 +320,14 @@ jobs:
           sshpass -e scp -r -o StrictHostKeyChecking=no \
             build/docs/javadoc/. \
             ${{ secrets.BUILDSFTPUSER }}@${{ secrets.BUILDSFTPHOST }}:./build.kigalisim.org/artifacts/${{ github.sha }}/javadoc/
+      - name: Upload javadoc zip to SFTP
+        env:
+          SSHPASS: ${{ secrets.BUILDSFTPPASSWORD }}
+        run: |
+          cd build/docs/javadoc && zip -r /tmp/javadoc.zip .
+          sshpass -e scp -o StrictHostKeyChecking=no \
+            /tmp/javadoc.zip \
+            ${{ secrets.BUILDSFTPUSER }}@${{ secrets.BUILDSFTPHOST }}:./build.kigalisim.org/artifacts/${{ github.sha }}/javadoc.zip
   deployPrep:
     environment: build
     runs-on: ubuntu-latest
@@ -363,9 +371,10 @@ jobs:
         run: cp ./humans.txt ./editor/deploy/humans.txt
       - name: Download Javadoc
         run: |
+          curl -o /tmp/javadoc.zip \
+            https://build.kigalisim.org/artifacts/${{ github.sha }}/javadoc.zip
           mkdir -p ./editor/deploy/guide/javadoc
-          wget -r -nH --cut-dirs=3 --no-parent -P ./editor/deploy/guide/javadoc \
-            https://build.kigalisim.org/artifacts/${{ github.sha }}/javadoc/
+          unzip -q /tmp/javadoc.zip -d ./editor/deploy/guide/javadoc/
       - name: Copy case study QTA file to guide
         run: cp ./examples/case_study.qta ./editor/deploy/guide/case_study.qta
       - name: Copy tutorial QTA files to guide
@@ -395,12 +404,13 @@ jobs:
         env:
           SSHPASS: ${{ secrets.BUILDSFTPPASSWORD }}
         run: |
+          cd ./editor/deploy && zip -r /tmp/deploy-files.zip .
           sshpass -e ssh -o StrictHostKeyChecking=no \
             ${{ secrets.BUILDSFTPUSER }}@${{ secrets.BUILDSFTPHOST }} \
-            "mkdir -p ./build.kigalisim.org/artifacts/${{ github.sha }}/deploy-files"
-          sshpass -e scp -r -o StrictHostKeyChecking=no \
-            ./editor/deploy/. \
-            ${{ secrets.BUILDSFTPUSER }}@${{ secrets.BUILDSFTPHOST }}:./build.kigalisim.org/artifacts/${{ github.sha }}/deploy-files/
+            "mkdir -p ./build.kigalisim.org/artifacts/${{ github.sha }}"
+          sshpass -e scp -o StrictHostKeyChecking=no \
+            /tmp/deploy-files.zip \
+            ${{ secrets.BUILDSFTPUSER }}@${{ secrets.BUILDSFTPHOST }}:./build.kigalisim.org/artifacts/${{ github.sha }}/deploy-files.zip
   deployPreview:
     environment: deploy
     if: github.ref == 'refs/heads/main'
@@ -418,9 +428,10 @@ jobs:
           ssh-keyscan -H -p 22 ${{ secrets.SFTPHOST }} >> ~/.ssh/known_hosts
       - name: Download deploy-files
         run: |
+          curl -o /tmp/deploy-files.zip \
+            https://build.kigalisim.org/artifacts/${{ github.sha }}/deploy-files.zip
           mkdir -p ./deploy
-          wget -r -nH --cut-dirs=3 --no-parent -P ./deploy \
-            https://build.kigalisim.org/artifacts/${{ github.sha }}/deploy-files/
+          unzip -q /tmp/deploy-files.zip -d ./deploy/
       - name: Upload files via SCP
         env:
           SSHPASS: ${{ secrets.SFTPPASSWORD }}
@@ -445,9 +456,10 @@ jobs:
           ssh-keyscan -H -p 22 ${{ secrets.SFTPHOST }} >> ~/.ssh/known_hosts
       - name: Download deploy-files
         run: |
+          curl -o /tmp/deploy-files.zip \
+            https://build.kigalisim.org/artifacts/${{ github.sha }}/deploy-files.zip
           mkdir -p ./deploy
-          wget -r -nH --cut-dirs=3 --no-parent -P ./deploy \
-            https://build.kigalisim.org/artifacts/${{ github.sha }}/deploy-files/
+          unzip -q /tmp/deploy-files.zip -d ./deploy/
       - name: Upload files via SCP
         env:
           SSHPASS: ${{ secrets.SFTPPASSWORD }}
