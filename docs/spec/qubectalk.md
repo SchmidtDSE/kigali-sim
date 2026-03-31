@@ -1173,3 +1173,4 @@ For comprehensive documentation and examples:
 - **JAR Download**: https://kigalisim.org/kigalisim-fat.jar - Command-line interface
 - **LLM Integration**: https://kigalisim.org/llms-full.txt - AI assistant documentation
 - **JavaDoc**: https://kigalisim.org/guide/javadoc/ - Engine API documentation
+- **JSDoc**: https://kigalisim.org/guide/jsdoc/ - Editor API documentation
