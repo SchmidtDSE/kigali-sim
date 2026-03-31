@@ -142,6 +142,8 @@ VARIABLES_: 'variables';
 
 ACROSS_: 'across';
 
+ALL_: 'all';
+
 AS_: 'as';
 
 AT_: 'at';
@@ -376,6 +378,7 @@ during: (EACH_ YEAR_)? DURING_ YEAR_ target=expression  # duringSingleYear
   | (EACH_ YEAR_)? DURING_ granularity=temporalUnit lower=expression TO_ ONWARDS_  # duringWithMin
   | (EACH_ YEAR_)? DURING_ granularity=temporalUnit BEGINNING_ TO_ upper=expression  # duringWithMax
   | (EACH_ YEAR_)? DURING_ granularity=temporalUnit BEGINNING_ TO_ ONWARDS_  # duringAll
+  | IN_ ALL_ YEARS_  # inAllYears
   ;
 
 /**
