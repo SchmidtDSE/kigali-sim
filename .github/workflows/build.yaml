@@ -328,11 +328,47 @@ jobs:
           sshpass -e scp -o StrictHostKeyChecking=no \
             /tmp/javadoc.zip \
             ${{ secrets.BUILDSFTPUSER }}@${{ secrets.BUILDSFTPHOST }}:./build.kigalisim.org/artifacts/${{ github.sha }}/javadoc.zip
+  generateGuideMd:
+    environment: build
+    runs-on: ubuntu-latest
+    name: Generate Guide Markdown
+    steps:
+      - name: Checkout
+        run: |
+          git clone https://github.com/SchmidtDSE/kigali-sim.git .
+          git checkout ${{ github.sha }}
+      - name: Install Pandoc
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pandoc
+      - name: Convert HTML guide to GFM markdown
+        run: |
+          mkdir -p docs/guide/md
+          for html_file in docs/guide/*.html; do
+            filename=$(basename "$html_file" .html)
+            pandoc "$html_file" \
+              --from html \
+              --to gfm \
+              -o "docs/guide/md/${filename}.md"
+          done
+      - name: Install sshpass
+        run: sudo apt-get install -y sshpass
+      - name: Upload guide markdown to SFTP
+        env:
+          SSHPASS: ${{ secrets.BUILDSFTPPASSWORD }}
+        run: |
+          cd docs/guide/md && zip -r /tmp/guide-md.zip .
+          sshpass -e ssh -o StrictHostKeyChecking=no \
+            ${{ secrets.BUILDSFTPUSER }}@${{ secrets.BUILDSFTPHOST }} \
+            "mkdir -p ./build.kigalisim.org/artifacts/${{ github.sha }}"
+          sshpass -e scp -o StrictHostKeyChecking=no \
+            /tmp/guide-md.zip \
+            ${{ secrets.BUILDSFTPUSER }}@${{ secrets.BUILDSFTPHOST }}:./build.kigalisim.org/artifacts/${{ github.sha }}/guide-md.zip
   deployPrep:
     environment: build
     runs-on: ubuntu-latest
     name: Deploy Prep
-    needs: [ lintJs, unitTestsBrowser, checkCacheBusters, buildWasm, runMonteCarloReplicates, generateJavadoc ]
+    needs: [ lintJs, unitTestsBrowser, checkCacheBusters, buildWasm, runMonteCarloReplicates, generateJavadoc, generateGuideMd ]
     steps:
       - name: Checkout
         run: |
@@ -365,6 +401,12 @@ jobs:
       - name: Prepare deploy
         run: bash ./support/prepare_deploy.sh
         working-directory: ./editor
+      - name: Download guide markdown
+        run: |
+          curl -o /tmp/guide-md.zip \
+            https://build.kigalisim.org/artifacts/${{ github.sha }}/guide-md.zip
+          mkdir -p ./docs/guide/md
+          unzip -q /tmp/guide-md.zip -d ./docs/guide/md/
       - name: Copy guide
         run: cp -r ./docs/guide ./editor/deploy/guide
       - name: Copy humans.txt to deploy root
