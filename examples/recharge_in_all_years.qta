@@ -1,0 +1,28 @@
+start about
+  # Name: "Recharge In All Years Syntax Test"
+  # Description: "Validates that 'in all years' sugar produces the same result as no duration clause"
+  # Author: "Test Suite"
+end about
+
+start default
+
+  define application "test"
+
+    uses substance "test"
+      enable domestic
+      set domestic to 100 mt
+      initial charge with 1 kg / unit for domestic
+      recharge 10% with 1 kg / unit in all years
+      equals 5 tCO2e / mt
+    end substance
+
+  end application
+
+end default
+
+
+start simulations
+
+  simulate "business as usual" from years 1 to 2
+
+end simulations
