@@ -83,7 +83,7 @@ java -jar kigalisim-fat.jar run -o output.csv script.qta
 
 Here, you may replace `script.qta` with the path to your QubecTalk script and `output.csv` with the path to where you would like to write results.
 
-Note that this jar is also posted to GitHub Maven as `org.kigalisim.engine`. See [JavaDoc](https://kigalisim.org/guide/javadoc).
+Note that this jar is also posted to GitHub Maven as `org.kigalisim.engine`. See [JavaDoc](https://kigalisim.org/guide/javadoc) and [JSDoc](https://kigalisim.org/guide/jsdoc).
 
 ### Docker (CLI)
 For those who prefer Docker, see `Dockerfile` which installs Java ([Temurin](https://adoptium.net/temurin/releases)) and can be used to run simulations from the command line. For example, the following builds the image and runs `script.qta` with output to `output.csv` through the mounted `working` directory:
@@ -321,6 +321,7 @@ We thank the following Open Source libraries and resources:
 - [Chart.js](https://www.chartjs.org/) under [MIT](https://github.com/chartjs/Chart.js/blob/master/LICENSE.md).
 - [D3](https://d3js.org/) under [ISC](https://github.com/d3/d3/blob/main/LICENSE).
 - [ESLint]((https://eslint.org/)) under [MIT](https://github.com/eslint/eslint/blob/main/LICENSE).
+- [JSDoc](https://jsdoc.app/) under [Apache-2.0](https://github.com/jsdoc/jsdoc/blob/main/LICENSE).
 - [Papa Parse](https://www.papaparse.com/) under [MIT](https://github.com/mholt/PapaParse/blob/master/LICENSE).
 - [Popper](https://popper.js.org/) under [MIT](https://github.com/floating-ui/floating-ui/blob/master/LICENSE).
 - [Prism.js](https://prismjs.com/) under [MIT](https://github.com/PrismJS/prism/blob/v2/LICENSE).
