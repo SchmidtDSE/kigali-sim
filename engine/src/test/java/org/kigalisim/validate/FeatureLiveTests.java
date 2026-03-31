@@ -472,6 +472,31 @@ public class FeatureLiveTests {
   }
 
   /**
+   * Test variable_local.qta produces expected values.
+   */
+  @Test
+  public void testLocalVariable() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/variable_local.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run the scenario using KigaliSimFacade
+    String scenarioName = "business as usual";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+    EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
+    assertNotNull(result, "Should have result for test/test in year 1");
+
+    // Check consumption value - salesVolume is 50 mt, equals 5 tCO2e/mt, so 250 tCO2e
+    assertEquals(250.0, result.getConsumption().getValue().doubleValue(), 0.0001,
+        "Consumption should be 250 tCO2e");
+    assertEquals("tCO2e", result.getConsumption().getUnits(),
+        "Consumption units should be tCO2e");
+  }
+
+  /**
    * Test trials.qta produces expected values.
    */
   @Test
