@@ -2,6 +2,7 @@
 
 # Ensure dependencies are ready
 bash support/install_deps.sh
+python3 support/validate_deps.py
 bash support/update_wasm.sh
 
 # Create language directory if it doesn't exist
