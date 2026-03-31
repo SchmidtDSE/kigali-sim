@@ -22,12 +22,12 @@ fi
 [ ! -e third_party/ext-options.js ] && wget https://cdnjs.cloudflare.com/ajax/libs/ace/1.36.2/ext-options.js -O third_party/ext-options.js
 [ ! -e third_party/ext-prompt.js ] && wget https://cdnjs.cloudflare.com/ajax/libs/ace/1.36.2/ext-prompt.js -O third_party/ext-prompt.js
 [ ! -e third_party/ext-language_tools.js ] && wget https://cdnjs.cloudflare.com/ajax/libs/ace/1.36.2/ext-language_tools.js -O third_party/ext-language_tools.js
-[ ! -e third_party/chart.min.js ] && wget https://cdn.jsdelivr.net/npm/chart.js -O third_party/chart.min.js
-[ ! -e third_party/tabby-ui.min.css ] && wget https://cdn.jsdelivr.net/gh/cferdinandi/tabby@12.0.3/dist/css/tabby-ui.min.css -O third_party/tabby-ui.min.css
-[ ! -e third_party/tabby.min.js ] && wget https://cdn.jsdelivr.net/gh/cferdinandi/tabby@12.0.3/dist/js/tabby.min.js -O third_party/tabby.min.js
+[ ! -e third_party/chart.min.js ] && wget https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.0/chart.min.js -O third_party/chart.min.js
+[ ! -e third_party/tabby-ui.min.css ] && wget https://cdnjs.cloudflare.com/ajax/libs/tabby/12.0.3/css/tabby-ui.min.css -O third_party/tabby-ui.min.css
+[ ! -e third_party/tabby.min.js ] && wget https://cdnjs.cloudflare.com/ajax/libs/tabby/12.0.3/js/tabby.min.js -O third_party/tabby.min.js
 [ ! -e third_party/prism-tomorrow.min.css ] && wget https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/themes/prism-tomorrow.min.css -O third_party/prism-tomorrow.min.css
 [ ! -e third_party/prism-core.min.js ] && wget https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/components/prism-core.min.js -O third_party/prism-core.min.js
 [ ! -e third_party/prism-autoloader.min.js ] && wget https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/plugins/autoloader/prism-autoloader.min.js -O third_party/prism-autoloader.min.js
-[ ! -e third_party/popper.min.js ] && wget https://unpkg.com/@popperjs/core@2.11.8/dist/umd/popper.min.js -O third_party/popper.min.js
-[ ! -e third_party/tippy-bundle.umd.min.js ] && wget https://unpkg.com/tippy.js@6.3.7/dist/tippy-bundle.umd.min.js -O third_party/tippy-bundle.umd.min.js
+[ ! -e third_party/popper.min.js ] && wget https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.11.8/umd/popper.min.js -O third_party/popper.min.js
+[ ! -e third_party/tippy-bundle.umd.min.js ] && wget https://cdnjs.cloudflare.com/ajax/libs/tippy.js/6.3.7/tippy-bundle.umd.min.js -O third_party/tippy-bundle.umd.min.js
 [ ! -e third_party/papaparse.min.js ] && wget https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js -O third_party/papaparse.min.js
