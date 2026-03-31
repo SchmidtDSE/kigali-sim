@@ -7,35 +7,33 @@ permissions:
 
 jobs:
   paper:
-    environment: build
     runs-on: ubuntu-latest
     name: Build Paper
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        run: |
+          git clone https://github.com/SchmidtDSE/kigali-sim.git .
+          git checkout ${{ github.sha }}
       - name: Build JOSS preview
-        uses: openjournals/openjournals-draft-action@master
+        uses: openjournals/openjournals-draft-action@85a18372e48f551d8af9ddb7a747de685fbbb01c  # v1.0 (2024-07-17)
         with:
           journal: joss
           paper-path: paper/paper.md
       - name: Upload JOSS preview
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f  # v6 (2025-12-12)
         with:
           name: paper
           path: paper/paper.pdf
   lintJs:
-    environment: build
     runs-on: ubuntu-latest
     name: JS Lint
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
-      - name: Install Node
-        uses: actions/setup-node@v6
+        run: |
+          git clone https://github.com/SchmidtDSE/kigali-sim.git .
+          git checkout ${{ github.sha }}
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 8
+        run: npm install -g pnpm@8
       - name: Install node deps
         run: pnpm install
         working-directory: ./editor
@@ -46,23 +44,19 @@ jobs:
         run: pnpm exec eslint ./test/*.js
         working-directory: ./editor
   checkCacheBusters:
-    environment: build
     runs-on: ubuntu-latest
     name: Cache Busters Check
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
-      - name: Install Node
-        uses: actions/setup-node@v6
+        run: |
+          git clone https://github.com/SchmidtDSE/kigali-sim.git .
+          git checkout ${{ github.sha }}
+      - name: Setup Java
+        run: |
+          echo "JAVA_HOME=$JAVA_HOME_21_X64" >> $GITHUB_ENV
+          echo "$JAVA_HOME_21_X64/bin" >> $GITHUB_PATH
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 8
-      - name: Install Java
-        uses: actions/setup-java@v5
-        with:
-          distribution: 'temurin'
-          java-version: '21'
+        run: npm install -g pnpm@8
       - name: Install node deps
         run: pnpm install
         working-directory: ./editor
@@ -78,7 +72,7 @@ jobs:
         run: bash ./support/update_version.sh
         working-directory: ./editor
   buildEngine:
-    environment: Build
+    environment: build
     runs-on: ubuntu-latest
     name: JVM Engine Build
     defaults:
@@ -87,22 +81,30 @@ jobs:
         working-directory: ./engine
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        working-directory: ${{ github.workspace }}
+        run: |
+          git clone https://github.com/SchmidtDSE/kigali-sim.git .
+          git checkout ${{ github.sha }}
       - name: Setup Java
-        uses: actions/setup-java@v5
-        with:
-          distribution: 'temurin'
-          java-version: '21'
+        run: |
+          echo "JAVA_HOME=$JAVA_HOME_21_X64" >> $GITHUB_ENV
+          echo "$JAVA_HOME_21_X64/bin" >> $GITHUB_PATH
       - name: Build fat jar
         run: ./gradlew fatJar
-      - name: Upload jar
-        uses: actions/upload-artifact@v6
-        with:
-          name: fatJar
-          path: engine/build/libs/kigalisim-fat.jar
+      - name: Install sshpass
+        run: sudo apt-get install -y sshpass
+      - name: Upload fatJar to SFTP
+        env:
+          SSHPASS: ${{ secrets.BUILDSFTPPASSWORD }}
+        run: |
+          sshpass -e ssh -o StrictHostKeyChecking=no \
+            ${{ secrets.BUILDSFTPUSER }}@${{ secrets.BUILDSFTPHOST }} \
+            "mkdir -p ./build.kigalisim.org/artifacts/${{ github.sha }}/fatJar"
+          sshpass -e scp -o StrictHostKeyChecking=no \
+            build/libs/kigalisim-fat.jar \
+            ${{ secrets.BUILDSFTPUSER }}@${{ secrets.BUILDSFTPHOST }}:./build.kigalisim.org/artifacts/${{ github.sha }}/fatJar/kigalisim-fat.jar
   checkEngine:
     needs: buildEngine
-    environment: Build
     runs-on: ubuntu-latest
     name: Static Engine Checks
     defaults:
@@ -111,12 +113,14 @@ jobs:
         working-directory: ./engine
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        working-directory: ${{ github.workspace }}
+        run: |
+          git clone https://github.com/SchmidtDSE/kigali-sim.git .
+          git checkout ${{ github.sha }}
       - name: Setup Java
-        uses: actions/setup-java@v5
-        with:
-          distribution: 'temurin'
-          java-version: '21'
+        run: |
+          echo "JAVA_HOME=$JAVA_HOME_21_X64" >> $GITHUB_ENV
+          echo "$JAVA_HOME_21_X64/bin" >> $GITHUB_PATH
       - name: Check grammar
         run: ./gradlew generateGrammarSource
       - name: Check main style
@@ -125,7 +129,6 @@ jobs:
         run: ./gradlew checkstyleTest
   testEngine:
     needs: buildEngine
-    environment: Build
     runs-on: ubuntu-latest
     name: Engine Tests
     defaults:
@@ -134,17 +137,18 @@ jobs:
         working-directory: ./engine
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        working-directory: ${{ github.workspace }}
+        run: |
+          git clone https://github.com/SchmidtDSE/kigali-sim.git .
+          git checkout ${{ github.sha }}
       - name: Setup Java
-        uses: actions/setup-java@v5
-        with:
-          distribution: 'temurin'
-          java-version: '21'
+        run: |
+          echo "JAVA_HOME=$JAVA_HOME_21_X64" >> $GITHUB_ENV
+          echo "$JAVA_HOME_21_X64/bin" >> $GITHUB_PATH
       - name: Run tests
         run: ./gradlew test
   runEngineLocal:
     needs: buildEngine
-    environment: Build
     runs-on: ubuntu-latest
     name: Run Engine Locally
     defaults:
@@ -153,17 +157,19 @@ jobs:
         working-directory: ./engine
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        working-directory: ${{ github.workspace }}
+        run: |
+          git clone https://github.com/SchmidtDSE/kigali-sim.git .
+          git checkout ${{ github.sha }}
       - name: Setup Java
-        uses: actions/setup-java@v5
-        with:
-          distribution: 'temurin'
-          java-version: '21'
-      - name: Download fat jar
-        uses: actions/download-artifact@v7
-        with:
-          name: fatJar
-          path: engine/build/libs/
+        run: |
+          echo "JAVA_HOME=$JAVA_HOME_21_X64" >> $GITHUB_ENV
+          echo "$JAVA_HOME_21_X64/bin" >> $GITHUB_PATH
+      - name: Download fatJar
+        run: |
+          mkdir -p build/libs
+          curl -o build/libs/kigalisim-fat.jar \
+            https://build.kigalisim.org/artifacts/${{ github.sha }}/fatJar/kigalisim-fat.jar
       - name: Run example QTA file with CSV export
         run: java -jar build/libs/kigalisim-fat.jar run ../examples/minimal_interpreter.qta -o /tmp/minimal_interpreter.csv
       - name: Check CSV file was created and is non-empty
@@ -181,7 +187,6 @@ jobs:
           cat /tmp/minimal_interpreter.csv
   runMonteCarloReplicates:
     needs: [ checkEngine, testEngine, runEngineLocal ]
-    environment: Build
     runs-on: ubuntu-latest
     name: Run Monte Carlo Replicates Test
     defaults:
@@ -190,17 +195,19 @@ jobs:
         working-directory: ./engine
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        working-directory: ${{ github.workspace }}
+        run: |
+          git clone https://github.com/SchmidtDSE/kigali-sim.git .
+          git checkout ${{ github.sha }}
       - name: Setup Java
-        uses: actions/setup-java@v5
-        with:
-          distribution: 'temurin'
-          java-version: '21'
-      - name: Download fat jar
-        uses: actions/download-artifact@v7
-        with:
-          name: fatJar
-          path: engine/build/libs/
+        run: |
+          echo "JAVA_HOME=$JAVA_HOME_21_X64" >> $GITHUB_ENV
+          echo "$JAVA_HOME_21_X64/bin" >> $GITHUB_PATH
+      - name: Download fatJar
+        run: |
+          mkdir -p build/libs
+          curl -o build/libs/kigalisim-fat.jar \
+            https://build.kigalisim.org/artifacts/${{ github.sha }}/fatJar/kigalisim-fat.jar
       - name: Run Monte Carlo simulation with 100 replicates and normal distribution
         run: java -jar build/libs/kigalisim-fat.jar run ../examples/test_monte_carlo_replicates.qta -o /tmp/monte_carlo_replicates.csv -r 100
       - name: Check CSV file was created and is non-empty
@@ -219,7 +226,7 @@ jobs:
           echo "First 10 lines of CSV file:"
           head -10 /tmp/monte_carlo_replicates.csv
   buildWasm:
-    environment: Build
+    environment: build
     needs: [ checkEngine, buildEngine, testEngine, runEngineLocal ]
     runs-on: ubuntu-latest
     name: WASM Engine Build
@@ -229,43 +236,47 @@ jobs:
         working-directory: ./engine
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        working-directory: ${{ github.workspace }}
+        run: |
+          git clone https://github.com/SchmidtDSE/kigali-sim.git .
+          git checkout ${{ github.sha }}
       - name: Setup Java
-        uses: actions/setup-java@v5
-        with:
-          distribution: 'temurin'
-          java-version: '21'
+        run: |
+          echo "JAVA_HOME=$JAVA_HOME_21_X64" >> $GITHUB_ENV
+          echo "$JAVA_HOME_21_X64/bin" >> $GITHUB_PATH
       - name: Build war
         run: ./gradlew warUnversioned
-      - name: Upload war
-        uses: actions/upload-artifact@v6
-        with:
-          name: war
-          path: engine/build/libs/KigaliSim.war
+      - name: Install sshpass
+        run: sudo apt-get install -y sshpass
+      - name: Upload war to SFTP
+        env:
+          SSHPASS: ${{ secrets.BUILDSFTPPASSWORD }}
+        run: |
+          sshpass -e ssh -o StrictHostKeyChecking=no \
+            ${{ secrets.BUILDSFTPUSER }}@${{ secrets.BUILDSFTPHOST }} \
+            "mkdir -p ./build.kigalisim.org/artifacts/${{ github.sha }}/war"
+          sshpass -e scp -o StrictHostKeyChecking=no \
+            build/libs/KigaliSim.war \
+            ${{ secrets.BUILDSFTPUSER }}@${{ secrets.BUILDSFTPHOST }}:./build.kigalisim.org/artifacts/${{ github.sha }}/war/KigaliSim.war
   unitTestsBrowser:
-    environment: build
     runs-on: ubuntu-latest
     name: Web Tests
     needs: [ buildWasm ]
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
-      - name: Install Node
-        uses: actions/setup-node@v6
+        run: |
+          git clone https://github.com/SchmidtDSE/kigali-sim.git .
+          git checkout ${{ github.sha }}
+      - name: Setup Java
+        run: |
+          echo "JAVA_HOME=$JAVA_HOME_21_X64" >> $GITHUB_ENV
+          echo "$JAVA_HOME_21_X64/bin" >> $GITHUB_PATH
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 8
-      - name: Install Java
-        uses: actions/setup-java@v5
-        with:
-          distribution: 'temurin'
-          java-version: '21'
-      - name: Download WASM war
-        uses: actions/download-artifact@v7
-        with:
-          name: war
-          path: ./
+        run: npm install -g pnpm@8
+      - name: Download war
+        run: |
+          curl -o ./KigaliSim.war \
+            https://build.kigalisim.org/artifacts/${{ github.sha }}/war/KigaliSim.war
       - name: Install node deps
         run: pnpm install
         working-directory: ./editor
@@ -287,19 +298,36 @@ jobs:
         working-directory: ./engine
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        working-directory: ${{ github.workspace }}
+        run: |
+          git clone https://github.com/SchmidtDSE/kigali-sim.git .
+          git checkout ${{ github.sha }}
       - name: Setup Java
-        uses: actions/setup-java@v5
-        with:
-          distribution: 'temurin'
-          java-version: '21'
+        run: |
+          echo "JAVA_HOME=$JAVA_HOME_21_X64" >> $GITHUB_ENV
+          echo "$JAVA_HOME_21_X64/bin" >> $GITHUB_PATH
       - name: Generate Javadoc
         run: ./gradlew javadoc
-      - name: Upload Javadoc
-        uses: actions/upload-artifact@v6
-        with:
-          name: javadoc
-          path: engine/build/docs/javadoc
+      - name: Install sshpass
+        run: sudo apt-get install -y sshpass
+      - name: Upload javadoc to SFTP
+        env:
+          SSHPASS: ${{ secrets.BUILDSFTPPASSWORD }}
+        run: |
+          sshpass -e ssh -o StrictHostKeyChecking=no \
+            ${{ secrets.BUILDSFTPUSER }}@${{ secrets.BUILDSFTPHOST }} \
+            "mkdir -p ./build.kigalisim.org/artifacts/${{ github.sha }}/javadoc"
+          sshpass -e scp -r -o StrictHostKeyChecking=no \
+            build/docs/javadoc/. \
+            ${{ secrets.BUILDSFTPUSER }}@${{ secrets.BUILDSFTPHOST }}:./build.kigalisim.org/artifacts/${{ github.sha }}/javadoc/
+      - name: Upload javadoc zip to SFTP
+        env:
+          SSHPASS: ${{ secrets.BUILDSFTPPASSWORD }}
+        run: |
+          cd build/docs/javadoc && zip -r /tmp/javadoc.zip .
+          sshpass -e scp -o StrictHostKeyChecking=no \
+            /tmp/javadoc.zip \
+            ${{ secrets.BUILDSFTPUSER }}@${{ secrets.BUILDSFTPHOST }}:./build.kigalisim.org/artifacts/${{ github.sha }}/javadoc.zip
   deployPrep:
     environment: build
     runs-on: ubuntu-latest
@@ -307,28 +335,27 @@ jobs:
     needs: [ lintJs, unitTestsBrowser, checkCacheBusters, buildWasm, runMonteCarloReplicates, generateJavadoc ]
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
-      - name: Install Node
-        uses: actions/setup-node@v6
+        run: |
+          git clone https://github.com/SchmidtDSE/kigali-sim.git .
+          git checkout ${{ github.sha }}
+      - name: Setup Java
+        run: |
+          echo "JAVA_HOME=$JAVA_HOME_21_X64" >> $GITHUB_ENV
+          echo "$JAVA_HOME_21_X64/bin" >> $GITHUB_PATH
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 8
-      - name: Install Java
-        uses: actions/setup-java@v5
-        with:
-          distribution: 'temurin'
-          java-version: '21'
-      - name: Download WASM war
-        uses: actions/download-artifact@v7
-        with:
-          name: war
-          path: ./
-      - name: Download fat JAR
-        uses: actions/download-artifact@v7
-        with:
-          name: fatJar
-          path: ./
+        run: npm install -g pnpm@8
+      - name: Install SSH client and sshpass
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y openssh-client sshpass
+      - name: Download war
+        run: |
+          curl -o ./KigaliSim.war \
+            https://build.kigalisim.org/artifacts/${{ github.sha }}/war/KigaliSim.war
+      - name: Download fatJar
+        run: |
+          curl -o ./kigalisim-fat.jar \
+            https://build.kigalisim.org/artifacts/${{ github.sha }}/fatJar/kigalisim-fat.jar
       - name: Install node deps
         run: pnpm install
         working-directory: ./editor
@@ -343,10 +370,11 @@ jobs:
       - name: Copy humans.txt to deploy root
         run: cp ./humans.txt ./editor/deploy/humans.txt
       - name: Download Javadoc
-        uses: actions/download-artifact@v7
-        with:
-          name: javadoc
-          path: ./editor/deploy/guide/javadoc
+        run: |
+          curl -o /tmp/javadoc.zip \
+            https://build.kigalisim.org/artifacts/${{ github.sha }}/javadoc.zip
+          mkdir -p ./editor/deploy/guide/javadoc
+          unzip -q /tmp/javadoc.zip -d ./editor/deploy/guide/javadoc/
       - name: Copy case study QTA file to guide
         run: cp ./examples/case_study.qta ./editor/deploy/guide/case_study.qta
       - name: Copy tutorial QTA files to guide
@@ -372,12 +400,17 @@ jobs:
       - name: Update cache busters
         run: bash ./support/update_version.sh
         working-directory: ./editor
-      - name: Upload deploy artifact
-        uses: actions/upload-artifact@v6
-        with:
-          name: deploy-files
-          path: ./editor/deploy
-          retention-days: 1
+      - name: Upload deploy-files to SFTP
+        env:
+          SSHPASS: ${{ secrets.BUILDSFTPPASSWORD }}
+        run: |
+          cd ./editor/deploy && zip -r /tmp/deploy-files.zip .
+          sshpass -e ssh -o StrictHostKeyChecking=no \
+            ${{ secrets.BUILDSFTPUSER }}@${{ secrets.BUILDSFTPHOST }} \
+            "mkdir -p ./build.kigalisim.org/artifacts/${{ github.sha }}"
+          sshpass -e scp -o StrictHostKeyChecking=no \
+            /tmp/deploy-files.zip \
+            ${{ secrets.BUILDSFTPUSER }}@${{ secrets.BUILDSFTPHOST }}:./build.kigalisim.org/artifacts/${{ github.sha }}/deploy-files.zip
   deployPreview:
     environment: deploy
     if: github.ref == 'refs/heads/main'
@@ -385,11 +418,6 @@ jobs:
     name: Preview Deploy
     needs: [deployPrep]
     steps:
-      - name: Download deploy artifact
-        uses: actions/download-artifact@v7
-        with:
-          name: deploy-files
-          path: ./deploy
       - name: Install SSH client and sshpass
         run: |
           sudo apt-get update
@@ -398,7 +426,13 @@ jobs:
         run: |
           mkdir -p ~/.ssh
           ssh-keyscan -H -p 22 ${{ secrets.SFTPHOST }} >> ~/.ssh/known_hosts
-      - name: Upload files via SCP with password
+      - name: Download deploy-files
+        run: |
+          curl -o /tmp/deploy-files.zip \
+            https://build.kigalisim.org/artifacts/${{ github.sha }}/deploy-files.zip
+          mkdir -p ./deploy
+          unzip -q /tmp/deploy-files.zip -d ./deploy/
+      - name: Upload files via SCP
         env:
           SSHPASS: ${{ secrets.SFTPPASSWORD }}
         run: |
@@ -412,11 +446,6 @@ jobs:
     name: Production Deploy
     needs: [deployPrep]
     steps:
-      - name: Download deploy artifact
-        uses: actions/download-artifact@v7
-        with:
-          name: deploy-files
-          path: ./deploy
       - name: Install SSH client and sshpass
         run: |
           sudo apt-get update
@@ -425,7 +454,13 @@ jobs:
         run: |
           mkdir -p ~/.ssh
           ssh-keyscan -H -p 22 ${{ secrets.SFTPHOST }} >> ~/.ssh/known_hosts
-      - name: Upload files via SCP with password
+      - name: Download deploy-files
+        run: |
+          curl -o /tmp/deploy-files.zip \
+            https://build.kigalisim.org/artifacts/${{ github.sha }}/deploy-files.zip
+          mkdir -p ./deploy
+          unzip -q /tmp/deploy-files.zip -d ./deploy/
+      - name: Upload files via SCP
         env:
           SSHPASS: ${{ secrets.SFTPPASSWORD }}
         run: |
@@ -433,14 +468,15 @@ jobs:
             ./deploy/* \
             ${{ secrets.SFTPUSER }}@${{ secrets.SFTPHOST }}:./kigalisim.org/
   runEngineDockerSanity:
-    environment: Build
     if: github.ref == 'refs/heads/deploy'
     runs-on: ubuntu-latest
     name: Docker Prod Check
     needs: [deploy]
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        run: |
+          git clone https://github.com/SchmidtDSE/kigali-sim.git .
+          git checkout ${{ github.sha }}
       - name: Build Docker image
         run: docker build -t kigalisim .
       - name: Run example QTA file via Docker
@@ -469,12 +505,13 @@ jobs:
       packages: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        run: |
+          git clone https://github.com/SchmidtDSE/kigali-sim.git .
+          git checkout ${{ github.sha }}
       - name: Setup Java
-        uses: actions/setup-java@v5
-        with:
-          distribution: 'temurin'
-          java-version: '21'
+        run: |
+          echo "JAVA_HOME=$JAVA_HOME_21_X64" >> $GITHUB_ENV
+          echo "$JAVA_HOME_21_X64/bin" >> $GITHUB_PATH
       - name: Publish
         env:
           USERNAME: ${{ github.actor }}
@@ -488,11 +525,10 @@ jobs:
     name: Deploy Lambda
     needs: [runEngineDockerSanity]
     steps:
-      - name: Download fat jar
-        uses: actions/download-artifact@v7
-        with:
-          name: fatJar
-          path: ./
+      - name: Download fatJar
+        run: |
+          curl -o kigalisim-fat.jar \
+            https://build.kigalisim.org/artifacts/${{ github.sha }}/fatJar/kigalisim-fat.jar
       - name: Deploy to Lambda
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
@@ -504,4 +540,3 @@ jobs:
             --function-name "$AWS_LAMBDA_NAME" \
             --region "$AWS_LAMBDA_REGION" \
             --zip-file "fileb://kigalisim-fat.jar"
-
