@@ -422,7 +422,7 @@ Variables can be used in any expression:
 set domestic to (100 * phaseOutRate / 100) mt during year baselineYear
 ```
 
-These are limited to the scope of the enclosing `start` and `end` pair. There is also an optional global `variables` stanza:
+These are limited to the scope of the enclosing `start` and `end` pair. There is also a global `variables` stanza reserved for future use (not currently implemented):
 
 ```
 start variables
