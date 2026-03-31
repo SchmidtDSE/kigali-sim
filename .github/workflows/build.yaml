@@ -374,6 +374,7 @@ jobs:
         working-directory: ./editor
     steps:
       - name: Checkout
+        working-directory: ${{ github.workspace }}
         run: |
           git clone https://github.com/SchmidtDSE/kigali-sim.git .
           git checkout ${{ github.sha }}
