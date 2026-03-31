@@ -14,6 +14,14 @@ Finally, we want to again express our gratitude for your feedback and time.
 
 The following changes have been adopted and released.
 
+### During all years
+
+**Status**: Released April 1, 2026
+
+**Classification**:  Bug / enhancement
+
+Added support for the `during all years` version of the during clause mentioned in spec. See [#783](https://github.com/SchmidtDSE/kigali-sim/pull/783).
+
 ### Community cloud endpoint
 
 **Status**: Released February 27, 2026
