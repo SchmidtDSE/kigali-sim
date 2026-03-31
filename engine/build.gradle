@@ -231,18 +231,6 @@ spotless {
   }
 }
 
-// Create directory and checkstyle config if it doesn"t exist
-task setupCheckstyle {
-  doLast {
-    def configDir = file("${rootDir}/config/checkstyle")
-    configDir.mkdirs()
-    def checksFile = new File(configDir, "google_checks.xml")
-    if (!checksFile.exists()) {
-      checksFile << new URL("https://raw.githubusercontent.com/checkstyle/checkstyle/master/src/main/resources/google_checks.xml").text
-    }
-  }
-}
-
 // ANTLR configuration
 generateGrammarSource {
   // Set output directory for generated files
@@ -267,11 +255,6 @@ sourceSets {
 // Make compileJava depend on generating ANTLR sources
 compileJava.dependsOn generateGrammarSource
 
-// Require Checkstyle set up before checking main.
-checkstyleMain.dependsOn setupCheckstyle
-
-// Require Checkstyle set up before checking test.
-checkstyleTest.dependsOn setupCheckstyle
 
 // Publish to github maven
 publishing {
