@@ -889,4 +889,28 @@ public class RechargeLiveTests {
         "Domestic units should be kg");
   }
 
+  /**
+   * Test that "in all years" sugar is equivalent to no duration clause on recharge.
+   */
+  @Test
+  public void testRechargeInAllYears() throws IOException {
+    String qtaPath = "../examples/recharge_in_all_years.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    String scenarioName = "business as usual";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    EngineResult resultYear1 = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
+    assertNotNull(resultYear1, "Should have result for test/test in year 1");
+    assertEquals(100000.0, resultYear1.getPopulation().getValue().doubleValue(), 0.0001,
+        "Equipment should be 100000 units in year 1");
+
+    EngineResult resultYear2 = LiveTestsUtil.getResult(resultsList.stream(), 2, "test", "test");
+    assertNotNull(resultYear2, "Should have result for test/test in year 2");
+    assertEquals(190000.0, resultYear2.getPopulation().getValue().doubleValue(), 0.0001,
+        "Equipment should be 190000 units in year 2");
+  }
+
 }
