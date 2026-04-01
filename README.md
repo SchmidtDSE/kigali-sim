@@ -10,9 +10,10 @@ While it can certainly can also run locally on the JVM, the fastest way to try K
 
 **No code?** Go to https://kigalisim.org and then in the Designer tab:
 
- - Click "Add Application" to create a "Commerical Refrigeration" application
+ - Click "Add Application" to create a "Commercial Refrigeration" application
  - Click "Add Consumption" to create HFC-134a (click lookup for GHG equivalency, leave energy consumption at default, check domestic)
  - In your HFC-134a record, add a set record for 1 metric tonne (mt) sales in year 1.
+ - In your HFC-134a record, add a change record of +5% each year starting in year 2 to onwards.
  - Click "Add Simulation" and make "Business as Usual" from year 1 to 10.
  - Click the "Bank" radio button for total million units of equipment and see population increase over time.
 
@@ -31,6 +32,7 @@ start default
       equals 1430 kgCO2e / kg
       equals 1 kwh / unit
       set sales to 1 mt during year 1
+      change sales by +5 % during year 2 to onwards
       retire 5 % / year
     end substance
   
@@ -49,7 +51,7 @@ end simulations
 
 **Can't decide?** The UI-based authoring steps we provided generate the code seen above so you can move between UI-based and code-based authoring. Just go between the designer and editor tabs.
 
-Note: We use [WebAssembly](https://webassembly.org/) so simluations run privately on your machine. Continue your journey with a [tutorial](https://kigalisim.org/guide/tutorial_02.html).
+Note: We use [WebAssembly](https://webassembly.org/) so simulations run privately on your machine. Continue your journey with a [tutorial](https://kigalisim.org/guide/tutorial_02.html).
 
 <br>
 
@@ -81,7 +83,7 @@ java -jar kigalisim-fat.jar run -o output.csv script.qta
 
 Here, you may replace `script.qta` with the path to your QubecTalk script and `output.csv` with the path to where you would like to write results.
 
-Note that this jar is also posted to GitHub Maven as `org.kigalisim.engine`. See [JavaDoc](https://kigalisim.org/guide/javadoc).
+Note that this jar is also posted to GitHub Maven as `org.kigalisim.engine`. See [JavaDoc](https://kigalisim.org/guide/javadoc) and [JSDoc](https://kigalisim.org/guide/jsdoc).
 
 ### Docker (CLI)
 For those who prefer Docker, see `Dockerfile` which installs Java ([Temurin](https://adoptium.net/temurin/releases)) and can be used to run simulations from the command line. For example, the following builds the image and runs `script.qta` with output to `output.csv` through the mounted `working` directory:
@@ -198,7 +200,7 @@ For those with a bug report or a suggestion to improve Kigali Sim, please [open 
 
 For those seeking help with using Kigali Sim, we recommend that you consider starting with the "Get Help" button within the application if you are comfortable sharing your work with us. This free and private support channel offered by the project maintainers (currently the University of California DSE). If you do not want to share your simulation with us or are instructed to file a public help request, please [open an issue](https://github.com/SchmidtDSE/kigali-sim/issues/new) and try your best to fill in the issue template. Please note that this issue will be public.
 
-For those interested in contributing to the Kigali Sim open source project as a developer, thank you and please review [CONTRIBUTING.md](https://github.com/SchmidtDSE/kigali-sim/blob/main/CONTRIBUTING.md). Also, please see [our credits page](https://kigalisim.org/guide/credits.html) and our [humans.txt](https://kigalisim.org/humans.txt) for more information about the community behind this open source project. If you are unsure which issue might be best for getting started, please look for the "good first issue" tag. For information about community standards and expectations, please see [CODE_OF_CONDUCT.md](https://github.com/SchmidtDSE/kigali-sim/blob/main/CODE_OF_CONDDUCT.md).
+For those interested in contributing to the Kigali Sim open source project as a developer, thank you and please review [CONTRIBUTING.md](https://github.com/SchmidtDSE/kigali-sim/blob/main/CONTRIBUTING.md). Also, please see [our credits page](https://kigalisim.org/guide/credits.html) and our [humans.txt](https://kigalisim.org/humans.txt) for more information about the community behind this open source project. If you are unsure which issue might be best for getting started, please look for the "good first issue" tag. For information about community standards and expectations, please see [CODE_OF_CONDUCT.md](https://github.com/SchmidtDSE/kigali-sim/blob/main/CODE_OF_CONDUCT.md).
 
 <br>
 
@@ -319,6 +321,7 @@ We thank the following Open Source libraries and resources:
 - [Chart.js](https://www.chartjs.org/) under [MIT](https://github.com/chartjs/Chart.js/blob/master/LICENSE.md).
 - [D3](https://d3js.org/) under [ISC](https://github.com/d3/d3/blob/main/LICENSE).
 - [ESLint]((https://eslint.org/)) under [MIT](https://github.com/eslint/eslint/blob/main/LICENSE).
+- [JSDoc](https://jsdoc.app/) under [Apache-2.0](https://github.com/jsdoc/jsdoc/blob/main/LICENSE).
 - [Papa Parse](https://www.papaparse.com/) under [MIT](https://github.com/mholt/PapaParse/blob/master/LICENSE).
 - [Popper](https://popper.js.org/) under [MIT](https://github.com/floating-ui/floating-ui/blob/master/LICENSE).
 - [Prism.js](https://prismjs.com/) under [MIT](https://github.com/PrismJS/prism/blob/v2/LICENSE).

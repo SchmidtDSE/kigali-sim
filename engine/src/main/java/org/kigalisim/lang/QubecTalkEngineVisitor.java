@@ -432,6 +432,15 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    * {@inheritDoc}
    */
   @Override
+  public Fragment visitInAllYears(QubecTalkParser.InAllYearsContext ctx) {
+    ParsedDuring during = new ParsedDuring(Optional.empty(), Optional.empty());
+    return new DuringFragment(during);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
   public Fragment visitDuringWithMax(QubecTalkParser.DuringWithMaxContext ctx) {
     TimePointFuture start = new DynamicCapFuture(BEGINNING);
     TimePointFuture end = new CalculatedTimePointFuture(visit(ctx.expression()).getOperation());
