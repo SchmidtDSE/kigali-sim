@@ -449,6 +449,8 @@ jobs:
           unzip -q /tmp/guide-md.zip -d ./docs/guide/md/
       - name: Copy guide
         run: cp -r ./docs/guide ./editor/deploy/guide
+      - name: Download webm files from archive
+        run: bash ./docs/script/fetch_webm.sh ./editor/deploy/webm
       - name: Copy humans.txt to deploy root
         run: cp ./humans.txt ./editor/deploy/humans.txt
       - name: Download Javadoc
