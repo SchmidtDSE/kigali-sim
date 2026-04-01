@@ -2,6 +2,8 @@
 .DS_Store
 Thumbs.db
 
+archive_password.txt
+
 # Editor files
 .vscode/
 .idea/
