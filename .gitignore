@@ -2,6 +2,8 @@
 .DS_Store
 Thumbs.db
 
+archive_password.txt
+
 # Editor files
 .vscode/
 .idea/
@@ -22,3 +24,6 @@ profile_test.qta
 
 .claude
 .pnpm-store/
+
+# Generated at deploy time from HTML source — do not edit directly
+docs/guide/md/

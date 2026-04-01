@@ -422,7 +422,7 @@ Variables can be used in any expression:
 set domestic to (100 * phaseOutRate / 100) mt during year baselineYear
 ```
 
-These are limited to the scope of the enclosing `start` and `end` pair. There is also an optional global `variables` stanza:
+These are limited to the scope of the enclosing `start` and `end` pair. There is also a global `variables` stanza reserved for future use (not currently implemented):
 
 ```
 start variables
@@ -1173,3 +1173,4 @@ For comprehensive documentation and examples:
 - **JAR Download**: https://kigalisim.org/kigalisim-fat.jar - Command-line interface
 - **LLM Integration**: https://kigalisim.org/llms-full.txt - AI assistant documentation
 - **JavaDoc**: https://kigalisim.org/guide/javadoc/ - Engine API documentation
+- **JSDoc**: https://kigalisim.org/guide/jsdoc/ - Editor API documentation
