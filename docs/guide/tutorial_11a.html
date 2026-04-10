@@ -12,22 +12,18 @@
     <main id="main">
       <h1>Tutorial 11a: Agentic AI (JVM)</h1>
 
-      Using AI agents to autonomously run and iterate on simulations through the JVM.
-
-      <p>
-        <strong>Note that this is the agentic / JVM variant of the AI tutorial series.</strong> You can find the browser-based AI coding assistant tutorial at <a href="/guide/tutorial_11.html">Tutorial 11</a>.
-      </p>
+      Newer more capable AI assistants can perform agentic workflows which can help accelerate your modeling and analysis.
 
       <details>
         <summary>Contents</summary>
         <ul>
           <li><a href="#motivation">Motivation</a></li>
           <li><a href="#prerequisites">Prerequisites</a></li>
-          <li><a href="#project-setup">Project Setup</a></li>
-          <li><a href="#historic-data">Step 1: Historic Data Visualisation</a></li>
-          <li><a href="#forward-projection">Step 2: Forward Projection</a></li>
-          <li><a href="#policy-modeling">Step 3: Policy Modeling</a></li>
-          <li><a href="#reviewing-outputs">Reviewing and Validating Outputs</a></li>
+          <li><a href="#alternatives">Alternatives</a></li>
+          <li><a href="#project-setup">Setting up a project</a></li>
+          <li><a href="#historic-data">Modeling historic information</a></li>
+          <li><a href="#forward-prediction">Forward prediction</a></li>
+          <li><a href="#policies">Policies</a></li>
           <li><a href="#conclusion">Conclusion</a></li>
           <li><a href="#next-steps">Next Steps</a></li>
         </ul>
@@ -37,155 +33,153 @@
         <h2>Motivation</h2>
 
         <p>
-          In <a href="/guide/tutorial_11.html">Tutorial 11</a>, we saw how AI assistants can help write QubecTalk code. Some AI assistants can go further: when equipped with code-execution capabilities, they can act as <strong>agents</strong> — reading data files, running simulations, evaluating outputs, and proposing iterative refinements, all autonomously. This tutorial shows how to set up such a workflow using the Kigali Sim JVM command-line interface.
+          In <a href="/guide/tutorial_11.html">Tutorial 11</a>, we leveraged AI to help author a model but we still maintained control over when our simulation actually runs. This ensures that we can check the assistant's work at each step of the process. That said, letting AI actually execute the simulation can help it perform more work for us like automatically checking for and fixing issues. This loop of trying something, seeing the incremental progress, and autonomously taking a next step is sometimes called agentic AI. In this tutorial, we take that next step where we let the AI take a more active role in our process.
         </p>
 
         <p>
-          The core principle throughout this tutorial is: <strong>AI assistants can help with execution, but the decision-making remains in your hands.</strong> Agentic workflows can move fast — it is essential to pause and review what the agent has produced at every stage before asking it to continue.
+          Before we continue, note that this approach isn't always the right choice for all tasks. If the modeling request is fairly straightforward (like in this example), sometimes AI can fast forward through some of the more tedious work. However, if you are not quite sure yet about how you want to model something or there are some deeper questions about what is right for your project, it may be better to stick to a more manual process even if aided by an AI. It is important to remember that AI assistants can help with execution but the decision making remains in your hands.
         </p>
       </section>
 
       <section class="major" id="prerequisites">
         <h2>Prerequisites</h2>
 
-        <p>This tutorial requires the following before you begin:</p>
-
-        <ol>
-          <li>
-            <strong>An AI assistant with code-execution capabilities.</strong> The agent must be able to run shell commands, read files, and write files on your machine. <a href="https://claude.ai/">Claude</a> (with the computer use or code-execution tool enabled) and <a href="https://chat.mistral.ai/">Mistral</a> (with code execution) are examples we have tested. Note that code-execution features may require a paid plan — check your AI provider's documentation.
-          </li>
-          <li>
-            <strong>The Kigali Sim fat JAR.</strong> <a href="/kigalisim-fat.jar" download>Download kigalisim-fat.jar</a> and save it somewhere accessible on your machine. You can also find the download link at the bottom of <a href="/">kigalisim.org</a>.
-          </li>
-          <li>
-            <strong>Java 21 or higher.</strong> Install Java through <a href="https://adoptium.net">Adoptium</a> or another provider. You can verify your installation by running <code>java -version</code> in a terminal.
-          </li>
-          <li>
-            <strong>Network access to kigalisim.org.</strong> The agent will need to read the Kigali Sim language reference. If your organisation restricts internet access, you may need to allowlist <code>kigalisim.org</code> or <a href="/llms-full.txt" download>download llms-full.txt</a> and provide it as an attachment.
-          </li>
-        </ol>
+        <p>
+          We recommend starting with <a href="/guide/tutorial_11.html">Tutorial 11</a> before trying agentic flows unless you are very comfortable with using assistants. This guide builds on that prior experience!
+        </p>
 
         <p>
-          <strong>A note on privacy:</strong> Any data files and simulation code you share with an AI assistant will be sent to that provider's servers. Please review your AI provider's privacy policy and terms of service, particularly if your data contains sensitive national statistics.
+          At time of writing, not all assistants can perform these actions. We specifically use <a href="https://claude.ai/">Claude</a> for this step though <a href="https://chat.mistral.ai/">Mistral</a> also performs well. That said, this space is evolving quickly and other providers will likely work well. Additionally, you can absolutely use Claude Code, Claude Cowork, or similar tools for these steps. However, we will write this tutorial from the perspective of Claude on the web.
+        </p>
+
+        <p>
+          Note that you may need to enable execution and web access for your assistant. For Claude, this is done by:
+        </p>
+
+        <ul>
+          <li>Go to settings after clicking on your user icon</li>
+          <li>Go to capabilities</li>
+          <li>Ensure "code execution and file creation" are enabled.</li>
+          <li>If you have a domain allowlist (not set to all domains), ensure kigalisim.org is listed.</li>
+          <li>Ensure "inline visualizations" is enabled.</li>
+        </ul>
+
+        <p>
+          These steps or similar adjusted to your assistant will allow Claude to actually run simulations and to reach resources at kigalisim.org that help it perform its actions.
+        </p>
+      </section>
+
+      <section class="major" id="alternatives">
+        <h2>Alternatives</h2>
+
+        <p>
+          This agentic approach requires that your assistant can build and execute code. If your assistant does not allow for this kind of capability to actually run code (like Mistral online at time of writing), try Tutorial 11b for supported execution! Not sure? You can ask your assistant if it can use a JVM which is the technology used by Kigali Sim.
         </p>
       </section>
 
       <section class="major" id="project-setup">
-        <h2>Project Setup</h2>
+        <h2>Setting up a project</h2>
 
         <p>
-          Agentic workflows perform best when the AI has clear, structured context about the modelling problem before it starts running simulations. We recommend creating a short <strong>project document</strong> — a plain text or Markdown file — that the agent can read at the start of each session.
+          As before, we need to give our assistant some information about how to work with Kigali Sim and to give it some information about a hypothetical country for which we are performing modeling. To make things easy if we work across multiple chats, let's make a project (if using Claude Code, you can use a <code>CLAUDE.md</code> file). There, let's provide some instructions:
         </p>
 
-        <p>Your project document should describe:</p>
+        <pre class="prompt-code"><code>We are working on building out a Kigali Sim simulation based off of input data provided in the following sheets in our workbook:
 
-        <ul>
-          <li>The country and sector being modelled (e.g. "ABC Country, Domestic Refrigeration").</li>
-          <li>The substances in scope and their roles (e.g. HFC-134a as the incumbent substance, R-600a as the low-GWP alternative).</li>
-          <li>The data sources available and what each contains (e.g. a Socioeconomics sheet with GDP and population projections, a Metadata sheet with GWP values, a Census sheet with equipment population estimates, an Import/Export sheet).</li>
-          <li>Key modelling constraints (year range, policy targets, any known data quality issues).</li>
-          <li>The path to the Kigali Sim JAR and where to write output CSV files.</li>
-        </ul>
+ - `Socioeconomics`: Socioeconomic information about the hypothetical country including population and GDP. Has both actuals and projections.
+ - `Metadata`: Information about equipment and typical properties using substances.
+ - `Census`: Snapshot but potentially rough estimates of total populations of equipment based on industry surveys.
+ - `Import`: Trade data detailing total imports of substance (combined substance in new equipment as initial charge and in vessels for servicing).
 
-        <p>Once your project document is ready, start the agent with a message like this:</p>
+We will focus on Domestic Refrigeration first. This is a hypothetical country with the following properties:
 
-        <pre class="prompt-code"><code>Hello! Please read https://kigalisim.org/llms-full.txt?v=20260302 to learn about Kigali Sim and QubecTalk. Then read my project document [attach file]. I will give you tasks that involve running the Kigali Sim JAR at [path/to/kigalisim-fat.jar] using: java -jar [path/to/kigalisim-fat.jar] run -o output.csv script.qta. Please confirm you understand the setup before we begin.</code></pre>
+ - There is no local substance production (everything is imported).
+ - Local assembly is negligible, typically equipment are imported already charged.
+ - There were units using HFC-134a imported prior to 2010.
+ - The trade data are not reliable prior to 2010.
+
+A few pieces of guidance:
+
+ - Before starting, please read https://kigalisim.org/llms-full.txt?v=20260302 to learn more about Kigali Sim.
+ - Please use both census data for equipment population and the imports in tonnes if possible to have both datasets support each other.
+ - Please lean on Kigali Sim to do calculations where it can be useful including unit conversions, determining substance allocation across different needs, calculating populations, etc.
+ - Please use the `.txt` extension for qubectalk files so they are easier to read in chat.
+ - Please download the Kigali Sim jar file and execute using the JVM.
+
+When making visualizations... To keep things simple, let's stick with Pandas and matplotlib and static graphs but maybe we can pull those static graphs together into HTML documents.</code></pre>
 
         <p>
-          Wait for the agent to confirm it has read both documents and understood the setup. Correct any misunderstandings before moving on — a small error in the agent's initial understanding of the data structure can propagate through all subsequent steps.
+          Note that we are using Markdown syntax here which is kinda a native language for most AI assistants. However, you don't need to be overly precise in following Markdown conventions — AI assistants are good at being flexible! One thing to note is that we are asking the AI assistant to download the Jar file and use the JVM to execute simulations. This is giving the assistant technical information about how Kigali Sim works.
+        </p>
+
+        <p>
+          Anyway, please next go ahead and upload an Excel file with information about our hypothetical country. This has four worksheets with the data outlined in our instructions from which we will build historic information and fit a model for forward prediction.
         </p>
       </section>
 
       <section class="major" id="historic-data">
-        <h2>Step 1: Historic Data Visualisation</h2>
+        <h2>Modeling historic information</h2>
 
         <p>
-          The first task is to ask the agent to build an initial simulation that reproduces historic consumption data. This serves two purposes: it validates that the agent has understood your data correctly, and it gives you a baseline before any forward projection is added.
+          If you are taking this agentic approach, it is often advisable to walk through the steps with your assistant. For example, let's start by asking the AI to review the example data and make sure it has interpreted everything correctly.
         </p>
 
-        <pre class="prompt-code"><code>Please read the attached data file. Using the Kigali Sim JAR, build an initial simulation for HFC-134a and R-600a in Domestic Refrigeration that reproduces the historic consumption data from [start year] to [end year]. Run the simulation, write the results to historic_baseline.csv, and show me the output. Flag any data points that look unusual or that required assumptions on your part. Then pause and wait for my review.</code></pre>
+        <pre class="prompt-code"><code>Hello! I am hoping to make a Kigali Sim simulation and I want to start with the historic data first. However, before we put the data into Kigali Sim, can we quickly visualize those data and just check everything looks good?</code></pre>
 
         <p>
-          When the agent responds, open the CSV and check whether the simulated values match your source data. Pay attention to units — confirm whether the output is in <code>mt / year</code> or <code>kg / year</code> as expected. Correct any discrepancies before proceeding.
+          You likely will have some graphs produced in this process. Maybe just take a quick look as a sanity check before continuing. Afterwards, let's ask our assistant for how we might incorporate these historic data:
         </p>
 
-        <p>
-          <strong>Important:</strong> Do not ask the agent to continue until you are satisfied that the historic baseline is correct. Errors in the baseline will carry forward into the projection and policy steps.
-        </p>
-      </section>
-
-      <section class="major" id="forward-projection">
-        <h2>Step 2: Forward Projection</h2>
+        <pre class="prompt-code"><code>Great! How might we go about making a Kigali Sim simulation with historic data?</code></pre>
 
         <p>
-          Once the historic baseline looks correct, ask the agent to extend the simulation into the future. For HFC-134a, a GDP-linked growth model is appropriate. For R-600a, curve-fitting to the historic trend often works well for a business-as-usual projection.
+          At this stage, we will want to ensure that it is setting imports year by year through volumes and validating against the 2021 census data. Depending on what your assistant told you, you may want to help guide it in that direction. However, in my testing, the AI arrived at a good solution so I tell it to go ahead and execute:
         </p>
 
-        <pre class="prompt-code"><code>Please extend the simulation to [future year]. For HFC-134a, tie the growth rate to the GDP projections in the Socioeconomics sheet. For R-600a, fit a trend to the historic data. Run the extended simulation, write results to bau_projection.csv, and explain the assumptions you made for each substance. Pause and wait for my review before continuing.</code></pre>
+        <pre class="prompt-code"><code>Sounds good! Let's try it.</code></pre>
 
         <p>
-          Review the projection logic carefully. Ask yourself:
-        </p>
-
-        <ul>
-          <li>Does the HFC-134a growth rate feel plausible given GDP projections?</li>
-          <li>Does the R-600a trend line reflect a realistic technology uptake curve?</li>
-          <li>Are retirement and recharge rates consistent with what is known about the equipment population?</li>
-        </ul>
-
-        <p>
-          If anything looks wrong, ask the agent to explain its reasoning or to try a different approach. The agent should not move on to policy modeling until you have approved the business-as-usual projection.
+          You probably got some analysis at this point. Be sure to double check that it is sensible given what we saw in the input file. Finally, before finishing up, be sure to ask your assistant to save the simulation it worked on to the project (or in the folder if using Claude Code or Cowork).
         </p>
       </section>
 
-      <section class="major" id="policy-modeling">
-        <h2>Step 3: Policy Modeling</h2>
+      <section class="major" id="forward-prediction">
+        <h2>Forward prediction</h2>
 
         <p>
-          With an approved business-as-usual simulation in place, ask the agent to add policy scenarios. The example below adds two policies commonly found in Kigali Amendment Implementation Plans: a sales cap displacing the high-GWP substance, and a recycling programme.
+          So far, we have a great historic simulation but we haven't quite sorted out how to predict future trends. Let's start a new chat and ask our assistant for help (where you may need to adjust the files mentioned to fit what you have in your project):
         </p>
 
-        <pre class="prompt-code"><code>Please now add two policy scenarios on top of the Business as Usual:
-
-1. A cap on HFC-134a sales of 80% starting in [policy year], displacing to R-600a.
-2. A recycling programme starting in [policy year] capturing 20% of HFC-134a at the time of servicing, with a yield loss of 50%.
-
-Please add each policy as a separate simulation so we can compare all three scenarios. Run all simulations, write results to policy_comparison.csv, and summarise the emissions delta between BAU and each policy scenario. Pause after running.</code></pre>
+        <pre class="prompt-code"><code>We have a historic simulation in `kigali_historic.txt` based on `Kigali_Tutorial_Combined.xlsx`. Let's try to make a future projection based on socioeconomic data. Can you walk me through how we might do that?</code></pre>
 
         <p>
-          Check that the policy logic is correctly reflected in the QubecTalk code before accepting the results. In particular, verify that:
+          There is a challenge here that your AI might identify regarding limited data. Perhaps ensure HFC-134a uses GDP and population data for future prediction and R-600a fits a simple curve due to limited information? Let's also ask the AI to stick to a single Kigali Sim / QubecTalk file:
         </p>
 
-        <ul>
-          <li>The cap is applied to the correct substance and application.</li>
-          <li>The displacement target substance is R-600a (not left unspecified).</li>
-          <li>The recycling programme captures at the correct stage (servicing, not end-of-life, in this example).</li>
-        </ul>
+        <pre class="prompt-code"><code>1. For HFC-134a, maybe we can try to make predictions based on GDP and population?
+2. For R-600a, let's fit a curve and see how well we do against the limited data we have?
+3. Let's do one file and we can continue to use business as usual for the future projection without policies.
+4. Let's see how things look using R^2 as a way to tell if our modeling is performing as expected?</code></pre>
+
+        <p>
+          It is important to ask the model how it knows if we have a good fit and you might want to ask about R² goodness of fit values if it does not provide them for you on its own. Ideally, we should see some pretty high numbers! Finally, after reviewing the results of the new simulation or asking your AI assistant to provide some graphs showing what it did, be sure to ask it to save the changes to the project as an artifact or update the QubecTalk file if using Code / Cowork.
+        </p>
       </section>
 
-      <section class="major" id="reviewing-outputs">
-        <h2>Reviewing and Validating Outputs</h2>
+      <section class="major" id="policies">
+        <h2>Policies</h2>
 
         <p>
-          Before concluding the agentic session, ask the agent to summarise its own work and flag any remaining uncertainties:
+          At this point, we have incorporated historic data and done some reasonable projections for the future under a business as usual scenario. Note that you might need to move to a new chat. Let's expand to include some policies:
         </p>
 
-        <pre class="prompt-code"><code>Please summarise the key assumptions you made throughout this modelling session and flag anything you are uncertain about or that you think I should double-check.</code></pre>
+        <pre class="prompt-code"><code>Hello! I want to build on `kigali_combined.txt` which uses the data from `Kigali_Tutorial_Combined.xlsx` to add two policies and compare them a few ways but primarily on total emissions. Can you help?
+
+- Permit which caps HFC-134a to 80% of the prior year starting in 2029 through 2032 and then goes to cap of 0 in 2033. It should have the same demand be met by R-600a instead.
+- Recycling which captures 70% at servicing for both HFC-134a and R-600a with 10 yield loss and 50% induced demand. Let's have this start in 2027.</code></pre>
 
         <p>
-          Use this as a starting point for your own review. At minimum, verify the following:
-        </p>
-
-        <ul>
-          <li>Substance totals and units are consistent throughout all output CSVs.</li>
-          <li>The GWP values used match those in your Metadata sheet.</li>
-          <li>The simulation year range is correct in all scenarios.</li>
-          <li>The policy deltas between scenarios make intuitive sense (e.g. the recycling scenario should show lower net consumption than BAU).</li>
-          <li>The QubecTalk code can be loaded into the <a href="/">Kigali Sim web editor</a> without errors if you want to explore results visually.</li>
-        </ul>
-
-        <p>
-          The agent's summary does not replace your own review. You are responsible for the model outputs.
+          As before, you may need to change the filenames to correspond to your specific project setup. Finally, consider asking the AI assistant for some details about the overall impacts of these policies, potentially with some graphs.
         </p>
       </section>
 
@@ -193,21 +187,7 @@ Please add each policy as a separate simulation so we can compare all three scen
         <h2>Conclusion</h2>
 
         <p>
-          This tutorial demonstrated an agentic AI workflow for Kigali Sim using the JVM command-line interface. The agent handled the mechanical work of writing QubecTalk, running simulations, and reading CSV outputs — but the substance of the model (assumptions, parameters, policy logic) remained under your control at every stage.
-        </p>
-
-        <p>
-          Key takeaways:
-        </p>
-
-        <ul>
-          <li><strong>Structured context matters:</strong> a well-written project document reduces errors and misunderstandings early.</li>
-          <li><strong>Pause and review at every step:</strong> agentic workflows can move fast, and errors compound if not caught early.</li>
-          <li><strong>The agent flags; you decide:</strong> treat the agent's uncertainty flags as prompts for your own scrutiny, not as a complete list of issues.</li>
-        </ul>
-
-        <p>
-          For browser-based AI assistance without code execution, see <a href="/guide/tutorial_11.html">Tutorial 11</a>. For more on the command-line interface used in this tutorial, see <a href="/guide/tutorial_16.html">Tutorial 16</a>.
+          In this example, AI is doing a lot of heavy lifting for us. However, notice that we kept ourselves in the loop after each step. It is important to continue to ask your assistant for graphs and summaries at each stage to help ensure things are on track. Agentic workflows can move fast but you have to be careful to ensure it doesn't move too fast!
         </p>
       </section>
 
@@ -215,7 +195,7 @@ Please add each policy as a separate simulation so we can compare all three scen
         <h2>Next Steps</h2>
 
         <p>
-          This completes the Artificial Intelligence series. From here, the Advanced Modeling series in <a href="/guide/tutorial_12.html">Tutorial 12</a> covers more sophisticated sales assumptions and bank-tracking scenarios.
+          In this tutorial we used a technology called the JVM which runs Kigali Sim inside of a machine that the AI controls. Sometimes you might find yourself working with an assistant that doesn't have that capability. Consider trying out Tutorial 11b which is similar to this but with different initial instructions that takes advantage of a computer provided by the Kigali Sim project to gather simulation results instead.
         </p>
 
         <p>
