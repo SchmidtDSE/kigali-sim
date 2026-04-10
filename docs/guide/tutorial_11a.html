@@ -1,0 +1,213 @@
+<html lang="en-GB">
+  <head>
+    <title>Tutorial 11a: Agentic AI (JVM)</title>
+    <link href="/guide/guide.css?v=EPOCH" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+    <a href="#main" class="skip-link">Skip to main content</a>
+    <header>
+      This tutorial is part of the <a href="/guide">guide</a> for the
+      <a href="/">Kigali Sim</a>.
+    </header>
+    <main id="main">
+      <h1>Tutorial 11a: Agentic AI (JVM)</h1>
+
+      Newer more capable AI assistants can perform agentic workflows which can help accelerate your modeling and analysis.
+
+      <details>
+        <summary>Contents</summary>
+        <ul>
+          <li><a href="#motivation">Motivation</a></li>
+          <li><a href="#prerequisites">Prerequisites</a></li>
+          <li><a href="#alternatives">Alternatives</a></li>
+          <li><a href="#project-setup">Setting up a project</a></li>
+          <li><a href="#historic-data">Modeling historic information</a></li>
+          <li><a href="#forward-prediction">Forward prediction</a></li>
+          <li><a href="#policies">Policies</a></li>
+          <li><a href="#conclusion">Conclusion</a></li>
+          <li><a href="#next-steps">Next Steps</a></li>
+        </ul>
+      </details>
+
+      <section class="major" id="motivation">
+        <h2>Motivation</h2>
+
+        <p>
+          In <a href="/guide/tutorial_11.html">Tutorial 11</a>, we leveraged AI to help author a model but we still maintained control over when our simulation actually runs. This ensures that we can check the assistant's work at each step of the process. That said, letting AI actually execute the simulation can help it perform more work for us like automatically checking for and fixing issues. This loop of trying something, seeing the incremental progress, and autonomously taking a next step is sometimes called agentic AI. In this tutorial, we take that next step where we let the AI take a more active role in our process.
+        </p>
+
+        <p>
+          Before we continue, note that this approach isn't always the right choice for all tasks. If the modeling request is fairly straightforward (like in this example), sometimes AI can fast forward through some of the more tedious work. However, if you are not quite sure yet about how you want to model something or there are some deeper questions about what is right for your project, it may be better to stick to a more manual process even if aided by an AI. It is important to remember that AI assistants can help with execution but the decision making remains in your hands.
+        </p>
+      </section>
+
+      <section class="major" id="prerequisites">
+        <h2>Prerequisites</h2>
+
+        <p>
+          We recommend starting with <a href="/guide/tutorial_11.html">Tutorial 11</a> before trying agentic flows unless you are very comfortable with using assistants. This guide builds on that prior experience!
+        </p>
+
+        <p>
+          At time of writing, not all assistants can perform these actions. We specifically use <a href="https://claude.ai/">Claude</a> for this step though <a href="https://chat.mistral.ai/">Mistral</a> also performs well. That said, this space is evolving quickly and other providers will likely work well. Additionally, you can absolutely use Claude Code, Claude Cowork, or similar tools for these steps. However, we will write this tutorial from the perspective of Claude on the web.
+        </p>
+
+        <p>
+          Note that you may need to enable execution and web access for your assistant. For Claude, this is done by:
+        </p>
+
+        <ul>
+          <li>Go to settings after clicking on your user icon</li>
+          <li>Go to capabilities</li>
+          <li>Ensure "code execution and file creation" are enabled.</li>
+          <li>If you have a domain allowlist (not set to all domains), ensure kigalisim.org is listed.</li>
+          <li>Ensure "inline visualizations" is enabled.</li>
+        </ul>
+
+        <p>
+          These steps or similar adjusted to your assistant will allow Claude to actually run simulations and to reach resources at kigalisim.org that help it perform its actions.
+        </p>
+      </section>
+
+      <section class="major" id="alternatives">
+        <h2>Alternatives</h2>
+
+        <p>
+          This agentic approach requires that your assistant can build and execute code. If your assistant does not allow for this kind of capability to actually run code (like Mistral online at time of writing), try Tutorial 11b (coming soon) for supported execution! Not sure? You can ask your assistant if it can use a JVM which is the technology used by Kigali Sim.
+        </p>
+      </section>
+
+      <section class="major" id="project-setup">
+        <h2>Setting up a project</h2>
+
+        <p>
+          As before, we need to give our assistant some information about how to work with Kigali Sim and to give it some information about a hypothetical country for which we are performing modeling. To make things easy if we work across multiple chats, let's make a project (if using Claude Code, you can use a <code>CLAUDE.md</code> file). There, let's provide some instructions:
+        </p>
+
+        <pre class="prompt-code"><code>We are working on building out a Kigali Sim simulation based off of input data provided in the following sheets in our workbook:
+
+ - `Socioeconomics`: Socioeconomic information about the hypothetical country including population and GDP. Has both actuals and projections.
+ - `Metadata`: Information about equipment and typical properties using substances.
+ - `Census`: Snapshot but potentially rough estimates of total populations of equipment based on industry surveys.
+ - `Import`: Trade data detailing total imports of substance (combined substance in new equipment as initial charge and in vessels for servicing).
+
+We will focus on Domestic Refrigeration first. This is a hypothetical country with the following properties:
+
+ - There is no local substance production (everything is imported).
+ - Local assembly is negligible, typically equipment are imported already charged.
+ - There were units using HFC-134a imported prior to 2010.
+ - The trade data are not reliable prior to 2010.
+
+A few pieces of guidance:
+
+ - Before starting, please read https://kigalisim.org/llms-full.txt?v=20260302 to learn more about Kigali Sim.
+ - Please use both census data for equipment population and the imports in tonnes if possible to have both datasets support each other.
+ - Please lean on Kigali Sim to do calculations where it can be useful including unit conversions, determining substance allocation across different needs, calculating populations, etc.
+ - Please use the `.txt` extension for qubectalk files so they are easier to read in chat.
+ - Please download the Kigali Sim jar file and execute using the JVM.
+
+When making visualizations... To keep things simple, let's stick with Pandas and matplotlib and static graphs but maybe we can pull those static graphs together into HTML documents.</code></pre>
+
+        <p>
+          Note that we are using Markdown syntax here which is kinda a native language for most AI assistants. However, you don't need to be overly precise in following Markdown conventions. AI assistants are good at being flexible! One thing to note is that we are asking the AI assistant to download the Jar file and use the JVM to execute simulations. This is giving the assistant technical information about how Kigali Sim works.
+        </p>
+
+        <p>
+          Anyway, next let's go ahead and upload <a href="tutorial_11a.xlsx" download>the tutorial Excel file</a> with information about our hypothetical country. This has four worksheets with the data outlined in our instructions from which we will build historic information and fit a model for forward prediction.
+        </p>
+      </section>
+
+      <section class="major" id="historic-data">
+        <h2>Modeling historic information</h2>
+
+        <p>
+          If you are taking this agentic approach, it is often advisable to walk through the steps with your assistant. For example, let's start by asking the AI to review the example data and make sure it has interpreted everything correctly. So, with the <a href="tutorial_11a.xlsx" download>excel file</a> attached to the project, let's try something like this:
+        </p>
+
+        <pre class="prompt-code"><code>Hello! I am hoping to make a Kigali Sim simulation and I want to start with the historic data first. However, before we put the data into Kigali Sim, can we quickly visualize those data and just check everything looks good?</code></pre>
+
+        <p>
+          You likely will have some graphs produced in this process. Maybe just take a quick look as a sanity check before continuing. Afterwards, let's ask our assistant for how we might incorporate these historic data:
+        </p>
+
+        <pre class="prompt-code"><code>Great! How might we go about making a Kigali Sim simulation with historic data?</code></pre>
+
+        <p>
+          At this stage, we will want to ensure that it is setting imports year by year through volumes and validating against the 2021 census data. Depending on what your assistant told you, you may want to help guide it in that direction. However, in my testing, the AI arrived at a good solution so I tell it to go ahead and execute:
+        </p>
+
+        <pre class="prompt-code"><code>Sounds good! Let's try it.</code></pre>
+
+        <p>
+          You probably got some analysis at this point. Be sure to double check that it is sensible given what we saw in the input file. Finally, before finishing up, be sure to ask your assistant to save the simulation it worked on to the project (or in the folder if using Claude Code or Cowork).
+        </p>
+      </section>
+
+      <section class="major" id="forward-prediction">
+        <h2>Forward prediction</h2>
+
+        <p>
+          So far, we have a great historic simulation but we haven't quite sorted out how to predict future trends. Let's start a new chat and ask our assistant for help (where you may need to adjust the files mentioned to fit what you have in your project):
+        </p>
+
+        <pre class="prompt-code"><code>We have a historic simulation in `kigali_historic.txt` based on `Kigali_Tutorial_Combined.xlsx`. Let's try to make a future projection based on socioeconomic data. Can you walk me through how we might do that?</code></pre>
+
+        <p>
+          There is a challenge here that your AI might identify regarding limited data. Perhaps ensure HFC-134a uses GDP and population data for future prediction and R-600a fits a simple curve due to limited information? Let's also ask the AI to stick to a single Kigali Sim / QubecTalk file:
+        </p>
+
+        <pre class="prompt-code"><code>1. For HFC-134a, maybe we can try to make predictions based on GDP and population?
+2. For R-600a, let's fit a curve and see how well we do against the limited data we have?
+3. Let's do one file and we can continue to use business as usual for the future projection without policies.
+4. Let's see how things look using R^2 as a way to tell if our modeling is performing as expected?</code></pre>
+
+        <p>
+          It is important to ask the model how it knows if we have a good fit and you might want to ask about R² goodness of fit values if it does not provide them for you on its own. Ideally, we should see some pretty high numbers! Finally, after reviewing the results of the new simulation or asking your AI assistant to provide some graphs showing what it did, be sure to ask it to save the changes to the project as an artifact or update the QubecTalk file if using Code / Cowork.
+        </p>
+      </section>
+
+      <section class="major" id="policies">
+        <h2>Policies</h2>
+
+        <p>
+          At this point, we have incorporated historic data and done some reasonable projections for the future under a business as usual scenario. Note that you might need to move to a new chat. Let's expand to include some policies:
+        </p>
+
+        <pre class="prompt-code"><code>Hello! I want to build on `kigali_combined.txt` which uses the data from `Kigali_Tutorial_Combined.xlsx` to add two policies and compare them a few ways but primarily on total emissions. Can you help?
+
+- Permit which caps HFC-134a to 80% of the prior year starting in 2029 through 2032 and then goes to cap of 0 in 2033. It should have the same demand be met by R-600a instead.
+- Recycling which captures 70% at servicing for both HFC-134a and R-600a with 10 yield loss and 50% induced demand. Let's have this start in 2027.</code></pre>
+
+        <p>
+          As before, you may need to change the filenames to correspond to your specific project setup. Finally, consider asking the AI assistant for some details about the overall impacts of these policies, potentially with some graphs.
+        </p>
+      </section>
+
+      <section class="major" id="conclusion">
+        <h2>Conclusion</h2>
+
+        <p>
+          In this example, AI is doing a lot of heavy lifting for us. However, notice that we kept ourselves in the loop after each step. It is important to continue to ask your assistant for graphs and summaries at each stage to help ensure things are on track. Agentic workflows can move fast but you have to be careful to ensure it doesn't move too fast!
+        </p>
+      </section>
+
+      <section class="major" id="next-steps">
+        <h2>Next Steps</h2>
+
+        <p>
+          In this tutorial we used a technology called the JVM which runs Kigali Sim inside of a machine that the AI controls. Sometimes you might find yourself working with an assistant that doesn't have that capability. Consider trying out Tutorial 11b (coming soon) which is similar to this but with different initial instructions that takes advantage of a computer provided by the Kigali Sim project to gather simulation results instead.
+        </p>
+
+        <p>
+          <a href="/guide/tutorial_11.html">Previous: Tutorial 11</a> |
+          <a href="/guide">Return to Guide Index</a> |
+          <a href="/guide/tutorial_12.html">Next: Tutorial 12</a>
+        </p>
+      </section>
+    </main>
+    <footer>
+      <hr />
+      <p><em>This tutorial is part of the Artificial Intelligence series demonstrating AI-assisted workflows using Kigali Sim. <a href="md/tutorial_11a.md">View Markdown version</a></em></p>
+    </footer>
+  </body>
+</html>

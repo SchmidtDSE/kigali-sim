@@ -483,6 +483,8 @@ jobs:
           cp ./examples/tutorial_14.qta ./editor/deploy/guide/tutorial_14.qta
           cp ./examples/tutorial_15.qta ./editor/deploy/guide/tutorial_15.qta
           cp ./examples/tutorial_17.qta ./editor/deploy/guide/tutorial_17.qta
+      - name: Copy tutorial data files to guide
+        run: cp ./examples/tutorial_11a.xlsx ./editor/deploy/guide/tutorial_11a.xlsx
       - name: Copy WASM files
         run: cp -r ./editor/wasm ./editor/deploy/wasm
       - name: Copy fat JAR
