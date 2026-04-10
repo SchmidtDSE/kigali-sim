@@ -193,6 +193,8 @@ No other changes to index.html are needed.
 
 ## Component 3 — Update `docs/guide/tutorial_11.html`
 
+Tutorial 11a requires an AI assistant with code-execution capabilities, which not all users will have. The next-steps section of tutorial_11.html must give users a clear path whether or not they have access to an agentic AI.
+
 In the existing `<section class="major" id="next-steps">` of `tutorial_11.html`, update the navigation line at the bottom. Currently it reads:
 
 ```html
@@ -201,21 +203,18 @@ In the existing `<section class="major" id="next-steps">` of `tutorial_11.html`,
 <a href="/guide/tutorial_12.html">Next: Tutorial 12</a>
 ```
 
-Change to:
+Change to include both the 11a path and a skip-to-12 path:
 
 ```html
 <a href="/guide/tutorial_10.html">Previous: Tutorial 10</a> |
 <a href="/guide">Return to Guide Index</a> |
-<a href="/guide/tutorial_11a.html">Next: Tutorial 11a</a>
+<a href="/guide/tutorial_11a.html">Next: Tutorial 11a</a> |
+<a href="/guide/tutorial_12.html">Skip to Tutorial 12</a>
 ```
 
-Also, in the body of the `next-steps` section, update the final paragraph which currently reads:
+Also, in the body of the `next-steps` section, replace the final paragraph (currently ending with the Tutorial 16 reference) with text that presents both paths explicitly — one for users who have an agentic AI and one for users who do not:
 
-> This tutorial completes the specialized topic series! You've learned how to leverage AI assistants to accelerate your simulation development workflow. For next steps, consider exploring the other tutorials in the series or dive deeper into the QubecTalk programming language using the command line interface from [Tutorial 16].
-
-Change to reference tutorial 11a as the next step in the series before tutorial 12:
-
-> You've learned how to leverage AI assistants to accelerate your simulation development workflow. To go further, <a href="/guide/tutorial_11a.html">Tutorial 11a</a> explores agentic AI workflows where the AI assistant runs the Kigali Sim JVM autonomously. Alternatively, dive deeper into advanced modeling with <a href="/guide/tutorial_12.html">Tutorial 12</a>.
+> You've learned how to leverage AI assistants to accelerate your simulation development workflow. If your AI assistant supports code execution (the ability to run shell commands and create files), <a href="/guide/tutorial_11a.html">Tutorial 11a</a> explores agentic workflows where the AI runs the Kigali Sim JVM autonomously. If you do not have access to an AI with code execution, you can <a href="/guide/tutorial_12.html">skip ahead to Tutorial 12</a> and continue with advanced modeling topics.
 
 ---
 
@@ -236,7 +235,7 @@ Before considering this task complete:
 - [ ] `docs/guide/tutorial_11a.html` exists and validates as well-formed HTML.
 - [ ] All internal links in tutorial_11a.html resolve (guide, tutorial_11, tutorial_12, tutorial_16, kigalisim-fat.jar download).
 - [ ] `docs/guide/index.html` lists tutorial_11a in the Artificial Intelligence section.
-- [ ] `docs/guide/tutorial_11.html` next-steps links point to tutorial_11a (not tutorial_12 directly).
+- [ ] `docs/guide/tutorial_11.html` next-steps includes both a link to tutorial_11a ("Next") and a "Skip to Tutorial 12" link for users without agentic AI capabilities.
 - [ ] No changes to `build.yaml` are needed (markdown is auto-generated).
 - [ ] The tutorial follows WCAG 2.0 AA conventions consistent with the rest of the guide (skip link, semantic headings, no colour-only indicators).
 - [ ] The tutorial text does not use the word "JavaScript" (project uses "ECMAScript") — not relevant here but included for completeness.
