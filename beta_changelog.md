@@ -16,6 +16,14 @@ The following changes have been adopted and released.
 
 ### During all years
 
+**Status**: Released April 10, 2026
+
+**Classification**:  Enhancement
+
+Added tutorial 11a for agentic AI workflows. See [#770](https://github.com/SchmidtDSE/kigali-sim/issues/770).
+
+### During all years
+
 **Status**: Released April 1, 2026
 
 **Classification**:  Bug / enhancement
