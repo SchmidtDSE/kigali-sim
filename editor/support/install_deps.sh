@@ -22,7 +22,7 @@ fi
 [ ! -e third_party/ext-options.js ] && wget https://cdnjs.cloudflare.com/ajax/libs/ace/1.36.2/ext-options.js -O third_party/ext-options.js
 [ ! -e third_party/ext-prompt.js ] && wget https://cdnjs.cloudflare.com/ajax/libs/ace/1.36.2/ext-prompt.js -O third_party/ext-prompt.js
 [ ! -e third_party/ext-language_tools.js ] && wget https://cdnjs.cloudflare.com/ajax/libs/ace/1.36.2/ext-language_tools.js -O third_party/ext-language_tools.js
-[ ! -e third_party/chart.min.js ] && wget https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.0/chart.min.js -O third_party/chart.min.js
+[ ! -e third_party/chart.min.js ] && wget https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.0/chart.umd.min.js -O third_party/chart.min.js
 [ ! -e third_party/tabby-ui.min.css ] && wget https://cdnjs.cloudflare.com/ajax/libs/tabby/12.0.3/css/tabby-ui.min.css -O third_party/tabby-ui.min.css
 [ ! -e third_party/tabby.min.js ] && wget https://cdnjs.cloudflare.com/ajax/libs/tabby/12.0.3/js/tabby.min.js -O third_party/tabby.min.js
 [ ! -e third_party/prism-tomorrow.min.css ] && wget https://cdnjs.cloudflare.com/ajax/libs/prism/1.30.0/themes/prism-tomorrow.min.css -O third_party/prism-tomorrow.min.css
