@@ -288,6 +288,9 @@ jobs:
       - name: Run unit tests
         run: pnpm exec grunt
         working-directory: ./editor
+      - name: Smoke test IDE for JS errors
+        run: node support/smoke_ide.js
+        working-directory: ./editor
   generateJavadoc:
     environment: build
     runs-on: ubuntu-latest
