@@ -14,6 +14,14 @@ Finally, we want to again express our gratitude for your feedback and time.
 
 The following changes have been adopted and released.
 
+### April 2026 Outage
+
+**Status**: Started April 10, resolved April 14 (2026)
+
+**Classification**: Outage
+
+Proactive security hardening caused an outage which is now resolved. Please see [#791](https://github.com/SchmidtDSE/kigali-sim/issues/791). Our sincere apologies.
+
 ### During all years
 
 **Status**: Released April 10, 2026
