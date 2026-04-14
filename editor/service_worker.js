@@ -17,7 +17,7 @@ const OLD_CACHES = [
   "KigaliSimOffline_v2",
   "KigaliSimOffline_v3",
 ];
-const CACHE_NAME = "KigaliSimOffline_EPOCH";
+const CACHE_NAME = "KigaliSimOffline_v4_EPOCH";
 const ESSENTIAL_FILES = [
   // Main application files
   "/index.html",
@@ -173,12 +173,11 @@ self.addEventListener("fetch", (event) => {
 
 // Thanks https://developer.mozilla.org/en-US/docs/Web/API/Cache
 self.addEventListener("activate", (event) => {
-  const expectedCacheNamesSet = new Set(Object.values(CACHE_NAME));
   event.waitUntil(
     caches.keys().then((cacheNames) =>
       Promise.all(
         cacheNames.map((cacheName) => {
-          if (!expectedCacheNamesSet.has(cacheName)) {
+          if (cacheName !== CACHE_NAME) {
             console.log("Deleting out of date cache:", cacheName);
             return caches.delete(cacheName);
           }
