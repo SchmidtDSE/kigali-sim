@@ -20,7 +20,7 @@ The following changes have been adopted and released.
 
 **Classification**: Outage
 
-Proactive security hardening caused an outage which is now resolved. Please see [#791](https://github.com/SchmidtDSE/kigali-sim/issues/791). Our sincere apologies.
+Proactive security hardening caused an outage which is now resolved. Please see [#796](https://github.com/SchmidtDSE/kigali-sim/issues/796). Our sincere apologies.
 
 ### During all years
 
