@@ -48,9 +48,9 @@
       "sha256": "f3f59632b6c897f8f6fe2803b730ec42758aa2e89aa314f388031c57eb98b14c"
     },
     "third_party/chart.min.js": {
-      "url": "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.0/chart.min.js",
+      "url": "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.0/chart.umd.min.js",
       "version": "4.5.0",
-      "sha256": "bf8374840088264cb8b56c4abbe74694d63777c7dba5153c0b855855027c21b8"
+      "sha256": "2f27bcf471b2d69dd78494f6e2172fb28470eb843820e2f96bb85d39f9618d30"
     },
     "third_party/tabby-ui.min.css": {
       "url": "https://cdnjs.cloudflare.com/ajax/libs/tabby/12.0.3/css/tabby-ui.min.css",
