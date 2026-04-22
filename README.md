@@ -1,7 +1,7 @@
 # Kigali Sim
 Open source engine for simulating substances, applications, and policies relevant to the Montreal Protocol and the Kigali Amendment.
 
-[![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active) [![BSD Licensed](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause) [![Build](https://github.com/SchmidtDSE/kigali-sim/actions/workflows/build.yaml/badge.svg?branch=deploy)](https://github.com/SchmidtDSE/kigali-sim/actions/workflows/build.yaml) ![Temurin 21 or higher](https://img.shields.io/badge/Java-Temurin%2021%2B-blue)
+[![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active) [![BSD Licensed](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause) [![Build](https://github.com/SchmidtDSE/kigali-sim/actions/workflows/build.yaml/badge.svg?branch=deploy)](https://github.com/SchmidtDSE/kigali-sim/actions/workflows/build.yaml) ![Temurin 21 or higher](https://img.shields.io/badge/Java-Temurin%2021%2B-blue) [![status](https://joss.theoj.org/papers/eafc95ac66aae284563f36fa60f0261d/status.svg)](https://joss.theoj.org/papers/eafc95ac66aae284563f36fa60f0261d)
 
 <br>
 
