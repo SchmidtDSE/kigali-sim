@@ -17,7 +17,7 @@ authors:
   - name: Magali de Bruyn
     orcid: 0009-0000-1609-6244
     affiliation: 1
-  - name: Ciera Martinez
+  - name: Ciera C. Martinez
     orcid: 0000-0003-4296-998X
     affiliation: 1
 affiliations:
