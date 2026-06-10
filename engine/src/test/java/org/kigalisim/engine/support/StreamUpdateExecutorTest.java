@@ -370,6 +370,52 @@ class StreamUpdateExecutorTest {
   }
 
   /**
+   * Tests that virgin stream updates sales intent similar to domestic/import streams.
+   */
+  @Test
+  void testUpdateVirginCarryOverReplacesExistingIntent() {
+    // Arrange
+    final EngineNumber domestic = new EngineNumber(new BigDecimal("100"), "units");
+    final EngineNumber importValue = new EngineNumber(new BigDecimal("50"), "units");
+    final EngineNumber virginValue = new EngineNumber(new BigDecimal("75"), "units");
+
+    // Enable streams before setting values
+    engine.enable("domestic", Optional.empty());
+    engine.enable("import", Optional.empty());
+    engine.enable("virgin", Optional.empty());
+
+    // Act - use execute() to set streams
+    StreamUpdate domesticUpdate = new StreamUpdateBuilder()
+        .setName("domestic")
+        .setValue(domestic)
+        .setPropagateChanges(true)
+        .build();
+    executor.execute(domesticUpdate);
+
+    StreamUpdate importUpdate = new StreamUpdateBuilder()
+        .setName("import")
+        .setValue(importValue)
+        .setPropagateChanges(true)
+        .build();
+    executor.execute(importUpdate);
+
+    // Act - set virgin stream
+    StreamUpdate virginUpdate = new StreamUpdateBuilder()
+        .setName("virgin")
+        .setValue(virginValue)
+        .setPropagateChanges(true)
+        .build();
+    executor.execute(virginUpdate);
+
+    // Assert
+    EngineNumber virginIntent = engine.getStreamKeeper().getLastSpecifiedValue(useKey, "virgin");
+    assertNotNull(virginIntent, "Virgin intent should be set when virgin stream has unit value");
+    assertEquals(0, new BigDecimal("75").compareTo(virginIntent.getValue()),
+        "Virgin intent should match virgin value");
+    assertEquals("units", virginIntent.getUnits());
+  }
+
+  /**
    * Tests implicit recharge calculation and application for sales streams with units.
    */
   @Test

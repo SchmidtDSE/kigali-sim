@@ -1188,4 +1188,52 @@ public class BasicLiveTests {
         "Domestic units should be kg");
   }
 
+  /**
+   * Test set_virgin.qta produces expected values for virgin stream.
+   * Virgin should be sum of domestic and import (excluding recycle).
+   */
+  @Test
+  public void testSetVirgin() throws IOException {
+    String qtaPath = "../examples/set_virgin.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    String scenarioName = "BAU";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+    EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), 1, "Test", "SubA");
+    assertNotNull(result, "Should have result for Test/SubA in year 1");
+
+    double virginTotal = result.getDomestic().getValue().doubleValue()
+                       + result.getImport().getValue().doubleValue();
+    assertEquals(1000.0, virginTotal, 0.0001,
+        "Virgin (domestic + import) should be 1000 kg (1 mt)");
+    assertEquals("kg", result.getDomestic().getUnits(),
+        "Domestic units should be kg");
+  }
+
+  /**
+   * Test basic_virgin.qta produces expected values for virgin stream.
+   * Virgin should be sum of domestic and import (excluding recycle).
+   */
+  @Test
+  public void testBasicVirgin() throws IOException {
+    String qtaPath = "../examples/basic_virgin.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    String scenarioName = "business as usual";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+    EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), 2025, "Test", "HFC-134a");
+    assertNotNull(result, "Should have result for Test/HFC-134a in year 2025");
+
+    assertEquals(2667.0, result.getPopulation().getValue().doubleValue(), 0.0001,
+        "Equipment should be 2667 units");
+    assertEquals("units", result.getPopulation().getUnits(),
+        "Equipment units should be units");
+  }
+
 }

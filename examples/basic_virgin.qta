@@ -1,0 +1,27 @@
+start default
+
+  define application "Test"
+
+    uses substance "HFC-134a"
+      enable domestic
+      enable import
+      initial charge with 0.6 kg / unit for domestic
+      initial charge with 0.6 kg / unit for import
+      equals 1430 tCO2e / kg
+      set priorEquipment to 240000 units during year beginning
+      set domestic to 2000 units during year 2025
+      set import to 667 units during year 2025
+      set virgin to 2667 units during year 2025
+    end substance
+
+  end application
+
+end default
+
+
+start simulations
+
+  simulate "business as usual"
+  from years 2025 to 2035
+
+end simulations

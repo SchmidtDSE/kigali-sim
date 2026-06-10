@@ -126,6 +126,32 @@ public class FloorLiveTests {
   }
 
   /**
+   * Test floor_virgin.qta produces expected values.
+   * This tests flooring virgin (domestic + import) to a specific weight in kg.
+   */
+  @Test
+  public void testFloorVirgin() throws IOException {
+    String qtaPath = "../examples/floor_virgin.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    String scenarioName = "result";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
+    assertNotNull(result, "Should have result for test/test in year 1");
+
+    double virginTotal = result.getDomestic().getValue().doubleValue()
+                       + result.getImport().getValue().doubleValue();
+    assertEquals(20.0, virginTotal, 0.0001,
+        "Virgin (domestic + import) should be floored to 20 kg");
+    assertEquals("kg", result.getDomestic().getUnits(),
+        "Domestic units should be kg");
+  }
+
+  /**
    * Test floor on equipment stream when no action is required.
    * This verifies that when equipment is already above the floor, no changes occur.
    */

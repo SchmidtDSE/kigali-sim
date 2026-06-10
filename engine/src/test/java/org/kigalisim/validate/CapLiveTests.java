@@ -825,6 +825,31 @@ public class CapLiveTests {
   }
 
   /**
+   * Test cap_virgin.qta produces expected values.
+   * This tests capping virgin (domestic + import) to a specific weight in kg.
+   */
+  @Test
+  public void testCapVirgin() throws IOException {
+    String qtaPath = "../examples/cap_virgin.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    String scenarioName = "result";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+    EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
+    assertNotNull(result, "Should have result for test/test in year 1");
+
+    double virginTotal = result.getDomestic().getValue().doubleValue()
+                       + result.getImport().getValue().doubleValue();
+    assertEquals(100.0, virginTotal, 0.0001,
+        "Virgin (domestic + import) should be capped at 100 kg");
+    assertEquals("kg", result.getDomestic().getUnits(),
+        "Domestic units should be kg");
+  }
+
+  /**
    * Test cap with % prior year behaves identically to cap with %.
    * This validates that % and % prior year in cap context both mean prior year values.
    */
