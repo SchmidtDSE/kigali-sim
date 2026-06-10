@@ -82,6 +82,13 @@ class EngineSupportUtilsTest {
   }
 
   @Test
+  void testIsVirginSubstream() {
+    // Act & Assert - virgin is a sales-related substream but handled differently
+    // virgin represents domestic + import without recycling
+    assertTrue(EngineSupportUtils.isSalesSubstream("virgin"));
+  }
+
+  @Test
   void testIsSalesSubstreamFalseForOtherStreams() {
     // Act & Assert
     assertFalse(EngineSupportUtils.isSalesSubstream("sales"));

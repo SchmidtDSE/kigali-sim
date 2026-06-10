@@ -801,6 +801,32 @@ public class ChangeLiveTests {
   }
 
   /**
+   * Test change_virgin.qta produces expected values.
+   * This tests changing virgin (domestic + import) by +10% each year.
+   */
+  @Test
+  public void testChangeVirgin() throws IOException {
+    String qtaPath = "../examples/change_virgin.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    String scenarioName = "business as usual";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), 2, "test", "test");
+    assertNotNull(result, "Should have result for test/test in year 2");
+
+    double virginTotal = result.getDomestic().getValue().doubleValue()
+                       + result.getImport().getValue().doubleValue();
+    assertEquals(165000.0, virginTotal, 0.0001,
+        "Virgin (domestic + import) should be 165000 kg in year 2 (150 mt + 10%)");
+    assertEquals("kg", result.getDomestic().getUnits(),
+        "Domestic units should be kg");
+  }
+
+  /**
    * Test that change operations prevent negative stream values.
    * When a change would result in a negative value, the stream should be clamped to zero.
    * This test documents the bug and should initially FAIL.

@@ -1,0 +1,49 @@
+start default
+
+  define application "test"
+
+    uses substance "a"
+      enable domestic
+      enable import
+      initial charge with 1 kg / unit for domestic
+      initial charge with 1 kg / unit for import
+      set domestic to 50 mt during year 1
+      set import to 50 mt during year 1
+      set virgin to 100 mt during year 1
+      equals 10 tCO2e / mt
+    end substance
+
+    uses substance "b"
+      enable domestic
+      enable import
+      initial charge with 1 kg / unit for domestic
+      initial charge with 1 kg / unit for import
+      set domestic to 50 mt during year 1
+      set import to 50 mt during year 1
+      set virgin to 100 mt during year 1
+      equals 5 tCO2e / mt
+    end substance
+
+  end application
+
+end default
+
+
+start policy "intervention"
+
+  modify application "test"
+
+    modify substance "a"
+      replace 50 % of virgin with "b"
+    end substance
+
+  end application
+
+end policy
+
+
+start simulations
+
+  simulate "result" using "intervention" from years 1 to 1
+
+end simulations
