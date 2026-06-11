@@ -880,4 +880,71 @@ public class CapLiveTests {
           + " (both mean prior year in cap context)");
     }
   }
+
+  /**
+   * Test cap_recycle_with_virgin.qta produces expected relative behavior.
+   * With limited recycling, virgin should be higher than BAU.
+   * With virgin capped, both virgin and equipment should be lower than BAU.
+   */
+  @Test
+  public void testCapRecycleWithVirgin() throws IOException {
+    String qtaPath = "../examples/cap_recycle_with_virgin.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    String limitVirginScenario = "limit virgin";
+    Stream<EngineResult> limitVirginResults = KigaliSimFacade.runScenario(program, limitVirginScenario, progress -> {});
+    List<EngineResult> limitVirginResultsList = limitVirginResults.collect(Collectors.toList());
+    EngineResult limitVirginYear2 = LiveTestsUtil.getResult(limitVirginResultsList.stream(), 2, "test", "test");
+    assertNotNull(limitVirginYear2, "Should have limit virgin result for test/test in year 2");
+    double limitVirginVirginYear2 = limitVirginYear2.getDomestic().getValue().doubleValue()
+        + limitVirginYear2.getImport().getValue().doubleValue();
+
+    String bauScenario = "business as usual";
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, bauScenario, progress -> {});
+    List<EngineResult> bauResultsList = bauResults.collect(Collectors.toList());
+    EngineResult bauYear2 = LiveTestsUtil.getResult(bauResultsList.stream(), 2, "test", "test");
+    assertNotNull(bauYear2, "Should have BAU result for test/test in year 2");
+    double bauVirginYear2 = bauYear2.getDomestic().getValue().doubleValue()
+        + bauYear2.getImport().getValue().doubleValue();
+
+    assertTrue(limitVirginVirginYear2 < bauVirginYear2,
+        "Virgin should be lower when capped (was "
+        + limitVirginVirginYear2 + " vs BAU " + bauVirginYear2 + ")");
+    assertTrue(limitVirginYear2.getPopulation().getValue().doubleValue()
+        < bauYear2.getPopulation().getValue().doubleValue(),
+        "Equipment should be lower when virgin is capped (was "
+        + limitVirginYear2.getPopulation().getValue().doubleValue()
+        + " vs BAU " + bauYear2.getPopulation().getValue().doubleValue() + ")");
+
+    String limitRecycleScenario = "limit recycling";
+    Stream<EngineResult> limitRecycleResults = KigaliSimFacade.runScenario(program, limitRecycleScenario, progress -> {});
+    List<EngineResult> limitRecycleResultsList = limitRecycleResults.collect(Collectors.toList());
+    EngineResult limitRecycleYear2 = LiveTestsUtil.getResult(limitRecycleResultsList.stream(), 2, "test", "test");
+    assertNotNull(limitRecycleYear2, "Should have limit recycling result for test/test in year 2");
+    double limitRecycleVirginYear2 = limitRecycleYear2.getDomestic().getValue().doubleValue()
+        + limitRecycleYear2.getImport().getValue().doubleValue();
+    EngineResult bauYear1 = LiveTestsUtil.getResult(bauResultsList.stream(), 1, "test", "test");
+    EngineResult limitRecycleYear1 = LiveTestsUtil.getResult(limitRecycleResultsList.stream(), 1, "test", "test");
+    assertTrue(bauYear1.getRecycle().getValue().doubleValue() > 0,
+        "BAU year 1 recycle should be > 0 (was " + bauYear1.getRecycle().getValue() + ")");
+    assertTrue(bauYear1.getRecycleConsumption().getValue().doubleValue() > 0,
+        "BAU year 1 recycleConsumption should be > 0 (was " + bauYear1.getRecycleConsumption().getValue() + ")");
+    assertTrue(bauYear2.getRecycle().getValue().doubleValue() > 0,
+        "BAU year 2 recycle should be > 0 (was " + bauYear2.getRecycle().getValue() + ")");
+    assertTrue(bauYear2.getRecycleConsumption().getValue().doubleValue() > 0,
+        "BAU year 2 recycleConsumption should be > 0 (was " + bauYear2.getRecycleConsumption().getValue() + ")");
+    assertTrue(limitRecycleYear1.getRecycle().getValue().doubleValue() > 0,
+        "Limit recycle year 1 recycle should be > 0 (was " + limitRecycleYear1.getRecycle().getValue() + ")");
+    assertTrue(limitRecycleYear1.getRecycleConsumption().getValue().doubleValue() > 0,
+        "Limit recycle year 1 recycleConsumption should be > 0 (was " + limitRecycleYear1.getRecycleConsumption().getValue() + ")");
+    assertTrue(limitRecycleYear2.getRecycle().getValue().doubleValue() > 0,
+        "Limit recycle year 2 recycle should be > 0 (was " + limitRecycleYear2.getRecycle().getValue() + ")");
+    assertTrue(limitRecycleYear2.getRecycleConsumption().getValue().doubleValue() > 0,
+        "Limit recycle year 2 recycleConsumption should be > 0 (was " + limitRecycleYear2.getRecycleConsumption().getValue() + ")");
+
+    assertTrue(limitRecycleVirginYear2 > bauVirginYear2,
+        "Virgin should be higher when recycling is limited (was "
+        + limitRecycleVirginYear2 + " vs BAU " + bauVirginYear2 + ")");
+  }
 }

@@ -47,6 +47,7 @@ public final class EngineSupportUtils {
     STREAM_NAMES.add("import");
     STREAM_NAMES.add("domestic");
     STREAM_NAMES.add("sales");
+    STREAM_NAMES.add("virgin");
   }
 
   private EngineSupportUtils() {
@@ -85,7 +86,7 @@ public final class EngineSupportUtils {
    * @return true if the stream is domestic or import
    */
   public static boolean isSalesSubstream(String name) {
-    return "domestic".equals(name) || "import".equals(name);
+    return "domestic".equals(name) || "import".equals(name) || "virgin".equals(name);
   }
 
   /**
@@ -219,8 +220,7 @@ public final class EngineSupportUtils {
    */
   public static BigDecimal getDistributedRecharge(String streamName, EngineNumber totalRecharge,
       UseKey useKey, SimulationState simulationState) {
-    if ("sales".equals(streamName)) {
-      // Sales stream gets 100% - setStreamForSales will distribute it
+    if ("sales".equals(streamName) || "virgin".equals(streamName)) {
       return totalRecharge.getValue();
     }
 

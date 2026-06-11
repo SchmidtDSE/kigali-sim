@@ -455,7 +455,7 @@ public class LimitExecutor {
     EngineNumber currentValue = engine.getStream(stream);
     simulationState.setLastSpecifiedValue(scope, stream, currentValue);
 
-    if ("sales".equals(stream)) {
+    if ("sales".equals(stream) || "virgin".equals(stream)) {
       updateComponentStreamsLastSpecified(simulationState, scope);
     }
   }

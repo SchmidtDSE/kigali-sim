@@ -116,6 +116,8 @@ public class ChangeExecutor {
     String stream = config.getStream();
     if ("sales".equals(stream)) {
       handleSalesChange(config);
+    } else if ("virgin".equals(stream)) {
+      handleSalesChange(config);
     } else if (EngineSupportUtils.isSalesSubstream(stream) || "export".equals(stream)) {
       handleComponentStream(config);
     } else {
@@ -305,6 +307,7 @@ public class ChangeExecutor {
     BigDecimal recycleValue = recycleConverted.getValue();
     return switch (stream) {
       case "sales" -> recycleValue;
+      case "virgin" -> BigDecimal.ZERO;
       case "domestic" -> recycleValue.multiply(distribution.getPercentDomestic());
       case "import" -> recycleValue.multiply(distribution.getPercentImport());
       default -> BigDecimal.ZERO;

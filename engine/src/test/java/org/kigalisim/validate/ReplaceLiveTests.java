@@ -321,7 +321,7 @@ public class ReplaceLiveTests {
     assertNotNull(resultA, "Should have result for test/a in year 1");
 
     assertEquals(500.0, resultA.getConsumption().getValue().doubleValue(), 0.0001,
-        "Consumption for substance a should be 500 tCO2e (50 mt remaining x 10 tCO2e/mt)");
+        "Consumption for substance a should be 500 tCO2e (50 mt remaining × 10 tCO2e/mt)");
     assertEquals("tCO2e", resultA.getConsumption().getUnits(),
         "Consumption units should be tCO2e");
 
@@ -329,7 +329,7 @@ public class ReplaceLiveTests {
     assertNotNull(resultRecycling, "Should have result for test/recycling in year 1");
 
     assertEquals(750.0, resultRecycling.getConsumption().getValue().doubleValue(), 0.0001,
-        "Consumption for substance recycling should be 750 tCO2e (150 mt total x 5 tCO2e/mt)");
+        "Consumption for substance recycling should be 750 tCO2e (150 mt total × 5 tCO2e/mt)");
     assertEquals("tCO2e", resultRecycling.getConsumption().getUnits(),
         "Consumption units should be tCO2e");
   }
