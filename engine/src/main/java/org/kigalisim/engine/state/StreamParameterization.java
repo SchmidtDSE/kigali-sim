@@ -510,7 +510,8 @@ public class StreamParameterization {
     lastSpecifiedValue.put(streamName, value);
 
     // Set the flag if this is a sales-related stream
-    if ("sales".equals(streamName) || "import".equals(streamName) || "domestic".equals(streamName)) {
+    if ("sales".equals(streamName) || "import".equals(streamName) || "domestic".equals(streamName)
+        || "virgin".equals(streamName)) {
       salesIntentFreshlySet = true;
     }
   }
@@ -608,7 +609,7 @@ public class StreamParameterization {
    */
   private boolean getIsSalesStreamAllowed(String name) {
     return switch (name) {
-      case "domestic", "import", "export", "recycle", "recycleRecharge", "recycleEol" -> true;
+      case "domestic", "import", "export", "recycle", "recycleRecharge", "recycleEol", "virgin" -> true;
       default -> false;
     };
   }
@@ -665,11 +666,20 @@ public class StreamParameterization {
         lastSpecifiedValue.remove("sales");
         lastSpecifiedValue.remove("import");
         lastSpecifiedValue.remove("domestic");
+        lastSpecifiedValue.remove("virgin");
         setSalesIntentFreshlySet(false);
       }
       case "domestic", "import" -> {
         lastSpecifiedValue.remove(stream);
         lastSpecifiedValue.remove("sales");
+        lastSpecifiedValue.remove("virgin");
+        setSalesIntentFreshlySet(false);
+      }
+      case "virgin" -> {
+        lastSpecifiedValue.remove("virgin");
+        lastSpecifiedValue.remove("sales");
+        lastSpecifiedValue.remove("import");
+        lastSpecifiedValue.remove("domestic");
         setSalesIntentFreshlySet(false);
       }
       default -> lastSpecifiedValue.remove(stream);

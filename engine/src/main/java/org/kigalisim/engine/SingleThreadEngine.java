@@ -264,6 +264,11 @@ public class SingleThreadEngine implements Engine {
         SetExecutor setExecutor = new SetExecutor(this);
         setExecutor.handleSalesSet(scope, name, value, yearMatcher);
       }
+      case "virgin" -> {
+        simulationState.clearLastSpecifiedValue(scope, name);
+        SetExecutor setExecutor = new SetExecutor(this);
+        setExecutor.handleVirginSet(scope, name, value, yearMatcher);
+      }
       default -> {
         if (EngineSupportUtils.isSalesSubstream(name)) {
           simulationState.clearLastSpecifiedValue(scope, name);
@@ -296,6 +301,11 @@ public class SingleThreadEngine implements Engine {
     // Only allow enabling of manufacture, import, and export streams
     switch (name) {
       case "domestic", "import", "export" -> simulationState.markStreamAsEnabled(keyEffective, name);
+      case "virgin" -> {
+        simulationState.markStreamAsEnabled(keyEffective, "domestic");
+        simulationState.markStreamAsEnabled(keyEffective, "import");
+        simulationState.markStreamAsEnabled(keyEffective, "virgin");
+      }
       default -> {
         // Do nothing for other streams
       }
@@ -347,7 +357,7 @@ public class SingleThreadEngine implements Engine {
   @Override
   public EngineNumber getInitialCharge(String stream) {
     return switch (stream) {
-      case "sales" -> {
+      case "sales", "virgin" -> {
         try {
           yield getSalesWeightedInitialCharge();
         } catch (IllegalStateException e) {
@@ -391,7 +401,7 @@ public class SingleThreadEngine implements Engine {
     }
 
     switch (stream) {
-      case "sales" -> {
+      case "sales", "virgin" -> {
         simulationState.setInitialCharge(scope, "domestic", value);
         simulationState.setInitialCharge(scope, "import", value);
       }
@@ -435,7 +445,7 @@ public class SingleThreadEngine implements Engine {
         Optional<String> lastUnits = getLastSalesUnits(scope);
         yield lastUnits.isEmpty() || !lastUnits.get().startsWith("unit");
       }
-      case "domestic", "import" -> {
+      case "domestic", "import", "virgin" -> {
         Optional<String> lastUnits = getLastSalesUnits(scope);
         yield !lastUnits.isPresent() || !lastUnits.get().startsWith("unit");
       }

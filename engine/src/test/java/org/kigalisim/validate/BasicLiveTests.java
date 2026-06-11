@@ -1230,8 +1230,8 @@ public class BasicLiveTests {
     EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), 2025, "Test", "HFC-134a");
     assertNotNull(result, "Should have result for Test/HFC-134a in year 2025");
 
-    assertEquals(2667.0, result.getPopulation().getValue().doubleValue(), 0.0001,
-        "Equipment should be 2667 units");
+    assertEquals(242667.0, result.getPopulation().getValue().doubleValue(), 0.0001,
+        "Equipment should be 242667 units");
     assertEquals("units", result.getPopulation().getUnits(),
         "Equipment units should be units");
   }
