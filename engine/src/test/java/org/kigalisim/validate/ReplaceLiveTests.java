@@ -270,6 +270,71 @@ public class ReplaceLiveTests {
   }
 
   /**
+   * Test replace_virgin.qta produces expected values.
+   * This tests replacing a percentage of virgin from one substance to another.
+   */
+  @Test
+  public void testReplaceVirgin() throws IOException {
+    String qtaPath = "../examples/replace_virgin.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    String scenarioName = "result";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    EngineResult resultA = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "a");
+    assertNotNull(resultA, "Should have result for test/a in year 1");
+
+    assertEquals(500.0, resultA.getConsumption().getValue().doubleValue(), 0.0001,
+        "Consumption for substance a should be 500 tCO2e (50 mt remaining × 10 tCO2e/mt)");
+    assertEquals("tCO2e", resultA.getConsumption().getUnits(),
+        "Consumption units should be tCO2e");
+
+    EngineResult resultB = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "b");
+    assertNotNull(resultB, "Should have result for test/b in year 1");
+
+    assertEquals(750.0, resultB.getConsumption().getValue().doubleValue(), 0.0001,
+        "Consumption for substance b should be 750 tCO2e (150 mt total × 5 tCO2e/mt)");
+    assertEquals("tCO2e", resultB.getConsumption().getUnits(),
+        "Consumption units should be tCO2e");
+  }
+
+  /**
+   * Test replace_virgin_recycling.qta produces expected values.
+   * This tests replacing a percentage of virgin from one substance to another
+   * where the target substance has recycling enabled.
+   */
+  @Test
+  public void testReplaceVirginRecycling() throws IOException {
+    String qtaPath = "../examples/replace_virgin_recycling.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    String scenarioName = "result";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    EngineResult resultA = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "a");
+    assertNotNull(resultA, "Should have result for test/a in year 1");
+
+    assertEquals(500.0, resultA.getConsumption().getValue().doubleValue(), 0.0001,
+        "Consumption for substance a should be 500 tCO2e (50 mt remaining × 10 tCO2e/mt)");
+    assertEquals("tCO2e", resultA.getConsumption().getUnits(),
+        "Consumption units should be tCO2e");
+
+    EngineResult resultRecycling = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "recycling");
+    assertNotNull(resultRecycling, "Should have result for test/recycling in year 1");
+
+    assertEquals(750.0, resultRecycling.getConsumption().getValue().doubleValue(), 0.0001,
+        "Consumption for substance recycling should be 750 tCO2e (150 mt total × 5 tCO2e/mt)");
+    assertEquals("tCO2e", resultRecycling.getConsumption().getUnits(),
+        "Consumption units should be tCO2e");
+  }
+
+  /**
    * Test that 100% replacement should produce the same total equipment population
    * as cap displacement in year 5. This tests if priorEquipment replacement
    * properly reflects into equipment totals.

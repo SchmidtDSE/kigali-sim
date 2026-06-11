@@ -233,6 +233,8 @@ All the automated checks and development operations described below work in the 
 - ECMAScript / JavaScript testing: `cd editor && pnpm exec grunt`
 - Build and run the UI-based editor locally: `cd editor && bash ./support/make.sh && python3 -m http.server`
 
+Note that, to run front-end tests, you may need to first `bash ./support/make.sh`.
+
 ### Other Local Setup
 To run this system locally outside a dev container, please:
 

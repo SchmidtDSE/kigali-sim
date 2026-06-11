@@ -1,0 +1,46 @@
+start default
+  define application "test"
+    uses substance "test"
+      enable domestic
+      enable import
+      initial charge with 1 kg / unit for domestic
+      initial charge with 1 kg / unit for import
+      equals 5 tCO2e / mt
+      set priorEquipment to 100 units during year 1
+      retire 10 % each year
+      set domestic to 50 kg during year 1
+      set import to 50 kg during year 1
+      set sales to 100 units during year 1
+    end substance
+  end application
+end default
+
+start policy "full_recycle"
+  modify application "test"
+    modify substance "test"
+      recover 100 % with 100 % reuse with 0 % induction at eol during years 1 to 2
+    end substance
+  end application
+end policy
+
+start policy "limited_recycle"
+  modify application "test"
+    modify substance "test"
+      recover 50 % with 100 % reuse with 0 % induction at eol during years 1 to 2
+    end substance
+  end application
+end policy
+
+start policy "virgin_cap"
+  modify application "test"
+    modify substance "test"
+      cap virgin to 50 kg during year 2
+    end substance
+  end application
+end policy
+
+start simulations
+  simulate "business as usual" using "full_recycle" from years 1 to 2
+  simulate "limit recycling" using "limited_recycle" from years 1 to 2
+  simulate "limit virgin" using "full_recycle" then "virgin_cap" from years 1 to 2
+end simulations

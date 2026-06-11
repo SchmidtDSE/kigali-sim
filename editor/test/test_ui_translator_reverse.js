@@ -360,6 +360,85 @@ function buildUiTranslatorReverseTests() {
       assert.notEqual(code.indexOf('simulate "scenario"'), -1);
     });
 
+    QUnit.test("sets virgin values in substances", function (assert) {
+      const command = new Command("setVal", "virgin", new EngineNumber("10", "mt"), null);
+      const substance = createWithCommand("test", true, command);
+      const code = substance.toCode(0);
+      assert.notEqual(code.indexOf("set virgin to 10 mt"), -1);
+    });
+
+    QUnit.test("changes virgin values in substances", function (assert) {
+      const command = new Command(
+        "change",
+        "virgin",
+        new EngineNumber("+5", "% / year"),
+        null,
+      );
+      const substance = createWithCommand("test", true, command);
+      const code = substance.toCode(0);
+      assert.notEqual(code.indexOf("change virgin by +5 % / year"), -1);
+    });
+
+    QUnit.test("caps virgin values in substances", function (assert) {
+      const command = new LimitCommand(
+        "cap", "virgin", new EngineNumber(5, "mt"), null, null, "",
+      );
+      const substance = createWithCommand("test", true, command);
+      const code = substance.toCode(0);
+      assert.notEqual(code.indexOf("cap virgin to 5 mt"), -1);
+    });
+
+    QUnit.test("allows virgin in multiple set statements", function (assert) {
+      const commands = [
+        new Command("setVal", "domestic", new EngineNumber("1", "mt"), null),
+        new Command("setVal", "import", new EngineNumber("2", "mt"), null),
+        new Command("setVal", "virgin", new EngineNumber("3", "mt"), null),
+      ];
+      const substance = createWithCommands("test", false, commands);
+      assert.ok(substance.getIsCompatible());
+
+      if (substance.getIsCompatible()) {
+        const code = substance.toCode(0);
+        assert.notEqual(code.indexOf("set domestic to 1 mt"), -1);
+        assert.notEqual(code.indexOf("set import to 2 mt"), -1);
+        assert.notEqual(code.indexOf("set virgin to 3 mt"), -1);
+      }
+    });
+
+    QUnit.test("allows virgin in multiple change statements", function (assert) {
+      const commands = [
+        new Command("change", "domestic", new EngineNumber("+1", "mt / yr"), null),
+        new Command("change", "import", new EngineNumber("+2", "mt / yr"), null),
+        new Command("change", "virgin", new EngineNumber("+3", "mt / yr"), null),
+      ];
+      const substance = createWithCommands("test", false, commands);
+      assert.ok(substance.getIsCompatible());
+
+      if (substance.getIsCompatible()) {
+        const code = substance.toCode(0);
+        assert.notEqual(code.indexOf("change domestic by +1 mt / yr"), -1);
+        assert.notEqual(code.indexOf("change import by +2 mt / yr"), -1);
+        assert.notEqual(code.indexOf("change virgin by +3 mt / yr"), -1);
+      }
+    });
+
+    QUnit.test("allows virgin in initial charge statements", function (assert) {
+      const commands = [
+        new Command("initial charge", "domestic", new EngineNumber(1, "kg / unit"), null),
+        new Command("initial charge", "import", new EngineNumber(2, "kg / unit"), null),
+        new Command("initial charge", "virgin", new EngineNumber(3, "kg / unit"), null),
+      ];
+      const substance = createWithCommands("test", false, commands);
+      assert.ok(substance.getIsCompatible());
+
+      if (substance.getIsCompatible()) {
+        const code = substance.toCode(0);
+        assert.notEqual(code.indexOf("initial charge with 1 kg / unit for domestic"), -1);
+        assert.notEqual(code.indexOf("initial charge with 2 kg / unit for import"), -1);
+        assert.notEqual(code.indexOf("initial charge with 3 kg / unit for virgin"), -1);
+      }
+    });
+
     QUnit.test("allows multiple set statements", function (assert) {
       const commands = [
         new Command("setVal", "domestic", new EngineNumber("1", "mt"), null),

@@ -232,6 +232,50 @@ public class SimulationStateTest {
   }
 
   /**
+   * Test that virgin stream returns sum of manufacture and import (excluding recycle).
+   */
+  @Test
+  public void testVirginStreamReturnsSumOfManufactureAndImportWithoutRecycle() {
+    SimulationState keeper = createMockKeeper();
+    Scope testScope = createTestScope();
+    keeper.ensureSubstance(testScope);
+
+    // Enable the streams first
+    keeper.markStreamAsEnabled(testScope, "domestic");
+    keeper.markStreamAsEnabled(testScope, "import");
+
+    // Set streams using SimulationStateUpdate architecture
+    SimulationStateUpdate domesticStream = new SimulationStateUpdateBuilder()
+        .setUseKey(testScope)
+        .setName("domestic")
+        .setValue(new EngineNumber(new BigDecimal("50"), "kg"))
+        .setSubtractRecycling(false)
+        .build();
+    keeper.update(domesticStream);
+
+    SimulationStateUpdate importStream = new SimulationStateUpdateBuilder()
+        .setUseKey(testScope)
+        .setName("import")
+        .setValue(new EngineNumber(new BigDecimal("30"), "kg"))
+        .setSubtractRecycling(false)
+        .build();
+    keeper.update(importStream);
+
+    SimulationStateUpdate recycleStream = new SimulationStateUpdateBuilder()
+        .setUseKey(testScope)
+        .setName("recycle")
+        .setValue(new EngineNumber(new BigDecimal("10"), "kg"))
+        .setSubtractRecycling(false)
+        .build();
+    keeper.update(recycleStream);
+
+    EngineNumber virgin = keeper.getStream(testScope, "virgin");
+    assertEquals(0, virgin.getValue().compareTo(new BigDecimal("80")),
+                 "Virgin should be sum of manufacture and import only (excluding recycle)");
+    assertEquals("kg", virgin.getUnits(), "Virgin should have kg units");
+  }
+
+  /**
    * Test that GHG intensity getter and setter delegate to parameterization.
    */
   @Test

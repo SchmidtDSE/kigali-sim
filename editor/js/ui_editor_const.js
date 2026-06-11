@@ -8,7 +8,7 @@
  * Stream types that are always available regardless of substance configuration.
  * @constant {Array<string>}
  */
-const ALWAYS_ON_STREAMS = ["sales", "equipment", "priorEquipment"];
+const ALWAYS_ON_STREAMS = ["sales", "virgin", "equipment", "priorEquipment"];
 
 /**
  * Command compatibility mapping to compatibility modes:

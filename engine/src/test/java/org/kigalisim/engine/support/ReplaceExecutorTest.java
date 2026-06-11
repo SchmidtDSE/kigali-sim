@@ -139,6 +139,26 @@ class ReplaceExecutorTest {
   }
 
   @Test
+  void testExecuteVirginStreamUpdatesLastSpecifiedForBothSubstances() {
+    // Arrange
+    setStreamValue("virgin", new BigDecimal("100"), "kg");
+    YearMatcher matcher = new YearMatcher(2020, 2025);
+    EngineNumber amount = new EngineNumber(new BigDecimal("50"), "kg");
+
+    // Act
+    replaceExecutor.execute(amount, "virgin", "R-600a", matcher);
+
+    // Assert - verify lastSpecifiedValue was set for both substances
+    UseKey sourceKey = new SimpleUseKey("TestApp", "HFC-134a");
+    EngineNumber sourceLastSpec = engine.getStreamKeeper().getLastSpecifiedValue(sourceKey, "virgin");
+    assertTrue(sourceLastSpec != null, "Source substance should have lastSpecifiedValue set for virgin");
+
+    UseKey destKey = new SimpleUseKey("TestApp", "R-600a");
+    EngineNumber destLastSpec = engine.getStreamKeeper().getLastSpecifiedValue(destKey, "virgin");
+    assertTrue(destLastSpec != null, "Destination substance should have lastSpecifiedValue set for virgin");
+  }
+
+  @Test
   void testExecuteNonSalesStreamDoesNotUpdateLastSpecified() {
     // Arrange
     setStreamValue("equipment", new BigDecimal("100"), "units");

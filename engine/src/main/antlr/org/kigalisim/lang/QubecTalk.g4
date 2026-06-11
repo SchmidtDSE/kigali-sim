@@ -238,6 +238,8 @@ DOMESTIC_: 'domestic';
 
 SALES_: 'sales';
 
+VIRGIN_: 'virgin';
+
 AGE_: 'age';
 
 /**
@@ -362,7 +364,7 @@ expression: number  # simpleExpression
  * -----------------
  **/
 
-stream: (PRIOR_EQUIPMENT_ | EQUIPMENT_ | BANK_ | PRIOR_BANK_ | EXPORT_ | IMPORT_ | DOMESTIC_ | SALES_ | AGE_);
+stream: (PRIOR_EQUIPMENT_ | EQUIPMENT_ | BANK_ | PRIOR_BANK_ | EXPORT_ | IMPORT_ | DOMESTIC_ | SALES_ | VIRGIN_ | AGE_);
 
 identifier: IDENTIFIER_  # identifierAsVar;
 

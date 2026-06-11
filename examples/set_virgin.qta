@@ -1,0 +1,26 @@
+start default
+
+  define application "Test"
+
+    uses substance "SubA"
+      enable domestic
+      enable import
+      initial charge with 1 kg / unit for domestic
+      initial charge with 1 kg / unit for import
+      set domestic to 0.5 mt during year 1
+      set import to 0.5 mt during year 1
+      set virgin to 1 mt during year 1
+      equals 1 tCO2e / kg
+    end substance
+
+  end application
+
+end default
+
+
+start simulations
+
+  simulate "BAU"
+  from years 1 to 10
+
+end simulations

@@ -114,7 +114,7 @@ public final class SimulationStateUpdateBuilder {
       return false;
     }
     return switch (streamName) {
-      case "sales", "domestic", "import", "export" -> true;
+      case "sales", "domestic", "import", "export", "virgin" -> true;
       default -> false;
     };
   }

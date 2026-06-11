@@ -56,6 +56,7 @@ public final class EngineConstants {
     units.put("import", "kg");
     units.put("export", "kg");
     units.put("sales", "kg");
+    units.put("virgin", "kg");
     units.put("energy", "kwh");
     units.put("recycle", "kg");
     units.put("recycleRecharge", "kg");

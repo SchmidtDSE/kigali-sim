@@ -148,6 +148,11 @@ public class StreamUpdateExecutor {
       return;
     }
 
+    // Virgin is a computed composite (domestic + import), skip binary complement logic
+    if ("virgin".equals(streamName)) {
+      return;
+    }
+
     SimulationState simulationState = engine.getStreamKeeper();
 
     // If there is a single sales stream active, setting the substream is the same as setting sales

@@ -94,4 +94,57 @@ public class SetExecutor {
       engine.executeStreamUpdate(update);
     }
   }
+
+  /**
+   * Handle virgin stream setting by distributing to component streams without recycling subtraction.
+   *
+   * <p>Unlike sales which subtracts recycling before distributing, virgin distributes
+   * the full amount to domestic and import. This is the key difference: virgin
+   * represents only domestic + import (excluding recycling).</p>
+   *
+   * @param useKey The use key for the operation scope
+   * @param stream The stream identifier (should be "virgin")
+   * @param value The value to set
+   * @param yearMatcher Optional year matcher for conditional setting
+   */
+  public void handleVirginSet(UseKey useKey, String stream, EngineNumber value,
+        Optional<YearMatcher> yearMatcher) {
+    boolean hasYearMatch = yearMatcher.isPresent();
+    boolean inRange = hasYearMatch && !EngineSupportUtils.getIsInRange(
+        yearMatcher.get(),
+        engine.getYear()
+    );
+    if (inRange) {
+      return;
+    }
+
+    SimulationState simulationState = engine.getStreamKeeper();
+    simulationState.setLastSpecifiedValue(useKey, "virgin", value);
+    SalesStreamDistribution distribution = simulationState.getDistribution(useKey);
+
+    BigDecimal domesticAmount = value.getValue().multiply(distribution.getPercentDomestic());
+    BigDecimal importAmount = value.getValue().multiply(distribution.getPercentImport());
+
+    if (distribution.getPercentDomestic().compareTo(BigDecimal.ZERO) > 0) {
+      EngineNumber domesticValue = new EngineNumber(domesticAmount, value.getUnits());
+      StreamUpdate update = new StreamUpdateBuilder()
+          .setName("domestic")
+          .setValue(domesticValue)
+          .setYearMatcher(yearMatcher)
+          .setSubtractRecycling(false)
+          .build();
+      engine.executeStreamUpdate(update);
+    }
+
+    if (distribution.getPercentImport().compareTo(BigDecimal.ZERO) > 0) {
+      EngineNumber importValue = new EngineNumber(importAmount, value.getUnits());
+      StreamUpdate update = new StreamUpdateBuilder()
+          .setName("import")
+          .setValue(importValue)
+          .setYearMatcher(yearMatcher)
+          .setSubtractRecycling(false)
+          .build();
+      engine.executeStreamUpdate(update);
+    }
+  }
 }

@@ -13,6 +13,7 @@ const STREAM_BASE_UNITS = new Map();
 STREAM_BASE_UNITS.set("domestic", "kg");
 STREAM_BASE_UNITS.set("import", "kg");
 STREAM_BASE_UNITS.set("sales", "kg");
+STREAM_BASE_UNITS.set("virgin", "kg");
 STREAM_BASE_UNITS.set("energy", "kwh");
 STREAM_BASE_UNITS.set("recycle", "kg");
 STREAM_BASE_UNITS.set("consumption", "tCO2e");

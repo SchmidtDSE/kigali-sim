@@ -33,7 +33,7 @@ jobs:
           git clone https://github.com/SchmidtDSE/kigali-sim.git .
           git checkout ${{ github.sha }}
       - name: Setup pnpm
-        run: npm install -g pnpm@8
+        run: npm install -g pnpm@10.20.0
       - name: Install node deps
         run: pnpm install
         working-directory: ./editor
@@ -56,7 +56,7 @@ jobs:
           echo "JAVA_HOME=$JAVA_HOME_21_X64" >> $GITHUB_ENV
           echo "$JAVA_HOME_21_X64/bin" >> $GITHUB_PATH
       - name: Setup pnpm
-        run: npm install -g pnpm@8
+        run: npm install -g pnpm@10.20.0
       - name: Install node deps
         run: pnpm install
         working-directory: ./editor
@@ -272,7 +272,7 @@ jobs:
           echo "JAVA_HOME=$JAVA_HOME_21_X64" >> $GITHUB_ENV
           echo "$JAVA_HOME_21_X64/bin" >> $GITHUB_PATH
       - name: Setup pnpm
-        run: npm install -g pnpm@8
+        run: npm install -g pnpm@10.20.0
       - name: Download war
         run: |
           curl -o ./KigaliSim.war \
@@ -382,7 +382,7 @@ jobs:
           git clone https://github.com/SchmidtDSE/kigali-sim.git .
           git checkout ${{ github.sha }}
       - name: Setup pnpm
-        run: npm install -g pnpm@8
+        run: npm install -g pnpm@10.20.0
       - name: Install dependencies
         run: pnpm install
       - name: Generate JSDoc
@@ -422,7 +422,7 @@ jobs:
           echo "JAVA_HOME=$JAVA_HOME_21_X64" >> $GITHUB_ENV
           echo "$JAVA_HOME_21_X64/bin" >> $GITHUB_PATH
       - name: Setup pnpm
-        run: npm install -g pnpm@8
+        run: npm install -g pnpm@10.20.0
       - name: Install SSH client and sshpass
         run: |
           sudo apt-get update

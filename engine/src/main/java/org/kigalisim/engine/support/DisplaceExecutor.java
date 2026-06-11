@@ -376,8 +376,8 @@ public class DisplaceExecutor {
     EngineNumber currentValue = engine.getStream(stream);
     simulationState.setLastSpecifiedValue(scope, stream, currentValue);
 
-    // For "sales" stream, also update lastSpecified for component streams (domestic/import)
-    if ("sales".equals(stream)) {
+    // For "sales" or "virgin" stream, also update lastSpecified for component streams (domestic/import)
+    if (EngineSupportUtils.isProductionMetastream(stream)) {
       EngineNumber domesticValue = engine.getStream("domestic");
       EngineNumber importValue = engine.getStream("import");
       simulationState.setLastSpecifiedValue(scope, "domestic", domesticValue);
