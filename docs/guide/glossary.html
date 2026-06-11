@@ -195,7 +195,7 @@
           <dd>A modeling approach used in system design / analysis that tracks both stocks (accumulated quantities like equipment population or substance banks) and flows (rates of change like sales, emissions, or retirement) over time.</dd>
 
           <dt>Stream</dt>
-          <dd>A time series of values in the simulation representing different types of flows or stocks. Available streams include domestic, import, export, sales, equipment, priorEquipment, bank, and age.</dd>
+          <dd>A time series of values in the simulation representing different types of flows or stocks. Available streams include domestic, import, export, sales, virgin, equipment, priorEquipment, bank, and age.</dd>
 
           <dt>Substance</dt>
           <dd>A chemical refrigerant or other controlled substance used in applications, such as HFC-134a, R-410A, R-600a, or HFC-32. Defined using <code>uses substance "name"</code> within applications.</dd>
@@ -208,6 +208,9 @@
 
           <dt>UI-based Editor</dt>
           <dd>UI-based point-and-click interface for building simulations without writing code. Also called the Designer or UI Editor.</dd>
+
+          <dt>Virgin</dt>
+          <dd>A stream representing domestic and import consumption only, excluding recycling and exports. This is a meta-stream similar to sales but without secondary (recycled) material. Set / change virgin impacts domestic and import proportionally without subtracting recycling. Cap / floor using virgin place upper or lower limits on domestic and import only. Recycling is bound by amount captured through the recover command.</dd>
 
           <dt>WASM</dt>
           <dd>WebAssembly. A binary instruction format that enables high-performance execution of code in web browsers. Kigali Sim's Java engine is compiled to WASM for browser-based execution.</dd>
