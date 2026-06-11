@@ -20,8 +20,10 @@ ace.define("ace/mode/qubectalk", [
 
     const samplingKeywords = "mean|normally|sample|std|uniformly|limit";
 
-    const streams = "priorEquipment|equipment|priorBank|bank|export|import|domestic|sales|" +
-      "virgin|age";
+    const streams = [
+      "priorEquipment", "equipment", "priorBank", "bank", "export", "import",
+      "domestic", "sales", "virgin", "age",
+    ].join("|");
 
     const units = "annually|beginning|day|days|each|kg|kwh|month|months|mt|onwards|percent|" +
       "tCO2e|kgCO2e|unit|units|year|years|yr|yrs";
