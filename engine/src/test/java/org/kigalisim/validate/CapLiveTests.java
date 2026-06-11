@@ -922,10 +922,7 @@ public class CapLiveTests {
     List<EngineResult> limitRecycleResultsList = limitRecycleResults.collect(Collectors.toList());
     EngineResult limitRecycleYear2 = LiveTestsUtil.getResult(limitRecycleResultsList.stream(), 2, "test", "test");
     assertNotNull(limitRecycleYear2, "Should have limit recycling result for test/test in year 2");
-    double limitRecycleVirginYear2 = limitRecycleYear2.getDomestic().getValue().doubleValue()
-        + limitRecycleYear2.getImport().getValue().doubleValue();
     EngineResult bauYear1 = LiveTestsUtil.getResult(bauResultsList.stream(), 1, "test", "test");
-    EngineResult limitRecycleYear1 = LiveTestsUtil.getResult(limitRecycleResultsList.stream(), 1, "test", "test");
     assertTrue(bauYear1.getRecycle().getValue().doubleValue() > 0,
         "BAU year 1 recycle should be > 0 (was " + bauYear1.getRecycle().getValue() + ")");
     assertTrue(bauYear1.getRecycleConsumption().getValue().doubleValue() > 0,
@@ -934,6 +931,7 @@ public class CapLiveTests {
         "BAU year 2 recycle should be > 0 (was " + bauYear2.getRecycle().getValue() + ")");
     assertTrue(bauYear2.getRecycleConsumption().getValue().doubleValue() > 0,
         "BAU year 2 recycleConsumption should be > 0 (was " + bauYear2.getRecycleConsumption().getValue() + ")");
+    EngineResult limitRecycleYear1 = LiveTestsUtil.getResult(limitRecycleResultsList.stream(), 1, "test", "test");
     assertTrue(limitRecycleYear1.getRecycle().getValue().doubleValue() > 0,
         "Limit recycle year 1 recycle should be > 0 (was " + limitRecycleYear1.getRecycle().getValue() + ")");
     assertTrue(limitRecycleYear1.getRecycleConsumption().getValue().doubleValue() > 0,
@@ -943,6 +941,8 @@ public class CapLiveTests {
     assertTrue(limitRecycleYear2.getRecycleConsumption().getValue().doubleValue() > 0,
         "Limit recycle year 2 recycleConsumption should be > 0 (was " + limitRecycleYear2.getRecycleConsumption().getValue() + ")");
 
+    double limitRecycleVirginYear2 = limitRecycleYear2.getDomestic().getValue().doubleValue()
+        + limitRecycleYear2.getImport().getValue().doubleValue();
     assertTrue(limitRecycleVirginYear2 > bauVirginYear2,
         "Virgin should be higher when recycling is limited (was "
         + limitRecycleVirginYear2 + " vs BAU " + bauVirginYear2 + ")");
