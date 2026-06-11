@@ -510,10 +510,12 @@ public class StreamParameterization {
     lastSpecifiedValue.put(streamName, value);
 
     // Set the flag if this is a sales-related stream
-    if ("sales".equals(streamName) || "import".equals(streamName) || "domestic".equals(streamName)) {
+    if (getIsSalesStream(streamName)) {
       salesIntentFreshlySet = true;
     }
   }
+
+
 
   /**
    * Get the last specified value for a stream.
@@ -608,7 +610,7 @@ public class StreamParameterization {
    */
   private boolean getIsSalesStreamAllowed(String name) {
     return switch (name) {
-      case "domestic", "import", "export", "recycle", "recycleRecharge", "recycleEol" -> true;
+      case "domestic", "import", "export", "recycle", "recycleRecharge", "recycleEol", "virgin" -> true;
       default -> false;
     };
   }
@@ -661,18 +663,33 @@ public class StreamParameterization {
    */
   public void clearLastSpecifiedValue(String stream) {
     switch (stream) {
-      case "sales" -> {
+      case "sales", "virgin" -> {
         lastSpecifiedValue.remove("sales");
         lastSpecifiedValue.remove("import");
         lastSpecifiedValue.remove("domestic");
+        lastSpecifiedValue.remove("virgin");
         setSalesIntentFreshlySet(false);
       }
       case "domestic", "import" -> {
         lastSpecifiedValue.remove(stream);
         lastSpecifiedValue.remove("sales");
+        lastSpecifiedValue.remove("virgin");
         setSalesIntentFreshlySet(false);
       }
       default -> lastSpecifiedValue.remove(stream);
     }
+  }
+
+  /**
+   * Check if a stream name is a sales stream.
+   *
+   * @param streamName The stream name to check
+   * @return True if the stream is a sales stream, false otherwise
+   */
+  private boolean getIsSalesStream(String streamName) {
+    return switch (streamName) {
+      case "sales", "domestic", "import", "virgin" -> true;
+      default -> false;
+    };
   }
 }

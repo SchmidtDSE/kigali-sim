@@ -289,6 +289,28 @@ public class StreamParameterizationTest {
   }
 
   /**
+   * Test setting and getting last specified value for virgin stream.
+   */
+  @Test
+  public void testSetAndGetLastSpecifiedValueForVirgin() {
+    StreamParameterization parameterization = new StreamParameterization();
+
+    // Test setting a value for virgin stream
+    EngineNumber testValue = new EngineNumber(new BigDecimal("500"), "units");
+    parameterization.setLastSpecifiedValue("virgin", testValue);
+
+    // Test getting the value back
+    EngineNumber retrieved = parameterization.getLastSpecifiedValue("virgin");
+    assertNotNull(retrieved, "Retrieved value should not be null");
+    assertEquals(new BigDecimal("500"), retrieved.getValue(), "Value should match");
+    assertEquals("units", retrieved.getUnits(), "Units should match");
+
+    // Test getting a non-existent value
+    EngineNumber nonExistent = parameterization.getLastSpecifiedValue("sales");
+    assertEquals(null, nonExistent, "Non-existent value should be null");
+  }
+
+  /**
    * Test tracking of has last specified.
    */
   @Test
