@@ -182,9 +182,6 @@
           <dt>Sales</dt>
           <dd>A stream representing all consumption within the simulated country in the current year. In other words, the total new substance entering the market. For all simulations, this is the combination of both domestic manufacturing and imports. However, this includes recycling if active. Set / change sales impacts all consumption where, as recycling is limited by the recover command, domestic and import will be modified to satisfy a set or change after taking the unchanged recycling capacity into account. Cap / floor using sales place upper or lower limits on all consumption where those limits include recycling.</dd>
 
-          <dt>Virgin</dt>
-          <dd>A stream representing domestic and import consumption only, excluding recycling and exports. This is a meta-stream similar to sales but without secondary (recycled) material. Set / change virgin impacts domestic and import proportionally without subtracting recycling. Cap / floor using virgin place upper or lower limits on domestic and import only. Recycling is bound by amount captured through the recover command.</dd>
-
           <dt>Scrap Rate</dt>
           <dd>See Retirement Rate.</dd>
 
@@ -211,6 +208,9 @@
 
           <dt>UI-based Editor</dt>
           <dd>UI-based point-and-click interface for building simulations without writing code. Also called the Designer or UI Editor.</dd>
+
+          <dt>Virgin</dt>
+          <dd>A stream representing domestic and import consumption only, excluding recycling and exports. This is a meta-stream similar to sales but without secondary (recycled) material. Set / change virgin impacts domestic and import proportionally without subtracting recycling. Cap / floor using virgin place upper or lower limits on domestic and import only. Recycling is bound by amount captured through the recover command.</dd>
 
           <dt>WASM</dt>
           <dd>WebAssembly. A binary instruction format that enables high-performance execution of code in web browsers. Kigali Sim's Java engine is compiled to WASM for browser-based execution.</dd>

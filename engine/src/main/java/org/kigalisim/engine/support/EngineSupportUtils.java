@@ -77,6 +77,20 @@ public final class EngineSupportUtils {
   }
 
   /**
+   * Check if a stream name represents a production metastream (sales or virgin).
+   *
+   * <p>Production metastreams are aggregate streams that represent production
+   * consumption within a country. Sales includes domestic, import, and recycling;
+   * virgin includes domestic and import only (excluding recycling).</p>
+   *
+   * @param name The stream name to check
+   * @return true if the stream is a production metastream (sales or virgin)
+   */
+  public static boolean isProductionMetastream(String name) {
+    return "sales".equals(name) || "virgin".equals(name);
+  }
+
+  /**
    * Check if a stream name represents a sales substream (domestic or import).
    *
    * <p>Sales substreams are the component streams that make up the overall sales stream,
@@ -220,7 +234,7 @@ public final class EngineSupportUtils {
    */
   public static BigDecimal getDistributedRecharge(String streamName, EngineNumber totalRecharge,
       UseKey useKey, SimulationState simulationState) {
-    if ("sales".equals(streamName) || "virgin".equals(streamName)) {
+    if (isProductionMetastream(streamName)) {
       return totalRecharge.getValue();
     }
 
