@@ -182,6 +182,9 @@
           <dt>Sales</dt>
           <dd>A stream representing all consumption within the simulated country in the current year. In other words, the total new substance entering the market. For all simulations, this is the combination of both domestic manufacturing and imports. However, this includes recycling if active. Set / change sales impacts all consumption where, as recycling is limited by the recover command, domestic and import will be modified to satisfy a set or change after taking the unchanged recycling capacity into account. Cap / floor using sales place upper or lower limits on all consumption where those limits include recycling.</dd>
 
+          <dt>Virgin</dt>
+          <dd>A stream representing domestic and import consumption only, excluding recycling and exports. This is a meta-stream similar to sales but without secondary (recycled) material. Set / change virgin impacts domestic and import proportionally without subtracting recycling. Cap / floor using virgin place upper or lower limits on domestic and import only. Recycling is bound by amount captured through the recover command.</dd>
+
           <dt>Scrap Rate</dt>
           <dd>See Retirement Rate.</dd>
 
@@ -195,7 +198,7 @@
           <dd>A modeling approach used in system design / analysis that tracks both stocks (accumulated quantities like equipment population or substance banks) and flows (rates of change like sales, emissions, or retirement) over time.</dd>
 
           <dt>Stream</dt>
-          <dd>A time series of values in the simulation representing different types of flows or stocks. Available streams include domestic, import, export, sales, equipment, priorEquipment, bank, and age.</dd>
+          <dd>A time series of values in the simulation representing different types of flows or stocks. Available streams include domestic, import, export, sales, virgin, equipment, priorEquipment, bank, and age.</dd>
 
           <dt>Substance</dt>
           <dd>A chemical refrigerant or other controlled substance used in applications, such as HFC-134a, R-410A, R-600a, or HFC-32. Defined using <code>uses substance "name"</code> within applications.</dd>

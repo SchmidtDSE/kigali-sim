@@ -115,7 +115,7 @@ initial charge with 0.10 kg / unit for export
 If this is omitted and the substance has sales, an error message may be shown. The initial charge determines how much substance is contained in each unit of new equipment for that stream.
 
 ### Sales
-The sale of substances typically defines the equipment population. QubecTalk considers possible streams to fit into `domestic`, `import`, `export`, or `recycling`.
+The sale of substances typically defines the equipment population. QubecTalk considers possible streams to fit into `domestic`, `import`, `export`, `virgin`, or `recycling`.
 
 **Enable Statement**: Before setting sales values, streams must be explicitly enabled using the `enable` command. This command indicates which streams (domestic, import, export) will be used for a substance:
 
@@ -169,7 +169,13 @@ If no stream is specified, it will apply proportionally across sub-streams (dome
  - `set` / `change` sales impacts all consumption but recycling is limited by the addressable stream as indicated in a `recover` command so domestic and import will be modified to satisfy new target levels with the same level of prior recycling.
  - `cap` / `floor` place lower or upper limits on all consumption including recycling.
 
-For virgin only, replace `sales` with individual commands on `domestic` and `import` to exclude secondary.
+ For virgin only, use the `virgin` keyword which includes domestic and import but excludes secondary, or replace `sales` with individual commands on `domestic` and `import` to exclude secondary.
+
+**Virgin keyword**: The `virgin` keyword indicates domestic and import consumption only, excluding recycling and exports. Unlike `sales`, virgin does not include secondary (recycled) material.
+
+ - `set` / `change` virgin impacts domestic and import proportionally without subtracting recycling.
+ - `cap` / `floor` place lower or upper limits on domestic and import only (excluding recycling).
+ - Recycling is bound by amount captured through the `recover` command.
 
 ### Population
 Historic equipment populations are typically inferred by sales before applying a retirement rate into the future. However, they may be specified manually as well.
@@ -278,7 +284,7 @@ cap import to 750 mt during years 4 to 5
 cap domestic to 0 mt during years 10 to onwards
 ```
 
-Sales, domestic, import, export, and equipment streams can accept the cap. If specifying an aggregate stream, it will be applied proportionally. For example, for sales, the effect will be split proportionally between domestic and imports.
+Sales, virgin, domestic, import, export, and equipment streams can accept the cap. If specifying an aggregate stream, it will be applied proportionally. For example, for sales, the effect will be split proportionally between domestic and imports. For virgin, the effect will be split proportionally between domestic and import without subtracting recycling.
 
 When using units (equipment) in cap commands, those limits apply after recharge calculations. So a cap of 100 units means 100 units of new equipment on top of recharge needs for prior equipment.
 
@@ -338,7 +344,7 @@ recover 20 % with 80 % reuse with default induction # Use system default
   - Units-based specs: Default 0% induction (displacement behavior)
   - Non-units specs (kg/mt): Default 100% induction (induced demand behavior)
 
-**100% induction is recommended for users who are uncertain** as induction is a complex economic phenomenon. It can be paired with other policies like caps on virgin material to ensure desired reductions.
+**100% induction is recommended for users who are uncertain** as induction is a complex economic phenomenon. It can be paired with other policies like caps on the `virgin` stream (domestic + import) to ensure desired reductions.
 
 The `displacing` clause can also be used to specify which substance or stream is offset:
 
@@ -368,7 +374,7 @@ assume no import during years 5 to 10
 assume only recharge bank during years 3 to onwards
 ```
 
-Supported streams: `domestic`, `import`, `export`, `sales`, `bank`, `equipment`
+Supported streams: `domestic`, `import`, `export`, `sales`, `virgin`, `bank`, `equipment`
 
 The `assume only recharge` variant is particularly useful when modeling that new equipment sales should cease but servicing continues.
 
@@ -521,7 +527,7 @@ define salesOther as get sales of "HFC-134a" as kg
 define equipmentCount as get equipment as units
 ```
 
-Setting an aggregate stream like sales will cause the value to be distributed proportionally to the prior value of the sub-streams. In the case of this example, this would be applied across import, domestic, and export.
+Setting an aggregate stream like sales will cause the value to be distributed proportionally to the prior value of the sub-streams. In the case of this example, this would be applied across import, domestic, and export. For `virgin`, the value is distributed proportionally across domestic and import without subtracting recycling.
 
 ### Age stream
 The `age` stream provides access to the weighted average age of equipment in the population. This is a read-only computed stream:
@@ -605,6 +611,7 @@ While the system can operate with constraints through `cap` and `floor`, updates
 | **Trigger**                 | **Sales**                                       | **Consumption**                        | **Population**                                                                                  |
 | ------------------------------------------------------ | ----------------------------------------------- | ------------------------------------ | ----------------------------------------------------------------------------------------------- |
 | Sales (domestic, import, export) | Changed directly                                | Recalc using equals value              | Recalc new and total equip after subtract recharge and recycle, retiring at recharge if needed. |
+| Virgin (domestic, import) | Changed directly (without recycling subtraction)                               | Recalc using equals value              | Recalc new and total equip after subtract recharge and recycle, retiring at recharge if needed. |
 | Consumption                   | Recalc after add recharge and subtract recycle. | Changed directly                     | Recalc new and total equip after subtract recharge and recycle, retiring at recharge if needed. |
 | Population (equipment)      | Recalc after add recharge and subtract recycle. | Recalc after sales update using equals | New equip and total current equip changes but prior equip untouched.                            |
 | Population (priorEquipment) | No change                                       | No change                            | Change prior equip. New and total equipment recalculated.                                       |
