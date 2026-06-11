@@ -114,14 +114,10 @@ public class ChangeExecutor {
     }
 
     String stream = config.getStream();
-    if ("sales".equals(stream)) {
-      handleSalesChange(config);
-    } else if ("virgin".equals(stream)) {
-      handleSalesChange(config);
-    } else if (EngineSupportUtils.isSalesSubstream(stream) || "export".equals(stream)) {
-      handleComponentStream(config);
-    } else {
-      handleDerivedStream(config);
+    switch (stream) {
+      case "sales", "virgin" -> handleSalesChange(config);
+      case "domestic", "import", "export" -> handleComponentStream(config);
+      default -> handleDerivedStream(config);
     }
   }
 

@@ -89,6 +89,25 @@ class EngineSupportUtilsTest {
   }
 
   @Test
+  void testIsProductionMetastreamSales() {
+    assertTrue(EngineSupportUtils.isProductionMetastream("sales"));
+  }
+
+  @Test
+  void testIsProductionMetastreamVirgin() {
+    assertTrue(EngineSupportUtils.isProductionMetastream("virgin"));
+  }
+
+  @Test
+  void testIsProductionMetastreamFalseForOtherStreams() {
+    assertFalse(EngineSupportUtils.isProductionMetastream("domestic"));
+    assertFalse(EngineSupportUtils.isProductionMetastream("import"));
+    assertFalse(EngineSupportUtils.isProductionMetastream("export"));
+    assertFalse(EngineSupportUtils.isProductionMetastream("equipment"));
+    assertFalse(EngineSupportUtils.isProductionMetastream(null));
+  }
+
+  @Test
   void testIsSalesSubstreamFalseForOtherStreams() {
     // Act & Assert
     assertFalse(EngineSupportUtils.isSalesSubstream("sales"));
