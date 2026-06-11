@@ -1527,6 +1527,21 @@ function buildIntegrationTests() {
       ],
     );
 
+    buildTest("tests virgin stream set", "/examples/set_virgin.qta", [
+      (result, assert) => {
+        const record = getResult(result, "BAU", 1, 0, "Test", "SubA");
+        const domestic = record.getDomestic();
+        assert.closeTo(domestic.getValue(), 500, 0.0001);
+        assert.deepEqual(domestic.getUnits(), "kg");
+      },
+      (result, assert) => {
+        const record = getResult(result, "BAU", 1, 0, "Test", "SubA");
+        const importVal = record.getImport();
+        assert.closeTo(importVal.getValue(), 500, 0.0001);
+        assert.deepEqual(importVal.getUnits(), "kg");
+      },
+    ]);
+
     QUnit.test("preserves number formatting in code to UI to code round-trip", function (assert) {
       assert.expect(4);
 

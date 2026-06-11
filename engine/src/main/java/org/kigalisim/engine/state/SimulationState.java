@@ -280,6 +280,7 @@ public class SimulationState {
     // Route based on stream type using a new-style switch
     switch (name) {
       case "sales" -> setStreamForSales(useKey, name, value);
+      case "virgin" -> setStreamForVirgin(useKey, name, value);
       case "domestic", "import" -> setStreamSalesSubstream(useKey, name, value, distribution);
       case "recycle" -> setStreamForRecycle(useKey, name, value);
       default -> {
@@ -376,6 +377,7 @@ public class SimulationState {
 
     return switch (name) {
       case "sales" -> getStreamSales(useKey, priorYear);
+      case "virgin" -> getStreamVirgin(useKey, priorYear);
       case "recycle" -> getStreamRecycle(useKey, priorYear);
       case "induction" -> getStreamInduction(useKey, priorYear);
       default -> getStreamDirect(useKey, name, priorYear);
@@ -414,6 +416,40 @@ public class SimulationState {
     BigDecimal recycleAmountValue = recycleAmount.getValue();
 
     BigDecimal newTotal = domesticAmountValue.add(importAmountValue).add(recycleAmountValue);
+
+    return new EngineNumber(newTotal, "kg");
+  }
+
+  /**
+   * Get the virgin stream value by summing domestic and import streams (excluding recycling).
+   * Uses current year.
+   *
+   * @param useKey The key containing application and substance
+   * @return The total virgin value in kg
+   */
+  private EngineNumber getStreamVirgin(UseKey useKey) {
+    return getStreamVirgin(useKey, false);
+  }
+
+  /**
+   * Get the virgin stream value by summing domestic and import streams (excluding recycling).
+   *
+   * @param useKey The key containing application and substance
+   * @param priorYear If true, returns prior year value if available, returns current year if no
+   *     prior year exists.
+   * @return The total virgin value in kg
+   */
+  private EngineNumber getStreamVirgin(UseKey useKey, boolean priorYear) {
+    EngineNumber domesticAmountRaw = getStream(useKey, "domestic", priorYear);
+    EngineNumber importAmountRaw = getStream(useKey, "import", priorYear);
+
+    EngineNumber domesticAmount = unitConverter.convert(domesticAmountRaw, "kg");
+    EngineNumber importAmount = unitConverter.convert(importAmountRaw, "kg");
+
+    BigDecimal domesticAmountValue = domesticAmount.getValue();
+    BigDecimal importAmountValue = importAmount.getValue();
+
+    BigDecimal newTotal = domesticAmountValue.add(importAmountValue);
 
     return new EngineNumber(newTotal, "kg");
   }
@@ -1536,6 +1572,36 @@ public class SimulationState {
   }
 
   /**
+   * Distribute a virgin stream value to domestic and import without recycling subtraction.
+   *
+   * <p>Unlike sales which subtracts recycling before distributing, virgin distributes
+   * the full amount to domestic and import. This is the key difference: virgin
+   * represents only domestic + import (excluding recycling).</p>
+   *
+   * @param useKey A key object representing the context for the virgin stream
+   * @param name The name associated with the stream being configured
+   * @param value The engine number input value to be distributed into domestic and import
+   */
+  private void setStreamForVirgin(UseKey useKey, String name, EngineNumber value) {
+    EngineNumber valueConverted = unitConverter.convert(value, "kg");
+    BigDecimal amountKg = valueConverted.getValue();
+
+    SalesStreamDistribution distribution = getDistribution(useKey);
+
+    BigDecimal domesticPercent = distribution.getPercentDomestic();
+    BigDecimal importPercent = distribution.getPercentImport();
+
+    BigDecimal newDomesticAmount = amountKg.multiply(domesticPercent);
+    BigDecimal newImportAmount = amountKg.multiply(importPercent);
+
+    EngineNumber domesticAmountToSet = new EngineNumber(newDomesticAmount, "kg");
+    EngineNumber importAmountToSet = new EngineNumber(newImportAmount, "kg");
+
+    setSimpleStream(useKey, "domestic", domesticAmountToSet);
+    setSimpleStream(useKey, "import", importAmountToSet);
+  }
+
+  /**
    * Sets the recycle stream by distributing the value proportionally between recycleRecharge and recycleEol.
    * Similar to sales distribution, this method uses the prior sizes of recycleRecharge and recycleEol
    * to determine the proportional distribution.
@@ -1713,7 +1779,7 @@ public class SimulationState {
    */
   private boolean getIsSettingVolumeByUnits(String name, EngineNumber value) {
     boolean isSalesComponent = switch (name) {
-      case "domestic", "import", "sales" -> true;
+      case "domestic", "import", "sales", "virgin" -> true;
       default -> false;
     };
     boolean isUnits = value.getUnits().startsWith("unit");

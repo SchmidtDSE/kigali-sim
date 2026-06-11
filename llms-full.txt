@@ -76,7 +76,7 @@ The `assume` command provides control over sales carryover behavior:
 - `assume only recharge [stream] <during>` - Sets stream to 0 units (only recharge, no new equipment)
 - `assume continued [stream] <during>` - No-op (sales continue from previous year, default behavior)
 
-Streams supported: `domestic`, `import`, `sales`, `bank`
+Streams supported: `domestic`, `import`, `sales`, `virgin`, `bank`
 
 Examples:
 ```qubectalk
@@ -114,7 +114,7 @@ Kigali Sim uses DecimalFormat number formatting (comma for thousands, period for
 
 #### Advanced Features
 - **Variables**: `define identifier as expression` and `get identifier` (scoped to enclosing start/end block)
-- **Stream access**: `get {stream}` - access streams like `sales`, `equipment`, `age`, etc.
+- **Stream access**: `get {stream}` - access streams like `sales`, `virgin`, `equipment`, `age`, etc.
 - **Unit conversions**: `get {stream} as {units}` like `get import of "substance" as mt` or `get age as years`
 - **Age stream**: `get age as years` provides weighted average equipment age for age-dependent policies (read-only, computed)
 - **Constraints**: `limit expression to [min,max]`, `limit expression to [,max]` (min of negative infinity), `limit expression to [min,]` (max of infinity)
@@ -135,11 +135,12 @@ Keywords `at` and `eol` are available for recycling commands. Use `at recharge` 
 No duration means runs each year. Use `during year beginning` for first year only.
 
 ### Streams
-Streams may be `domestic|import|export|sales|equipment|priorEquipment|bank|age`
+Streams may be `domestic|import|export|sales|virgin|equipment|priorEquipment|bank|age`
 
 - `domestic`: domestically produced and consumed
 - `import`: imported either in vessel or initial charge
 - `sales`: all consumption in country
+- `virgin`: domestic and import only (excludes recycling and exports)
 - `priorEquipment`: equipment active coming into current year
 - `equipment`: equipment active, either from prior or new
 - `age`: weighted average equipment age (read-only, Advanced Editor only)
@@ -158,7 +159,14 @@ Includes domestic, import, and recycling if active. Excludes export.
  - `set` / `change` sales impacts all consumption but recycling is limited by the recover command so domestic and import will be modified to satisfy command.
  - `cap` / `floor` place lower or upper limits on all consumption including recycling.
 
-For virgin only, replace `sales` with individual commands on `domestic` and `import` to exclude secondary.
+ For virgin only, use the `virgin` keyword which includes domestic and import but excludes secondary, or replace `sales` with individual commands on `domestic` and `import` to exclude secondary.
+
+#### Virgin
+Includes domestic and import only. Excludes both recycling and exports.
+
+ - `set` / `change` virgin impacts domestic and import proportionally without subtracting recycling.
+ - `cap` / `floor` place lower or upper limits on domestic and import only (excluding recycling).
+ - Recycling is bound by amount captured through the `recover` command.
 
 #### Age
 The `age` stream tracks the weighted average age of equipment in the population. This is a computed, read-only stream that cannot be set by users:
@@ -223,7 +231,7 @@ The `recover` command supports specifying when recycling occurs and how much ind
 - **Non-units specs (kg/mt)**: Default 100% induction (induced demand behavior) - recycling adds on top of existing demand
 - **Explicit specification**: Users can override defaults by specifying exact percentages (0-100%)
 
-**100% Induction Recommendations**: 100% induction means recycled material does not displace virgin material — it adds to total supply. This is recommended when uncertain, as induction is a complex economic phenomenon. It can be paired with caps on virgin material (import, domestic) to ensure desired reductions alongside expanded recycling.
+**100% Induction Recommendations**: 100% induction means recycled material does not displace virgin material — it adds to total supply. This is recommended when uncertain, as induction is a complex economic phenomenon. It can be paired with caps on the `virgin` stream (domestic + import) to ensure desired reductions alongside expanded recycling.
 
 Examples:
 ```
