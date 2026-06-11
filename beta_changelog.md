@@ -14,6 +14,14 @@ Finally, we want to again express our gratitude for your feedback and time.
 
 The following changes have been adopted and released.
 
+### Virgin keyword
+
+**Status**: Released June 11, 2026
+
+**Classification**: Enhancement
+
+Previously one could refer to all `sales` (primary + secondary) or individual streams (`domestic`, `import`). The new `virgin` keyword lets one refer to just primary production without recycling.
+
 ### April 2026 Outage
 
 **Status**: Started April 10, resolved April 14 (2026)
