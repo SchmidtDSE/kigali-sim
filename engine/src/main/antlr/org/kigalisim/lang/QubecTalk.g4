@@ -224,6 +224,8 @@ PRIOR_: 'prior';
 
 PRIOR_EQUIPMENT_: 'priorEquipment';
 
+NEW_EQUIPMENT_: 'newEquipment';
+
 EQUIPMENT_: 'equipment';
 
 BANK_: 'bank';
@@ -322,7 +324,7 @@ string: STR_;
 
 volumeUnit: (KG_ | MT_ | TCO2E_ | KGCO2E_ | KWH_ | UNIT_ | UNITS_);
 
-relativeUnit: (PERCENT_ | PERCENT_ PRIOR_ YEAR_ | PERCENT_ CURRENT_ YEAR_ | PERCENT_ CURRENT_);
+relativeUnit: (PERCENT_ | PERCENT_ PRIOR_ YEAR_ | PERCENT_ CURRENT_ YEAR_ | PERCENT_ CURRENT_ | PERCENT_ NEW_EQUIPMENT_);
 
 temporalUnit: (YEAR_ | YEARS_ | YR_ | YRS_ | MONTH_ | MONTHS_ | DAY_ | DAYS_);
 
@@ -364,7 +366,7 @@ expression: number  # simpleExpression
  * -----------------
  **/
 
-stream: (PRIOR_EQUIPMENT_ | EQUIPMENT_ | BANK_ | PRIOR_BANK_ | EXPORT_ | IMPORT_ | DOMESTIC_ | SALES_ | VIRGIN_ | AGE_);
+stream: (PRIOR_EQUIPMENT_ | NEW_EQUIPMENT_ | EQUIPMENT_ | BANK_ | PRIOR_BANK_ | EXPORT_ | IMPORT_ | DOMESTIC_ | SALES_ | VIRGIN_ | AGE_);
 
 identifier: IDENTIFIER_  # identifierAsVar;
 
