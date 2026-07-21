@@ -923,7 +923,11 @@ public class RechargeLiveTests {
    *
    * <p>The example sets import to 100 units during year 2021 with an initial charge
    * of 1 kg / unit for import. Each year, 5% of new equipment (5 units) is recharged
-   * at 1 kg / unit, yielding 5 kg of import consumption for recharge.</p>
+   * at 1 kg / unit, yielding 5 kg of import consumption for recharge. Under trade
+   * attribution, the initial charge of the import is allocated to the exporter but
+   * the local charge (recharge) goes to the importer (simulated country). Therefore,
+   * the import attributed to the simulated country is the total import minus the
+   * initial charge value attributed to the exporter.</p>
    */
   @Test
   public void testNewEquipmentGetStream() throws IOException {
@@ -937,15 +941,32 @@ public class RechargeLiveTests {
 
     // Check import consumption across all years (2021-2030).
     // Each year should have 5 kg of import consumption for recharge (post trade
-    // attribution), attributed to the simulated country.
+    // attribution), attributed to the simulated country. Under trade attribution,
+    // the initial charge of imported equipment is attributed to the exporter, so
+    // the import attributed to the simulated country is total import minus the
+    // initial charge value.
     for (int year = 2021; year <= 2030; year++) {
       EngineResult result = LiveTestsUtil.getResult(
           resultsList.stream(), year, "Domestic Refrigeration", "HFC-134a");
       assertNotNull(result, "Should have result for Domestic Refrigeration/HFC-134a in year " + year);
-      double importConsumption = result.getImportConsumption().getValue().doubleValue();
-      assertEquals(5.0, importConsumption, 0.0001,
-          "Import consumption should be 5 kg in year " + year
-              + " (5% of 100 new units at 1 kg/unit), but was " + importConsumption);
+      
+      double newPopulation = result.getPopulationNew().getValue().doubleValue();
+      assertEquals(100, newPopulation, 0.0001);
+
+      double totalPopulation = result.getPopulation().getValue().doubleValue();
+      assertEquals(100 * (year - 2020), totalPopulation, 0.0001);
+
+      double totalImport = result.getImport().getValue().doubleValue();
+      double exporterInitialCharge = result.getTradeSupplement()
+          .getImportInitialChargeValue().getValue().doubleValue();
+      double importAttributedToSimulatedCountry = totalImport - exporterInitialCharge;
+      
+      assertEquals(5.0, importAttributedToSimulatedCountry, 0.0001,
+          "Import attributed to simulated country should be 5 kg in year " + year
+              + " (5% of 100 new units at 1 kg/unit for recharge), but was "
+              + importAttributedToSimulatedCountry
+              + " (total import=" + totalImport
+              + ", exporter initial charge=" + exporterInitialCharge + ")");
     }
   }
 
@@ -970,15 +991,24 @@ public class RechargeLiveTests {
 
     // Check import consumption across all years (2021-2030).
     // Each year should have 5 kg of import consumption for recharge (post trade
-    // attribution), attributed to the simulated country.
+    // attribution), attributed to the simulated country. Under trade attribution,
+    // the initial charge of imported equipment is attributed to the exporter, so
+    // the import attributed to the simulated country is total import minus the
+    // initial charge value.
     for (int year = 2021; year <= 2030; year++) {
       EngineResult result = LiveTestsUtil.getResult(
           resultsList.stream(), year, "Domestic Refrigeration", "HFC-134a");
       assertNotNull(result, "Should have result for Domestic Refrigeration/HFC-134a in year " + year);
-      double importConsumption = result.getImportConsumption().getValue().doubleValue();
-      assertEquals(5.0, importConsumption, 0.0001,
-          "Import consumption should be 5 kg in year " + year
-              + " (5% of 100 new units at 1 kg/unit), but was " + importConsumption);
+      double totalImport = result.getImport().getValue().doubleValue();
+      double exporterInitialCharge = result.getTradeSupplement()
+          .getImportInitialChargeValue().getValue().doubleValue();
+      double importAttributedToSimulatedCountry = totalImport - exporterInitialCharge;
+      assertEquals(5.0, importAttributedToSimulatedCountry, 0.0001,
+          "Import attributed to simulated country should be 5 kg in year " + year
+              + " (5% of 100 new units at 1 kg/unit for recharge), but was "
+              + importAttributedToSimulatedCountry
+              + " (total import=" + totalImport
+              + ", exporter initial charge=" + exporterInitialCharge + ")");
     }
   }
 

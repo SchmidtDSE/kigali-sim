@@ -9,7 +9,7 @@ start default
       initial charge with 0 kg / unit for export
       equals 1430 kgCO2e / kg
       equals 1 kwh / unit
-      set import to 100 units during year 2021
+      set import to 100 units
       recharge (get newEquipment as units) * 0.05 units with 1 kg / unit
     end substance
   
