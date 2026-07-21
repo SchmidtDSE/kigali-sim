@@ -69,6 +69,7 @@ The about stanza is optional.
 - `recharge {population} with {volume} <during>` - Service recharging (population = equipment to recharge, volume = substance per unit)
 - `set priorEquipment to {amount} <during>` - Pre-existing equipment.
 - `get newEquipment as {units}` - New equipment added in the current year (read-only, computed as equipment minus priorEquipment)
+- `set|change|cap|floor newEquipment {amount} <during>` - Target new equipment for operations. Delegates to the sales stream with volume amounts converted to units (equipment count) using the sales initial charge. Percentage-based amounts delegate directly.
 
 #### Sales Assumptions (Bank Tracking)
 The `assume` command provides control over sales carryover behavior:

@@ -20,7 +20,7 @@ The following changes have been adopted and released.
 
 **Classification**: Enhancement
 
-Added the ability to use `newEquipment` to refer to equipment added in the current year and `% newEquipment` to refer to a percentage of new equipment. This is useful for situations where operations require access to new equipment, such as when imported equipment requires a top up before sale. Under trade attribution, the initial charge of the import is allocated to the exporter but the local charge would go to the importer. See [#804](https://github.com/SchmidtDSE/kigali-sim/issues/804).
+Added the ability to use `newEquipment` to refer to equipment added in the current year and `% newEquipment` to refer to a percentage of new equipment. The `newEquipment` stream can also be used as a target for `set`, `change`, `cap`, and `floor` operations, delegating to the `sales` stream with volume amounts converted to units. This is useful for situations where operations require access to new equipment, such as when imported equipment requires a top up before sale. Under trade attribution, the initial charge of the import is allocated to the exporter but the local charge would go to the importer. See [#804](https://github.com/SchmidtDSE/kigali-sim/issues/804).
 
 ### Virgin keyword
 
