@@ -1012,4 +1012,156 @@ public class RechargeLiveTests {
     }
   }
 
+  /**
+   * Test that set newEquipment delegates to set sales with unit conversion.
+   *
+   * <p>This validates that {@code set newEquipment to 100 units} produces the same
+   * results as {@code set sales to 100 units}. See issue #804.</p>
+   */
+  @Test
+  public void testNewEquipmentSetDelegatesToSales() throws IOException {
+    String salesPath = "../examples/new_equipment_set_sales.qta";
+    String newPath = "../examples/new_equipment_set_new.qta";
+    ParsedProgram salesProgram = KigaliSimFacade.parseAndInterpret(salesPath);
+    ParsedProgram newProgram = KigaliSimFacade.parseAndInterpret(newPath);
+    assertNotNull(salesProgram, "Sales program should not be null");
+    assertNotNull(newProgram, "NewEquipment program should not be null");
+
+    List<EngineResult> salesResults = KigaliSimFacade.runScenario(
+        salesProgram, "BAU", progress -> {}).collect(Collectors.toList());
+    List<EngineResult> newResults = KigaliSimFacade.runScenario(
+        newProgram, "BAU", progress -> {}).collect(Collectors.toList());
+
+    for (int year = 1; year <= 3; year++) {
+      EngineResult salesResult = LiveTestsUtil.getResult(salesResults.stream(), year, "Test", "TestSub");
+      EngineResult newResult = LiveTestsUtil.getResult(newResults.stream(), year, "Test", "TestSub");
+      assertNotNull(salesResult, "Should have sales result for year " + year);
+      assertNotNull(newResult, "Should have newEquipment result for year " + year);
+
+      double salesPop = salesResult.getPopulation().getValue().doubleValue();
+      double newPop = newResult.getPopulation().getValue().doubleValue();
+      assertEquals(salesPop, newPop, 0.0001,
+          "Population should match between sales and newEquipment for set in year " + year);
+
+      double salesDomestic = salesResult.getDomestic().getValue().doubleValue();
+      double newDomestic = newResult.getDomestic().getValue().doubleValue();
+      assertEquals(salesDomestic, newDomestic, 0.0001,
+          "Domestic should match between sales and newEquipment for set in year " + year);
+    }
+  }
+
+  /**
+   * Test that change newEquipment delegates to change sales.
+   *
+   * <p>This validates that {@code change newEquipment by +5 %} produces the same
+   * results as {@code change sales by +5 %}. See issue #804.</p>
+   */
+  @Test
+  public void testNewEquipmentChangeDelegatesToSales() throws IOException {
+    String salesPath = "../examples/new_equipment_change_sales.qta";
+    String newPath = "../examples/new_equipment_change_new.qta";
+    ParsedProgram salesProgram = KigaliSimFacade.parseAndInterpret(salesPath);
+    ParsedProgram newProgram = KigaliSimFacade.parseAndInterpret(newPath);
+    assertNotNull(salesProgram, "Sales program should not be null");
+    assertNotNull(newProgram, "NewEquipment program should not be null");
+
+    List<EngineResult> salesResults = KigaliSimFacade.runScenario(
+        salesProgram, "BAU", progress -> {}).collect(Collectors.toList());
+    List<EngineResult> newResults = KigaliSimFacade.runScenario(
+        newProgram, "BAU", progress -> {}).collect(Collectors.toList());
+
+    for (int year = 1; year <= 3; year++) {
+      EngineResult salesResult = LiveTestsUtil.getResult(salesResults.stream(), year, "Test", "TestSub");
+      EngineResult newResult = LiveTestsUtil.getResult(newResults.stream(), year, "Test", "TestSub");
+      assertNotNull(salesResult, "Should have sales result for year " + year);
+      assertNotNull(newResult, "Should have newEquipment result for year " + year);
+
+      double salesPop = salesResult.getPopulation().getValue().doubleValue();
+      double newPop = newResult.getPopulation().getValue().doubleValue();
+      assertEquals(salesPop, newPop, 0.0001,
+          "Population should match between sales and newEquipment for change in year " + year);
+
+      double salesDomestic = salesResult.getDomestic().getValue().doubleValue();
+      double newDomestic = newResult.getDomestic().getValue().doubleValue();
+      assertEquals(salesDomestic, newDomestic, 0.0001,
+          "Domestic should match between sales and newEquipment for change in year " + year);
+    }
+  }
+
+  /**
+   * Test that cap newEquipment delegates to cap sales with unit conversion.
+   *
+   * <p>This validates that {@code cap newEquipment to 50 units} produces the same
+   * results as {@code cap sales to 50 units}. See issue #804.</p>
+   */
+  @Test
+  public void testNewEquipmentCapDelegatesToSales() throws IOException {
+    String salesPath = "../examples/new_equipment_cap_sales.qta";
+    String newPath = "../examples/new_equipment_cap_new.qta";
+    ParsedProgram salesProgram = KigaliSimFacade.parseAndInterpret(salesPath);
+    ParsedProgram newProgram = KigaliSimFacade.parseAndInterpret(newPath);
+    assertNotNull(salesProgram, "Sales program should not be null");
+    assertNotNull(newProgram, "NewEquipment program should not be null");
+
+    List<EngineResult> salesResults = KigaliSimFacade.runScenario(
+        salesProgram, "Cap", progress -> {}).collect(Collectors.toList());
+    List<EngineResult> newResults = KigaliSimFacade.runScenario(
+        newProgram, "Cap", progress -> {}).collect(Collectors.toList());
+
+    for (int year = 1; year <= 3; year++) {
+      EngineResult salesResult = LiveTestsUtil.getResult(salesResults.stream(), year, "Test", "TestSub");
+      EngineResult newResult = LiveTestsUtil.getResult(newResults.stream(), year, "Test", "TestSub");
+      assertNotNull(salesResult, "Should have sales result for year " + year);
+      assertNotNull(newResult, "Should have newEquipment result for year " + year);
+
+      double salesPop = salesResult.getPopulation().getValue().doubleValue();
+      double newPop = newResult.getPopulation().getValue().doubleValue();
+      assertEquals(salesPop, newPop, 0.0001,
+          "Population should match between sales and newEquipment for cap in year " + year);
+
+      double salesDomestic = salesResult.getDomestic().getValue().doubleValue();
+      double newDomestic = newResult.getDomestic().getValue().doubleValue();
+      assertEquals(salesDomestic, newDomestic, 0.0001,
+          "Domestic should match between sales and newEquipment for cap in year " + year);
+    }
+  }
+
+  /**
+   * Test that floor newEquipment delegates to floor sales with unit conversion.
+   *
+   * <p>This validates that {@code floor newEquipment to 50 units} produces the same
+   * results as {@code floor sales to 50 units}. See issue #804.</p>
+   */
+  @Test
+  public void testNewEquipmentFloorDelegatesToSales() throws IOException {
+    String salesPath = "../examples/new_equipment_floor_sales.qta";
+    String newPath = "../examples/new_equipment_floor_new.qta";
+    ParsedProgram salesProgram = KigaliSimFacade.parseAndInterpret(salesPath);
+    ParsedProgram newProgram = KigaliSimFacade.parseAndInterpret(newPath);
+    assertNotNull(salesProgram, "Sales program should not be null");
+    assertNotNull(newProgram, "NewEquipment program should not be null");
+
+    List<EngineResult> salesResults = KigaliSimFacade.runScenario(
+        salesProgram, "Floor", progress -> {}).collect(Collectors.toList());
+    List<EngineResult> newResults = KigaliSimFacade.runScenario(
+        newProgram, "Floor", progress -> {}).collect(Collectors.toList());
+
+    for (int year = 1; year <= 3; year++) {
+      EngineResult salesResult = LiveTestsUtil.getResult(salesResults.stream(), year, "Test", "TestSub");
+      EngineResult newResult = LiveTestsUtil.getResult(newResults.stream(), year, "Test", "TestSub");
+      assertNotNull(salesResult, "Should have sales result for year " + year);
+      assertNotNull(newResult, "Should have newEquipment result for year " + year);
+
+      double salesPop = salesResult.getPopulation().getValue().doubleValue();
+      double newPop = newResult.getPopulation().getValue().doubleValue();
+      assertEquals(salesPop, newPop, 0.0001,
+          "Population should match between sales and newEquipment for floor in year " + year);
+
+      double salesDomestic = salesResult.getDomestic().getValue().doubleValue();
+      double newDomestic = newResult.getDomestic().getValue().doubleValue();
+      assertEquals(salesDomestic, newDomestic, 0.0001,
+          "Domestic should match between sales and newEquipment for floor in year " + year);
+    }
+  }
+
 }

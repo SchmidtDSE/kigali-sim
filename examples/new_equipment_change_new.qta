@@ -1,0 +1,25 @@
+start default
+
+  define application "Test"
+  
+    uses substance "TestSub"
+      enable domestic
+      enable import
+      initial charge with 1 kg / unit for domestic
+      initial charge with 1 kg / unit for import
+      equals 5 tCO2e / mt
+      set sales to 100 units during year 1
+      change newEquipment by +5 % during year 2
+    end substance
+  
+  end application
+
+end default
+
+
+start simulations
+
+  simulate "BAU"
+  from years 1 to 3
+
+end simulations

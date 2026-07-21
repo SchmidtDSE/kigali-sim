@@ -1,0 +1,42 @@
+start default
+
+  define application "Test"
+  
+    uses substance "TestSub"
+      enable domestic
+      enable import
+      initial charge with 1 kg / unit for domestic
+      initial charge with 1 kg / unit for import
+      equals 5 tCO2e / mt
+      set sales to 100 units during year 1
+      set sales to 100 units during year 2
+    end substance
+  
+  end application
+
+end default
+
+
+start policy "CapPolicy"
+
+  modify application "Test"
+
+    modify substance "TestSub"
+      cap newEquipment to 50 units during year 2
+    end substance
+
+  end application
+
+end policy
+
+
+start simulations
+
+  simulate "BAU"
+  from years 1 to 3
+
+  simulate "Cap"
+    using "CapPolicy"
+  from years 1 to 3
+
+end simulations
