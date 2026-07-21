@@ -949,7 +949,7 @@ public class RechargeLiveTests {
       EngineResult result = LiveTestsUtil.getResult(
           resultsList.stream(), year, "Domestic Refrigeration", "HFC-134a");
       assertNotNull(result, "Should have result for Domestic Refrigeration/HFC-134a in year " + year);
-      
+
       double newPopulation = result.getPopulationNew().getValue().doubleValue();
       assertEquals(100, newPopulation, 0.0001);
 
@@ -960,7 +960,7 @@ public class RechargeLiveTests {
       double exporterInitialCharge = result.getTradeSupplement()
           .getImportInitialChargeValue().getValue().doubleValue();
       double importAttributedToSimulatedCountry = totalImport - exporterInitialCharge;
-      
+
       assertEquals(5.0, importAttributedToSimulatedCountry, 0.0001,
           "Import attributed to simulated country should be 5 kg in year " + year
               + " (5% of 100 new units at 1 kg/unit for recharge), but was "
