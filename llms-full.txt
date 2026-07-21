@@ -68,6 +68,7 @@ The about stanza is optional.
 - `retire {amount} <with replacement> <during>` - Equipment retirement rate, also called hazard rate or scrap rate (with replacement maintains equipment population)
 - `recharge {population} with {volume} <during>` - Service recharging (population = equipment to recharge, volume = substance per unit)
 - `set priorEquipment to {amount} <during>` - Pre-existing equipment.
+- `get newEquipment as {units}` - New equipment added in the current year (read-only, computed as equipment minus priorEquipment)
 
 #### Sales Assumptions (Bank Tracking)
 The `assume` command provides control over sales carryover behavior:
@@ -102,12 +103,13 @@ The `assume` command is particularly useful for bank (equipment) tracking scenar
 #### Units System
 Supports automatic unit conversion: kg, mt (metric tons), tCO2e (tons CO2 equivalent), kwh (kilowatt hours), units (equipment), years/months/days (time), % (percentages).
 
-**Percentage Units**: Three percentage forms are available:
+**Percentage Units**: Four percentage forms are available:
 - `%` - Context-dependent percentage (prior year for cap/floor, current for set/change)
 - `% prior year` - Explicit percentage of prior year's value
 - `% current` or `% current year` - Explicit percentage of current year's value
+- `% newEquipment` - Percentage of new equipment added in the current year
 
-The explicit forms (`% prior year` and `% current`) provide clearer intent and allow overriding default context-dependent behavior when needed.
+The explicit forms (`% prior year`, `% current`, and `% newEquipment`) provide clearer intent and allow overriding default context-dependent behavior when needed.
 
 #### Number formatting
 Kigali Sim uses DecimalFormat number formatting (comma for thousands, period for decimal). Alternative formats like `123.456,7` generate suggestions for equivalent supported format `123,456.7`.
@@ -135,13 +137,14 @@ Keywords `at` and `eol` are available for recycling commands. Use `at recharge` 
 No duration means runs each year. Use `during year beginning` for first year only.
 
 ### Streams
-Streams may be `domestic|import|export|sales|virgin|equipment|priorEquipment|bank|age`
+Streams may be `domestic|import|export|sales|virgin|equipment|priorEquipment|newEquipment|bank|age`
 
 - `domestic`: domestically produced and consumed
 - `import`: imported either in vessel or initial charge
 - `sales`: all consumption in country
 - `virgin`: domestic and import only (excludes recycling and exports)
 - `priorEquipment`: equipment active coming into current year
+- `newEquipment`: new equipment added in the current year (read-only, computed)
 - `equipment`: equipment active, either from prior or new
 - `age`: weighted average equipment age (read-only, Advanced Editor only)
 
