@@ -1082,6 +1082,38 @@ function buildIntegrationTests() {
         assert.deepEqual(domestic.getUnits(), "kg");
       },
     ]);
+    buildTest("tests get newEquipment stream", "/examples/new_equipment_get.qta", [
+      (result, assert) => {
+        // Check that (get newEquipment as units) * 0.05 produces 5 kg of
+        // import consumption (post trade attribution) across all years.
+        for (let year = 2021; year <= 2030; year++) {
+          const record = getResult(result, "BAU", year, 0,
+            "Domestic Refrigeration", "HFC-134a");
+          const totalImport = record.getImport().getValue();
+          const exporterInitialCharge = record.getTradeSupplement()
+            .getImportInitialChargeValue().getValue();
+          const importAttributed = totalImport - exporterInitialCharge;
+          assert.closeTo(importAttributed, 5, 0.0001,
+            "Import attributed to simulated country should be 5 kg in year " + year);
+        }
+      },
+    ]);
+    buildTest("tests % newEquipment units", "/examples/new_equipment_percent.qta", [
+      (result, assert) => {
+        // Check that 5 % newEquipment produces 5 kg of import consumption
+        // (post trade attribution) across all years.
+        for (let year = 2021; year <= 2030; year++) {
+          const record = getResult(result, "BAU", year, 0,
+            "Domestic Refrigeration", "HFC-134a");
+          const totalImport = record.getImport().getValue();
+          const exporterInitialCharge = record.getTradeSupplement()
+            .getImportInitialChargeValue().getValue();
+          const importAttributed = totalImport - exporterInitialCharge;
+          assert.closeTo(importAttributed, 5, 0.0001,
+            "Import attributed to simulated country should be 5 kg in year " + year);
+        }
+      },
+    ]);
     buildTest("runs minimal interpreter example", "/examples/minimal_interpreter.qta", [
       (result, assert) => {
         // Check year 1

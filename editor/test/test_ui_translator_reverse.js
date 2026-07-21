@@ -576,6 +576,31 @@ function buildUiTranslatorReverseTests() {
         "ReplaceCommand should preserve original number formatting",
       );
     });
+
+    QUnit.test("sets new equipment target", function (assert) {
+      // Test that set command with newEquipment target generates correct code
+      const command = new Command(
+        "setVal",
+        "newEquipment",
+        new EngineNumber("100", "units"),
+        null,
+      );
+      const substance = createWithCommand("test", false, command);
+      const code = substance.toCode(0);
+      assert.notEqual(code.indexOf("set newEquipment to 100 units"), -1,
+        "Should generate set newEquipment to 100 units");
+    });
+
+    QUnit.test("recharges with % newEquipment", function (assert) {
+      // Test that recharge with % newEquipment generates correct code
+      const populationEngineNumber = new EngineNumber("5", "% newEquipment", "5");
+      const volumeEngineNumber = new EngineNumber("1", "kg / unit", "1");
+      const command = new RechargeCommand(populationEngineNumber, volumeEngineNumber, null);
+      const substance = createWithCommand("test", false, command);
+      const code = substance.toCode(0);
+      assert.notEqual(code.indexOf("recharge 5 % newEquipment with 1 kg / unit"), -1,
+        "Should generate recharge 5 % newEquipment with 1 kg / unit");
+    });
   });
 }
 

@@ -235,6 +235,34 @@ function buildUiTranslatorTests() {
       },
     ]);
 
+    buildTest("converts % newEquipment recharge command", "/examples/new_equipment_percent.qta", [
+      (result, assert) => {
+        assert.ok(result.getIsCompatible(), "Program should be compatible");
+      },
+      (result, assert) => {
+        const applications = result.getApplications();
+        assert.equal(applications.length, 1, "Should have exactly 1 application");
+
+        const application = applications[0];
+        assert.deepEqual(application.getName(), "Domestic Refrigeration");
+
+        const substances = application.getSubstances();
+        assert.equal(substances.length, 1, "Application should have exactly 1 substance");
+
+        const substance = substances[0];
+        assert.equal(substance.getName(), "HFC-134a");
+
+        const recharges = substance.getRecharges();
+        assert.equal(recharges.length, 1, "Should have exactly 1 recharge command");
+
+        const recharge = recharges[0];
+        assert.equal(recharge.getPopulationEngineNumber().getValue(), 5, "Recharge population should be 5");
+        assert.equal(recharge.getPopulationEngineNumber().getUnits(), "% newEquipment", "Recharge population units should be % newEquipment");
+        assert.equal(recharge.getVolumeEngineNumber().getValue(), 1, "Recharge volume should be 1");
+        assert.equal(recharge.getVolumeEngineNumber().getUnits(), "kg / unit", "Recharge volume units should be kg / unit");
+      },
+    ]);
+
     buildTest("includes only business as usual", "/examples/ui/bau_single.qta", [
       (result, assert) => {
         assert.ok(result.getIsCompatible());
