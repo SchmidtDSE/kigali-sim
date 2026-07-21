@@ -132,9 +132,9 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
   /**
    * Visit a relative unit node and formats it with proper spacing.
    *
-   * Handles percent variants: %, % prior year, % current year, % current.
-   * ANTLR's getText() concatenates tokens without spaces, so we reconstruct
-   * the proper format here.
+   * Handles percent variants: %, % prior year, % current year, % current,
+   * % newEquipment. ANTLR's getText() concatenates tokens without spaces, so we
+   * reconstruct the proper format here.
    *
    * @param {Object} ctx - The parse tree node context.
    * @returns {string} The properly formatted relative unit string.
@@ -150,6 +150,10 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     if (isDefault) {
       return "%";
     } else if (isExplicitCurrent) {
+      const secondToken = ctx.getChild(1).getText();
+      if ("newEquipment" === secondToken) {
+        return "% newEquipment";
+      }
       return "% current";
     } else if (isExplicitYear) {
       const secondToken = ctx.getChild(1).getText();

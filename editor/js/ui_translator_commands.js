@@ -23,7 +23,7 @@ class Command {
    *
    * @param {string} typeName - Type of the command.
    * @param {string} target - Target of the command (e.g., "domestic", "import", "export",
-   *    "equipment", "priorEquipment", "bank", "priorBank", "sales").
+   *    "equipment", "priorEquipment", "newEquipment", "bank", "priorBank", "sales").
    *    Note: "bank" and "priorBank" are synonyms for "equipment" and
    *    "priorEquipment" respectively.
    * @param {EngineNumber} value - Value for the command.
@@ -53,6 +53,8 @@ class Command {
    * @returns {string} The target name (e.g., "domestic", "import", "equipment", "bank", etc).
    *    Note: "bank" and "priorBank" are accepted as synonyms for "equipment"
    *    and "priorEquipment".
+   *    Also supports "newEquipment" for referring to new equipment added
+   *    in the current year.
    */
   getTarget() {
     const self = this;
