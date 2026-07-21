@@ -172,4 +172,43 @@ public class QubecTalkParserTest {
     assertTrue(result.getProgram().isPresent(), "Parse result should have a program");
   }
 
+  /**
+   * Test that parsing code using the newEquipment stream keyword works correctly.
+   *
+   * <p>This validates that {@code get newEquipment as units} can be used anywhere
+   * that {@code get equipment as units} or {@code get priorEquipment as units}
+   * can be used. See issue #804.</p>
+   */
+  @Test
+  public void testParseNewEquipmentStream() throws IOException {
+    String code = loadQtaFile("../examples/new_equipment_get.qta");
+    ParseResult result = parser.parse(code);
+
+    assertNotNull(result, "Parse result should not be null");
+    assertFalse(
+        result.hasErrors(),
+        "Parse result should not have errors for newEquipment stream usage"
+    );
+    assertTrue(result.getProgram().isPresent(), "Parse result should have a program");
+  }
+
+  /**
+   * Test that parsing code using the % newEquipment relative unit works correctly.
+   *
+   * <p>This validates that {@code % newEquipment} can be used as a relative unit
+   * similar to {@code % prior year}. See issue #804.</p>
+   */
+  @Test
+  public void testParsePercentNewEquipment() throws IOException {
+    String code = loadQtaFile("../examples/new_equipment_percent.qta");
+    ParseResult result = parser.parse(code);
+
+    assertNotNull(result, "Parse result should not be null");
+    assertFalse(
+        result.hasErrors(),
+        "Parse result should not have errors for % newEquipment usage"
+    );
+    assertTrue(result.getProgram().isPresent(), "Parse result should have a program");
+  }
+
 }
