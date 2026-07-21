@@ -913,4 +913,73 @@ public class RechargeLiveTests {
         "Equipment should be 190000 units in year 2");
   }
 
+  /**
+   * Test that get newEquipment as units can be used to refer to new equipment.
+   *
+   * <p>This validates the first example from issue #804: using
+   * {@code (get newEquipment as units) * 0.05 units} in a recharge command should
+   * result in 5 kg of import consumption each year (post trade attribution),
+   * attributed to the simulated country across all years of the simulation.</p>
+   *
+   * <p>The example sets import to 100 units during year 2021 with an initial charge
+   * of 1 kg / unit for import. Each year, 5% of new equipment (5 units) is recharged
+   * at 1 kg / unit, yielding 5 kg of import consumption for recharge.</p>
+   */
+  @Test
+  public void testNewEquipmentGetStream() throws IOException {
+    String qtaPath = "../examples/new_equipment_get.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    String scenarioName = "BAU";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // Check import consumption across all years (2021-2030).
+    // Each year should have 5 kg of import consumption for recharge (post trade
+    // attribution), attributed to the simulated country.
+    for (int year = 2021; year <= 2030; year++) {
+      EngineResult result = LiveTestsUtil.getResult(
+          resultsList.stream(), year, "Domestic Refrigeration", "HFC-134a");
+      assertNotNull(result, "Should have result for Domestic Refrigeration/HFC-134a in year " + year);
+      double importConsumption = result.getImportConsumption().getValue().doubleValue();
+      assertEquals(5.0, importConsumption, 0.0001,
+          "Import consumption should be 5 kg in year " + year
+              + " (5% of 100 new units at 1 kg/unit), but was " + importConsumption);
+    }
+  }
+
+  /**
+   * Test that % newEquipment can be used to refer to a percentage of new equipment.
+   *
+   * <p>This validates the second example from issue #804: using
+   * {@code recharge 5 % newEquipment with 1 kg / unit} should be equivalent to the
+   * {@code (get newEquipment as units) * 0.05 units} form and result in 5 kg of
+   * import consumption each year (post trade attribution), attributed to the
+   * simulated country across all years of the simulation.</p>
+   */
+  @Test
+  public void testNewEquipmentPercent() throws IOException {
+    String qtaPath = "../examples/new_equipment_percent.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    String scenarioName = "BAU";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // Check import consumption across all years (2021-2030).
+    // Each year should have 5 kg of import consumption for recharge (post trade
+    // attribution), attributed to the simulated country.
+    for (int year = 2021; year <= 2030; year++) {
+      EngineResult result = LiveTestsUtil.getResult(
+          resultsList.stream(), year, "Domestic Refrigeration", "HFC-134a");
+      assertNotNull(result, "Should have result for Domestic Refrigeration/HFC-134a in year " + year);
+      double importConsumption = result.getImportConsumption().getValue().doubleValue();
+      assertEquals(5.0, importConsumption, 0.0001,
+          "Import consumption should be 5 kg in year " + year
+              + " (5% of 100 new units at 1 kg/unit), but was " + importConsumption);
+    }
+  }
+
 }
