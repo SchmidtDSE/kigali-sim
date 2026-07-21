@@ -259,6 +259,12 @@ public class SingleThreadEngine implements Engine {
 
     switch (name) {
       case "equipment" -> equipmentChangeUtil.handleSet(value);
+      case "newEquipment" -> {
+        EngineNumber salesValue = convertToUnitsForSales(value);
+        simulationState.clearLastSpecifiedValue(scope, "sales");
+        SetExecutor setExecutor = new SetExecutor(this);
+        setExecutor.handleSalesSet(scope, "sales", salesValue, yearMatcher);
+      }
       case "sales" -> {
         simulationState.clearLastSpecifiedValue(scope, name);
         SetExecutor setExecutor = new SetExecutor(this);
@@ -657,6 +663,11 @@ public class SingleThreadEngine implements Engine {
       UseKey useKey) {
     switch (stream) {
       case "equipment" -> handleEquipmentChange(amount, yearMatcher);
+      case "newEquipment" -> {
+        EngineNumber salesAmount = convertToUnitsForSales(amount);
+        UseKey useKeyEffective = useKey == null ? scope : useKey;
+        changeExecutor.executeChange("sales", salesAmount, yearMatcher, useKeyEffective);
+      }
       default -> {
         UseKey useKeyEffective = useKey == null ? scope : useKey;
         changeExecutor.executeChange(stream, amount, yearMatcher, useKeyEffective);
@@ -692,6 +703,10 @@ public class SingleThreadEngine implements Engine {
     // Handle equipment stream with special logic
     switch (stream) {
       case "equipment" -> equipmentChangeUtil.handleCap(amount, displaceTarget);
+      case "newEquipment" -> {
+        EngineNumber salesAmount = convertToUnitsForSales(amount);
+        limitExecutor.executeCap("sales", salesAmount, yearMatcher, displaceTarget, displacementType);
+      }
       default -> limitExecutor.executeCap(stream, amount, yearMatcher, displaceTarget, displacementType);
     }
   }
@@ -707,6 +722,10 @@ public class SingleThreadEngine implements Engine {
     // Handle equipment stream with special logic
     switch (stream) {
       case "equipment" -> equipmentChangeUtil.handleFloor(amount, displaceTarget);
+      case "newEquipment" -> {
+        EngineNumber salesAmount = convertToUnitsForSales(amount);
+        limitExecutor.executeFloor("sales", salesAmount, yearMatcher, displaceTarget, displacementType);
+      }
       default -> limitExecutor.executeFloor(stream, amount, yearMatcher, displaceTarget, displacementType);
     }
   }
@@ -715,6 +734,27 @@ public class SingleThreadEngine implements Engine {
   public void replace(EngineNumber amountRaw, String stream, String destinationSubstance,
       YearMatcher yearMatcher) {
     replaceExecutor.execute(amountRaw, stream, destinationSubstance, yearMatcher);
+  }
+
+  /**
+   * Convert an amount to units for delegation to the sales stream.
+   *
+   * <p>When newEquipment is used as a target for set, change, cap, or floor operations,
+   * the operation is delegated to the sales stream. Volume-based amounts (kg, mt) are
+   * converted to units (equipment count) using the sales initial charge. Percentage-based
+   * amounts are passed through unchanged so that percentage operations delegate directly.</p>
+   *
+   * @param amount The original amount (may be in kg, mt, units, or %)
+   * @return The amount converted to units if it was volume-based, otherwise unchanged
+   */
+  private EngineNumber convertToUnitsForSales(EngineNumber amount) {
+    String units = amount.getUnits();
+    boolean isPercent = units != null && units.contains("%");
+    if (isPercent) {
+      return amount;
+    }
+    UnitConverter salesConverter = EngineSupportUtils.createUnitConverterWithTotal(this, "sales");
+    return salesConverter.convert(amount, "units");
   }
 
   @Override
