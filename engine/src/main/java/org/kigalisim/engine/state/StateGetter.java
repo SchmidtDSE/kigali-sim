@@ -43,6 +43,13 @@ public interface StateGetter {
   EngineNumber getPopulation();
 
   /**
+   * Get the new equipment added in the current year.
+   *
+   * @return The new equipment count with units like "units"
+   */
+  EngineNumber getNewEquipment();
+
+  /**
    * Get the years elapsed.
    *
    * @return The years elapsed with units like "years"

@@ -79,6 +79,16 @@ public class ConverterStateGetter implements StateGetter {
   }
 
   /**
+   * Get the new equipment added in the current year.
+   *
+   * @return The new equipment count in units
+   */
+  @Override
+  public EngineNumber getNewEquipment() {
+    return engine.getStream("newEquipment");
+  }
+
+  /**
    * Get number of years in the simulation since the last step.
    *
    * @return The elapsed time in years since the last step

@@ -254,7 +254,7 @@ public class UnitConverter {
    */
   private boolean isPercentUnit(String normalizedUnits) {
     return switch (normalizedUnits) {
-      case "%", "%prioryear", "%currentyear", "%current" -> true;
+      case "%", "%prioryear", "%currentyear", "%current", "%newEquipment" -> true;
       default -> false;
     };
   }
@@ -267,6 +267,16 @@ public class UnitConverter {
    */
   private boolean getIsPriorPercent(String normalizedUnits) {
     return "%prioryear".equals(normalizedUnits);
+  }
+
+  /**
+   * Check if a normalized unit string represents a new equipment percentage.
+   *
+   * @param normalizedUnits The normalized unit string to check
+   * @return True if the unit is % newEquipment, false otherwise
+   */
+  private boolean getIsNewEquipmentPercent(String normalizedUnits) {
+    return "%newEquipment".equals(normalizedUnits);
   }
 
   /**
@@ -290,7 +300,9 @@ public class UnitConverter {
    * @return The population to use as base for percentage calculations
    */
   private EngineNumber getTargetPopulation(String normalizedUnits) {
-    if (getIsPriorPercent(normalizedUnits)) {
+    if (getIsNewEquipmentPercent(normalizedUnits)) {
+      return stateGetter.getNewEquipment();
+    } else if (getIsPriorPercent(normalizedUnits)) {
       return stateGetter.getPriorPopulation();
     } else {
       return stateGetter.getPopulation();
@@ -634,7 +646,7 @@ public class UnitConverter {
         EngineNumber tco2eTarget = new EngineNumber(tco2eValue, "tCO2e");
         yield toUnits(tco2eTarget);
       }
-      case "%", "%eachyear", "%prioryear", "%currentyear", "%current" -> {
+      case "%", "%eachyear", "%prioryear", "%currentyear", "%current", "%newEquipment" -> {
         BigDecimal originalValue = target.getValue();
         BigDecimal asRatio = originalValue.multiply(TO_PERCENT_FACTOR);
         EngineNumber total = getTargetPopulation(currentUnits);

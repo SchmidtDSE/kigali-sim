@@ -159,6 +159,16 @@ public class OverridingConverterStateGetter implements StateGetter {
   }
 
   /**
+   * Get the new equipment added in the current year.
+   *
+   * @return The new equipment value, delegating to the inner getter
+   */
+  @Override
+  public EngineNumber getNewEquipment() {
+    return innerGetter.getNewEquipment();
+  }
+
+  /**
    * Set the years elapsed value.
    *
    * @param newValue The new years elapsed value
