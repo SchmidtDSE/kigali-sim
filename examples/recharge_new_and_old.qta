@@ -1,0 +1,17 @@
+start default
+  define application "test app"
+    uses substance "HCFC-22"
+      enable import
+      equals 1810 kgCO2e / kg
+      initial charge with 125 kg / unit for import
+      set import to 100 units during year 1
+      change import by +10 units during year 2
+      recharge 100 % newEquipment with 125 kg / unit
+      recharge 7 % with 125 kg / unit
+    end substance
+  end application
+end default
+
+start simulations
+  simulate "test" from years 1 to 2
+end simulations

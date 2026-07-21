@@ -337,6 +337,44 @@ public class RechargeLiveTests {
   }
 
   /**
+   * Test that combining a recharge on new equipment with a recharge on existing
+   * equipment works correctly.
+   *
+   * <p>This reproduces a bug reported during early testing where specifying a
+   * recharge for new equipment ({@code recharge 100 % newEquipment with ...})
+   * followed by a recharge for old equipment ({@code recharge 7 % with ...})
+   * within the same substance raised a {@code "Cannot mix units for recharge"}
+   * error. Once fixed, the simulation should run to completion with approximate
+   * equipment and import values.</p>
+   */
+  @Test
+  public void testRechargeNewAndOld() throws IOException {
+    String qtaPath = "../examples/recharge_new_and_old.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    String scenarioName = "test";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // Year 1: 100 units imported with no prior equipment.
+    EngineResult resultYear1 = LiveTestsUtil.getResult(resultsList.stream(), 1, "test app", "HCFC-22");
+    assertNotNull(resultYear1, "Should have result for test app/HCFC-22 in year 1");
+    assertEquals(100.0, resultYear1.getPopulation().getValue().doubleValue(), 0.01,
+        "Equipment should be approximately 100 units in year 1");
+    assertTrue(resultYear1.getImport().getValue().doubleValue() > 0,
+        "Import should be positive in year 1");
+
+    // Year 2: 110 units imported (100 + 10 change), 100 prior equipment.
+    EngineResult resultYear2 = LiveTestsUtil.getResult(resultsList.stream(), 2, "test app", "HCFC-22");
+    assertNotNull(resultYear2, "Should have result for test app/HCFC-22 in year 2");
+    assertEquals(210.0, resultYear2.getPopulation().getValue().doubleValue(), 0.01,
+        "Equipment should be approximately 210 units in year 2 (100 prior + 110 new)");
+    assertTrue(resultYear2.getImport().getValue().doubleValue() > 0,
+        "Import should be positive in year 2");
+  }
+
+  /**
    * Test kg-based imports with recharge to verify correct behavior.
    * With kg-based imports, recharge needs are subtracted first.
    * If imports are insufficient for recharge, equipment decreases.
@@ -955,6 +993,48 @@ public class RechargeLiveTests {
 
       double totalPopulation = result.getPopulation().getValue().doubleValue();
       assertEquals(100 * (year - 2020), totalPopulation, 0.0001);
+
+      double totalImport = result.getImport().getValue().doubleValue();
+      double exporterInitialCharge = result.getTradeSupplement()
+          .getImportInitialChargeValue().getValue().doubleValue();
+      double importAttributedToSimulatedCountry = totalImport - exporterInitialCharge;
+
+      assertEquals(5.0, importAttributedToSimulatedCountry, 0.0001,
+          "Import attributed to simulated country should be 5 kg in year " + year
+              + " (5% of 100 new units at 1 kg/unit for recharge), but was "
+              + importAttributedToSimulatedCountry
+              + " (total import=" + totalImport
+              + ", exporter initial charge=" + exporterInitialCharge + ")");
+    }
+  }
+
+  /**
+   * Test that get newEquipment as units works with a year-scoped import set.
+   *
+   * <p>This is a variant of {@link #testNewEquipmentGetStream()} where the import
+   * is scoped to a single year using {@code set import to 100 units during year 2021}
+   * instead of carrying over implicitly. The same assertions (5 kg of import
+   * consumption each year post trade attribution) are expected to hold but
+   * currently fail, tracking a bug in how year-scoped sets interact with
+   * newEquipment-based recharge.</p>
+   */
+  @Test
+  public void testNewEquipmentGetStreamDuring() throws IOException {
+    String qtaPath = "../examples/new_equipment_get_during.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    String scenarioName = "BAU";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // Check import consumption across all years (2021-2030).
+    // Each year should have 5 kg of import consumption for recharge (post trade
+    // attribution), attributed to the simulated country.
+    for (int year = 2021; year <= 2030; year++) {
+      EngineResult result = LiveTestsUtil.getResult(
+          resultsList.stream(), year, "Domestic Refrigeration", "HFC-134a");
+      assertNotNull(result, "Should have result for Domestic Refrigeration/HFC-134a in year " + year);
 
       double totalImport = result.getImport().getValue().doubleValue();
       double exporterInitialCharge = result.getTradeSupplement()
