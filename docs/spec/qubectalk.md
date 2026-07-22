@@ -248,6 +248,14 @@ equals 1430 kgCO2e / kg 100 kwh / unit
 
 Note that `tCO2e` refers to tonnes of CO2 equivalent, `kgCO2e` refers to kilograms of CO2 equivalent, and `kwh` refers to kilowatt hours. Both metrics help track different aspects of environmental impact.
 
+Both GHG and energy intensities support optional `during` clauses, allowing intensities to change over time (for example, to model energy efficiency improvements or refrigerant substitution):
+```
+equals 1 kwh / unit during year 2021
+equals 1430 kgCO2e / kg during years 2025 to 2030
+```
+
+When a `during` clause is provided, the intensity is only set for the specified year(s). In other years, the prior intensity value is retained.
+
 ### Bank Tracking
 The system tracks the "bank" of substance - the total amount of refrigerant contained within the equipment population currently in service. This is calculated using the initial charge values and equipment population.
 

@@ -155,15 +155,17 @@ enable export</code></pre>
 
         <p><strong>Purpose:</strong> Defines the Global Warming Potential and energy consumption for a substance.</p>
 
-        <p><strong>Syntax:</strong> <code>equals gwpValue [tCO2e|kgCO2e] / [mt|kg|unit] [energyValue kwh / unit]</code></p>
+        <p><strong>Syntax:</strong> <code>equals gwpValue [tCO2e|kgCO2e] / [mt|kg|unit] [energyValue kwh / unit] [during ...]</code></p>
 
         <p><strong>Examples:</strong></p>
         <pre><code class="language-qubectalk">equals 1430 tCO2e / mt
 equals 1430 kgCO2e / kg
 equals 675 kgCO2e / kg 100 kwh / unit
-equals 3 tCO2e / mt</code></pre>
+equals 3 tCO2e / mt
+equals 1 kwh / unit during year 2021
+equals 1430 kgCO2e / kg during years 2025 to 2030</code></pre>
 
-        <p><strong>Note:</strong> Both tCO2e (tonnes) and kgCO2e (kilograms) CO2 equivalent units are supported for GWP values.</p>
+        <p><strong>Note:</strong> Both tCO2e (tonnes) and kgCO2e (kilograms) CO2 equivalent units are supported for GWP values. Both GHG and energy intensities support optional <code>during</code> clauses, allowing intensities to change over time (for example, to model energy efficiency improvements or refrigerant substitution). When a <code>during</code> clause is provided, the intensity is only set for the specified year(s); in other years, the prior intensity value is retained.</p>
       </section>
 
       <section class="major" id="floor">
