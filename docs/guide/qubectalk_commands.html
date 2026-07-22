@@ -243,14 +243,18 @@ initial charge with 1.5 kg / unit for domestic</code></pre>
       <section class="major" id="recharge">
         <h2>Recharge</h2>
 
-        <p><strong>Purpose:</strong> Specifies servicing patterns for existing equipment including frequency and amount.</p>
+        <p><strong>Purpose:</strong> Specifies servicing patterns for equipment including frequency and amount. By default, services existing (prior) equipment, but can target new equipment (precharge) using the <code>of</code> clause.</p>
 
-        <p><strong>Syntax:</strong> <code>recharge percentage % with amount unit / unit</code></p>
+        <p><strong>Syntax:</strong> <code>recharge percentage % [of target] with amount unit / unit</code></p>
+
+        <p><strong>Targets:</strong> <code>priorEquipment</code> (default) for servicing existing equipment, or <code>newEquipment</code> for precharge (servicing new equipment before sale).</p>
 
         <p><strong>Examples:</strong></p>
         <pre><code class="language-qubectalk">recharge 10% with 0.15 kg / unit
+recharge 10% of priorEquipment with 0.15 kg / unit
+recharge 3% of newEquipment with 1 kg / unit
 recharge 15% with 0.85 kg / unit during years 2025 to 2030
-recharge 5% with 1.0 kg / unit in all years</code></pre>
+recharge 5% of priorEquipment with 1.0 kg / unit in all years</code></pre>
       </section>
 
       <section class="major" id="recover">

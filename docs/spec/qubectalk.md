@@ -226,6 +226,15 @@ recharge 10 % each year with 0.12 kg / unit
 
 One may also recharge a number of units by changing `%` to `units`.
 
+**Servicing target (of clause)**: The `recharge` command supports an optional `of` clause that specifies which equipment population to service. By default (or with `of priorEquipment`), recharge services existing equipment that has already been deployed. With `of newEquipment` (also called "precharge"), recharge services new equipment before its sale, modeling substance needed for charge lost in transit or storage prior to sale.
+
+```
+recharge 10 % of priorEquipment with 0.12 kg / unit
+recharge 3 % of newEquipment with 1 kg / unit
+```
+
+When the `of` clause is omitted, the target defaults to `priorEquipment`. Precharge emissions are included in the `rechargeEmissions` output.
+
 ### Consumption
 The `equals` command can be used to specify two types of intensities:
 

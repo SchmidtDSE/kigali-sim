@@ -68,7 +68,8 @@ Both GHG and energy intensities set via `equals` support optional `during` claus
 
 #### Equipment Lifecycle
 - `retire {amount} <with replacement> <during>` - Equipment retirement rate, also called hazard rate or scrap rate (with replacement maintains equipment population)
-- `recharge {population} with {volume} <during>` - Service recharging (population = equipment to recharge, volume = substance per unit)
+- `recharge {population} with {volume} <during>` - Service recharging (population = equipment to recharge, volume = substance per unit). Defaults to priorEquipment. Use `of newEquipment` for precharge (servicing new equipment before sale).
+- `recharge {population} of {target} with {volume} <during>` - Service recharging with explicit target. Target can be `priorEquipment` (default, existing equipment) or `newEquipment` (precharge, new equipment before sale).
 - `set priorEquipment to {amount} <during>` - Pre-existing equipment.
 
 #### Sales Assumptions (Bank Tracking)
