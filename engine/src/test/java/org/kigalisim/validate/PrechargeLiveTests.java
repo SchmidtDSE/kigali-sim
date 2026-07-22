@@ -148,4 +148,148 @@ public class PrechargeLiveTests {
     List<EngineResult> resultsList = results.collect(Collectors.toList());
     assertTrue(resultsList.size() > 0, "Should have results for recharge of newEquipment");
   }
+
+  /**
+   * Sanity check for BAU scenario with precharge.
+   *
+   * <p>With 100 units import and 5% precharge at 1 kg/unit, import should be
+   * 105 kg (100 units * 1 kg/unit initial charge + 5 units * 1 kg/unit precharge)
+   * flat across all years.</p>
+   */
+  @Test
+  public void testSanityCheckBau() throws IOException {
+    String qtaPath = "../examples/precharge_sanity_check.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    String scenarioName = "BAU";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // Check each year from 2021 to 2030
+    for (int year = 2021; year <= 2030; year++) {
+      EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), year,
+          "Domestic Refrigeration", "HFC-134a");
+      assertNotNull(result, "Should have result for year " + year);
+      double importValue = result.getImport().getValue().doubleValue();
+      assertEquals(105.0, importValue, 0.0001,
+          "BAU import should be 105 kg in year " + year + " but was " + importValue);
+    }
+  }
+
+  /**
+   * Sanity check for With Repair scenario.
+   *
+   * <p>With repair policy adding recharge of priorEquipment, import should be
+   * higher than BAU and each year should be larger than the last (as equipment
+   * population grows, more recharge is needed).</p>
+   */
+  @Test
+  public void testSanityCheckWithRepair() throws IOException {
+    String qtaPath = "../examples/precharge_sanity_check.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Get BAU results for comparison
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, "BAU", progress -> {});
+    List<EngineResult> bauList = bauResults.collect(Collectors.toList());
+
+    String scenarioName = "With Repair";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    double previousYearImport = -1;
+    for (int year = 2021; year <= 2030; year++) {
+      EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), year,
+          "Domestic Refrigeration", "HFC-134a");
+      assertNotNull(result, "Should have result for year " + year);
+      double importValue = result.getImport().getValue().doubleValue();
+
+      // Import should be higher than BAU
+      EngineResult bauResult = LiveTestsUtil.getResult(bauList.stream(), year,
+          "Domestic Refrigeration", "HFC-134a");
+      double bauImport = bauResult.getImport().getValue().doubleValue();
+      assertTrue(importValue > bauImport,
+          "With Repair import (" + importValue + ") should be higher than BAU ("
+              + bauImport + ") in year " + year);
+
+      // Each year should be larger than the last (after year 1)
+      if (previousYearImport > 0) {
+        assertTrue(importValue > previousYearImport,
+            "With Repair import should increase each year. Year " + year
+                + ": " + importValue + " vs previous: " + previousYearImport);
+      }
+      previousYearImport = importValue;
+    }
+  }
+
+  /**
+   * Sanity check for With Increase scenario.
+   *
+   * <p>With 5% increase in import each year from 2022, import should be 105 kg
+   * in 2021 and then increase each year after.</p>
+   */
+  @Test
+  public void testSanityCheckWithIncrease() throws IOException {
+    String qtaPath = "../examples/precharge_sanity_check.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    String scenarioName = "With Increase";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    double previousYearImport = -1;
+    for (int year = 2021; year <= 2030; year++) {
+      EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), year,
+          "Domestic Refrigeration", "HFC-134a");
+      assertNotNull(result, "Should have result for year " + year);
+      double importValue = result.getImport().getValue().doubleValue();
+
+      if (year == 2021) {
+        assertEquals(105.0, importValue, 0.0001,
+            "With Increase import should be 105 kg in 2021 but was " + importValue);
+      } else {
+        assertTrue(importValue > previousYearImport,
+            "With Increase import should increase each year after 2021. Year " + year
+                + ": " + importValue + " vs previous: " + previousYearImport);
+      }
+      previousYearImport = importValue;
+    }
+  }
+
+  /**
+   * Sanity check for With Decrease scenario.
+   *
+   * <p>With 5% decrease in import each year from 2022, import should be 105 kg
+   * in 2021 and then decrease each year after.</p>
+   */
+  @Test
+  public void testSanityCheckWithDecrease() throws IOException {
+    String qtaPath = "../examples/precharge_sanity_check.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    String scenarioName = "With Decrease";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    double previousYearImport = -1;
+    for (int year = 2021; year <= 2030; year++) {
+      EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), year,
+          "Domestic Refrigeration", "HFC-134a");
+      assertNotNull(result, "Should have result for year " + year);
+      double importValue = result.getImport().getValue().doubleValue();
+
+      if (year == 2021) {
+        assertEquals(105.0, importValue, 0.0001,
+            "With Decrease import should be 105 kg in 2021 but was " + importValue);
+      } else {
+        assertTrue(importValue < previousYearImport,
+            "With Decrease import should decrease each year after 2021. Year " + year
+                + ": " + importValue + " vs previous: " + previousYearImport);
+      }
+      previousYearImport = importValue;
+    }
+  }
 }
