@@ -1028,6 +1028,106 @@ public class SimulationState {
   }
 
   /**
+   * Set the precharge population percentage for a key.
+   *
+   * @param useKey The key containing application and substance
+   * @param newValue The new precharge population value
+   */
+  public void setPrechargePopulation(UseKey useKey, EngineNumber newValue) {
+    StreamParameterization parameterization = getParameterization(useKey);
+    parameterization.setPrechargePopulation(newValue);
+  }
+
+  /**
+   * Get the precharge population percentage for a key.
+   *
+   * @param useKey The key containing application and substance
+   * @return The current precharge population value
+   */
+  public EngineNumber getPrechargePopulation(UseKey useKey) {
+    StreamParameterization parameterization = getParameterization(useKey);
+    return parameterization.getPrechargePopulation();
+  }
+
+  /**
+   * Set the precharge intensity for a key.
+   *
+   * @param useKey The key containing application and substance
+   * @param newValue The new precharge intensity value
+   */
+  public void setPrechargeIntensity(UseKey useKey, EngineNumber newValue) {
+    StreamParameterization parameterization = getParameterization(useKey);
+    parameterization.setPrechargeIntensity(newValue);
+  }
+
+  /**
+   * Get the precharge intensity for a key.
+   *
+   * @param useKey The key containing application and substance
+   * @return The current precharge intensity value
+   */
+  public EngineNumber getPrechargeIntensity(UseKey useKey) {
+    StreamParameterization parameterization = getParameterization(useKey);
+    return parameterization.getPrechargeIntensity();
+  }
+
+  /**
+   * Accumulate precharge parameters. Sets when not previously set, accumulates otherwise.
+   *
+   * @param useKey The key containing application and substance
+   * @param population The precharge population rate to add
+   * @param intensity The precharge intensity for this rate
+   */
+  public void accumulatePrecharge(UseKey useKey, EngineNumber population, EngineNumber intensity) {
+    StreamParameterization parameterization = getParameterization(useKey);
+    parameterization.accumulatePrecharge(population, intensity);
+  }
+
+  /**
+   * Get the precharge base population for cumulative calculations.
+   *
+   * @param useKey The key containing application and substance
+   * @return The base population, or null if not yet captured this year
+   */
+  public Optional<EngineNumber> getPrechargeBasePopulation(UseKey useKey) {
+    StreamParameterization parameterization = getParameterization(useKey);
+    return parameterization.getPrechargeBasePopulation();
+  }
+
+  /**
+   * Set the precharge base population for cumulative calculations.
+   *
+   * @param useKey The key containing application and substance
+   * @param value The base population value
+   */
+  public void setPrechargeBasePopulation(UseKey useKey, EngineNumber value) {
+    StreamParameterization parameterization = getParameterization(useKey);
+    parameterization.setPrechargeBasePopulation(value);
+  }
+
+  /**
+   * Get the applied precharge amount for cumulative calculations.
+   *
+   * @param useKey The key containing application and substance
+   * @return The total amount already precharged this year in kg
+   */
+  public Optional<EngineNumber> getAppliedPrechargeAmount(UseKey useKey) {
+    StreamParameterization parameterization = getParameterization(useKey);
+    return parameterization.getAppliedPrechargeAmount();
+  }
+
+  /**
+   * Set the applied precharge amount for cumulative calculations.
+   *
+   * @param useKey The key containing application and substance
+   * @param value The total amount precharged this year in kg
+   */
+  public void setAppliedPrechargeAmount(UseKey useKey, EngineNumber value) {
+    StreamParameterization parameterization = getParameterization(useKey);
+    parameterization.setAppliedPrechargeAmount(value);
+  }
+
+  /**
    * Get whether recycling has been calculated this step.
    *
    * @param useKey The key containing application and substance
