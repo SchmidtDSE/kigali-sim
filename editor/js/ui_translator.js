@@ -809,7 +809,8 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     const self = this;
     const population = ctx.population.accept(self);
     const volume = ctx.volume.accept(self);
-    return new RechargeCommand(population, volume, null);
+    const target = ctx.target ? ctx.target.getText() : "priorEquipment";
+    return new RechargeCommand(population, volume, null, target);
   }
 
   /**
@@ -823,7 +824,8 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     const population = ctx.population.accept(self);
     const volume = ctx.volume.accept(self);
     const duration = ctx.duration.accept(self);
-    return new RechargeCommand(population, volume, duration);
+    const target = ctx.target ? ctx.target.getText() : "priorEquipment";
+    return new RechargeCommand(population, volume, duration, target);
   }
 
   /**
