@@ -10,6 +10,7 @@
 package org.kigalisim.engine.support;
 
 import java.util.Optional;
+import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.state.OverridingConverterStateGetter;
@@ -38,7 +39,7 @@ public class RechargeVolumeCalculator {
    * @return The recharge volume in kg
    */
   public static EngineNumber calculateRechargeVolume(UseKey scope, StateGetter stateGetter,
-                                                     SimulationState simulationState, org.kigalisim.engine.Engine engine) {
+                                                      SimulationState simulationState, Engine engine) {
     OverridingConverterStateGetter overridingStateGetter =
         new OverridingConverterStateGetter(stateGetter);
     UnitConverter unitConverter = new UnitConverter(overridingStateGetter);

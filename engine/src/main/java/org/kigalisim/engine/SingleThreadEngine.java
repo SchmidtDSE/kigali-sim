@@ -464,7 +464,23 @@ public class SingleThreadEngine implements Engine {
   }
 
   @Override
+  public EngineNumber getPrechargeVolume() {
+    return simulationState.getPrechargePopulation(scope);
+  }
+
+  @Override
+  public EngineNumber getPrechargeIntensity() {
+    return simulationState.getPrechargeIntensity(scope);
+  }
+
+  @Override
   public void recharge(EngineNumber volume, EngineNumber intensity, YearMatcher yearMatcher) {
+    recharge(volume, intensity, yearMatcher, "priorEquipment");
+  }
+
+  @Override
+  public void recharge(EngineNumber volume, EngineNumber intensity, YearMatcher yearMatcher,
+      String target) {
     if (!getIsInRange(yearMatcher)) {
       return;
     }
@@ -478,7 +494,13 @@ public class SingleThreadEngine implements Engine {
       raiseNoAppOrSubstance("recalculating population change", " specified");
     }
 
-    simulationState.accumulateRecharge(scope, volume, intensity);
+    boolean isPrecharge = "newEquipment".equals(target);
+
+    if (isPrecharge) {
+      simulationState.accumulatePrecharge(scope, volume, intensity);
+    } else {
+      simulationState.accumulateRecharge(scope, volume, intensity);
+    }
 
     boolean isCarryOver = getIsCarryOver(scope);
 
