@@ -851,7 +851,10 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    */
   @Override
   public Fragment visitEqualsDuration(QubecTalkParser.EqualsDurationContext ctx) {
-    return visitChildren(ctx);
+    Operation valueOperation = visit(ctx.value).getOperation();
+    ParsedDuring during = visit(ctx.duration).getDuring();
+    Operation operation = new EqualsOperation(valueOperation, during);
+    return new OperationFragment(operation);
   }
 
   /**

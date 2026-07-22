@@ -56,6 +56,8 @@ The about stanza is optional.
 - `equals X kgCO2e / kg` - Sets Global Warming Potential in kgCO2e units (kg is kilograms)
 - `equals X kwh / unit` - Sets energy consumption per unit
 
+Both GHG and energy intensities set via `equals` support optional `during` clauses (e.g. `equals 1 kwh / unit during year 2021`), allowing intensities to change over time to model energy efficiency improvements or refrigerant substitution. When a `during` clause is provided, the intensity is only set for the specified year(s); in other years, the prior intensity value is retained.
+
 #### Manufacturing and Trade
 - `initial charge with {amount} for {stream}` - Sets substance per unit where amount is typically X kg / unit
 - `enable {stream}` - Marks stream as enabled without setting values (required before recharge operations). By convention, place at top of substance definitions.

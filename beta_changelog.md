@@ -14,6 +14,14 @@ Finally, we want to again express our gratitude for your feedback and time.
 
 The following changes have been adopted and released.
 
+### Time-varying equals
+
+**Status**: Released July 21, 2026
+
+**Classification**: Enhancement
+
+The `equals` command (which sets GHG intensity like `equals 1430 kgCO2e / kg` and energy intensity like `equals 1 kwh / unit`) now supports optional `during` clauses, allowing intensities to change over time. For example, `equals 1 kwh / unit during year 2021` sets the energy intensity for 2021 only. Previously, the grammar accepted this syntax but the operation was silently not constructed, so time-qualified `equals` statements had no effect. This enables modeling of energy efficiency improvements or GWP transitions (like refrigerant substitution) across the simulation horizon.
+
 ### Virgin keyword
 
 **Status**: Released June 11, 2026
