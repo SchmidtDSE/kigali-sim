@@ -184,7 +184,9 @@ public class ServicingOffsetBuilder {
     BigDecimal denominator = initialChargeKgUnit
         .add(prechargeRatio.multiply(prechargeIntensityKg));
     BigDecimal deltaUnits = DivisionHelper.divideWithZero(
-        salesKg.subtract(rechargeKg), denominator);
+        salesKg.subtract(rechargeKg),
+        denominator
+    );
     BigDecimal prechargeKg = deltaUnits.multiply(prechargeRatio).multiply(prechargeIntensityKg);
     return new ServicingOffset(deltaUnits, prechargeKg, rechargeKg);
   }
@@ -205,7 +207,9 @@ public class ServicingOffsetBuilder {
     BigDecimal prechargeKg = prechargeVolume.getValue();
     BigDecimal availableForNewUnitsKg = salesKg.subtract(rechargeKg).subtract(prechargeKg);
     BigDecimal deltaUnits = DivisionHelper.divideWithZero(
-        availableForNewUnitsKg, initialChargeKgUnit);
+        availableForNewUnitsKg,
+        initialChargeKgUnit
+    );
     return new ServicingOffset(deltaUnits, prechargeKg, rechargeKg);
   }
 
@@ -218,7 +222,9 @@ public class ServicingOffsetBuilder {
     BigDecimal prechargeKg = implicitPrechargeKg;
     BigDecimal availableForNewUnitsKg = salesKg.subtract(rechargeKg).subtract(prechargeKg);
     BigDecimal deltaUnits = DivisionHelper.divideWithZero(
-        availableForNewUnitsKg, initialChargeKgUnit);
+        availableForNewUnitsKg,
+        initialChargeKgUnit
+    );
     return new ServicingOffset(deltaUnits, prechargeKg, rechargeKg);
   }
 }

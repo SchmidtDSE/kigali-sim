@@ -143,12 +143,10 @@ public class DemandAnalysisBuilder {
    * @return A DemandAnalysis containing the computed demand, spec type, and virgin material
    */
   public DemandAnalysis build() {
-    BigDecimal totalDemand = calculateTotalDemand(rechargeVolume, prechargeVolume, volumeForNew,
-        implicitRechargeKg, implicitPrechargeKg);
-    boolean hasUnitBasedSpecs = getHasUnitBasedSpecs(simulationState, scopeEffective,
-        implicitRechargeKg, implicitPrechargeKg);
-    BigDecimal requiredVirginMaterial = calculateRequiredVirginMaterial(totalDemand,
-        eolRecycledKg, rechargeRecycledKg, simulationState, scopeEffective, hasUnitBasedSpecs);
+    BigDecimal totalDemand = calculateTotalDemand();
+    boolean hasUnitBasedSpecs = getHasUnitBasedSpecs();
+    BigDecimal requiredVirginMaterial = calculateRequiredVirginMaterial(
+        totalDemand, hasUnitBasedSpecs);
     return new DemandAnalysis(totalDemand, hasUnitBasedSpecs, requiredVirginMaterial);
   }
 
@@ -165,14 +163,9 @@ public class DemandAnalysisBuilder {
    *   not preserved</li>
    * </ol>
    *
-   * @param simulationState the simulation state to use for checking specifications
-   * @param scopeEffective the scope to check
-   * @param implicitRechargeKg the implicit recharge amount in kg
-   * @param implicitPrechargeKg the implicit precharge amount in kg
    * @return true if unit-based specifications should be preserved
    */
-  private boolean getHasUnitBasedSpecs(SimulationState simulationState, UseKey scopeEffective,
-      BigDecimal implicitRechargeKg, BigDecimal implicitPrechargeKg) {
+  private boolean getHasUnitBasedSpecs() {
     boolean hasUnitBasedSpecs = EngineSupportUtils.hasUnitBasedSalesSpecifications(
         simulationState, scopeEffective);
     if (!hasUnitBasedSpecs) {
@@ -195,14 +188,11 @@ public class DemandAnalysisBuilder {
    * specs, the default is 0% induction (displacement behavior), while for non-unit specs, the
    * default is 100% induction (induced demand behavior).</p>
    *
-   * @param simulationState the simulation state to get induction rate from
-   * @param scopeEffective the scope to get induction rate for
    * @param stage the recovery stage (EOL or RECHARGE)
    * @param hasUnitBasedSpecs whether the specification is unit-based
    * @return the effective induction rate as a ratio (0.0 to 1.0)
    */
-  private BigDecimal getEffectiveInductionRate(SimulationState simulationState,
-      UseKey scopeEffective, RecoveryStage stage, boolean hasUnitBasedSpecs) {
+  private BigDecimal getEffectiveInductionRate(RecoveryStage stage, boolean hasUnitBasedSpecs) {
     EngineNumber inductionRate = simulationState.getInductionRate(scopeEffective, stage);
 
     boolean wasExplicitlySet = inductionRate != null;
@@ -228,19 +218,12 @@ public class DemandAnalysisBuilder {
    *   <li>Recycling displacement and induction effects</li>
    * </ul></div>
    *
-   * @param rechargeVolume Total recharge volume in kg
-   * @param prechargeVolume Total precharge volume in kg
-   * @param newEquipmentVolume Volume needed for new equipment in kg
-   * @param implicitRechargeKg Implicit recharge from unit-based specs in kg
-   * @param implicitPrechargeKg Implicit precharge from unit-based specs in kg
    * @return BigDecimal representing total demand minus implicit servicing in kg
    */
-  private BigDecimal calculateTotalDemand(EngineNumber rechargeVolume,
-      EngineNumber prechargeVolume, EngineNumber newEquipmentVolume,
-      BigDecimal implicitRechargeKg, BigDecimal implicitPrechargeKg) {
+  private BigDecimal calculateTotalDemand() {
     BigDecimal totalDemand = rechargeVolume.getValue()
         .add(prechargeVolume.getValue())
-        .add(newEquipmentVolume.getValue());
+        .add(volumeForNew.getValue());
     BigDecimal requiredKg = totalDemand.subtract(implicitRechargeKg)
         .subtract(implicitPrechargeKg);
     return requiredKg;
@@ -273,46 +256,60 @@ public class DemandAnalysisBuilder {
    * </ul></div>
    *
    * @param totalDemand Total demand before recycling effects
-   * @param eolRecycledKg EOL recycled material in kg
-   * @param rechargeRecycledKg Recharge-stage recycled material in kg
-   * @param simulationState Simulation state for induction rate queries
-   * @param scopeEffective Scope for induction rate queries
    * @param hasUnitBasedSpecs Whether specifications are unit-based
    * @return BigDecimal representing required virgin material in kg
    */
   private BigDecimal calculateRequiredVirginMaterial(BigDecimal totalDemand,
-      BigDecimal eolRecycledKg, BigDecimal rechargeRecycledKg,
-      SimulationState simulationState, UseKey scopeEffective, boolean hasUnitBasedSpecs) {
-    BigDecimal totalRequiredKg;
-
+      boolean hasUnitBasedSpecs) {
     if (hasUnitBasedSpecs) {
-      BigDecimal inductionRatioEol = getEffectiveInductionRate(simulationState, scopeEffective,
-          RecoveryStage.EOL, hasUnitBasedSpecs);
-      BigDecimal inductionRatioRecharge = getEffectiveInductionRate(simulationState, scopeEffective,
-          RecoveryStage.RECHARGE, hasUnitBasedSpecs);
-
-      BigDecimal eolInducedKg = eolRecycledKg.multiply(inductionRatioEol);
-      BigDecimal rechargeInducedKg = rechargeRecycledKg.multiply(inductionRatioRecharge);
-
-      BigDecimal inducedDemandKg = eolInducedKg.add(rechargeInducedKg);
-      totalRequiredKg = totalDemand.add(inducedDemandKg);
+      return calculateRequiredVirginMaterialUnitsBased(totalDemand);
     } else {
-      BigDecimal inductionRatioEol = getEffectiveInductionRate(simulationState, scopeEffective,
-          RecoveryStage.EOL, hasUnitBasedSpecs);
-      BigDecimal inductionRatioRecharge = getEffectiveInductionRate(simulationState, scopeEffective,
-          RecoveryStage.RECHARGE, hasUnitBasedSpecs);
-
-      BigDecimal totalRecycledKg = eolRecycledKg.add(rechargeRecycledKg);
-      totalRequiredKg = totalDemand.subtract(totalRecycledKg);
-
-      BigDecimal eolInducedKg = eolRecycledKg.multiply(inductionRatioEol);
-      BigDecimal rechargeInducedKg = rechargeRecycledKg.multiply(inductionRatioRecharge);
-      BigDecimal totalInducedKg = eolInducedKg.add(rechargeInducedKg);
-      totalRequiredKg = totalRequiredKg.add(totalInducedKg);
-
-      totalRequiredKg = totalRequiredKg.max(BigDecimal.ZERO);
+      return calculateRequiredVirginMaterialVolumeBased(totalDemand);
     }
+  }
 
-    return totalRequiredKg;
+  /**
+   * Calculates required virgin material for unit-based specifications.
+   *
+   * <p>Starts with total demand (already excludes implicit recharge) and adds induced demand
+   * based on induction rates (default 0% for displacement), maintaining unit-based specification
+   * intent.</p>
+   *
+   * @param totalDemand Total demand before recycling effects
+   * @return BigDecimal representing required virgin material in kg
+   */
+  private BigDecimal calculateRequiredVirginMaterialUnitsBased(BigDecimal totalDemand) {
+    BigDecimal inductionRatioEol = getEffectiveInductionRate(RecoveryStage.EOL, true);
+    BigDecimal inductionRatioRecharge = getEffectiveInductionRate(RecoveryStage.RECHARGE, true);
+
+    BigDecimal eolInducedKg = eolRecycledKg.multiply(inductionRatioEol);
+    BigDecimal rechargeInducedKg = rechargeRecycledKg.multiply(inductionRatioRecharge);
+
+    BigDecimal inducedDemandKg = eolInducedKg.add(rechargeInducedKg);
+    return totalDemand.add(inducedDemandKg);
+  }
+
+  /**
+   * Calculates required virgin material for volume-based specifications.
+   *
+   * <p>Always subtracts the full recycled amount (baseline displacement), then adds back induced
+   * demand based on induction rates (default 100%), and ensures a non-negative result.</p>
+   *
+   * @param totalDemand Total demand before recycling effects
+   * @return BigDecimal representing required virgin material in kg
+   */
+  private BigDecimal calculateRequiredVirginMaterialVolumeBased(BigDecimal totalDemand) {
+    BigDecimal inductionRatioEol = getEffectiveInductionRate(RecoveryStage.EOL, false);
+    BigDecimal inductionRatioRecharge = getEffectiveInductionRate(RecoveryStage.RECHARGE, false);
+
+    BigDecimal totalRecycledKg = eolRecycledKg.add(rechargeRecycledKg);
+    BigDecimal totalRequiredKg = totalDemand.subtract(totalRecycledKg);
+
+    BigDecimal eolInducedKg = eolRecycledKg.multiply(inductionRatioEol);
+    BigDecimal rechargeInducedKg = rechargeRecycledKg.multiply(inductionRatioRecharge);
+    BigDecimal totalInducedKg = eolInducedKg.add(rechargeInducedKg);
+    totalRequiredKg = totalRequiredKg.add(totalInducedKg);
+
+    return totalRequiredKg.max(BigDecimal.ZERO);
   }
 }
