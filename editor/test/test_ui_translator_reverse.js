@@ -88,7 +88,10 @@ function buildUiTranslatorReverseTests() {
       const populationEngineNumber = new EngineNumber("10", "%", "10");
       const volumeEngineNumber = new EngineNumber("0.12", "kg / unit", "0.12");
       const command = new RechargeCommand(
-        populationEngineNumber, volumeEngineNumber, "priorEquipment", null,
+        populationEngineNumber,
+        volumeEngineNumber,
+        "priorEquipment",
+        null,
       );
       const substance = createWithCommand("test", false, command);
       const code = substance.toCode(0);
@@ -99,7 +102,10 @@ function buildUiTranslatorReverseTests() {
       const populationEngineNumber = new EngineNumber("5", "% / year", "5");
       const volumeEngineNumber = new EngineNumber("0.85", "kg / unit", "0.85");
       const command = new RechargeCommand(
-        populationEngineNumber, volumeEngineNumber, "priorEquipment", yearMatcher,
+        populationEngineNumber,
+        volumeEngineNumber,
+        "priorEquipment",
+        yearMatcher,
       );
       const substance = createWithCommand("test", false, command);
       const code = substance.toCode(0);
@@ -113,7 +119,10 @@ function buildUiTranslatorReverseTests() {
       const populationEngineNumber = new EngineNumber("15", "%", "15");
       const volumeEngineNumber = new EngineNumber("0.2", "kg / unit", "0.2");
       const command = new RechargeCommand(
-        populationEngineNumber, volumeEngineNumber, "priorEquipment", yearMatcher,
+        populationEngineNumber,
+        volumeEngineNumber,
+        "priorEquipment",
+        yearMatcher,
       );
       const substance = createWithCommand("test", true, command);
       const code = substance.toCode(0);
@@ -146,7 +155,10 @@ function buildUiTranslatorReverseTests() {
       const populationEngineNumber = new EngineNumber("10", "% / year", "10");
       const volumeEngineNumber = new EngineNumber("5", "kg / unit", "5");
       const command = new RechargeCommand(
-        populationEngineNumber, volumeEngineNumber, "priorEquipment", null,
+        populationEngineNumber,
+        volumeEngineNumber,
+        "priorEquipment",
+        null,
       );
       const substance = createWithCommand("test", false, command);
       const code = substance.toCode(0);
@@ -532,7 +544,10 @@ function buildUiTranslatorReverseTests() {
       const populationEngineNumber = new EngineNumber("1.2340", "%", "1.2340");
       const volumeEngineNumber = new EngineNumber("0.8500", "kg / unit", "0.8500");
       const command = new RechargeCommand(
-        populationEngineNumber, volumeEngineNumber, "priorEquipment", null,
+        populationEngineNumber,
+        volumeEngineNumber,
+        "priorEquipment",
+        null,
       );
       const substance = createWithCommand("test", false, command);
       const code = substance.toCode(0);
@@ -545,7 +560,10 @@ function buildUiTranslatorReverseTests() {
       const populationEngineNumber2 = new EngineNumber("1,234.0", "%", "1,234.0");
       const volumeEngineNumber2 = new EngineNumber("2.5000", "mt / unit", "2.5000");
       const command2 = new RechargeCommand(
-        populationEngineNumber2, volumeEngineNumber2, "priorEquipment", null,
+        populationEngineNumber2,
+        volumeEngineNumber2,
+        "priorEquipment",
+        null,
       );
       const substance2 = createWithCommand("test2", false, command2);
       const code2 = substance2.toCode(0);
@@ -561,7 +579,10 @@ function buildUiTranslatorReverseTests() {
       const populationEngineNumber = new EngineNumber("3", "%", "3");
       const volumeEngineNumber = new EngineNumber("1", "kg / unit", "1");
       const command = new RechargeCommand(
-        populationEngineNumber, volumeEngineNumber, "newEquipment", null,
+        populationEngineNumber,
+        volumeEngineNumber,
+        "newEquipment",
+        null,
       );
       const substance = createWithCommand("test", false, command);
       const code = substance.toCode(0);
