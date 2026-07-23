@@ -19,6 +19,7 @@ import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.state.OverridingConverterStateGetter;
 import org.kigalisim.engine.state.StateGetter;
 import org.kigalisim.engine.support.DivisionHelper;
+import org.kigalisim.engine.support.ValidatedBuilder;
 
 /**
  * Builder that calculates servicing (precharge/recharge) offsets for population changes.

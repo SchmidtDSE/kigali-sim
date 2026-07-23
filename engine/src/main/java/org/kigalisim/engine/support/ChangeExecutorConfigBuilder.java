@@ -17,7 +17,7 @@ import org.kigalisim.engine.state.YearMatcher;
 /**
  * Builder for creating ChangeExecutorConfig instances with fluent interface.
  */
-public final class ChangeExecutorConfigBuilder {
+public final class ChangeExecutorConfigBuilder extends ValidatedBuilder<ChangeExecutorConfig> {
 
   private Optional<String> stream;
   private Optional<EngineNumber> amount;
@@ -28,6 +28,7 @@ public final class ChangeExecutorConfigBuilder {
    * Create a new ChangeExecutorConfigBuilder.
    */
   public ChangeExecutorConfigBuilder() {
+    super("ChangeExecutorConfig");
     this.stream = Optional.empty();
     this.amount = Optional.empty();
     this.yearMatcher = Optional.empty();
@@ -79,22 +80,24 @@ public final class ChangeExecutorConfigBuilder {
   }
 
   /**
+   * Check that all required fields are set before construction.
+   *
+   * @throws IllegalStateException if required fields are not set
+   */
+  @Override
+  protected void validate() {
+    requireField(stream, "stream");
+    requireField(amount, "amount");
+    requireField(useKeyEffective, "useKeyEffective");
+  }
+
+  /**
    * Builds the ChangeExecutorConfig.
    *
    * @return the built ChangeExecutorConfig
-   * @throws IllegalStateException if required fields are not set
    */
-  public ChangeExecutorConfig build() {
-    if (stream.isEmpty()) {
-      throw new IllegalStateException("Stream is required");
-    }
-    if (amount.isEmpty()) {
-      throw new IllegalStateException("Amount is required");
-    }
-    if (useKeyEffective.isEmpty()) {
-      throw new IllegalStateException("UseKeyEffective is required");
-    }
-
+  @Override
+  protected ChangeExecutorConfig buildInternal() {
     return new ChangeExecutorConfig(
         stream.get(),
         amount.get(),
