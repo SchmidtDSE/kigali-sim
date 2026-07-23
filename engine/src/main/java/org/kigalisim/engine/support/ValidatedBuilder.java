@@ -4,7 +4,7 @@
  * @license BSD-3-Clause
  */
 
-package org.kigalisim.engine.recalc.util;
+package org.kigalisim.engine.support;
 
 import java.util.Optional;
 
@@ -67,6 +67,19 @@ public abstract class ValidatedBuilder<T> {
    */
   protected void requireField(Object value, String fieldName) {
     if (Optional.ofNullable(value).isEmpty()) {
+      throw new IllegalStateException(fieldName + " is required to build a " + builtTypeName);
+    }
+  }
+
+  /**
+   * Require that a builder field backed by an {@link Optional} was set before building.
+   *
+   * @param value The optional field value to check
+   * @param fieldName The name of the field, used in the error message
+   * @throws IllegalStateException if value is empty
+   */
+  protected void requireField(Optional<?> value, String fieldName) {
+    if (value.isEmpty()) {
       throw new IllegalStateException(fieldName + " is required to build a " + builtTypeName);
     }
   }
