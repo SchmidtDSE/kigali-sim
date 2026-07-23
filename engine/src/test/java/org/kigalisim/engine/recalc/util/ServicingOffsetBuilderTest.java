@@ -1,5 +1,5 @@
 /**
- * Unit tests for the ServicingOffsetter class.
+ * Unit tests for the ServicingOffsetBuilder class.
  *
  * @license BSD-3-Clause
  */
@@ -16,9 +16,9 @@ import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.state.StateGetter;
 
 /**
- * Tests for the ServicingOffsetter class.
+ * Tests for the ServicingOffsetBuilder class.
  */
-public class ServicingOffsetterTest {
+public class ServicingOffsetBuilderTest {
 
   /**
    * Helper method to create a mock StateGetter with lenient stubbing.
@@ -76,15 +76,21 @@ public class ServicingOffsetterTest {
    */
   @Test
   public void testOffsetVolumeSalesPercentPrecharge() {
-    ServicingOffsetter offsetter = new ServicingOffsetter();
     BigDecimal salesKg = new BigDecimal("100");
     BigDecimal rechargeKg = new BigDecimal("10");
     BigDecimal initialChargeKgUnit = new BigDecimal("1");
     EngineNumber prechargePopRaw = new EngineNumber(new BigDecimal("50"), "%");
     EngineNumber prechargeIntensityRaw = new EngineNumber(new BigDecimal("2"), "kg / unit");
 
-    ServicingOffset offset = offsetter.offset(salesKg, rechargeKg, initialChargeKgUnit,
-        prechargePopRaw, prechargeIntensityRaw, true, BigDecimal.ZERO, null);
+    ServicingOffset offset = new ServicingOffsetBuilder()
+        .setSalesKg(salesKg)
+        .setRechargeKg(rechargeKg)
+        .setInitialChargeKgUnit(initialChargeKgUnit)
+        .setPrechargePopRaw(prechargePopRaw)
+        .setPrechargeIntensityRaw(prechargeIntensityRaw)
+        .setUseExplicitRechargeEffective(true)
+        .setImplicitPrechargeKg(BigDecimal.ZERO)
+        .build();
 
     assertBigDecimalEquals(new BigDecimal("45"), offset.getDeltaUnits(),
         "Delta units should be 45 in circular case");
@@ -103,15 +109,21 @@ public class ServicingOffsetterTest {
    */
   @Test
   public void testOffsetVolumeSalesPercentPrechargeDifferentValues() {
-    ServicingOffsetter offsetter = new ServicingOffsetter();
     BigDecimal salesKg = new BigDecimal("200");
     BigDecimal rechargeKg = new BigDecimal("20");
     BigDecimal initialChargeKgUnit = new BigDecimal("2");
     EngineNumber prechargePopRaw = new EngineNumber(new BigDecimal("25"), "%");
     EngineNumber prechargeIntensityRaw = new EngineNumber(new BigDecimal("4"), "kg / unit");
 
-    ServicingOffset offset = offsetter.offset(salesKg, rechargeKg, initialChargeKgUnit,
-        prechargePopRaw, prechargeIntensityRaw, true, BigDecimal.ZERO, null);
+    ServicingOffset offset = new ServicingOffsetBuilder()
+        .setSalesKg(salesKg)
+        .setRechargeKg(rechargeKg)
+        .setInitialChargeKgUnit(initialChargeKgUnit)
+        .setPrechargePopRaw(prechargePopRaw)
+        .setPrechargeIntensityRaw(prechargeIntensityRaw)
+        .setUseExplicitRechargeEffective(true)
+        .setImplicitPrechargeKg(BigDecimal.ZERO)
+        .build();
 
     assertBigDecimalEquals(new BigDecimal("60"), offset.getDeltaUnits(),
         "Delta units should be 60 in circular case");
@@ -128,7 +140,6 @@ public class ServicingOffsetterTest {
    */
   @Test
   public void testOffsetVolumeSalesExplicitPrecharge() {
-    ServicingOffsetter offsetter = new ServicingOffsetter();
     BigDecimal salesKg = new BigDecimal("100");
     BigDecimal rechargeKg = new BigDecimal("10");
     BigDecimal initialChargeKgUnit = new BigDecimal("1");
@@ -136,8 +147,16 @@ public class ServicingOffsetterTest {
     EngineNumber prechargeIntensityRaw = new EngineNumber(new BigDecimal("2"), "kg / unit");
     StateGetter stateGetter = createMockStateGetter();
 
-    ServicingOffset offset = offsetter.offset(salesKg, rechargeKg, initialChargeKgUnit,
-        prechargePopRaw, prechargeIntensityRaw, true, BigDecimal.ZERO, stateGetter);
+    ServicingOffset offset = new ServicingOffsetBuilder()
+        .setSalesKg(salesKg)
+        .setRechargeKg(rechargeKg)
+        .setInitialChargeKgUnit(initialChargeKgUnit)
+        .setPrechargePopRaw(prechargePopRaw)
+        .setPrechargeIntensityRaw(prechargeIntensityRaw)
+        .setUseExplicitRechargeEffective(true)
+        .setImplicitPrechargeKg(BigDecimal.ZERO)
+        .setStateGetter(stateGetter)
+        .build();
 
     assertBigDecimalEquals(new BigDecimal("70"), offset.getDeltaUnits(),
         "Delta units should be 70 in explicit precharge case");
@@ -155,14 +174,18 @@ public class ServicingOffsetterTest {
    */
   @Test
   public void testOffsetUnitSales() {
-    ServicingOffsetter offsetter = new ServicingOffsetter();
     BigDecimal salesKg = new BigDecimal("100");
     BigDecimal rechargeKg = new BigDecimal("10");
     BigDecimal initialChargeKgUnit = new BigDecimal("1");
     BigDecimal implicitPrechargeKg = new BigDecimal("5");
 
-    ServicingOffset offset = offsetter.offset(salesKg, rechargeKg, initialChargeKgUnit,
-        null, null, false, implicitPrechargeKg, null);
+    ServicingOffset offset = new ServicingOffsetBuilder()
+        .setSalesKg(salesKg)
+        .setRechargeKg(rechargeKg)
+        .setInitialChargeKgUnit(initialChargeKgUnit)
+        .setUseExplicitRechargeEffective(false)
+        .setImplicitPrechargeKg(implicitPrechargeKg)
+        .build();
 
     assertBigDecimalEquals(new BigDecimal("85"), offset.getDeltaUnits(),
         "Delta units should be 85 in units-based tracking");
@@ -180,7 +203,6 @@ public class ServicingOffsetterTest {
    */
   @Test
   public void testPercentPrechargeWithImplicitFallsToUnitSales() {
-    ServicingOffsetter offsetter = new ServicingOffsetter();
     BigDecimal salesKg = new BigDecimal("100");
     BigDecimal rechargeKg = new BigDecimal("10");
     BigDecimal initialChargeKgUnit = new BigDecimal("1");
@@ -188,8 +210,15 @@ public class ServicingOffsetterTest {
     EngineNumber prechargeIntensityRaw = new EngineNumber(new BigDecimal("2"), "kg / unit");
     BigDecimal implicitPrechargeKg = new BigDecimal("5");
 
-    ServicingOffset offset = offsetter.offset(salesKg, rechargeKg, initialChargeKgUnit,
-        prechargePopRaw, prechargeIntensityRaw, false, implicitPrechargeKg, null);
+    ServicingOffset offset = new ServicingOffsetBuilder()
+        .setSalesKg(salesKg)
+        .setRechargeKg(rechargeKg)
+        .setInitialChargeKgUnit(initialChargeKgUnit)
+        .setPrechargePopRaw(prechargePopRaw)
+        .setPrechargeIntensityRaw(prechargeIntensityRaw)
+        .setUseExplicitRechargeEffective(false)
+        .setImplicitPrechargeKg(implicitPrechargeKg)
+        .build();
 
     assertBigDecimalEquals(new BigDecimal("85"), offset.getDeltaUnits(),
         "Delta units should be 85 when percent precharge falls to unit sales");
@@ -200,20 +229,25 @@ public class ServicingOffsetterTest {
   /**
    * Test that zero precharge with explicit tracking falls to unit sales.
    *
-   * <p>When the precharge population is zero, hasPrecharge is false so it falls through to
+   * <p>When the precharge population is zero, isServicingEnabled is false so it falls through to
    * offsetUnitSales even with useExplicitRechargeEffective true.</p>
    */
   @Test
   public void testZeroPrechargeFallsToUnitSales() {
-    ServicingOffsetter offsetter = new ServicingOffsetter();
     BigDecimal salesKg = new BigDecimal("100");
     BigDecimal rechargeKg = new BigDecimal("10");
     BigDecimal initialChargeKgUnit = new BigDecimal("1");
     EngineNumber prechargePopRaw = new EngineNumber(BigDecimal.ZERO, "%");
     BigDecimal implicitPrechargeKg = new BigDecimal("5");
 
-    ServicingOffset offset = offsetter.offset(salesKg, rechargeKg, initialChargeKgUnit,
-        prechargePopRaw, null, true, implicitPrechargeKg, null);
+    ServicingOffset offset = new ServicingOffsetBuilder()
+        .setSalesKg(salesKg)
+        .setRechargeKg(rechargeKg)
+        .setInitialChargeKgUnit(initialChargeKgUnit)
+        .setPrechargePopRaw(prechargePopRaw)
+        .setUseExplicitRechargeEffective(true)
+        .setImplicitPrechargeKg(implicitPrechargeKg)
+        .build();
 
     assertBigDecimalEquals(new BigDecimal("85"), offset.getDeltaUnits(),
         "Delta units should be 85 when precharge is zero");
@@ -224,19 +258,23 @@ public class ServicingOffsetterTest {
   /**
    * Test that null precharge falls to unit sales.
    *
-   * <p>When the precharge population is null, hasPrecharge is false so it falls through to
+   * <p>When the precharge population is null, isServicingEnabled is false so it falls through to
    * offsetUnitSales.</p>
    */
   @Test
   public void testNullPrechargeFallsToUnitSales() {
-    ServicingOffsetter offsetter = new ServicingOffsetter();
     BigDecimal salesKg = new BigDecimal("100");
     BigDecimal rechargeKg = new BigDecimal("10");
     BigDecimal initialChargeKgUnit = new BigDecimal("1");
     BigDecimal implicitPrechargeKg = new BigDecimal("5");
 
-    ServicingOffset offset = offsetter.offset(salesKg, rechargeKg, initialChargeKgUnit,
-        null, null, true, implicitPrechargeKg, null);
+    ServicingOffset offset = new ServicingOffsetBuilder()
+        .setSalesKg(salesKg)
+        .setRechargeKg(rechargeKg)
+        .setInitialChargeKgUnit(initialChargeKgUnit)
+        .setUseExplicitRechargeEffective(true)
+        .setImplicitPrechargeKg(implicitPrechargeKg)
+        .build();
 
     assertBigDecimalEquals(new BigDecimal("85"), offset.getDeltaUnits(),
         "Delta units should be 85 when precharge is null");
@@ -251,14 +289,18 @@ public class ServicingOffsetterTest {
    */
   @Test
   public void testZeroSalesProducesZeroDelta() {
-    ServicingOffsetter offsetter = new ServicingOffsetter();
     BigDecimal salesKg = BigDecimal.ZERO;
     BigDecimal rechargeKg = BigDecimal.ZERO;
     BigDecimal initialChargeKgUnit = new BigDecimal("1");
     BigDecimal implicitPrechargeKg = BigDecimal.ZERO;
 
-    ServicingOffset offset = offsetter.offset(salesKg, rechargeKg, initialChargeKgUnit,
-        null, null, false, implicitPrechargeKg, null);
+    ServicingOffset offset = new ServicingOffsetBuilder()
+        .setSalesKg(salesKg)
+        .setRechargeKg(rechargeKg)
+        .setInitialChargeKgUnit(initialChargeKgUnit)
+        .setUseExplicitRechargeEffective(false)
+        .setImplicitPrechargeKg(implicitPrechargeKg)
+        .build();
 
     assertBigDecimalEquals(BigDecimal.ZERO, offset.getDeltaUnits(),
         "Delta units should be zero with no sales");

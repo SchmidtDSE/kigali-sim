@@ -60,8 +60,12 @@ public class RechargeOperationTest {
     EngineNumber intensity = new EngineNumber(BigDecimal.valueOf(0.1), "");
     Operation volumeOperation = new PreCalculatedOperation(volume);
     Operation intensityOperation = new PreCalculatedOperation(intensity);
-    RechargeOperation operation = new RechargeOperation(volumeOperation, intensityOperation,
-        Optional.empty(), RechargeOperation.PRIOR);
+    RechargeOperation operation = new RechargeOperation(
+        volumeOperation,
+        intensityOperation,
+        Optional.empty(),
+        RechargeOperation.PRIOR
+    );
     assertNotNull(operation, "RechargeOperation should be constructable without during");
   }
 
@@ -75,8 +79,12 @@ public class RechargeOperationTest {
     Operation volumeOperation = new PreCalculatedOperation(volume);
     Operation intensityOperation = new PreCalculatedOperation(intensity);
     ParsedDuring during = new ParsedDuring(Optional.empty(), Optional.empty());
-    RechargeOperation operation = new RechargeOperation(volumeOperation, intensityOperation,
-        Optional.of(during), RechargeOperation.PRIOR);
+    RechargeOperation operation = new RechargeOperation(
+        volumeOperation,
+        intensityOperation,
+        Optional.of(during),
+        RechargeOperation.PRIOR
+    );
     assertNotNull(operation, "RechargeOperation should be constructable with during");
   }
 
@@ -103,8 +111,12 @@ public class RechargeOperationTest {
     EngineNumber intensity = new EngineNumber(BigDecimal.valueOf(5), "kg / unit");
     Operation volumeOperation = new PreCalculatedOperation(volume);
     Operation intensityOperation = new PreCalculatedOperation(intensity);
-    RechargeOperation operation = new RechargeOperation(volumeOperation, intensityOperation,
-        Optional.empty(), RechargeOperation.PRIOR);
+    RechargeOperation operation = new RechargeOperation(
+        volumeOperation,
+        intensityOperation,
+        Optional.empty(),
+        RechargeOperation.PRIOR
+    );
 
     operation.execute(machine);
 
@@ -146,8 +158,12 @@ public class RechargeOperationTest {
     TimePointFuture start = new CalculatedTimePointFuture(yearOperation);
     ParsedDuring during = new ParsedDuring(Optional.of(start), Optional.empty());
 
-    RechargeOperation operation = new RechargeOperation(volumeOperation, intensityOperation,
-        Optional.of(during), RechargeOperation.PRIOR);
+    RechargeOperation operation = new RechargeOperation(
+        volumeOperation,
+        intensityOperation,
+        Optional.of(during),
+        RechargeOperation.PRIOR
+    );
 
     operation.execute(machine);
 
@@ -194,8 +210,12 @@ public class RechargeOperationTest {
     TimePointFuture start = new CalculatedTimePointFuture(yearOperation);
     ParsedDuring during = new ParsedDuring(Optional.of(start), Optional.empty());
 
-    RechargeOperation operation = new RechargeOperation(volumeOperation, intensityOperation,
-        Optional.of(during), RechargeOperation.PRIOR);
+    RechargeOperation operation = new RechargeOperation(
+        volumeOperation,
+        intensityOperation,
+        Optional.of(during),
+        RechargeOperation.PRIOR
+    );
 
     operation.execute(machine);
 
@@ -237,8 +257,12 @@ public class RechargeOperationTest {
     Operation intensityRight = new PreCalculatedOperation(new EngineNumber(BigDecimal.valueOf(2), "kg / unit"));
     Operation intensityOperation = new AdditionOperation(intensityLeft, intensityRight); // 3 + 2 = 5 kg/unit
 
-    RechargeOperation operation = new RechargeOperation(volumeOperation, intensityOperation,
-        Optional.empty(), RechargeOperation.PRIOR);
+    RechargeOperation operation = new RechargeOperation(
+        volumeOperation,
+        intensityOperation,
+        Optional.empty(),
+        RechargeOperation.PRIOR
+    );
 
     operation.execute(machine);
 
