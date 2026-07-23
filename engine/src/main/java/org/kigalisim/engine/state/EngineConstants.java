@@ -73,6 +73,7 @@ public final class EngineConstants {
     units.put("retired", "units");
     units.put("priorRetired", "units");
     units.put("implicitRecharge", "kg");
+    units.put("implicitPrecharge", "kg");
     units.put("age", "years");
     return units;
   }

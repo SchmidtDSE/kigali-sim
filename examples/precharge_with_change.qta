@@ -1,0 +1,30 @@
+start default
+
+  define application "App"
+  
+    uses substance "Sub1"
+      enable domestic
+
+      equals 1 tCO2e / kg
+      equals 1 kwh / kg
+      
+      initial charge with 1 kg / unit for sales
+      recharge 5% of newEquipment with 1 kg / unit
+      
+      set priorEquipment to 10000 units during year 1
+      set domestic to 1000 units during year 1
+      change domestic by +10 % during year 2 to onwards
+
+    end substance
+  
+  end application
+
+end default
+
+
+start simulations
+
+  simulate "BAU"
+  from years 1 to 3
+
+end simulations

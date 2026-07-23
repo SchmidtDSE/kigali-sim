@@ -14,10 +14,12 @@ import java.util.Optional;
 import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
+import org.kigalisim.engine.recalc.util.ServicingOffset;
+import org.kigalisim.engine.recalc.util.ServicingOffsetBuilder;
 import org.kigalisim.engine.state.OverridingConverterStateGetter;
+import org.kigalisim.engine.state.SimulationState;
 import org.kigalisim.engine.state.StateGetter;
 import org.kigalisim.engine.state.UseKey;
-import org.kigalisim.engine.support.DivisionHelper;
 import org.kigalisim.engine.support.ExceptionsGenerator;
 import org.kigalisim.engine.support.RechargeVolumeCalculator;
 
@@ -76,6 +78,10 @@ public class PopulationChangeRecalcStrategy implements RecalcStrategy {
     EngineNumber implicitRechargeRaw = target.getStream("implicitRecharge", Optional.of(scopeEffective), Optional.empty());
     EngineNumber implicitRecharge = unitConverter.convert(implicitRechargeRaw, "kg");
 
+    // Get existing implicit precharge stream (defaults to 0 kg if not set)
+    EngineNumber implicitPrechargeRaw = target.getStream("implicitPrecharge", Optional.of(scopeEffective), Optional.empty());
+    EngineNumber implicitPrecharge = unitConverter.convert(implicitPrechargeRaw, "kg");
+
     // Choose which recharge to use based on useExplicitRecharge flag
     BigDecimal rechargeKg;
     if (useExplicitRechargeEffective) {
@@ -88,17 +94,28 @@ public class PopulationChangeRecalcStrategy implements RecalcStrategy {
 
     // Get total volume available for new units
     BigDecimal salesKg = substanceSales.getValue();
-    // Always subtract recharge to get the net volume available for new equipment
-    BigDecimal availableForNewUnitsKg = salesKg.subtract(rechargeKg);
 
     // Convert to unit delta
     EngineNumber initialChargeRaw = target.getInitialCharge("sales");
     EngineNumber initialCharge = unitConverter.convert(initialChargeRaw, "kg / unit");
     BigDecimal initialChargeKgUnit = initialCharge.getValue();
-    BigDecimal deltaUnits = DivisionHelper.divideWithZero(
-        availableForNewUnitsKg,
-        initialChargeKgUnit
-    );
+
+    SimulationState simulationState = kit.getStreamKeeper();
+    EngineNumber prechargePopRaw = simulationState.getPrechargePopulation(scopeEffective);
+    EngineNumber prechargeIntensityRaw = simulationState.getPrechargeIntensity(scopeEffective);
+
+    ServicingOffset offset = new ServicingOffsetBuilder()
+        .setSalesKg(salesKg)
+        .setRechargeKg(rechargeKg)
+        .setInitialChargeKgUnit(initialChargeKgUnit)
+        .setPrechargePopRaw(prechargePopRaw)
+        .setPrechargeIntensityRaw(prechargeIntensityRaw)
+        .setUseExplicitRechargeEffective(useExplicitRechargeEffective)
+        .setImplicitPrechargeKg(implicitPrecharge.getValue())
+        .setStateGetter(kit.getStateGetter())
+        .build();
+    BigDecimal deltaUnits = offset.getDeltaUnits();
+
     EngineNumber newUnitsMarginal = new EngineNumber(deltaUnits, "units");
 
     // Find new total

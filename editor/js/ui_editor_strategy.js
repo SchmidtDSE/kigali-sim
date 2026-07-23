@@ -255,6 +255,9 @@ function initRechargeCommandUi(itemObj, root, codeObj) {
   const volumeUnitsGetter = (x) => {
     return x.getVolumeEngineNumber().getUnits();
   };
+  const targetGetter = (x) => {
+    return x.getTargetStream();
+  };
 
   setFieldValue(
     root.querySelector(".recharge-population-input"),
@@ -267,6 +270,12 @@ function initRechargeCommandUi(itemObj, root, codeObj) {
     itemObj,
     "%",
     populationUnitsGetter,
+  );
+  setFieldValue(
+    root.querySelector(".recharge-target-input"),
+    itemObj,
+    "priorEquipment",
+    targetGetter,
   );
   setFieldValue(
     root.querySelector(".recharge-volume-input"),
@@ -301,6 +310,7 @@ function readRechargeCommandUi(root) {
   const populationUnits = getFieldValue(
     root.querySelector(".recharge-population-units-input"),
   );
+  const target = getFieldValue(root.querySelector(".recharge-target-input"));
   const volume = getFieldValue(root.querySelector(".recharge-volume-input"));
   const volumeUnits = getFieldValue(
     root.querySelector(".recharge-volume-units-input"),
@@ -316,6 +326,7 @@ function readRechargeCommandUi(root) {
   return new RechargeCommand(
     populationEngineNumber,
     volumeEngineNumber,
+    target,
     duration,
   );
 }

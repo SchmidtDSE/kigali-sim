@@ -895,7 +895,12 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
   public Fragment visitRechargeAllYears(QubecTalkParser.RechargeAllYearsContext ctx) {
     Operation populationOperation = visit(ctx.population).getOperation();
     Operation volumeOperation = visit(ctx.volume).getOperation();
-    Operation operation = new RechargeOperation(populationOperation, volumeOperation);
+    Operation operation = new RechargeOperation(
+        populationOperation,
+        volumeOperation,
+        Optional.empty(),
+        RechargeOperation.PRIOR
+    );
     return new OperationFragment(operation);
   }
 
@@ -907,7 +912,49 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
     Operation populationOperation = visit(ctx.population).getOperation();
     Operation volumeOperation = visit(ctx.volume).getOperation();
     ParsedDuring during = visit(ctx.duration).getDuring();
-    Operation operation = new RechargeOperation(populationOperation, volumeOperation, during);
+    Operation operation = new RechargeOperation(
+        populationOperation,
+        volumeOperation,
+        Optional.of(during),
+        RechargeOperation.PRIOR
+    );
+    return new OperationFragment(operation);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Fragment visitRechargeAllYearsWithTarget(
+      QubecTalkParser.RechargeAllYearsWithTargetContext ctx) {
+    Operation populationOperation = visit(ctx.population).getOperation();
+    Operation volumeOperation = visit(ctx.volume).getOperation();
+    String target = ctx.target.getText();
+    Operation operation = new RechargeOperation(
+        populationOperation,
+        volumeOperation,
+        Optional.empty(),
+        target
+    );
+    return new OperationFragment(operation);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Fragment visitRechargeDurationWithTarget(
+      QubecTalkParser.RechargeDurationWithTargetContext ctx) {
+    Operation populationOperation = visit(ctx.population).getOperation();
+    Operation volumeOperation = visit(ctx.volume).getOperation();
+    ParsedDuring during = visit(ctx.duration).getDuring();
+    String target = ctx.target.getText();
+    Operation operation = new RechargeOperation(
+        populationOperation,
+        volumeOperation,
+        Optional.of(during),
+        target
+    );
     return new OperationFragment(operation);
   }
 

@@ -87,19 +87,30 @@ function buildUiTranslatorReverseTests() {
     QUnit.test("recharges substances", function (assert) {
       const populationEngineNumber = new EngineNumber("10", "%", "10");
       const volumeEngineNumber = new EngineNumber("0.12", "kg / unit", "0.12");
-      const command = new RechargeCommand(populationEngineNumber, volumeEngineNumber, null);
+      const command = new RechargeCommand(
+        populationEngineNumber,
+        volumeEngineNumber,
+        "priorEquipment",
+        null,
+      );
       const substance = createWithCommand("test", false, command);
       const code = substance.toCode(0);
-      assert.notEqual(code.indexOf("recharge 10 % with 0.12 kg / unit"), -1);
+      assert.notEqual(code.indexOf("recharge 10 % of priorEquipment with 0.12 kg / unit"), -1);
     });
     QUnit.test("recharges substances with duration", function (assert) {
       const yearMatcher = new YearMatcher(new ParsedYear(2025), new ParsedYear(2030));
       const populationEngineNumber = new EngineNumber("5", "% / year", "5");
       const volumeEngineNumber = new EngineNumber("0.85", "kg / unit", "0.85");
-      const command = new RechargeCommand(populationEngineNumber, volumeEngineNumber, yearMatcher);
+      const command = new RechargeCommand(
+        populationEngineNumber,
+        volumeEngineNumber,
+        "priorEquipment",
+        yearMatcher,
+      );
       const substance = createWithCommand("test", false, command);
       const code = substance.toCode(0);
-      const expectedText = "recharge 5 % / year with 0.85 kg / unit during years 2025 to 2030";
+      const expectedText = "recharge 5 % / year of priorEquipment with 0.85 kg / unit" +
+        " during years 2025 to 2030";
       assert.notEqual(code.indexOf(expectedText), -1);
     });
 
@@ -107,11 +118,18 @@ function buildUiTranslatorReverseTests() {
       const yearMatcher = new YearMatcher(new ParsedYear(2), new ParsedYear(5));
       const populationEngineNumber = new EngineNumber("15", "%", "15");
       const volumeEngineNumber = new EngineNumber("0.2", "kg / unit", "0.2");
-      const command = new RechargeCommand(populationEngineNumber, volumeEngineNumber, yearMatcher);
+      const command = new RechargeCommand(
+        populationEngineNumber,
+        volumeEngineNumber,
+        "priorEquipment",
+        yearMatcher,
+      );
       const substance = createWithCommand("test", true, command);
       const code = substance.toCode(0);
       assert.notEqual(code.indexOf('modify substance "test"'), -1);
-      assert.notEqual(code.indexOf("recharge 15 % with 0.2 kg / unit during years 2 to 5"), -1);
+      assert.notEqual(code.indexOf(
+        "recharge 15 % of priorEquipment with 0.2 kg / unit during years 2 to 5",
+      ), -1);
     });
 
     QUnit.test("changes substances", function (assert) {
@@ -136,10 +154,15 @@ function buildUiTranslatorReverseTests() {
     QUnit.test("recharges substances", function (assert) {
       const populationEngineNumber = new EngineNumber("10", "% / year", "10");
       const volumeEngineNumber = new EngineNumber("5", "kg / unit", "5");
-      const command = new RechargeCommand(populationEngineNumber, volumeEngineNumber, null);
+      const command = new RechargeCommand(
+        populationEngineNumber,
+        volumeEngineNumber,
+        "priorEquipment",
+        null,
+      );
       const substance = createWithCommand("test", false, command);
       const code = substance.toCode(0);
-      assert.notEqual(code.indexOf("recharge 10 % / year with 5 kg / unit"), -1);
+      assert.notEqual(code.indexOf("recharge 10 % / year of priorEquipment with 5 kg / unit"), -1);
     });
 
     QUnit.test("recycles substances", function (assert) {
@@ -520,23 +543,51 @@ function buildUiTranslatorReverseTests() {
       // Test that RechargeCommand preserves original number formatting like 1.2340
       const populationEngineNumber = new EngineNumber("1.2340", "%", "1.2340");
       const volumeEngineNumber = new EngineNumber("0.8500", "kg / unit", "0.8500");
-      const command = new RechargeCommand(populationEngineNumber, volumeEngineNumber, null);
+      const command = new RechargeCommand(
+        populationEngineNumber,
+        volumeEngineNumber,
+        "priorEquipment",
+        null,
+      );
       const substance = createWithCommand("test", false, command);
       const code = substance.toCode(0);
 
       // Verify original formatting is preserved in generated code
-      assert.notEqual(code.indexOf("recharge 1.2340 % with 0.8500 kg / unit"), -1,
+      assert.notEqual(code.indexOf("recharge 1.2340 % of priorEquipment with 0.8500 kg / unit"), -1,
         "RechargeCommand should preserve original number formatting");
 
       // Test with thousands separator formatting
       const populationEngineNumber2 = new EngineNumber("1,234.0", "%", "1,234.0");
       const volumeEngineNumber2 = new EngineNumber("2.5000", "mt / unit", "2.5000");
-      const command2 = new RechargeCommand(populationEngineNumber2, volumeEngineNumber2, null);
+      const command2 = new RechargeCommand(
+        populationEngineNumber2,
+        volumeEngineNumber2,
+        "priorEquipment",
+        null,
+      );
       const substance2 = createWithCommand("test2", false, command2);
       const code2 = substance2.toCode(0);
 
-      assert.notEqual(code2.indexOf("recharge 1,234.0 % with 2.5000 mt / unit"), -1,
-        "RechargeCommand should preserve thousands separator formatting");
+      assert.notEqual(
+        code2.indexOf("recharge 1,234.0 % of priorEquipment with 2.5000 mt / unit"),
+        -1,
+        "RechargeCommand should preserve thousands separator formatting",
+      );
+    });
+
+    QUnit.test("recharge with newEquipment target generates precharge code", function (assert) {
+      const populationEngineNumber = new EngineNumber("3", "%", "3");
+      const volumeEngineNumber = new EngineNumber("1", "kg / unit", "1");
+      const command = new RechargeCommand(
+        populationEngineNumber,
+        volumeEngineNumber,
+        "newEquipment",
+        null,
+      );
+      const substance = createWithCommand("test", false, command);
+      const code = substance.toCode(0);
+      assert.notEqual(code.indexOf("recharge 3 % of newEquipment with 1 kg / unit"), -1,
+        "RechargeCommand with newEquipment target should generate precharge code");
     });
 
     QUnit.test("recycle commands preserve number formatting", function (assert) {
