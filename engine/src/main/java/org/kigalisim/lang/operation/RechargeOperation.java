@@ -24,7 +24,11 @@ import org.kigalisim.lang.time.ParsedDuring;
  */
 public class RechargeOperation implements Operation {
 
-  private static final String DEFAULT_TARGET = "priorEquipment";
+  /** Target stream name for servicing existing (prior) equipment, producing a recharge. */
+  public static final String PRIOR = "priorEquipment";
+
+  /** Target stream name for servicing new equipment before sale, producing a precharge. */
+  public static final String NEW = "newEquipment";
 
   private final Operation volumeOperation;
   private final Operation intensityOperation;
@@ -32,51 +36,15 @@ public class RechargeOperation implements Operation {
   private final String target;
 
   /**
-   * Create a new RechargeOperation that applies to all years with default target (priorEquipment).
-   *
-   * @param volumeOperation The operation that calculates the recharge volume.
-   * @param intensityOperation The operation that calculates the recharge intensity.
-   */
-  public RechargeOperation(Operation volumeOperation, Operation intensityOperation) {
-    this(volumeOperation, intensityOperation, Optional.empty(), DEFAULT_TARGET);
-  }
-
-  /**
-   * Create a new RechargeOperation that applies to a specific time period with default target.
-   *
-   * @param volumeOperation The operation that calculates the recharge volume.
-   * @param intensityOperation The operation that calculates the recharge intensity.
-   * @param during The time period during which this operation applies.
-   */
-  public RechargeOperation(Operation volumeOperation, Operation intensityOperation, ParsedDuring during) {
-    this(volumeOperation, intensityOperation, Optional.of(during), DEFAULT_TARGET);
-  }
-
-  /**
-   * Create a new RechargeOperation with explicit target that applies to all years.
+   * Create a new RechargeOperation with explicit target and optional time period.
    *
    * @param volumeOperation The operation that calculates the servicing volume.
    * @param intensityOperation The operation that calculates the servicing intensity.
-   * @param target The target stream ("priorEquipment" for recharge, "newEquipment" for precharge).
+   * @param duringMaybe The optional time period during which this operation applies, or empty
+   *     for all years.
+   * @param target The target stream ({@link #PRIOR} for recharge, {@link #NEW} for precharge).
    */
-  public RechargeOperation(Operation volumeOperation, Operation intensityOperation, String target) {
-    this(volumeOperation, intensityOperation, Optional.empty(), target);
-  }
-
-  /**
-   * Create a new RechargeOperation with explicit target and time period.
-   *
-   * @param volumeOperation The operation that calculates the servicing volume.
-   * @param intensityOperation The operation that calculates the servicing intensity.
-   * @param during The time period during which this operation applies.
-   * @param target The target stream ("priorEquipment" for recharge, "newEquipment" for precharge).
-   */
-  public RechargeOperation(Operation volumeOperation, Operation intensityOperation, ParsedDuring during,
-      String target) {
-    this(volumeOperation, intensityOperation, Optional.of(during), target);
-  }
-
-  private RechargeOperation(Operation volumeOperation, Operation intensityOperation,
+  public RechargeOperation(Operation volumeOperation, Operation intensityOperation,
       Optional<ParsedDuring> duringMaybe, String target) {
     this.volumeOperation = volumeOperation;
     this.intensityOperation = intensityOperation;

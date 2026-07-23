@@ -809,8 +809,7 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     const self = this;
     const population = ctx.population.accept(self);
     const volume = ctx.volume.accept(self);
-    const target = ctx.target ? ctx.target.getText() : "priorEquipment";
-    return new RechargeCommand(population, volume, null, target);
+    return new RechargeCommand(population, volume, "priorEquipment", null);
   }
 
   /**
@@ -824,8 +823,36 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     const population = ctx.population.accept(self);
     const volume = ctx.volume.accept(self);
     const duration = ctx.duration.accept(self);
-    const target = ctx.target ? ctx.target.getText() : "priorEquipment";
-    return new RechargeCommand(population, volume, duration, target);
+    return new RechargeCommand(population, volume, "priorEquipment", duration);
+  }
+
+  /**
+   * Visit a recharge command with target and all years duration node.
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {RechargeCommand} New recharge command instance.
+   */
+  visitRechargeAllYearsWithTarget(ctx) {
+    const self = this;
+    const population = ctx.population.accept(self);
+    const volume = ctx.volume.accept(self);
+    const target = ctx.target.getText();
+    return new RechargeCommand(population, volume, target, null);
+  }
+
+  /**
+   * Visit a recharge command with target and duration node.
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {RechargeCommand} New recharge command instance.
+   */
+  visitRechargeDurationWithTarget(ctx) {
+    const self = this;
+    const population = ctx.population.accept(self);
+    const volume = ctx.volume.accept(self);
+    const duration = ctx.duration.accept(self);
+    const target = ctx.target.getText();
+    return new RechargeCommand(population, volume, target, duration);
   }
 
   /**
