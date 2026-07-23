@@ -156,7 +156,7 @@
           <dd>A HyperTalk-inspired domain-specific language for defining simulations in Kigali Sim. Features human-readable natural language constructs and supports both basic operations and advanced features like variables, conditionals, and probabilistic sampling.</dd>
 
           <dt>Recharge</dt>
-          <dd>Servicing or refilling of existing equipment with substance due to leakage or maintenance needs. Specified using <code>recharge percentage % with amount kg / unit</code> which is equivalent to <code>recharge percentage % of priorEquipment with amount kg / unit</code>. Represents the percentage of equipment serviced and the amount per unit. By default operates on prior equipment (priorEquipment); use <code>of newEquipment</code> for precharge.</dd>
+          <dd>Servicing or refilling of existing equipment with substance due to leakage or maintenance needs. Specified using <code>recharge percentage % with amount kg / unit</code>, or equivalently <code>recharge percentage % of priorEquipment with amount kg / unit</code> (the default target). Use <code>of newEquipment</code> for precharge instead.</dd>
 
           <dt>Precharge</dt>
           <dd>Servicing of new equipment before its sale, modeling substance needed for charge lost in transit or storage. Specified using <code>recharge percentage % of newEquipment with amount kg / unit</code>. Precharge emissions are included in the rechargeEmissions metric.</dd>

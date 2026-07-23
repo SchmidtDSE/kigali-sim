@@ -13,6 +13,7 @@ package org.kigalisim.engine.recalc.util;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
+import java.util.Optional;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.state.OverridingConverterStateGetter;
@@ -133,6 +134,8 @@ public class ServicingOffsetBuilder {
    * @return A ServicingOffset with deltaUnits, prechargeKg, and rechargeKg
    */
   public ServicingOffset build() {
+    validate();
+
     ServicingStatus servicingStatus = describeServicing();
     boolean isServicingEnabled = servicingStatus.isServicingEnabled();
     boolean isPercentPopulation = servicingStatus.isPercentPopulation();
@@ -144,6 +147,44 @@ public class ServicingOffsetBuilder {
       return offsetVolumeSalesExplicitPrecharge();
     } else {
       return offsetUnitSales();
+    }
+  }
+
+  /**
+   * Validate the fields required by every branch of servicing offset calculation.
+   *
+   * <p>Fields only needed by a specific branch (such as {@code stateGetter} for explicit
+   * precharge or {@code implicitPrechargeKg} for unit-based sales) are validated lazily by that
+   * branch instead, since which branch runs depends on the other fields set here.</p>
+   *
+   * @throws IllegalStateException if a required field is missing or precharge population and
+   *     intensity were not set together
+   */
+  private void validate() {
+    requireField(salesKg, "salesKg");
+    requireField(rechargeKg, "rechargeKg");
+    requireField(initialChargeKgUnit, "initialChargeKgUnit");
+
+    boolean hasNonZeroPrechargePop = Optional.ofNullable(prechargePopRaw)
+        .map(EngineNumber::getValue)
+        .filter(value -> value.compareTo(BigDecimal.ZERO) != 0)
+        .isPresent();
+    if (hasNonZeroPrechargePop && Optional.ofNullable(prechargeIntensityRaw).isEmpty()) {
+      throw new IllegalStateException(
+          "prechargeIntensityRaw is required when prechargePopRaw is non-zero");
+    }
+  }
+
+  /**
+   * Require that a builder field was set before {@link #build()} was called.
+   *
+   * @param value The field value to check
+   * @param fieldName The name of the field, used in the error message
+   * @throws IllegalStateException if value is empty
+   */
+  private void requireField(Object value, String fieldName) {
+    if (Optional.ofNullable(value).isEmpty()) {
+      throw new IllegalStateException(fieldName + " is required to build a ServicingOffset");
     }
   }
 
@@ -197,6 +238,7 @@ public class ServicingOffsetBuilder {
    * @return A ServicingOffset with the computed deltaUnits and prechargeKg
    */
   private ServicingOffset offsetVolumeSalesExplicitPrecharge() {
+    requireField(stateGetter, "stateGetter");
     OverridingConverterStateGetter prechargeStateGetter =
         new OverridingConverterStateGetter(stateGetter);
     UnitConverter prechargeConverter = new UnitConverter(prechargeStateGetter);
@@ -219,6 +261,7 @@ public class ServicingOffsetBuilder {
    * @return A ServicingOffset with the computed deltaUnits and prechargeKg
    */
   private ServicingOffset offsetUnitSales() {
+    requireField(implicitPrechargeKg, "implicitPrechargeKg");
     BigDecimal prechargeKg = implicitPrechargeKg;
     BigDecimal availableForNewUnitsKg = salesKg.subtract(rechargeKg).subtract(prechargeKg);
     BigDecimal deltaUnits = DivisionHelper.divideWithZero(
