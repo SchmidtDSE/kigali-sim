@@ -23,7 +23,7 @@ import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
 /**
  * Builder for demand analysis calculations in sales recalculation.
  */
-public class DemandAnalysisBuilder {
+public class DemandAnalysisBuilder extends ValidatedBuilder<DemandAnalysis> {
 
   private EngineNumber rechargeVolume;
   private EngineNumber prechargeVolume;
@@ -34,6 +34,13 @@ public class DemandAnalysisBuilder {
   private BigDecimal rechargeRecycledKg;
   private SimulationState simulationState;
   private UseKey scopeEffective;
+
+  /**
+   * Create a new DemandAnalysisBuilder.
+   */
+  public DemandAnalysisBuilder() {
+    super("DemandAnalysis");
+  }
 
   /**
    * Set the recharge volume.
@@ -142,7 +149,8 @@ public class DemandAnalysisBuilder {
    *
    * @return A DemandAnalysis containing the computed demand, spec type, and virgin material
    */
-  public DemandAnalysis build() {
+  @Override
+  protected DemandAnalysis buildInternal() {
     BigDecimal totalDemand = calculateTotalDemand();
     boolean hasUnitBasedSpecs = getHasUnitBasedSpecs();
     BigDecimal requiredVirginMaterial = calculateRequiredVirginMaterial(
@@ -150,6 +158,27 @@ public class DemandAnalysisBuilder {
         hasUnitBasedSpecs
     );
     return new DemandAnalysis(totalDemand, hasUnitBasedSpecs, requiredVirginMaterial);
+  }
+
+  /**
+   * Validate that all fields required to build a DemandAnalysis have been set.
+   *
+   * <p>Fails fast with a clear message instead of letting a missing field surface later as a
+   * {@link NullPointerException} deep inside demand calculation.</p>
+   *
+   * @throws IllegalStateException if a required field is missing
+   */
+  @Override
+  protected void validate() {
+    requireField(rechargeVolume, "rechargeVolume");
+    requireField(prechargeVolume, "prechargeVolume");
+    requireField(volumeForNew, "volumeForNew");
+    requireField(implicitRechargeKg, "implicitRechargeKg");
+    requireField(implicitPrechargeKg, "implicitPrechargeKg");
+    requireField(eolRecycledKg, "eolRecycledKg");
+    requireField(rechargeRecycledKg, "rechargeRecycledKg");
+    requireField(simulationState, "simulationState");
+    requireField(scopeEffective, "scopeEffective");
   }
 
   /**
