@@ -1,7 +1,7 @@
 /**
  * Immutable result of a servicing offset calculation.
  *
- * <p>This class encapsulates the outputs of {@link ServicingOffsetter#offset}, including the
+ * <p>This class encapsulates the outputs of {@link ServicingOffsetBuilder#build}, including the
  * computed unit delta, precharge kilograms, and recharge kilograms.</p>
  *
  * @license BSD-3-Clause
