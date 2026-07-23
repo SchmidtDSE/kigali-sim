@@ -38,8 +38,10 @@ public class RechargeVolumeCalculator {
    * @param engine The engine for getting stream values
    * @return The recharge volume in kg
    */
-  public static EngineNumber calculateRechargeVolume(UseKey scope, StateGetter stateGetter,
-                                                      SimulationState simulationState, Engine engine) {
+  public static EngineNumber calculateRechargeVolume(UseKey scope,
+      StateGetter stateGetter,
+      SimulationState simulationState,
+      Engine engine) {
     OverridingConverterStateGetter overridingStateGetter =
         new OverridingConverterStateGetter(stateGetter);
     UnitConverter unitConverter = new UnitConverter(overridingStateGetter);

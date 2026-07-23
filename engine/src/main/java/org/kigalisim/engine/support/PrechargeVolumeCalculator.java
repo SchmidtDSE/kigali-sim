@@ -27,12 +27,6 @@ import org.kigalisim.engine.state.UseKey;
 public class PrechargeVolumeCalculator {
 
   /**
-   * Constructs a new PrechargeVolumeCalculator.
-   */
-  public PrechargeVolumeCalculator() {
-  }
-
-  /**
    * Calculate the precharge volume for the given application and substance.
    *
    * @param scope The scope containing application and substance
