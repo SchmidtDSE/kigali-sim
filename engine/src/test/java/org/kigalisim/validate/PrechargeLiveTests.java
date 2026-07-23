@@ -149,147 +149,227 @@ public class PrechargeLiveTests {
     assertTrue(resultsList.size() > 0, "Should have results for recharge of newEquipment");
   }
 
-  /**
-   * Sanity check for BAU scenario with precharge.
-   *
-   * <p>With 100 units import and 5% precharge at 1 kg/unit, import should be
-   * 105 kg (100 units * 1 kg/unit initial charge + 5 units * 1 kg/unit precharge)
-   * flat across all years.</p>
-   */
-  @Test
-  public void testSanityCheckBau() throws IOException {
-    String qtaPath = "../examples/precharge_sanity_check.qta";
+  // ===== Sanity check helpers =====
+
+  private static final String APP = "Domestic Refrigeration";
+  private static final String SUB = "HFC-134a";
+
+  private List<EngineResult> runScenarioFromQta(String qtaPath, String scenarioName)
+      throws IOException {
     ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
-    assertNotNull(program, "Program should not be null");
+    assertNotNull(program, "Program should not be null: " + qtaPath);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName,
+        progress -> {});
+    return results.collect(Collectors.toList());
+  }
 
-    String scenarioName = "BAU";
-    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
-    List<EngineResult> resultsList = results.collect(Collectors.toList());
+  private double getImport(List<EngineResult> results, int year) {
+    EngineResult result = LiveTestsUtil.getResult(results.stream(), year, APP, SUB);
+    assertNotNull(result, "Should have result for year " + year);
+    return result.getImport().getValue().doubleValue();
+  }
 
-    // Check each year from 2021 to 2030
+  private double getNewEquipment(List<EngineResult> results, int year) {
+    EngineResult result = LiveTestsUtil.getResult(results.stream(), year, APP, SUB);
+    assertNotNull(result, "Should have result for year " + year);
+    return result.getPopulationNew().getValue().doubleValue();
+  }
+
+  private void assertBauFlat(List<EngineResult> results, double expectedImport,
+      Double expectedNewEquipment, String label) {
     for (int year = 2021; year <= 2030; year++) {
-      EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), year,
-          "Domestic Refrigeration", "HFC-134a");
-      assertNotNull(result, "Should have result for year " + year);
-      double importValue = result.getImport().getValue().doubleValue();
-      assertEquals(105.0, importValue, 0.0001,
-          "BAU import should be 105 kg in year " + year + " but was " + importValue);
+      double importValue = getImport(results, year);
+      assertEquals(expectedImport, importValue, 0.0001,
+          label + " BAU import should be " + expectedImport + " kg in year " + year
+              + " but was " + importValue);
+      if (expectedNewEquipment != null) {
+        double newEquip = getNewEquipment(results, year);
+        assertEquals(expectedNewEquipment, newEquip, 0.01,
+            label + " BAU newEquipment should be " + expectedNewEquipment + " units in year "
+                + year + " but was " + newEquip);
+      }
     }
   }
 
-  /**
-   * Sanity check for With Repair scenario.
-   *
-   * <p>With repair policy adding recharge of priorEquipment, import should be
-   * higher than BAU and each year should be larger than the last (as equipment
-   * population grows, more recharge is needed).</p>
-   */
-  @Test
-  public void testSanityCheckWithRepair() throws IOException {
-    String qtaPath = "../examples/precharge_sanity_check.qta";
-    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
-    assertNotNull(program, "Program should not be null");
-
-    // Get BAU results for comparison
-    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, "BAU", progress -> {});
-    List<EngineResult> bauList = bauResults.collect(Collectors.toList());
-
-    String scenarioName = "With Repair";
-    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
-    List<EngineResult> resultsList = results.collect(Collectors.toList());
-
-    double previousYearImport = -1;
+  private void assertRepairIncreasing(List<EngineResult> repairResults,
+      List<EngineResult> bauResults, String label) {
+    double previous = -1;
     for (int year = 2021; year <= 2030; year++) {
-      EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), year,
-          "Domestic Refrigeration", "HFC-134a");
-      assertNotNull(result, "Should have result for year " + year);
-      double importValue = result.getImport().getValue().doubleValue();
-
-      // Import should be higher than BAU
-      EngineResult bauResult = LiveTestsUtil.getResult(bauList.stream(), year,
-          "Domestic Refrigeration", "HFC-134a");
-      double bauImport = bauResult.getImport().getValue().doubleValue();
+      double importValue = getImport(repairResults, year);
+      double bauImport = getImport(bauResults, year);
       assertTrue(importValue > bauImport,
-          "With Repair import (" + importValue + ") should be higher than BAU ("
+          label + " With Repair import (" + importValue + ") should be higher than BAU ("
               + bauImport + ") in year " + year);
-
-      // Each year should be larger than the last (after year 1)
-      if (previousYearImport > 0) {
-        assertTrue(importValue > previousYearImport,
-            "With Repair import should increase each year. Year " + year
-                + ": " + importValue + " vs previous: " + previousYearImport);
+      if (previous > 0) {
+        assertTrue(importValue > previous,
+            label + " With Repair import should increase each year. Year " + year
+                + ": " + importValue + " vs previous: " + previous);
       }
-      previousYearImport = importValue;
+      previous = importValue;
     }
   }
 
-  /**
-   * Sanity check for With Increase scenario.
-   *
-   * <p>With 5% increase in import each year from 2022, import should be 105 kg
-   * in 2021 and then increase each year after.</p>
-   */
-  @Test
-  public void testSanityCheckWithIncrease() throws IOException {
-    String qtaPath = "../examples/precharge_sanity_check.qta";
-    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
-    assertNotNull(program, "Program should not be null");
-
-    String scenarioName = "With Increase";
-    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
-    List<EngineResult> resultsList = results.collect(Collectors.toList());
-
-    double previousYearImport = -1;
+  private void assertIncreaseTrend(List<EngineResult> results, double baselineImport,
+      String label) {
+    double previous = -1;
     for (int year = 2021; year <= 2030; year++) {
-      EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), year,
-          "Domestic Refrigeration", "HFC-134a");
-      assertNotNull(result, "Should have result for year " + year);
-      double importValue = result.getImport().getValue().doubleValue();
-
+      double importValue = getImport(results, year);
       if (year == 2021) {
-        assertEquals(105.0, importValue, 0.0001,
-            "With Increase import should be 105 kg in 2021 but was " + importValue);
+        assertEquals(baselineImport, importValue, 0.0001,
+            label + " With Increase import should be " + baselineImport
+                + " kg in 2021 but was " + importValue);
       } else {
-        assertTrue(importValue > previousYearImport,
-            "With Increase import should increase each year after 2021. Year " + year
-                + ": " + importValue + " vs previous: " + previousYearImport);
+        assertTrue(importValue > previous,
+            label + " With Increase import should increase after 2021. Year " + year
+                + ": " + importValue + " vs previous: " + previous);
       }
-      previousYearImport = importValue;
+      previous = importValue;
     }
   }
 
-  /**
-   * Sanity check for With Decrease scenario.
-   *
-   * <p>With 5% decrease in import each year from 2022, import should be 105 kg
-   * in 2021 and then decrease each year after.</p>
-   */
-  @Test
-  public void testSanityCheckWithDecrease() throws IOException {
-    String qtaPath = "../examples/precharge_sanity_check.qta";
-    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
-    assertNotNull(program, "Program should not be null");
-
-    String scenarioName = "With Decrease";
-    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
-    List<EngineResult> resultsList = results.collect(Collectors.toList());
-
-    double previousYearImport = -1;
+  private void assertDecreaseTrend(List<EngineResult> results, double baselineImport,
+      String label) {
+    double previous = -1;
     for (int year = 2021; year <= 2030; year++) {
-      EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), year,
-          "Domestic Refrigeration", "HFC-134a");
-      assertNotNull(result, "Should have result for year " + year);
-      double importValue = result.getImport().getValue().doubleValue();
-
+      double importValue = getImport(results, year);
       if (year == 2021) {
-        assertEquals(105.0, importValue, 0.0001,
-            "With Decrease import should be 105 kg in 2021 but was " + importValue);
+        assertEquals(baselineImport, importValue, 0.0001,
+            label + " With Decrease import should be " + baselineImport
+                + " kg in 2021 but was " + importValue);
       } else {
-        assertTrue(importValue < previousYearImport,
-            "With Decrease import should decrease each year after 2021. Year " + year
-                + ": " + importValue + " vs previous: " + previousYearImport);
+        assertTrue(importValue < previous,
+            label + " With Decrease import should decrease after 2021. Year " + year
+                + ": " + importValue + " vs previous: " + previous);
       }
-      previousYearImport = importValue;
+      previous = importValue;
     }
+  }
+
+  // ===== percent_units: set import to 100 units + recharge 5 % of newEquipment =====
+  // BAU: import = 105 kg flat, newEquipment = 100 units flat
+
+  @Test
+  public void testSanityCheckPercentUnitsBau() throws IOException {
+    List<EngineResult> results = runScenarioFromQta(
+        "../examples/precharge_sanity_percent_units.qta", "BAU");
+    assertBauFlat(results, 105.0, 100.0, "percent_units");
+  }
+
+  @Test
+  public void testSanityCheckPercentUnitsRepair() throws IOException {
+    String qta = "../examples/precharge_sanity_percent_units.qta";
+    List<EngineResult> bau = runScenarioFromQta(qta, "BAU");
+    List<EngineResult> repair = runScenarioFromQta(qta, "With Repair");
+    assertRepairIncreasing(repair, bau, "percent_units");
+  }
+
+  @Test
+  public void testSanityCheckPercentUnitsIncrease() throws IOException {
+    List<EngineResult> results = runScenarioFromQta(
+        "../examples/precharge_sanity_percent_units.qta", "With Increase");
+    assertIncreaseTrend(results, 105.0, "percent_units");
+  }
+
+  @Test
+  public void testSanityCheckPercentUnitsDecrease() throws IOException {
+    List<EngineResult> results = runScenarioFromQta(
+        "../examples/precharge_sanity_percent_units.qta", "With Decrease");
+    assertDecreaseTrend(results, 105.0, "percent_units");
+  }
+
+  // ===== percent_kg: set import to 100 kg + recharge 5 % of newEquipment =====
+  // BAU: import = 100 kg flat, newEquipment = 100/1.05 ≈ 95.238 units (circular)
+
+  @Test
+  public void testSanityCheckPercentKgBau() throws IOException {
+    List<EngineResult> results = runScenarioFromQta(
+        "../examples/precharge_sanity_percent_kg.qta", "BAU");
+    assertBauFlat(results, 100.0, 95.2381, "percent_kg");
+  }
+
+  @Test
+  public void testSanityCheckPercentKgRepair() throws IOException {
+    String qta = "../examples/precharge_sanity_percent_kg.qta";
+    List<EngineResult> bau = runScenarioFromQta(qta, "BAU");
+    List<EngineResult> repair = runScenarioFromQta(qta, "With Repair");
+    assertRepairIncreasing(repair, bau, "percent_kg");
+  }
+
+  @Test
+  public void testSanityCheckPercentKgIncrease() throws IOException {
+    List<EngineResult> results = runScenarioFromQta(
+        "../examples/precharge_sanity_percent_kg.qta", "With Increase");
+    assertIncreaseTrend(results, 100.0, "percent_kg");
+  }
+
+  @Test
+  public void testSanityCheckPercentKgDecrease() throws IOException {
+    List<EngineResult> results = runScenarioFromQta(
+        "../examples/precharge_sanity_percent_kg.qta", "With Decrease");
+    assertDecreaseTrend(results, 100.0, "percent_kg");
+  }
+
+  // ===== units_units: set import to 100 units + recharge 5 units of newEquipment =====
+  // BAU: import = 105 kg flat, newEquipment = 100 units flat
+
+  @Test
+  public void testSanityCheckUnitsUnitsBau() throws IOException {
+    List<EngineResult> results = runScenarioFromQta(
+        "../examples/precharge_sanity_units_units.qta", "BAU");
+    assertBauFlat(results, 105.0, 100.0, "units_units");
+  }
+
+  @Test
+  public void testSanityCheckUnitsUnitsRepair() throws IOException {
+    String qta = "../examples/precharge_sanity_units_units.qta";
+    List<EngineResult> bau = runScenarioFromQta(qta, "BAU");
+    List<EngineResult> repair = runScenarioFromQta(qta, "With Repair");
+    assertRepairIncreasing(repair, bau, "units_units");
+  }
+
+  @Test
+  public void testSanityCheckUnitsUnitsIncrease() throws IOException {
+    List<EngineResult> results = runScenarioFromQta(
+        "../examples/precharge_sanity_units_units.qta", "With Increase");
+    assertIncreaseTrend(results, 105.0, "units_units");
+  }
+
+  @Test
+  public void testSanityCheckUnitsUnitsDecrease() throws IOException {
+    List<EngineResult> results = runScenarioFromQta(
+        "../examples/precharge_sanity_units_units.qta", "With Decrease");
+    assertDecreaseTrend(results, 105.0, "units_units");
+  }
+
+  // ===== units_kg: set import to 100 kg + recharge 5 units of newEquipment =====
+  // BAU: import = 100 kg flat, newEquipment = (100-5)/1 = 95 units
+
+  @Test
+  public void testSanityCheckUnitsKgBau() throws IOException {
+    List<EngineResult> results = runScenarioFromQta(
+        "../examples/precharge_sanity_units_kg.qta", "BAU");
+    assertBauFlat(results, 100.0, 95.0, "units_kg");
+  }
+
+  @Test
+  public void testSanityCheckUnitsKgRepair() throws IOException {
+    String qta = "../examples/precharge_sanity_units_kg.qta";
+    List<EngineResult> bau = runScenarioFromQta(qta, "BAU");
+    List<EngineResult> repair = runScenarioFromQta(qta, "With Repair");
+    assertRepairIncreasing(repair, bau, "units_kg");
+  }
+
+  @Test
+  public void testSanityCheckUnitsKgIncrease() throws IOException {
+    List<EngineResult> results = runScenarioFromQta(
+        "../examples/precharge_sanity_units_kg.qta", "With Increase");
+    assertIncreaseTrend(results, 100.0, "units_kg");
+  }
+
+  @Test
+  public void testSanityCheckUnitsKgDecrease() throws IOException {
+    List<EngineResult> results = runScenarioFromQta(
+        "../examples/precharge_sanity_units_kg.qta", "With Decrease");
+    assertDecreaseTrend(results, 100.0, "units_kg");
   }
 }
