@@ -14,9 +14,17 @@ Finally, we want to again express our gratitude for your feedback and time.
 
 The following changes have been adopted and released.
 
+### Recharge of new equipment (precharge)
+
+**Status**: Released July 24, 2026
+
+**Classification**: Enhancement
+
+Added an optional `of` clause to the `recharge` command, allowing users to specify whether servicing applies to `priorEquipment` (the existing default) or `newEquipment`. When `of newEquipment` is specified, the recharge applies to new equipment prior to going into service. For example, this could account for substance lost in transit or storage before sale. Previously, this use case could only be approximated with manual calculations (e.g., `recharge 3 % of newEquipment with 1 kg / unit`). This formalized behavior now handles the recalculation logic across `recover`, `set`, `change`, `cap`, and `floor` operations automatically, including the circular case for volume-based sales with percentage-based precharge. The feature surfaces in the UI-based editor as a dropdown (defaulting to `priorEquipment`) in the servicing configuration. See [#807](https://github.com/SchmidtDSE/kigali-sim/issues/807), [#808](https://github.com/SchmidtDSE/kigali-sim/pull/808).
+
 ### Time-varying equals
 
-**Status**: Released July 21, 2026
+**Status**: Released July 24, 2026
 
 **Classification**: Enhancement
 
