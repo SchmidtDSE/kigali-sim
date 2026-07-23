@@ -210,6 +210,9 @@ public class SimulationState {
   private void ensureSubstanceRecharge(UseKey useKey) {
     String implicitRechargeKey = getKey(useKey, "implicitRecharge");
     streams.put(implicitRechargeKey, new EngineNumber(BigDecimal.ZERO, "kg"));
+
+    String implicitPrechargeKey = getKey(useKey, "implicitPrecharge");
+    streams.put(implicitPrechargeKey, new EngineNumber(BigDecimal.ZERO, "kg"));
   }
 
   /**

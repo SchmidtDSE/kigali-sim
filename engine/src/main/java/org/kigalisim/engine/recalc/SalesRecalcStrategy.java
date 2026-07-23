@@ -22,6 +22,7 @@ import org.kigalisim.engine.state.SimulationStateUpdateBuilder;
 import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.support.EngineSupportUtils;
 import org.kigalisim.engine.support.ExceptionsGenerator;
+import org.kigalisim.engine.support.PrechargeVolumeCalculator;
 import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
 
 /**
@@ -98,8 +99,19 @@ public class SalesRecalcStrategy implements RecalcStrategy {
     EngineNumber implicitRecharge = unitConverter.convert(implicitRechargeRaw, "kg");
     BigDecimal implicitRechargeKg = implicitRecharge.getValue();
 
-    BigDecimal requiredKg = calculateTotalDemand(rechargeVolume, volumeForNew, implicitRechargeKg);
-    boolean hasUnitBasedSpecs = getHasUnitBasedSpecs(simulationState, scopeEffective, implicitRechargeKg);
+    EngineNumber implicitPrechargeRaw = target.getStream("implicitPrecharge", Optional.of(scopeEffective), Optional.empty());
+    EngineNumber implicitPrecharge = unitConverter.convert(implicitPrechargeRaw, "kg");
+    BigDecimal implicitPrechargeKg = implicitPrecharge.getValue();
+
+    EngineNumber prechargeVolume = PrechargeVolumeCalculator.calculatePrechargeVolume(
+        scopeEffective,
+        kit.getStateGetter(),
+        simulationState,
+        target
+    );
+
+    BigDecimal requiredKg = calculateTotalDemand(rechargeVolume, prechargeVolume, volumeForNew, implicitRechargeKg, implicitPrechargeKg);
+    boolean hasUnitBasedSpecs = getHasUnitBasedSpecs(simulationState, scopeEffective, implicitRechargeKg, implicitPrechargeKg);
     BigDecimal totalRequiredKg = calculateRequiredVirginMaterial(requiredKg, eolRecycledKg, rechargeRecycledKg, simulationState, scopeEffective, hasUnitBasedSpecs);
 
     BigDecimal newDomesticKg = distribution.getPercentDomestic().multiply(totalRequiredKg);
@@ -125,10 +137,12 @@ public class SalesRecalcStrategy implements RecalcStrategy {
    * @param implicitRechargeKg the implicit recharge amount in kg
    * @return true if unit-based specifications should be preserved
    */
-  private boolean getHasUnitBasedSpecs(SimulationState simulationState, UseKey scopeEffective, BigDecimal implicitRechargeKg) {
+  private boolean getHasUnitBasedSpecs(SimulationState simulationState, UseKey scopeEffective,
+      BigDecimal implicitRechargeKg, BigDecimal implicitPrechargeKg) {
     boolean hasUnitBasedSpecs = EngineSupportUtils.hasUnitBasedSalesSpecifications(simulationState, scopeEffective);
     return hasUnitBasedSpecs
-        ? implicitRechargeKg.compareTo(BigDecimal.ZERO) > 0
+        ? (implicitRechargeKg.compareTo(BigDecimal.ZERO) > 0
+            || implicitPrechargeKg.compareTo(BigDecimal.ZERO) > 0)
         : false;
   }
 
@@ -385,9 +399,12 @@ public class SalesRecalcStrategy implements RecalcStrategy {
    * @return BigDecimal representing total demand minus implicit recharge in kg
    */
   private BigDecimal calculateTotalDemand(EngineNumber rechargeVolume,
-      EngineNumber newEquipmentVolume, BigDecimal implicitRechargeKg) {
-    BigDecimal totalDemand = rechargeVolume.getValue().add(newEquipmentVolume.getValue());
-    BigDecimal requiredKg = totalDemand.subtract(implicitRechargeKg);
+      EngineNumber prechargeVolume, EngineNumber newEquipmentVolume,
+      BigDecimal implicitRechargeKg, BigDecimal implicitPrechargeKg) {
+    BigDecimal totalDemand = rechargeVolume.getValue()
+        .add(prechargeVolume.getValue())
+        .add(newEquipmentVolume.getValue());
+    BigDecimal requiredKg = totalDemand.subtract(implicitRechargeKg).subtract(implicitPrechargeKg);
     return requiredKg;
   }
 

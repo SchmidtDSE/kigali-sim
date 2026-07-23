@@ -515,6 +515,17 @@ public class SingleThreadEngine implements Engine {
           .build();
       executeStreamUpdate(update);
       return;
+    } else if (isPrecharge && simulationState.hasLastSpecifiedValue(scope, "sales")) {
+      // For precharge, re-apply the sales value so handleImplicitRecharge can add
+      // precharge on top (precharge params may have been set after the initial set).
+      EngineNumber lastSalesValue = simulationState.getLastSpecifiedValue(scope, "sales");
+      StreamUpdate update = new StreamUpdateBuilder()
+          .setName("sales")
+          .setValue(lastSalesValue)
+          .setKey(scope)
+          .build();
+      executeStreamUpdate(update);
+      return;
     } else {
       // Fall back to kg-based or untracked values
       Optional<String> lastUnits = getLastSalesUnits(scope);
@@ -540,6 +551,14 @@ public class SingleThreadEngine implements Engine {
             .setSubtractRecycling(false)
             .build();
         simulationState.update(clearImplicitRechargeStream);
+
+        SimulationStateUpdate clearImplicitPrechargeStream = new SimulationStateUpdateBuilder()
+            .setUseKey(scope)
+            .setName("implicitPrecharge")
+            .setValue(new EngineNumber(BigDecimal.ZERO, "kg"))
+            .setSubtractRecycling(false)
+            .build();
+        simulationState.update(clearImplicitPrechargeStream);
       }
     }
   }

@@ -10,11 +10,13 @@
 package org.kigalisim.engine.recalc;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.Optional;
 import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.state.OverridingConverterStateGetter;
+import org.kigalisim.engine.state.SimulationState;
 import org.kigalisim.engine.state.StateGetter;
 import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.support.DivisionHelper;
@@ -76,6 +78,10 @@ public class PopulationChangeRecalcStrategy implements RecalcStrategy {
     EngineNumber implicitRechargeRaw = target.getStream("implicitRecharge", Optional.of(scopeEffective), Optional.empty());
     EngineNumber implicitRecharge = unitConverter.convert(implicitRechargeRaw, "kg");
 
+    // Get existing implicit precharge stream (defaults to 0 kg if not set)
+    EngineNumber implicitPrechargeRaw = target.getStream("implicitPrecharge", Optional.of(scopeEffective), Optional.empty());
+    EngineNumber implicitPrecharge = unitConverter.convert(implicitPrechargeRaw, "kg");
+
     // Choose which recharge to use based on useExplicitRecharge flag
     BigDecimal rechargeKg;
     if (useExplicitRechargeEffective) {
@@ -88,17 +94,56 @@ public class PopulationChangeRecalcStrategy implements RecalcStrategy {
 
     // Get total volume available for new units
     BigDecimal salesKg = substanceSales.getValue();
-    // Always subtract recharge to get the net volume available for new equipment
-    BigDecimal availableForNewUnitsKg = salesKg.subtract(rechargeKg);
 
     // Convert to unit delta
     EngineNumber initialChargeRaw = target.getInitialCharge("sales");
     EngineNumber initialCharge = unitConverter.convert(initialChargeRaw, "kg / unit");
     BigDecimal initialChargeKgUnit = initialCharge.getValue();
-    BigDecimal deltaUnits = DivisionHelper.divideWithZero(
-        availableForNewUnitsKg,
-        initialChargeKgUnit
-    );
+
+    // Determine precharge and delta units
+    SimulationState simulationState = kit.getStreamKeeper();
+    EngineNumber prechargePopRaw = simulationState.getPrechargePopulation(scopeEffective);
+    boolean hasPrecharge = prechargePopRaw != null
+        && prechargePopRaw.getValue().compareTo(BigDecimal.ZERO) != 0;
+
+    BigDecimal prechargeKg;
+    BigDecimal deltaUnits;
+
+    boolean isPercentPrecharge = hasPrecharge && prechargePopRaw.getUnits() != null
+        && prechargePopRaw.getUnits().contains("%");
+    boolean isCircularCase = isPercentPrecharge && useExplicitRechargeEffective;
+
+    if (isCircularCase) {
+      // Analytical solution for circular case (percentage precharge + volume-based sales):
+      // e_new = V_sales / (c_initial + e_precharge% * c_precharge)
+      BigDecimal prechargeRatio = prechargePopRaw.getValue()
+          .divide(BigDecimal.valueOf(100), MathContext.DECIMAL128);
+      EngineNumber prechargeIntensityRaw = simulationState.getPrechargeIntensity(scopeEffective);
+      BigDecimal prechargeIntensityKg = prechargeIntensityRaw.getValue();
+      BigDecimal denominator = initialChargeKgUnit
+          .add(prechargeRatio.multiply(prechargeIntensityKg));
+      deltaUnits = DivisionHelper.divideWithZero(salesKg.subtract(rechargeKg), denominator);
+      prechargeKg = deltaUnits.multiply(prechargeRatio).multiply(prechargeIntensityKg);
+    } else if (hasPrecharge && useExplicitRechargeEffective) {
+      // Explicit precharge for kg-based tracking with absolute (units) precharge population
+      OverridingConverterStateGetter prechargeStateGetter =
+          new OverridingConverterStateGetter(kit.getStateGetter());
+      UnitConverter prechargeConverter = new UnitConverter(prechargeStateGetter);
+      EngineNumber prechargePop = prechargeConverter.convert(prechargePopRaw, "units");
+      prechargeStateGetter.setPopulation(prechargePop);
+      EngineNumber prechargeIntensityRaw2 = simulationState.getPrechargeIntensity(scopeEffective);
+      EngineNumber prechargeVolume = prechargeConverter.convert(prechargeIntensityRaw2, "kg");
+      prechargeStateGetter.clearPopulation();
+      prechargeKg = prechargeVolume.getValue();
+      BigDecimal availableForNewUnitsKg = salesKg.subtract(rechargeKg).subtract(prechargeKg);
+      deltaUnits = DivisionHelper.divideWithZero(availableForNewUnitsKg, initialChargeKgUnit);
+    } else {
+      // Units-based tracking: use implicit precharge (already added on top)
+      prechargeKg = implicitPrecharge.getValue();
+      BigDecimal availableForNewUnitsKg = salesKg.subtract(rechargeKg).subtract(prechargeKg);
+      deltaUnits = DivisionHelper.divideWithZero(availableForNewUnitsKg, initialChargeKgUnit);
+    }
+
     EngineNumber newUnitsMarginal = new EngineNumber(deltaUnits, "units");
 
     // Find new total
