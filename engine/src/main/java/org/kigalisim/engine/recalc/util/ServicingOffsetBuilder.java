@@ -13,6 +13,7 @@ package org.kigalisim.engine.recalc.util;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
+import java.util.Optional;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.state.OverridingConverterStateGetter;
@@ -22,16 +23,25 @@ import org.kigalisim.engine.support.DivisionHelper;
 /**
  * Builder that calculates servicing (precharge/recharge) offsets for population changes.
  */
-public class ServicingOffsetBuilder {
+public class ServicingOffsetBuilder extends ValidatedBuilder<ServicingOffset> {
 
   private BigDecimal salesKg;
   private BigDecimal rechargeKg;
   private BigDecimal initialChargeKgUnit;
-  private EngineNumber prechargePopRaw;
-  private EngineNumber prechargeIntensityRaw;
+  private Optional<EngineNumber> prechargePopRaw;
+  private Optional<EngineNumber> prechargeIntensityRaw;
   private boolean useExplicitRechargeEffective;
   private BigDecimal implicitPrechargeKg;
   private StateGetter stateGetter;
+
+  /**
+   * Create a new ServicingOffsetBuilder.
+   */
+  public ServicingOffsetBuilder() {
+    super("ServicingOffset");
+    prechargePopRaw = Optional.empty();
+    prechargeIntensityRaw = Optional.empty();
+  }
 
   /**
    * Set the total substance sales volume in kilograms.
@@ -73,7 +83,7 @@ public class ServicingOffsetBuilder {
    * @return This builder for chaining
    */
   public ServicingOffsetBuilder setPrechargePopRaw(EngineNumber prechargePopRaw) {
-    this.prechargePopRaw = prechargePopRaw;
+    this.prechargePopRaw = Optional.ofNullable(prechargePopRaw);
     return this;
   }
 
@@ -84,7 +94,7 @@ public class ServicingOffsetBuilder {
    * @return This builder for chaining
    */
   public ServicingOffsetBuilder setPrechargeIntensityRaw(EngineNumber prechargeIntensityRaw) {
-    this.prechargeIntensityRaw = prechargeIntensityRaw;
+    this.prechargeIntensityRaw = Optional.ofNullable(prechargeIntensityRaw);
     return this;
   }
 
@@ -132,7 +142,8 @@ public class ServicingOffsetBuilder {
    *
    * @return A ServicingOffset with deltaUnits, prechargeKg, and rechargeKg
    */
-  public ServicingOffset build() {
+  @Override
+  protected ServicingOffset buildInternal() {
     ServicingStatus servicingStatus = describeServicing();
     boolean isServicingEnabled = servicingStatus.isServicingEnabled();
     boolean isPercentPopulation = servicingStatus.isPercentPopulation();
@@ -148,19 +159,47 @@ public class ServicingOffsetBuilder {
   }
 
   /**
+   * Validate the fields required by every branch of servicing offset calculation.
+   *
+   * <p>Fields only needed by a specific branch (such as {@code stateGetter} for explicit
+   * precharge or {@code implicitPrechargeKg} for unit-based sales) are validated lazily by that
+   * branch instead, since which branch runs depends on the other fields set here.</p>
+   *
+   * @throws IllegalStateException if a required field is missing or precharge population and
+   *     intensity were not set together
+   */
+  @Override
+  protected void validate() {
+    requireField(salesKg, "salesKg");
+    requireField(rechargeKg, "rechargeKg");
+    requireField(initialChargeKgUnit, "initialChargeKgUnit");
+
+    boolean hasNonZeroPrechargePop = prechargePopRaw
+        .map(EngineNumber::getValue)
+        .filter(value -> value.compareTo(BigDecimal.ZERO) != 0)
+        .isPresent();
+    if (hasNonZeroPrechargePop && prechargeIntensityRaw.isEmpty()) {
+      throw new IllegalStateException(
+          "prechargeIntensityRaw is required when prechargePopRaw is non-zero"
+      );
+    }
+  }
+
+  /**
    * Describe the servicing configuration from the raw precharge population value.
    *
    * @return A ServicingStatus describing the precharge configuration
    */
   private ServicingStatus describeServicing() {
-    if (prechargePopRaw == null) {
+    if (prechargePopRaw.isEmpty()) {
       return new ServicingStatus(false, false);
     } else {
-      boolean hasPrecharge = prechargePopRaw.getValue().compareTo(BigDecimal.ZERO) != 0;
+      EngineNumber prechargePop = prechargePopRaw.get();
+      boolean hasPrecharge = prechargePop.getValue().compareTo(BigDecimal.ZERO) != 0;
       if (!hasPrecharge) {
         return new ServicingStatus(false, false);
       } else {
-        String units = prechargePopRaw.getUnits();
+        String units = prechargePop.getUnits();
         boolean isPercent = units != null && units.contains("%");
         return new ServicingStatus(true, isPercent);
       }
@@ -178,9 +217,9 @@ public class ServicingOffsetBuilder {
    * @return A ServicingOffset with the computed deltaUnits and prechargeKg
    */
   private ServicingOffset offsetVolumeSalesPercentPrecharge() {
-    BigDecimal prechargeRatio = prechargePopRaw.getValue()
+    BigDecimal prechargeRatio = prechargePopRaw.get().getValue()
         .divide(BigDecimal.valueOf(100), MathContext.DECIMAL128);
-    BigDecimal prechargeIntensityKg = prechargeIntensityRaw.getValue();
+    BigDecimal prechargeIntensityKg = prechargeIntensityRaw.get().getValue();
     BigDecimal denominator = initialChargeKgUnit
         .add(prechargeRatio.multiply(prechargeIntensityKg));
     BigDecimal deltaUnits = DivisionHelper.divideWithZero(
@@ -197,12 +236,13 @@ public class ServicingOffsetBuilder {
    * @return A ServicingOffset with the computed deltaUnits and prechargeKg
    */
   private ServicingOffset offsetVolumeSalesExplicitPrecharge() {
+    requireField(stateGetter, "stateGetter");
     OverridingConverterStateGetter prechargeStateGetter =
         new OverridingConverterStateGetter(stateGetter);
     UnitConverter prechargeConverter = new UnitConverter(prechargeStateGetter);
-    EngineNumber prechargePop = prechargeConverter.convert(prechargePopRaw, "units");
+    EngineNumber prechargePop = prechargeConverter.convert(prechargePopRaw.get(), "units");
     prechargeStateGetter.setPopulation(prechargePop);
-    EngineNumber prechargeVolume = prechargeConverter.convert(prechargeIntensityRaw, "kg");
+    EngineNumber prechargeVolume = prechargeConverter.convert(prechargeIntensityRaw.get(), "kg");
     prechargeStateGetter.clearPopulation();
     BigDecimal prechargeKg = prechargeVolume.getValue();
     BigDecimal availableForNewUnitsKg = salesKg.subtract(rechargeKg).subtract(prechargeKg);
@@ -219,6 +259,7 @@ public class ServicingOffsetBuilder {
    * @return A ServicingOffset with the computed deltaUnits and prechargeKg
    */
   private ServicingOffset offsetUnitSales() {
+    requireField(implicitPrechargeKg, "implicitPrechargeKg");
     BigDecimal prechargeKg = implicitPrechargeKg;
     BigDecimal availableForNewUnitsKg = salesKg.subtract(rechargeKg).subtract(prechargeKg);
     BigDecimal deltaUnits = DivisionHelper.divideWithZero(
