@@ -23,7 +23,7 @@ import org.kigalisim.engine.support.DivisionHelper;
 /**
  * Builder that calculates servicing (precharge/recharge) offsets for population changes.
  */
-public class ServicingOffsetBuilder {
+public class ServicingOffsetBuilder extends ValidatedBuilder<ServicingOffset> {
 
   private BigDecimal salesKg;
   private BigDecimal rechargeKg;
@@ -33,6 +33,13 @@ public class ServicingOffsetBuilder {
   private boolean useExplicitRechargeEffective;
   private BigDecimal implicitPrechargeKg;
   private StateGetter stateGetter;
+
+  /**
+   * Create a new ServicingOffsetBuilder.
+   */
+  public ServicingOffsetBuilder() {
+    super("ServicingOffset");
+  }
 
   /**
    * Set the total substance sales volume in kilograms.
@@ -133,9 +140,8 @@ public class ServicingOffsetBuilder {
    *
    * @return A ServicingOffset with deltaUnits, prechargeKg, and rechargeKg
    */
-  public ServicingOffset build() {
-    validate();
-
+  @Override
+  protected ServicingOffset buildInternal() {
     ServicingStatus servicingStatus = describeServicing();
     boolean isServicingEnabled = servicingStatus.isServicingEnabled();
     boolean isPercentPopulation = servicingStatus.isPercentPopulation();
@@ -160,7 +166,8 @@ public class ServicingOffsetBuilder {
    * @throws IllegalStateException if a required field is missing or precharge population and
    *     intensity were not set together
    */
-  private void validate() {
+  @Override
+  protected void validate() {
     requireField(salesKg, "salesKg");
     requireField(rechargeKg, "rechargeKg");
     requireField(initialChargeKgUnit, "initialChargeKgUnit");
@@ -172,19 +179,6 @@ public class ServicingOffsetBuilder {
     if (hasNonZeroPrechargePop && Optional.ofNullable(prechargeIntensityRaw).isEmpty()) {
       throw new IllegalStateException(
           "prechargeIntensityRaw is required when prechargePopRaw is non-zero");
-    }
-  }
-
-  /**
-   * Require that a builder field was set before {@link #build()} was called.
-   *
-   * @param value The field value to check
-   * @param fieldName The name of the field, used in the error message
-   * @throws IllegalStateException if value is empty
-   */
-  private void requireField(Object value, String fieldName) {
-    if (Optional.ofNullable(value).isEmpty()) {
-      throw new IllegalStateException(fieldName + " is required to build a ServicingOffset");
     }
   }
 
