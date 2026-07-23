@@ -19,6 +19,7 @@ import org.kigalisim.engine.recalc.RecalcKit;
 import org.kigalisim.engine.recalc.RecalcOperation;
 import org.kigalisim.engine.recalc.RecalcOperationBuilder;
 import org.kigalisim.engine.recalc.StreamUpdate;
+import org.kigalisim.engine.state.OverridingConverterStateGetter;
 import org.kigalisim.engine.state.SimulationState;
 import org.kigalisim.engine.state.SimulationStateUpdate;
 import org.kigalisim.engine.state.SimulationStateUpdateBuilder;
@@ -87,6 +88,9 @@ public class StreamUpdateExecutor {
     EngineNumber valueToSet = rechargeUpdate.getValueToSet();
 
     rechargeUpdate.getImplicitRechargeStateUpdate()
+        .ifPresent(engine.getStreamKeeper()::update);
+
+    rechargeUpdate.getImplicitPrechargeStateUpdate()
         .ifPresent(engine.getStreamKeeper()::update);
 
     SimulationStateUpdate simulationStateUpdate = new SimulationStateUpdateBuilder()
@@ -254,11 +258,56 @@ public class StreamUpdateExecutor {
       rechargeToAdd = rechargeVolume.getValue();
     }
 
-    // Add recharge to the original value
-    BigDecimal totalWithRecharge = valueInKg.getValue().add(rechargeToAdd);
+    // Calculate precharge volume from user-specified units (newEquipment is not yet set)
+    EngineNumber valueInUnits = unitConverter.convert(value, "units");
+    Optional<SimulationStateUpdate> implicitPrechargeUpdate = Optional.empty();
+    BigDecimal prechargeToAdd = BigDecimal.ZERO;
+
+    EngineNumber prechargePopRaw = simulationState.getPrechargePopulation(useKey);
+    boolean hasPrecharge = prechargePopRaw != null
+        && prechargePopRaw.getValue().compareTo(BigDecimal.ZERO) != 0;
+
+    if (hasPrecharge) {
+      OverridingConverterStateGetter prechargeStateGetter =
+          new OverridingConverterStateGetter(engine.getStateGetter());
+      UnitConverter prechargeConverter = new UnitConverter(prechargeStateGetter);
+
+      prechargeStateGetter.setPopulation(valueInUnits);
+      EngineNumber prechargePop = prechargeConverter.convert(prechargePopRaw, "units");
+      prechargeStateGetter.setPopulation(prechargePop);
+
+      EngineNumber prechargeIntensityRaw = simulationState.getPrechargeIntensity(useKey);
+      EngineNumber prechargeVolume = prechargeConverter.convert(prechargeIntensityRaw, "kg");
+      prechargeStateGetter.clearPopulation();
+
+      implicitPrechargeUpdate = Optional.of(new SimulationStateUpdateBuilder()
+          .setUseKey(useKey)
+          .setName("implicitPrecharge")
+          .setValue(prechargeVolume)
+          .setSubtractRecycling(false)
+          .build());
+
+      if (isSalesSubstream) {
+        prechargeToAdd = EngineSupportUtils.getDistributedRecharge(
+            streamName,
+            prechargeVolume,
+            useKey,
+            engine.getStreamKeeper()
+        );
+      } else {
+        prechargeToAdd = prechargeVolume.getValue();
+      }
+    }
+
+    // Add recharge and precharge to the original value
+    BigDecimal totalWithRecharge = valueInKg.getValue().add(rechargeToAdd).add(prechargeToAdd);
     EngineNumber valueToSet = new EngineNumber(totalWithRecharge, "kg");
 
-    return new ImplicitRechargeUpdate(valueToSet, Optional.of(implicitRechargeStream));
+    return new ImplicitRechargeUpdate(
+        valueToSet,
+        Optional.of(implicitRechargeStream),
+        implicitPrechargeUpdate
+    );
   }
 
   /**
@@ -276,14 +325,24 @@ public class StreamUpdateExecutor {
       EngineNumber value) {
 
     if (isSales) {
-      // Sales stream without units - clear implicit recharge
+      // Sales stream without units - clear implicit recharge and precharge
       SimulationStateUpdate clearImplicitRechargeStream = new SimulationStateUpdateBuilder()
           .setUseKey(useKey)
           .setName("implicitRecharge")
           .setValue(new EngineNumber(BigDecimal.ZERO, "kg"))
           .setSubtractRecycling(false)
           .build();
-      return new ImplicitRechargeUpdate(value, Optional.of(clearImplicitRechargeStream));
+      SimulationStateUpdate clearImplicitPrechargeStream = new SimulationStateUpdateBuilder()
+          .setUseKey(useKey)
+          .setName("implicitPrecharge")
+          .setValue(new EngineNumber(BigDecimal.ZERO, "kg"))
+          .setSubtractRecycling(false)
+          .build();
+      return new ImplicitRechargeUpdate(
+          value,
+          Optional.of(clearImplicitRechargeStream),
+          Optional.of(clearImplicitPrechargeStream)
+      );
     } else {
       // Not a sales stream - no implicit recharge needed
       return new ImplicitRechargeUpdate(value, Optional.empty());

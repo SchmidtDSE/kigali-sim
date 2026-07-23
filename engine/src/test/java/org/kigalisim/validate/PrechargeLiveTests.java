@@ -192,15 +192,39 @@ public class PrechargeLiveTests {
   }
 
   private void assertRepairIncreasing(List<EngineResult> repairResults,
-      List<EngineResult> bauResults, String label) {
+      List<EngineResult> bauResults, String label, boolean unitsBasedSales) {
     double previous = -1;
     for (int year = 2021; year <= 2030; year++) {
       double importValue = getImport(repairResults, year);
       double bauImport = getImport(bauResults, year);
-      assertTrue(importValue > bauImport,
-          label + " With Repair import (" + importValue + ") should be higher than BAU ("
-              + bauImport + ") in year " + year);
-      if (previous > 0) {
+
+      if (unitsBasedSales) {
+        // For units-based sales, repair recharge is added on top → import should increase
+        if (year == 2021) {
+          assertTrue(importValue >= bauImport,
+              label + " With Repair import (" + importValue + ") should be >= BAU ("
+                  + bauImport + ") in year 1");
+        } else {
+          assertTrue(importValue > bauImport,
+              label + " With Repair import (" + importValue + ") should be higher than BAU ("
+                  + bauImport + ") in year " + year);
+        }
+      } else {
+        // For volume-based sales, import is fixed by user; repair reduces new equipment instead
+        assertEquals(bauImport, importValue, 0.0001,
+            label + " With Repair import should equal BAU in year " + year
+                + " (volume-based sales are fixed)");
+        double repairNewEquip = getNewEquipment(repairResults, year);
+        double bauNewEquip = getNewEquipment(bauResults, year);
+        if (year > 2021) {
+          assertTrue(repairNewEquip < bauNewEquip,
+              label + " With Repair newEquipment (" + repairNewEquip
+                  + ") should be lower than BAU (" + bauNewEquip + ") in year " + year
+                  + " (repair consumes volume)");
+        }
+      }
+
+      if (previous > 0 && unitsBasedSales) {
         assertTrue(importValue > previous,
             label + " With Repair import should increase each year. Year " + year
                 + ": " + importValue + " vs previous: " + previous);
@@ -260,7 +284,7 @@ public class PrechargeLiveTests {
     String qta = "../examples/precharge_sanity_percent_units.qta";
     List<EngineResult> bau = runScenarioFromQta(qta, "BAU");
     List<EngineResult> repair = runScenarioFromQta(qta, "With Repair");
-    assertRepairIncreasing(repair, bau, "percent_units");
+    assertRepairIncreasing(repair, bau, "percent_units", true);
   }
 
   @Test
@@ -292,7 +316,7 @@ public class PrechargeLiveTests {
     String qta = "../examples/precharge_sanity_percent_kg.qta";
     List<EngineResult> bau = runScenarioFromQta(qta, "BAU");
     List<EngineResult> repair = runScenarioFromQta(qta, "With Repair");
-    assertRepairIncreasing(repair, bau, "percent_kg");
+    assertRepairIncreasing(repair, bau, "percent_kg", false);
   }
 
   @Test
@@ -324,7 +348,7 @@ public class PrechargeLiveTests {
     String qta = "../examples/precharge_sanity_units_units.qta";
     List<EngineResult> bau = runScenarioFromQta(qta, "BAU");
     List<EngineResult> repair = runScenarioFromQta(qta, "With Repair");
-    assertRepairIncreasing(repair, bau, "units_units");
+    assertRepairIncreasing(repair, bau, "units_units", true);
   }
 
   @Test
@@ -356,7 +380,7 @@ public class PrechargeLiveTests {
     String qta = "../examples/precharge_sanity_units_kg.qta";
     List<EngineResult> bau = runScenarioFromQta(qta, "BAU");
     List<EngineResult> repair = runScenarioFromQta(qta, "With Repair");
-    assertRepairIncreasing(repair, bau, "units_kg");
+    assertRepairIncreasing(repair, bau, "units_kg", false);
   }
 
   @Test
