@@ -146,7 +146,9 @@ public class DemandAnalysisBuilder {
     BigDecimal totalDemand = calculateTotalDemand();
     boolean hasUnitBasedSpecs = getHasUnitBasedSpecs();
     BigDecimal requiredVirginMaterial = calculateRequiredVirginMaterial(
-        totalDemand, hasUnitBasedSpecs);
+        totalDemand,
+        hasUnitBasedSpecs
+    );
     return new DemandAnalysis(totalDemand, hasUnitBasedSpecs, requiredVirginMaterial);
   }
 
@@ -170,8 +172,7 @@ public class DemandAnalysisBuilder {
         simulationState, scopeEffective);
     if (!hasUnitBasedSpecs) {
       return false;
-    }
-    if (implicitRechargeKg.compareTo(BigDecimal.ZERO) > 0) {
+    } else if (implicitRechargeKg.compareTo(BigDecimal.ZERO) > 0) {
       return true;
     } else if (implicitPrechargeKg.compareTo(BigDecimal.ZERO) > 0) {
       return true;
