@@ -13,11 +13,12 @@ import java.util.Optional;
 import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.state.SimulationState;
 import org.kigalisim.engine.state.StateGetter;
+import org.kigalisim.engine.support.ValidatedBuilder;
 
 /**
  * Builder for creating RecalcKit instances.
  */
-public class RecalcKitBuilder {
+public class RecalcKitBuilder extends ValidatedBuilder<RecalcKit> {
 
   private Optional<SimulationState> simulationState;
   private Optional<UnitConverter> unitConverter;
@@ -27,6 +28,7 @@ public class RecalcKitBuilder {
    * Create a new RecalcKitBuilder.
    */
   public RecalcKitBuilder() {
+    super("RecalcKit");
     this.simulationState = Optional.empty();
     this.unitConverter = Optional.empty();
     this.stateGetter = Optional.empty();
@@ -69,18 +71,21 @@ public class RecalcKitBuilder {
    * Build the RecalcKit.
    *
    * @return A new RecalcKit instance
+   */
+  @Override
+  protected RecalcKit buildInternal() {
+    return new RecalcKit(simulationState.get(), unitConverter.get(), stateGetter.get());
+  }
+
+  /**
+   * Check that all required fields are set before construction.
+   *
    * @throws IllegalStateException if any required field is missing
    */
-  public RecalcKit build() {
-    if (simulationState.isEmpty()) {
-      throw new IllegalStateException("SimulationState is required");
-    }
-    if (unitConverter.isEmpty()) {
-      throw new IllegalStateException("UnitConverter is required");
-    }
-    if (stateGetter.isEmpty()) {
-      throw new IllegalStateException("StateGetter is required");
-    }
-    return new RecalcKit(simulationState.get(), unitConverter.get(), stateGetter.get());
+  @Override
+  protected void validate() {
+    requireField(simulationState, "simulationState");
+    requireField(unitConverter, "unitConverter");
+    requireField(stateGetter, "stateGetter");
   }
 }

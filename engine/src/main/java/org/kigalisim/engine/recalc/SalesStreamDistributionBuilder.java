@@ -14,6 +14,7 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.Optional;
 import org.kigalisim.engine.number.EngineNumber;
+import org.kigalisim.engine.support.ValidatedBuilder;
 
 /**
  * Builder for creating sales stream distribution percentages.
@@ -22,7 +23,7 @@ import org.kigalisim.engine.number.EngineNumber;
  * split between import, domestic, and export based on which streams have been explicitly enabled
  * and their current values.</p>
  */
-public class SalesStreamDistributionBuilder {
+public class SalesStreamDistributionBuilder extends ValidatedBuilder<SalesStreamDistribution> {
 
   private Optional<EngineNumber> domesticSales;
   private Optional<EngineNumber> importSales;
@@ -36,6 +37,7 @@ public class SalesStreamDistributionBuilder {
    * Create builder without any values initialized.
    */
   public SalesStreamDistributionBuilder() {
+    super("SalesStreamDistribution");
     domesticSales = Optional.empty();
     importSales = Optional.empty();
     exportSales = Optional.empty();
@@ -134,11 +136,9 @@ public class SalesStreamDistributionBuilder {
    * </ul></div>
    *
    * @return A SalesStreamDistribution with appropriate percentages
-   * @throws IllegalStateException if any required field is missing
    */
-  public SalesStreamDistribution build() {
-    checkReadyToConstruct();
-
+  @Override
+  protected SalesStreamDistribution buildInternal() {
     BigDecimal domesticSalesKg = domesticSales.get().getValue();
     BigDecimal importSalesKg = importSales.get().getValue();
     BigDecimal exportSalesKg = exportSales.get().getValue();
@@ -219,28 +219,15 @@ public class SalesStreamDistributionBuilder {
    *
    * @throws IllegalStateException if any required field is missing
    */
-  private void checkReadyToConstruct() {
-    checkValid(domesticSales, "domesticSales");
-    checkValid(importSales, "importSales");
-    checkValid(exportSales, "exportSales");
-    checkValid(domesticEnabled, "domesticEnabled");
-    checkValid(importEnabled, "importEnabled");
-    checkValid(exportEnabled, "exportEnabled");
-    checkValid(includeExports, "includeExports");
-  }
-
-  /**
-   * Check if a value is valid (not empty).
-   *
-   * @param value The optional value to check
-   * @param name The name of the field for error reporting
-   * @throws IllegalStateException if the value is empty
-   */
-  private void checkValid(Optional<?> value, String name) {
-    if (value.isEmpty()) {
-      throw new IllegalStateException(
-          "Could not make sales stream distribution because " + name + " was not given.");
-    }
+  @Override
+  protected void validate() {
+    requireField(domesticSales, "domesticSales");
+    requireField(importSales, "importSales");
+    requireField(exportSales, "exportSales");
+    requireField(domesticEnabled, "domesticEnabled");
+    requireField(importEnabled, "importEnabled");
+    requireField(exportEnabled, "exportEnabled");
+    requireField(includeExports, "includeExports");
   }
 
 }
