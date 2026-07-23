@@ -1,5 +1,5 @@
 /**
- * Calculates servicing (precharge/recharge) offsets for population changes.
+ * Builder that calculates servicing (precharge/recharge) offsets for population changes.
  *
  * <p>This class encapsulates the logic for determining how precharge and recharge volumes affect
  * the calculation of new equipment units. It handles three cases: percentage-based precharge with
@@ -20,66 +20,149 @@ import org.kigalisim.engine.state.StateGetter;
 import org.kigalisim.engine.support.DivisionHelper;
 
 /**
- * Calculates servicing (precharge/recharge) offsets for population changes.
+ * Builder that calculates servicing (precharge/recharge) offsets for population changes.
  */
-public class ServicingOffsetter {
+public class ServicingOffsetBuilder {
+
+  private BigDecimal salesKg;
+  private BigDecimal rechargeKg;
+  private BigDecimal initialChargeKgUnit;
+  private EngineNumber prechargePopRaw;
+  private EngineNumber prechargeIntensityRaw;
+  private boolean useExplicitRechargeEffective;
+  private BigDecimal implicitPrechargeKg;
+  private StateGetter stateGetter;
 
   /**
-   * Calculate the servicing offset for a population change.
+   * Set the total substance sales volume in kilograms.
+   *
+   * @param salesKg The total substance sales volume in kilograms
+   * @return This builder for chaining
+   */
+  public ServicingOffsetBuilder setSalesKg(BigDecimal salesKg) {
+    this.salesKg = salesKg;
+    return this;
+  }
+
+  /**
+   * Set the recharge volume in kilograms.
+   *
+   * @param rechargeKg The recharge volume in kilograms
+   * @return This builder for chaining
+   */
+  public ServicingOffsetBuilder setRechargeKg(BigDecimal rechargeKg) {
+    this.rechargeKg = rechargeKg;
+    return this;
+  }
+
+  /**
+   * Set the initial charge per unit in kg/unit.
+   *
+   * @param initialChargeKgUnit The initial charge per unit in kg/unit
+   * @return This builder for chaining
+   */
+  public ServicingOffsetBuilder setInitialChargeKgUnit(BigDecimal initialChargeKgUnit) {
+    this.initialChargeKgUnit = initialChargeKgUnit;
+    return this;
+  }
+
+  /**
+   * Set the raw precharge population value.
+   *
+   * @param prechargePopRaw The raw precharge population value, or null if unspecified
+   * @return This builder for chaining
+   */
+  public ServicingOffsetBuilder setPrechargePopRaw(EngineNumber prechargePopRaw) {
+    this.prechargePopRaw = prechargePopRaw;
+    return this;
+  }
+
+  /**
+   * Set the raw precharge intensity value.
+   *
+   * @param prechargeIntensityRaw The raw precharge intensity value
+   * @return This builder for chaining
+   */
+  public ServicingOffsetBuilder setPrechargeIntensityRaw(EngineNumber prechargeIntensityRaw) {
+    this.prechargeIntensityRaw = prechargeIntensityRaw;
+    return this;
+  }
+
+  /**
+   * Set whether explicit (volume-based) recharge is in use.
+   *
+   * @param useExplicitRechargeEffective Whether explicit (volume-based) recharge is in use
+   * @return This builder for chaining
+   */
+  public ServicingOffsetBuilder setUseExplicitRechargeEffective(
+      boolean useExplicitRechargeEffective) {
+    this.useExplicitRechargeEffective = useExplicitRechargeEffective;
+    return this;
+  }
+
+  /**
+   * Set the implicit precharge volume in kilograms.
+   *
+   * @param implicitPrechargeKg The implicit precharge volume in kilograms
+   * @return This builder for chaining
+   */
+  public ServicingOffsetBuilder setImplicitPrechargeKg(BigDecimal implicitPrechargeKg) {
+    this.implicitPrechargeKg = implicitPrechargeKg;
+    return this;
+  }
+
+  /**
+   * Set the base state getter for unit conversions.
+   *
+   * @param stateGetter The base state getter for unit conversions
+   * @return This builder for chaining
+   */
+  public ServicingOffsetBuilder setStateGetter(StateGetter stateGetter) {
+    this.stateGetter = stateGetter;
+    return this;
+  }
+
+  /**
+   * Build the servicing offset for a population change.
    *
    * <p>This method determines the precharge and recharge offsets and the resulting unit delta
    * based on the tracking mode and precharge configuration. It dispatches to the appropriate
    * branch: percentage precharge with volume-based sales (circular), explicit precharge with
    * volume-based sales, or units-based tracking.</p>
    *
-   * @param salesKg The total substance sales volume in kilograms
-   * @param rechargeKg The recharge volume in kilograms
-   * @param initialChargeKgUnit The initial charge per unit in kg/unit
-   * @param prechargePopRaw The raw precharge population value, or null if unspecified
-   * @param prechargeIntensityRaw The raw precharge intensity value
-   * @param useExplicitRechargeEffective Whether explicit (volume-based) recharge is in use
-   * @param implicitPrechargeKg The implicit precharge volume in kilograms
-   * @param stateGetter The base state getter for unit conversions
    * @return A ServicingOffset with deltaUnits, prechargeKg, and rechargeKg
    */
-  public ServicingOffset offset(BigDecimal salesKg, BigDecimal rechargeKg,
-      BigDecimal initialChargeKgUnit, EngineNumber prechargePopRaw,
-      EngineNumber prechargeIntensityRaw, boolean useExplicitRechargeEffective,
-      BigDecimal implicitPrechargeKg, StateGetter stateGetter) {
-
-    PrechargeInfo prechargeInfo = describePrecharge(prechargePopRaw);
-    boolean hasPrecharge = prechargeInfo.getHasPrecharge();
-    boolean isPercentPrecharge = prechargeInfo.getIsPercentPrecharge();
-    boolean isCircularCase = isPercentPrecharge && useExplicitRechargeEffective;
+  public ServicingOffset build() {
+    ServicingStatus servicingStatus = describeServicing();
+    boolean isServicingEnabled = servicingStatus.isServicingEnabled();
+    boolean isPercentPopulation = servicingStatus.isPercentPopulation();
+    boolean isCircularCase = isPercentPopulation && useExplicitRechargeEffective;
 
     if (isCircularCase) {
-      return offsetVolumeSalesPercentPrecharge(salesKg, rechargeKg, initialChargeKgUnit,
-          prechargePopRaw, prechargeIntensityRaw);
-    } else if (hasPrecharge && useExplicitRechargeEffective) {
-      return offsetVolumeSalesExplicitPrecharge(salesKg, rechargeKg, initialChargeKgUnit,
-          prechargePopRaw, prechargeIntensityRaw, stateGetter);
+      return offsetVolumeSalesPercentPrecharge();
+    } else if (isServicingEnabled && useExplicitRechargeEffective) {
+      return offsetVolumeSalesExplicitPrecharge();
     } else {
-      return offsetUnitSales(salesKg, rechargeKg, initialChargeKgUnit, implicitPrechargeKg);
+      return offsetUnitSales();
     }
   }
 
   /**
-   * Describe the precharge configuration from a raw precharge population value.
+   * Describe the servicing configuration from the raw precharge population value.
    *
-   * @param prechargePopRaw The raw precharge population value, or null if unspecified
-   * @return A PrechargeInfo describing the precharge configuration
+   * @return A ServicingStatus describing the precharge configuration
    */
-  private PrechargeInfo describePrecharge(EngineNumber prechargePopRaw) {
+  private ServicingStatus describeServicing() {
     if (prechargePopRaw == null) {
-      return new PrechargeInfo(false, false);
+      return new ServicingStatus(false, false);
     } else {
       boolean hasPrecharge = prechargePopRaw.getValue().compareTo(BigDecimal.ZERO) != 0;
       if (!hasPrecharge) {
-        return new PrechargeInfo(false, false);
+        return new ServicingStatus(false, false);
       } else {
         String units = prechargePopRaw.getUnits();
         boolean isPercent = units != null && units.contains("%");
-        return new PrechargeInfo(true, isPercent);
+        return new ServicingStatus(true, isPercent);
       }
     }
   }
@@ -92,16 +175,9 @@ public class ServicingOffsetter {
    *
    * <pre>e_new = V_sales / (c_initial + e_precharge% * c_precharge)</pre>
    *
-   * @param salesKg The total substance sales volume in kilograms
-   * @param rechargeKg The recharge volume in kilograms
-   * @param initialChargeKgUnit The initial charge per unit in kg/unit
-   * @param prechargePopRaw The raw precharge population as a percentage
-   * @param prechargeIntensityRaw The raw precharge intensity in kg/unit
    * @return A ServicingOffset with the computed deltaUnits and prechargeKg
    */
-  private ServicingOffset offsetVolumeSalesPercentPrecharge(BigDecimal salesKg,
-      BigDecimal rechargeKg, BigDecimal initialChargeKgUnit, EngineNumber prechargePopRaw,
-      EngineNumber prechargeIntensityRaw) {
+  private ServicingOffset offsetVolumeSalesPercentPrecharge() {
     BigDecimal prechargeRatio = prechargePopRaw.getValue()
         .divide(BigDecimal.valueOf(100), MathContext.DECIMAL128);
     BigDecimal prechargeIntensityKg = prechargeIntensityRaw.getValue();
@@ -116,17 +192,9 @@ public class ServicingOffsetter {
   /**
    * Handle explicit precharge for kg-based tracking with absolute (units) precharge population.
    *
-   * @param salesKg The total substance sales volume in kilograms
-   * @param rechargeKg The recharge volume in kilograms
-   * @param initialChargeKgUnit The initial charge per unit in kg/unit
-   * @param prechargePopRaw The raw precharge population in absolute units
-   * @param prechargeIntensityRaw The raw precharge intensity in kg/unit
-   * @param stateGetter The base state getter for unit conversions
    * @return A ServicingOffset with the computed deltaUnits and prechargeKg
    */
-  private ServicingOffset offsetVolumeSalesExplicitPrecharge(BigDecimal salesKg,
-      BigDecimal rechargeKg, BigDecimal initialChargeKgUnit, EngineNumber prechargePopRaw,
-      EngineNumber prechargeIntensityRaw, StateGetter stateGetter) {
+  private ServicingOffset offsetVolumeSalesExplicitPrecharge() {
     OverridingConverterStateGetter prechargeStateGetter =
         new OverridingConverterStateGetter(stateGetter);
     UnitConverter prechargeConverter = new UnitConverter(prechargeStateGetter);
@@ -144,14 +212,9 @@ public class ServicingOffsetter {
   /**
    * Handle units-based tracking using implicit precharge (already added on top).
    *
-   * @param salesKg The total substance sales volume in kilograms
-   * @param rechargeKg The recharge volume in kilograms
-   * @param initialChargeKgUnit The initial charge per unit in kg/unit
-   * @param implicitPrechargeKg The implicit precharge volume in kilograms
    * @return A ServicingOffset with the computed deltaUnits and prechargeKg
    */
-  private ServicingOffset offsetUnitSales(BigDecimal salesKg, BigDecimal rechargeKg,
-      BigDecimal initialChargeKgUnit, BigDecimal implicitPrechargeKg) {
+  private ServicingOffset offsetUnitSales() {
     BigDecimal prechargeKg = implicitPrechargeKg;
     BigDecimal availableForNewUnitsKg = salesKg.subtract(rechargeKg).subtract(prechargeKg);
     BigDecimal deltaUnits = DivisionHelper.divideWithZero(

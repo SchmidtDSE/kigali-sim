@@ -15,7 +15,7 @@ import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.recalc.util.ServicingOffset;
-import org.kigalisim.engine.recalc.util.ServicingOffsetter;
+import org.kigalisim.engine.recalc.util.ServicingOffsetBuilder;
 import org.kigalisim.engine.state.OverridingConverterStateGetter;
 import org.kigalisim.engine.state.SimulationState;
 import org.kigalisim.engine.state.StateGetter;
@@ -104,10 +104,16 @@ public class PopulationChangeRecalcStrategy implements RecalcStrategy {
     EngineNumber prechargePopRaw = simulationState.getPrechargePopulation(scopeEffective);
     EngineNumber prechargeIntensityRaw = simulationState.getPrechargeIntensity(scopeEffective);
 
-    ServicingOffsetter offsetter = new ServicingOffsetter();
-    ServicingOffset offset = offsetter.offset(salesKg, rechargeKg, initialChargeKgUnit,
-        prechargePopRaw, prechargeIntensityRaw, useExplicitRechargeEffective,
-        implicitPrecharge.getValue(), kit.getStateGetter());
+    ServicingOffset offset = new ServicingOffsetBuilder()
+        .setSalesKg(salesKg)
+        .setRechargeKg(rechargeKg)
+        .setInitialChargeKgUnit(initialChargeKgUnit)
+        .setPrechargePopRaw(prechargePopRaw)
+        .setPrechargeIntensityRaw(prechargeIntensityRaw)
+        .setUseExplicitRechargeEffective(useExplicitRechargeEffective)
+        .setImplicitPrechargeKg(implicitPrecharge.getValue())
+        .setStateGetter(kit.getStateGetter())
+        .build();
     BigDecimal deltaUnits = offset.getDeltaUnits();
 
     EngineNumber newUnitsMarginal = new EngineNumber(deltaUnits, "units");
