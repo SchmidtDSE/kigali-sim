@@ -28,8 +28,8 @@ public class ServicingOffsetBuilder extends ValidatedBuilder<ServicingOffset> {
   private BigDecimal salesKg;
   private BigDecimal rechargeKg;
   private BigDecimal initialChargeKgUnit;
-  private EngineNumber prechargePopRaw;
-  private EngineNumber prechargeIntensityRaw;
+  private Optional<EngineNumber> prechargePopRaw;
+  private Optional<EngineNumber> prechargeIntensityRaw;
   private boolean useExplicitRechargeEffective;
   private BigDecimal implicitPrechargeKg;
   private StateGetter stateGetter;
@@ -39,6 +39,8 @@ public class ServicingOffsetBuilder extends ValidatedBuilder<ServicingOffset> {
    */
   public ServicingOffsetBuilder() {
     super("ServicingOffset");
+    prechargePopRaw = Optional.empty();
+    prechargeIntensityRaw = Optional.empty();
   }
 
   /**
@@ -81,7 +83,7 @@ public class ServicingOffsetBuilder extends ValidatedBuilder<ServicingOffset> {
    * @return This builder for chaining
    */
   public ServicingOffsetBuilder setPrechargePopRaw(EngineNumber prechargePopRaw) {
-    this.prechargePopRaw = prechargePopRaw;
+    this.prechargePopRaw = Optional.ofNullable(prechargePopRaw);
     return this;
   }
 
@@ -92,7 +94,7 @@ public class ServicingOffsetBuilder extends ValidatedBuilder<ServicingOffset> {
    * @return This builder for chaining
    */
   public ServicingOffsetBuilder setPrechargeIntensityRaw(EngineNumber prechargeIntensityRaw) {
-    this.prechargeIntensityRaw = prechargeIntensityRaw;
+    this.prechargeIntensityRaw = Optional.ofNullable(prechargeIntensityRaw);
     return this;
   }
 
@@ -172,13 +174,14 @@ public class ServicingOffsetBuilder extends ValidatedBuilder<ServicingOffset> {
     requireField(rechargeKg, "rechargeKg");
     requireField(initialChargeKgUnit, "initialChargeKgUnit");
 
-    boolean hasNonZeroPrechargePop = Optional.ofNullable(prechargePopRaw)
+    boolean hasNonZeroPrechargePop = prechargePopRaw
         .map(EngineNumber::getValue)
         .filter(value -> value.compareTo(BigDecimal.ZERO) != 0)
         .isPresent();
-    if (hasNonZeroPrechargePop && Optional.ofNullable(prechargeIntensityRaw).isEmpty()) {
+    if (hasNonZeroPrechargePop && prechargeIntensityRaw.isEmpty()) {
       throw new IllegalStateException(
-          "prechargeIntensityRaw is required when prechargePopRaw is non-zero");
+          "prechargeIntensityRaw is required when prechargePopRaw is non-zero"
+      );
     }
   }
 
@@ -188,14 +191,15 @@ public class ServicingOffsetBuilder extends ValidatedBuilder<ServicingOffset> {
    * @return A ServicingStatus describing the precharge configuration
    */
   private ServicingStatus describeServicing() {
-    if (prechargePopRaw == null) {
+    if (prechargePopRaw.isEmpty()) {
       return new ServicingStatus(false, false);
     } else {
-      boolean hasPrecharge = prechargePopRaw.getValue().compareTo(BigDecimal.ZERO) != 0;
+      EngineNumber prechargePop = prechargePopRaw.get();
+      boolean hasPrecharge = prechargePop.getValue().compareTo(BigDecimal.ZERO) != 0;
       if (!hasPrecharge) {
         return new ServicingStatus(false, false);
       } else {
-        String units = prechargePopRaw.getUnits();
+        String units = prechargePop.getUnits();
         boolean isPercent = units != null && units.contains("%");
         return new ServicingStatus(true, isPercent);
       }
@@ -213,9 +217,9 @@ public class ServicingOffsetBuilder extends ValidatedBuilder<ServicingOffset> {
    * @return A ServicingOffset with the computed deltaUnits and prechargeKg
    */
   private ServicingOffset offsetVolumeSalesPercentPrecharge() {
-    BigDecimal prechargeRatio = prechargePopRaw.getValue()
+    BigDecimal prechargeRatio = prechargePopRaw.get().getValue()
         .divide(BigDecimal.valueOf(100), MathContext.DECIMAL128);
-    BigDecimal prechargeIntensityKg = prechargeIntensityRaw.getValue();
+    BigDecimal prechargeIntensityKg = prechargeIntensityRaw.get().getValue();
     BigDecimal denominator = initialChargeKgUnit
         .add(prechargeRatio.multiply(prechargeIntensityKg));
     BigDecimal deltaUnits = DivisionHelper.divideWithZero(
@@ -236,9 +240,9 @@ public class ServicingOffsetBuilder extends ValidatedBuilder<ServicingOffset> {
     OverridingConverterStateGetter prechargeStateGetter =
         new OverridingConverterStateGetter(stateGetter);
     UnitConverter prechargeConverter = new UnitConverter(prechargeStateGetter);
-    EngineNumber prechargePop = prechargeConverter.convert(prechargePopRaw, "units");
+    EngineNumber prechargePop = prechargeConverter.convert(prechargePopRaw.get(), "units");
     prechargeStateGetter.setPopulation(prechargePop);
-    EngineNumber prechargeVolume = prechargeConverter.convert(prechargeIntensityRaw, "kg");
+    EngineNumber prechargeVolume = prechargeConverter.convert(prechargeIntensityRaw.get(), "kg");
     prechargeStateGetter.clearPopulation();
     BigDecimal prechargeKg = prechargeVolume.getValue();
     BigDecimal availableForNewUnitsKg = salesKg.subtract(rechargeKg).subtract(prechargeKg);
