@@ -16,7 +16,7 @@ The following changes have been adopted and released.
 
 ### Recharge of new equipment (precharge)
 
-**Status**: Released July 24, 2026
+**Status**: Released July 24, 2026 (Preview July 23)
 
 **Classification**: Enhancement
 
@@ -24,7 +24,7 @@ Added an optional `of` clause to the `recharge` command, allowing users to speci
 
 ### Time-varying equals
 
-**Status**: Released July 24, 2026
+**Status**: Released July 24, 2026 (Preview July 23)
 
 **Classification**: Enhancement
 
