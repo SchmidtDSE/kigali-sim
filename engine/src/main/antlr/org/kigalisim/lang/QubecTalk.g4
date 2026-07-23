@@ -435,8 +435,10 @@ initialChargeStatement: INITIAL_ CHARGE_ WITH_ value=unitValue FOR_ target=strea
   | INITIAL_ CHARGE_ WITH_ value=unitValue FOR_ target=stream duration=during  # initialChargeDuration
   ;
 
-rechargeStatement: RECHARGE_ population=unitValue (OF_ target=stream)? WITH_ volume=unitValue  # rechargeAllYears
-  | RECHARGE_ population=unitValue (OF_ target=stream)? WITH_ volume=unitValue duration=during  # rechargeDuration
+rechargeStatement: RECHARGE_ population=unitValue WITH_ volume=unitValue  # rechargeAllYears
+  | RECHARGE_ population=unitValue WITH_ volume=unitValue duration=during  # rechargeDuration
+  | RECHARGE_ population=unitValue OF_ target=stream WITH_ volume=unitValue  # rechargeAllYearsWithTarget
+  | RECHARGE_ population=unitValue OF_ target=stream WITH_ volume=unitValue duration=during  # rechargeDurationWithTarget
   ;
 
 recycleStatement: RECOVER_ volume=unitValue WITH_ yieldVal=unitValue REUSE_                                                        # recoverAllYears

@@ -256,7 +256,7 @@ function initRechargeCommandUi(itemObj, root, codeObj) {
     return x.getVolumeEngineNumber().getUnits();
   };
   const targetGetter = (x) => {
-    return x.getTargetStream ? x.getTargetStream() : "priorEquipment";
+    return x.getTargetStream();
   };
 
   setFieldValue(
@@ -326,8 +326,8 @@ function readRechargeCommandUi(root) {
   return new RechargeCommand(
     populationEngineNumber,
     volumeEngineNumber,
+    target,
     duration,
-    target || "priorEquipment",
   );
 }
 

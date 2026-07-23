@@ -232,8 +232,11 @@ function buildUiTranslatorTests() {
         assert.equal(recharge.getPopulationEngineNumber().getUnits(), "%", "Recharge population units should be %");
         assert.equal(recharge.getVolumeEngineNumber().getValue(), 0.2, "Recharge volume should be 0.2");
         assert.equal(recharge.getVolumeEngineNumber().getUnits(), "kg / unit", "Recharge volume units should be kg / unit");
-        assert.equal(recharge.getTargetStream(), "priorEquipment",
-          "Recharge without of-clause should default to priorEquipment");
+        assert.equal(
+          recharge.getTargetStream(),
+          "priorEquipment",
+          "Recharge without of-clause should default to priorEquipment",
+        );
       },
     ]);
 
@@ -254,8 +257,11 @@ function buildUiTranslatorTests() {
         assert.equal(recharges.length, 1, "Should have exactly 1 recharge command");
 
         const recharge = recharges[0];
-        assert.equal(recharge.getTargetStream(), "newEquipment",
-          "Recharge with of newEquipment should have newEquipment target");
+        assert.equal(
+          recharge.getTargetStream(),
+          "newEquipment",
+          "Recharge with of newEquipment should have newEquipment target",
+        );
       },
     ]);
 

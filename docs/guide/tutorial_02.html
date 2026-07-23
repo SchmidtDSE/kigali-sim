@@ -155,11 +155,13 @@
 
         <details>
           <summary>More about servicing targets (precharge)</summary>
-          <p>By default, recharge services <strong>prior equipment</strong> — equipment already in use that needs maintenance. However, some substance may be needed to top up new equipment before its sale (for example, charge lost in transit or storage). This is called <strong>precharge</strong>.</p>
-          <p>In the UI-based editor, the Servicing tab includes a dropdown to select the target: <em>prior equipment (recharge)</em> (default) or <em>new equipment (precharge)</em>. In code, this is expressed with the <code>of</code> clause:</p>
-          <pre><code class="language-qubectalk">recharge 10 % of priorEquipment with 0.15 kg / unit
+          <div>
+            <p>By default, recharge services <strong>prior equipment</strong>. This is equipment already in use that needs maintenance. However, some substance may be needed to top up new equipment before its sale (for example, charge lost in transit or storage). This is called <strong>precharge</strong>.</p>
+            <p>In the UI-based editor, the Servicing tab includes a dropdown to select the target: <em>prior equipment (recharge)</em> (default) or <em>new equipment (precharge)</em>. In code, this is expressed with the <code>of</code> clause:</p>
+            <pre><code class="language-qubectalk">recharge 10 % of priorEquipment with 0.15 kg / unit
 recharge 3 % of newEquipment with 1 kg / unit</code></pre>
-          <p>When the <code>of</code> clause is omitted, the target defaults to <code>priorEquipment</code>. Both recharge and precharge emissions are reported under the <code>rechargeEmissions</code> metric.</p>
+            <p>When the <code>of</code> clause is omitted, the target defaults to <code>priorEquipment</code>. Both recharge and precharge emissions are reported under the <code>rechargeEmissions</code> metric.</p>
+          </div>
         </details>
 
         <p id="tutorial-gif-2-4" class="tutorial-gif-holder">

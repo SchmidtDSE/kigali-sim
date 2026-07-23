@@ -895,8 +895,12 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
   public Fragment visitRechargeAllYears(QubecTalkParser.RechargeAllYearsContext ctx) {
     Operation populationOperation = visit(ctx.population).getOperation();
     Operation volumeOperation = visit(ctx.volume).getOperation();
-    String target = ctx.target != null ? applyStreamSugar(ctx.target.getText()) : "priorEquipment";
-    Operation operation = new RechargeOperation(populationOperation, volumeOperation, target);
+    Operation operation = new RechargeOperation(
+        populationOperation,
+        volumeOperation,
+        Optional.empty(),
+        RechargeOperation.PRIOR
+    );
     return new OperationFragment(operation);
   }
 
@@ -908,8 +912,49 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
     Operation populationOperation = visit(ctx.population).getOperation();
     Operation volumeOperation = visit(ctx.volume).getOperation();
     ParsedDuring during = visit(ctx.duration).getDuring();
-    String target = ctx.target != null ? applyStreamSugar(ctx.target.getText()) : "priorEquipment";
-    Operation operation = new RechargeOperation(populationOperation, volumeOperation, during, target);
+    Operation operation = new RechargeOperation(
+        populationOperation,
+        volumeOperation,
+        Optional.of(during),
+        RechargeOperation.PRIOR
+    );
+    return new OperationFragment(operation);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Fragment visitRechargeAllYearsWithTarget(
+      QubecTalkParser.RechargeAllYearsWithTargetContext ctx) {
+    Operation populationOperation = visit(ctx.population).getOperation();
+    Operation volumeOperation = visit(ctx.volume).getOperation();
+    String target = applyStreamSugar(ctx.target.getText());
+    Operation operation = new RechargeOperation(
+        populationOperation,
+        volumeOperation,
+        Optional.empty(),
+        target
+    );
+    return new OperationFragment(operation);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Fragment visitRechargeDurationWithTarget(
+      QubecTalkParser.RechargeDurationWithTargetContext ctx) {
+    Operation populationOperation = visit(ctx.population).getOperation();
+    Operation volumeOperation = visit(ctx.volume).getOperation();
+    ParsedDuring during = visit(ctx.duration).getDuring();
+    String target = applyStreamSugar(ctx.target.getText());
+    Operation operation = new RechargeOperation(
+        populationOperation,
+        volumeOperation,
+        Optional.of(during),
+        target
+    );
     return new OperationFragment(operation);
   }
 
