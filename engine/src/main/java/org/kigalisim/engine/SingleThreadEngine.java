@@ -879,6 +879,14 @@ public class SingleThreadEngine implements Engine {
    * during carry-over scenarios where no fresh specification exists, or during precharge
    * when a last specified sales value is available.</p>
    *
+   * <p>Precharge and recharge are intentionally asymmetric here. Recharge's population baseline
+   * (priorEquipment) is a persistent stream independent of this year's sales specification, so it
+   * can be re-derived from current state and only needs to replay the last sales value on true
+   * carry-over years. Precharge has no such independent baseline: new equipment is whatever this
+   * year's sales intent implies, so replaying the last specified value (fresh or carried over)
+   * is required whenever one is available, since the precharge configuration can change
+   * independent of whether sales was freshly specified.</p>
+   *
    * @param isCarryOver true if this is a carry-over scenario
    * @param isPrecharge true if this is a precharge operation
    * @param simulationState the current simulation state

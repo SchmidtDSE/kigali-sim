@@ -14,6 +14,7 @@ package org.kigalisim.engine.recalc.util;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
+import java.util.Optional;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.state.SimulationState;
 import org.kigalisim.engine.state.UseKey;
@@ -143,6 +144,8 @@ public class DemandAnalysisBuilder {
    * @return A DemandAnalysis containing the computed demand, spec type, and virgin material
    */
   public DemandAnalysis build() {
+    validate();
+
     BigDecimal totalDemand = calculateTotalDemand();
     boolean hasUnitBasedSpecs = getHasUnitBasedSpecs();
     BigDecimal requiredVirginMaterial = calculateRequiredVirginMaterial(
@@ -150,6 +153,39 @@ public class DemandAnalysisBuilder {
         hasUnitBasedSpecs
     );
     return new DemandAnalysis(totalDemand, hasUnitBasedSpecs, requiredVirginMaterial);
+  }
+
+  /**
+   * Validate that all fields required to build a DemandAnalysis have been set.
+   *
+   * <p>Fails fast with a clear message instead of letting a missing field surface later as a
+   * {@link NullPointerException} deep inside demand calculation.</p>
+   *
+   * @throws IllegalStateException if a required field is missing
+   */
+  private void validate() {
+    requireField(rechargeVolume, "rechargeVolume");
+    requireField(prechargeVolume, "prechargeVolume");
+    requireField(volumeForNew, "volumeForNew");
+    requireField(implicitRechargeKg, "implicitRechargeKg");
+    requireField(implicitPrechargeKg, "implicitPrechargeKg");
+    requireField(eolRecycledKg, "eolRecycledKg");
+    requireField(rechargeRecycledKg, "rechargeRecycledKg");
+    requireField(simulationState, "simulationState");
+    requireField(scopeEffective, "scopeEffective");
+  }
+
+  /**
+   * Require that a builder field was set before {@link #build()} was called.
+   *
+   * @param value The field value to check
+   * @param fieldName The name of the field, used in the error message
+   * @throws IllegalStateException if value is empty
+   */
+  private void requireField(Object value, String fieldName) {
+    if (Optional.ofNullable(value).isEmpty()) {
+      throw new IllegalStateException(fieldName + " is required to build a DemandAnalysis");
+    }
   }
 
   /**
