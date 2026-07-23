@@ -14,7 +14,6 @@ package org.kigalisim.engine.recalc.util;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
-import java.util.Optional;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.state.SimulationState;
 import org.kigalisim.engine.state.UseKey;
@@ -24,7 +23,7 @@ import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
 /**
  * Builder for demand analysis calculations in sales recalculation.
  */
-public class DemandAnalysisBuilder {
+public class DemandAnalysisBuilder extends ValidatedBuilder<DemandAnalysis> {
 
   private EngineNumber rechargeVolume;
   private EngineNumber prechargeVolume;
@@ -35,6 +34,13 @@ public class DemandAnalysisBuilder {
   private BigDecimal rechargeRecycledKg;
   private SimulationState simulationState;
   private UseKey scopeEffective;
+
+  /**
+   * Create a new DemandAnalysisBuilder.
+   */
+  public DemandAnalysisBuilder() {
+    super("DemandAnalysis");
+  }
 
   /**
    * Set the recharge volume.
@@ -143,9 +149,8 @@ public class DemandAnalysisBuilder {
    *
    * @return A DemandAnalysis containing the computed demand, spec type, and virgin material
    */
-  public DemandAnalysis build() {
-    validate();
-
+  @Override
+  protected DemandAnalysis buildInternal() {
     BigDecimal totalDemand = calculateTotalDemand();
     boolean hasUnitBasedSpecs = getHasUnitBasedSpecs();
     BigDecimal requiredVirginMaterial = calculateRequiredVirginMaterial(
@@ -163,7 +168,8 @@ public class DemandAnalysisBuilder {
    *
    * @throws IllegalStateException if a required field is missing
    */
-  private void validate() {
+  @Override
+  protected void validate() {
     requireField(rechargeVolume, "rechargeVolume");
     requireField(prechargeVolume, "prechargeVolume");
     requireField(volumeForNew, "volumeForNew");
@@ -173,19 +179,6 @@ public class DemandAnalysisBuilder {
     requireField(rechargeRecycledKg, "rechargeRecycledKg");
     requireField(simulationState, "simulationState");
     requireField(scopeEffective, "scopeEffective");
-  }
-
-  /**
-   * Require that a builder field was set before {@link #build()} was called.
-   *
-   * @param value The field value to check
-   * @param fieldName The name of the field, used in the error message
-   * @throws IllegalStateException if value is empty
-   */
-  private void requireField(Object value, String fieldName) {
-    if (Optional.ofNullable(value).isEmpty()) {
-      throw new IllegalStateException(fieldName + " is required to build a DemandAnalysis");
-    }
   }
 
   /**
