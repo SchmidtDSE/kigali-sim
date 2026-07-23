@@ -338,15 +338,15 @@ class RechargeCommand {
    *
    * @param {EngineNumber} populationEngineNumber - Population amount and units to recharge.
    * @param {EngineNumber} volumeEngineNumber - Volume per unit amount and units.
+   * @param {string} target - Target stream (priorEquipment or newEquipment).
    * @param {YearMatcher|null} duration - Duration specification or null for all years.
-   * @param {string} [target="priorEquipment"] - Target stream (priorEquipment or newEquipment).
    */
-  constructor(populationEngineNumber, volumeEngineNumber, duration, target) {
+  constructor(populationEngineNumber, volumeEngineNumber, target, duration) {
     const self = this;
     self._populationEngineNumber = populationEngineNumber;
     self._volumeEngineNumber = volumeEngineNumber;
+    self._target = target;
     self._duration = duration;
-    self._target = target || "priorEquipment";
   }
 
   /**
@@ -419,7 +419,7 @@ class RechargeCommand {
     const self = this;
     const populationStr = formatEngineNumber(self._populationEngineNumber);
     const volumeStr = formatEngineNumber(self._volumeEngineNumber);
-    const target = self._target || "priorEquipment";
+    const target = self._target;
     const baseCommand = `recharge ${populationStr} of ${target} with ${volumeStr}`;
     let command = baseCommand;
 
