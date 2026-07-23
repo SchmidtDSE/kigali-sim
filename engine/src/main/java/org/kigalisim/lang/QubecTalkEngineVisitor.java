@@ -929,7 +929,7 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
       QubecTalkParser.RechargeAllYearsWithTargetContext ctx) {
     Operation populationOperation = visit(ctx.population).getOperation();
     Operation volumeOperation = visit(ctx.volume).getOperation();
-    String target = applyStreamSugar(ctx.target.getText());
+    String target = ctx.target.getText();
     Operation operation = new RechargeOperation(
         populationOperation,
         volumeOperation,
@@ -948,7 +948,7 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
     Operation populationOperation = visit(ctx.population).getOperation();
     Operation volumeOperation = visit(ctx.volume).getOperation();
     ParsedDuring during = visit(ctx.duration).getDuring();
-    String target = applyStreamSugar(ctx.target.getText());
+    String target = ctx.target.getText();
     Operation operation = new RechargeOperation(
         populationOperation,
         volumeOperation,

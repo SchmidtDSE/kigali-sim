@@ -121,7 +121,6 @@ public class SalesRecalcStrategy implements RecalcStrategy {
         .setSimulationState(simulationState)
         .setScopeEffective(scopeEffective)
         .build();
-    BigDecimal requiredKg = demandAnalysis.getTotalDemand();
     boolean hasUnitBasedSpecs = demandAnalysis.getHadUnitBasedSpecs();
     BigDecimal totalRequiredKg = demandAnalysis.getRequiredVirginMaterial();
 

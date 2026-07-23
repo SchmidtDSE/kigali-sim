@@ -7,6 +7,7 @@
 package org.kigalisim.validate;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
@@ -74,5 +75,20 @@ public class PrechargeGrammarTests {
     Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
     List<EngineResult> resultsList = results.collect(Collectors.toList());
     assertTrue(resultsList.size() > 0, "Should have results for recharge of newEquipment");
+  }
+
+  /**
+   * Test that recharge with an "of" target other than priorEquipment or newEquipment
+   * is rejected at parse time.
+   */
+  @Test
+  public void testRechargeOfInvalidTargetRejected() {
+    String qtaPath = "../examples/recharge_of_invalid_target.qta";
+    assertThrows(
+        RuntimeException.class,
+        () -> KigaliSimFacade.parseAndInterpret(qtaPath),
+        "Should throw RuntimeException for 'of' clause targeting a stream other than "
+            + "priorEquipment or newEquipment"
+    );
   }
 }

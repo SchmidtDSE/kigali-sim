@@ -7,6 +7,8 @@
 package org.kigalisim.engine.recalc.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 
@@ -129,6 +131,37 @@ public class ServicingOffsetBuilderTest {
         "Delta units should be 60 in circular case");
     assertBigDecimalEquals(new BigDecimal("60"), offset.getPrechargeKg(),
         "Precharge kg should be 60 in circular case");
+  }
+
+  /**
+   * Test the circular case with 100% precharge population.
+   *
+   * <p>With 100% precharge, 2 kg/unit intensity, 100 kg sales, 10 kg recharge, and 1 kg/unit
+   * initial charge: prechargeRatio = 1.0, denominator = 1 + 1.0 * 2 = 3, deltaUnits = 90 / 3 =
+   * 30, prechargeKg = 30 * 1.0 * 2 = 60.</p>
+   */
+  @Test
+  public void testOffsetVolumeSalesFullPrecharge() {
+    BigDecimal salesKg = new BigDecimal("100");
+    BigDecimal rechargeKg = new BigDecimal("10");
+    BigDecimal initialChargeKgUnit = new BigDecimal("1");
+    EngineNumber prechargePopRaw = new EngineNumber(new BigDecimal("100"), "%");
+    EngineNumber prechargeIntensityRaw = new EngineNumber(new BigDecimal("2"), "kg / unit");
+
+    ServicingOffset offset = new ServicingOffsetBuilder()
+        .setSalesKg(salesKg)
+        .setRechargeKg(rechargeKg)
+        .setInitialChargeKgUnit(initialChargeKgUnit)
+        .setPrechargePopRaw(prechargePopRaw)
+        .setPrechargeIntensityRaw(prechargeIntensityRaw)
+        .setUseExplicitRechargeEffective(true)
+        .setImplicitPrechargeKg(BigDecimal.ZERO)
+        .build();
+
+    assertBigDecimalEquals(new BigDecimal("30"), offset.getDeltaUnits(),
+        "Delta units should be 30 when precharge population is 100%");
+    assertBigDecimalEquals(new BigDecimal("60"), offset.getPrechargeKg(),
+        "Precharge kg should be 60 when precharge population is 100%");
   }
 
   /**
@@ -306,5 +339,74 @@ public class ServicingOffsetBuilderTest {
         "Delta units should be zero with no sales");
     assertBigDecimalEquals(BigDecimal.ZERO, offset.getPrechargeKg(),
         "Precharge kg should be zero with no implicit precharge");
+  }
+
+  /**
+   * Test that build() fails fast with a clear message when a field required by every branch
+   * (such as salesKg) is missing, instead of a NullPointerException surfacing later.
+   */
+  @Test
+  public void testBuildFailsFastWhenAlwaysRequiredFieldMissing() {
+    IllegalStateException exception = assertThrows(
+        IllegalStateException.class,
+        () -> new ServicingOffsetBuilder()
+            .setRechargeKg(BigDecimal.ZERO)
+            .setInitialChargeKgUnit(BigDecimal.ONE)
+            .setUseExplicitRechargeEffective(false)
+            .setImplicitPrechargeKg(BigDecimal.ZERO)
+            .build(),
+        "Should throw IllegalStateException when salesKg is not set"
+    );
+    assertTrue(exception.getMessage().contains("salesKg"),
+        "Error message should mention the missing field (salesKg)");
+  }
+
+  /**
+   * Test that build() fails fast when prechargePopRaw is set but prechargeIntensityRaw is not.
+   */
+  @Test
+  public void testBuildFailsFastWhenPrechargeIntensityMissing() {
+    EngineNumber prechargePopRaw = new EngineNumber(new BigDecimal("50"), "%");
+
+    IllegalStateException exception = assertThrows(
+        IllegalStateException.class,
+        () -> new ServicingOffsetBuilder()
+            .setSalesKg(new BigDecimal("100"))
+            .setRechargeKg(BigDecimal.ZERO)
+            .setInitialChargeKgUnit(BigDecimal.ONE)
+            .setPrechargePopRaw(prechargePopRaw)
+            .setUseExplicitRechargeEffective(true)
+            .setImplicitPrechargeKg(BigDecimal.ZERO)
+            .build(),
+        "Should throw IllegalStateException when prechargeIntensityRaw is not set"
+    );
+    assertTrue(exception.getMessage().contains("prechargeIntensityRaw"),
+        "Error message should mention the missing field (prechargeIntensityRaw)");
+  }
+
+  /**
+   * Test that build() fails fast when the explicit precharge branch is reached without a
+   * stateGetter having been set.
+   */
+  @Test
+  public void testBuildFailsFastWhenStateGetterMissingForExplicitPrecharge() {
+    EngineNumber prechargePopRaw = new EngineNumber(new BigDecimal("10"), "units");
+    EngineNumber prechargeIntensityRaw = new EngineNumber(new BigDecimal("2"), "kg / unit");
+
+    IllegalStateException exception = assertThrows(
+        IllegalStateException.class,
+        () -> new ServicingOffsetBuilder()
+            .setSalesKg(new BigDecimal("100"))
+            .setRechargeKg(new BigDecimal("10"))
+            .setInitialChargeKgUnit(BigDecimal.ONE)
+            .setPrechargePopRaw(prechargePopRaw)
+            .setPrechargeIntensityRaw(prechargeIntensityRaw)
+            .setUseExplicitRechargeEffective(true)
+            .setImplicitPrechargeKg(BigDecimal.ZERO)
+            .build(),
+        "Should throw IllegalStateException when stateGetter is not set"
+    );
+    assertTrue(exception.getMessage().contains("stateGetter"),
+        "Error message should mention the missing field (stateGetter)");
   }
 }
