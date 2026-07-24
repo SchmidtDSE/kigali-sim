@@ -96,6 +96,7 @@
     <script type="importmap">
         {
             "imports": {
+                "build_generation_tracker": "../js/build_generation_tracker.js?v=EPOCH",
                 "code_editor": "../js/code_editor.js?v=EPOCH",
                 "duplicate_util": "../js/duplicate_util.js?v=EPOCH",
                 "duration": "../js/duration.js?v=EPOCH",
@@ -113,6 +114,7 @@
                 "report_data": "../js/report_data.js?v=EPOCH",
                 "results": "../js/results.js?v=EPOCH",
                 "storage_keeper": "../js/storage_keeper.js?v=EPOCH",
+                "test_build_generation_tracker": "./test_build_generation_tracker.js?v=EPOCH",
                 "test_duration": "./test_duration.js?v=EPOCH",
                 "test_engine_number": "./test_engine_number.js?v=EPOCH",
                 "test_engine_struct": "./test_engine_struct.js?v=EPOCH",
@@ -202,6 +204,7 @@
         import {buildUpdateTests} from "test_update";
         import {buildWasmBackendTests} from "test_wasm_backend";
         import {buildDurationTests} from "test_duration";
+        import {buildBuildGenerationTrackerTests} from "test_build_generation_tracker";
 
         buildIntegrationTests();
         buildLocalStorageKeeperTests();
@@ -222,5 +225,6 @@
         buildUpdateTests();
         buildWasmBackendTests();
         buildDurationTests();
+        buildBuildGenerationTrackerTests();
     </script>
 </body>
