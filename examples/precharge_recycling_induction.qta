@@ -1,0 +1,44 @@
+start default
+
+  define application "Test"
+
+    uses substance "SubA"
+      enable import
+      initial charge with 0 kg / unit for domestic
+      initial charge with 1 kg / unit for import
+      initial charge with 0 kg / unit for export
+      equals 1000 kgCO2e / kg
+      equals 1 kwh / unit
+      set sales to 100 units during year 1
+      recharge 100 % of newEquipment with 1 kg / unit
+      recharge 5 % of priorEquipment with 1 kg / unit
+    end substance
+
+  end application
+
+end default
+
+
+start policy "Recycling"
+
+  modify application "Test"
+
+    modify substance "SubA"
+      recover 50 % with 100 % reuse with 50 % induction
+    end substance
+
+  end application
+
+end policy
+
+
+start simulations
+
+  simulate "BAU"
+  from years 1 to 10
+
+  simulate "With Recycling"
+    using "Recycling"
+  from years 1 to 10
+
+end simulations

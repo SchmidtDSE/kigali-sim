@@ -20,6 +20,7 @@ public class DemandAnalysis {
   private final BigDecimal totalDemand;
   private final boolean hadUnitBasedSpecs;
   private final BigDecimal requiredVirginMaterial;
+  private final BigDecimal rechargeResidualKg;
 
   /**
    * Create a new DemandAnalysis.
@@ -27,12 +28,14 @@ public class DemandAnalysis {
    * @param totalDemand The total substance demand minus implicit servicing in kg
    * @param hadUnitBasedSpecs True if unit-based specifications should be preserved
    * @param requiredVirginMaterial The required virgin material in kg after recycling effects
+   * @param rechargeResidualKg The recharge volume minus implicit recharge in kg
    */
   public DemandAnalysis(BigDecimal totalDemand, boolean hadUnitBasedSpecs,
-      BigDecimal requiredVirginMaterial) {
+      BigDecimal requiredVirginMaterial, BigDecimal rechargeResidualKg) {
     this.totalDemand = totalDemand;
     this.hadUnitBasedSpecs = hadUnitBasedSpecs;
     this.requiredVirginMaterial = requiredVirginMaterial;
+    this.rechargeResidualKg = rechargeResidualKg;
   }
 
   /**
@@ -60,5 +63,14 @@ public class DemandAnalysis {
    */
   public BigDecimal getRequiredVirginMaterial() {
     return requiredVirginMaterial;
+  }
+
+  /**
+   * Get the recharge residual.
+   *
+   * @return The recharge volume minus implicit recharge in kg
+   */
+  public BigDecimal getRechargeResidualKg() {
+    return rechargeResidualKg;
   }
 }

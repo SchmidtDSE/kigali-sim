@@ -1,0 +1,59 @@
+start default
+
+  define application "Test"
+
+    uses substance "SubA"
+      enable import
+      initial charge with 0 kg / unit for domestic
+      initial charge with 1 kg / unit for import
+      initial charge with 0 kg / unit for export
+      equals 1000 kgCO2e / kg
+      equals 1 kwh / unit
+      set sales to 100 units during year 1
+      retire 5 % / year
+      recharge 100 % of newEquipment with 1 kg / unit
+      recharge 5 % of priorEquipment with 1 kg / unit
+    end substance
+
+    uses substance "SubB"
+      enable import
+      initial charge with 0 kg / unit for domestic
+      initial charge with 1 kg / unit for import
+      initial charge with 0 kg / unit for export
+      equals 1000 kgCO2e / kg
+      equals 1 kwh / unit
+      set sales to 10 units during year 1
+      change sales by 5 units during years 2 to 10
+      retire 5 % / year
+      recharge 5 % of newEquipment with 1 kg / unit
+      recharge 5 % of priorEquipment with 1 kg / unit
+    end substance
+
+  end application
+
+end default
+
+
+start policy "Cap"
+
+  modify application "Test"
+
+    modify substance "SubA"
+      cap sales to 200 units displacing "SubB"
+    end substance
+
+  end application
+
+end policy
+
+
+start simulations
+
+  simulate "BAU"
+  from years 1 to 10
+
+  simulate "With Cap"
+    using "Cap"
+  from years 1 to 10
+
+end simulations

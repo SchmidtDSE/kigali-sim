@@ -391,6 +391,105 @@ public class PrechargeLiveTests {
   }
 
   /**
+   * Test that a non-binding cap has no effect when the capped substance uses
+   * "recharge ... of newEquipment" (precharge).
+   *
+   * <p>Setup: SubA sells a flat 100 units/year (well under its 200 unit cap) and
+   * has both {@code recharge 100% of newEquipment with 1 kg/unit} (precharge) and
+   * {@code recharge 5% of priorEquipment with 1 kg/unit} configured. A policy caps
+   * SubA's sales to 200 units, displacing SubB. Because BAU sales (100 units) never
+   * approach the 200 unit ceiling, the cap should be a no-op and "With Cap" results
+   * should match "BAU" exactly for every year.</p>
+   *
+   * <p>Regression test for a bug where {@code PrechargeVolumeCalculator} sizes the
+   * precharge contribution to sales from the currently-persisted {@code newEquipment}
+   * stream rather than deriving it from the sales figure under consideration. This
+   * can inflate the "current" sales value that {@code LimitExecutor} compares against
+   * the cap ceiling, causing the cap to be misidentified as binding and sales to be
+   * pinned up to 200 units even though unconstrained demand is only 100 units.</p>
+   */
+  @Test
+  public void testCapNoActionWithPrechargeOfNewEquipment() throws IOException {
+    String qtaPath = "../examples/precharge_cap_no_action.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    Stream<EngineResult> bauStream = KigaliSimFacade.runScenario(program, "BAU", progress -> {});
+    List<EngineResult> bauResults = bauStream.collect(Collectors.toList());
+
+    Stream<EngineResult> capStream = KigaliSimFacade.runScenario(program, "With Cap", progress -> {});
+    List<EngineResult> capResults = capStream.collect(Collectors.toList());
+
+    for (int year = 1; year <= 10; year++) {
+      EngineResult bauResult = LiveTestsUtil.getResult(bauResults.stream(), year, "Test", "SubA");
+      assertNotNull(bauResult, "Should have BAU result for SubA in year " + year);
+
+      EngineResult capResult = LiveTestsUtil.getResult(capResults.stream(), year, "Test", "SubA");
+      assertNotNull(capResult, "Should have Cap result for SubA in year " + year);
+
+      double bauSales = bauResult.getDomestic().getValue().doubleValue()
+          + bauResult.getImport().getValue().doubleValue();
+      double capSales = capResult.getDomestic().getValue().doubleValue()
+          + capResult.getImport().getValue().doubleValue();
+
+      assertEquals(bauSales, capSales, 0.0001,
+          "SubA sales in year " + year + " should be unchanged by the non-binding cap "
+              + "(BAU=" + bauSales + ", With Cap=" + capSales + ")");
+
+      assertEquals(bauResult.getPopulationNew().getValue().doubleValue(),
+          capResult.getPopulationNew().getValue().doubleValue(), 0.0001,
+          "SubA new equipment in year " + year + " should be unchanged by the non-binding cap");
+    }
+  }
+
+  /**
+   * Test that recycling with induced demand does not shrink equipment population when precharge
+   * (recharge of newEquipment) is configured.
+   *
+   * <p>Setup: SubA sells a flat 100 units/year and has both {@code recharge 100% of newEquipment
+   * with 1 kg/unit} (precharge) and {@code recharge 5% of priorEquipment with 1 kg/unit}
+   * configured. A policy recovers 50% of recharge-stage volume with 100% reuse and 50% induction.
+   * With 50% induction, half of the recovered material displaces virgin material 1-for-1 (no
+   * change in equipment) and the other half induces additional demand on top of BAU. Induction
+   * should never make total equipment LOWER than BAU with no recycling at all.</p>
+   *
+   * <p>Regression test: without precharge, this same policy correctly increases population
+   * relative to BAU (confirmed by a parallel scenario without precharge). With precharge enabled,
+   * population instead ends up BELOW BAU every year after year 1, the opposite of what induced
+   * demand should produce.</p>
+   */
+  @Test
+  public void testPrechargeWithRecoveryInductionDoesNotShrinkPopulation() throws IOException {
+    String qtaPath = "../examples/precharge_recycling_induction.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    Stream<EngineResult> bauStream = KigaliSimFacade.runScenario(program, "BAU", progress -> {});
+    List<EngineResult> bauResults = bauStream.collect(Collectors.toList());
+
+    Stream<EngineResult> recyclingStream = KigaliSimFacade.runScenario(
+        program, "With Recycling", progress -> {});
+    List<EngineResult> recyclingResults = recyclingStream.collect(Collectors.toList());
+
+    for (int year = 1; year <= 10; year++) {
+      EngineResult bauResult = LiveTestsUtil.getResult(bauResults.stream(), year, "Test", "SubA");
+      assertNotNull(bauResult, "Should have BAU result for SubA in year " + year);
+
+      EngineResult recyclingResult = LiveTestsUtil.getResult(
+          recyclingResults.stream(), year, "Test", "SubA");
+      assertNotNull(recyclingResult, "Should have Recycling result for SubA in year " + year);
+
+      double bauPopulation = bauResult.getPopulation().getValue().doubleValue();
+      double recyclingPopulation = recyclingResult.getPopulation().getValue().doubleValue();
+
+      assertTrue(recyclingPopulation >= bauPopulation,
+          "With 50% induction, equipment population in year " + year
+              + " should be at least as high as BAU (BAU=" + bauPopulation
+              + ", With Recycling=" + recyclingPopulation + ")");
+    }
+  }
+
+  /**
    * Test that recharge of newEquipment runs and produces results.
    */
   @Test

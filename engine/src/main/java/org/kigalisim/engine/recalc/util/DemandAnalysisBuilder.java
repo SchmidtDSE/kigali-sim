@@ -146,9 +146,11 @@ public class DemandAnalysisBuilder extends ValidatedBuilder<DemandAnalysis> {
    * Build the demand analysis.
    *
    * <p>This method orchestrates the calculation of total demand, determination of unit-based
-   * specification preservation, and calculation of required virgin material.</p>
+   * specification preservation, calculation of required virgin material, and calculation of the
+   * recharge residual.</p>
    *
-   * @return A DemandAnalysis containing the computed demand, spec type, and virgin material
+   * @return A DemandAnalysis containing the computed demand, spec type, virgin material, and
+   *     recharge residual
    */
   @Override
   protected DemandAnalysis buildInternal() {
@@ -158,7 +160,13 @@ public class DemandAnalysisBuilder extends ValidatedBuilder<DemandAnalysis> {
         totalDemand,
         hasUnitBasedSpecs
     );
-    return new DemandAnalysis(totalDemand, hasUnitBasedSpecs, requiredVirginMaterial);
+    BigDecimal rechargeResidualKg = rechargeVolume.getValue().subtract(implicitRechargeKg);
+    return new DemandAnalysis(
+        totalDemand,
+        hasUnitBasedSpecs,
+        requiredVirginMaterial,
+        rechargeResidualKg
+    );
   }
 
   /**

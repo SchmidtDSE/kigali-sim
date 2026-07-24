@@ -76,6 +76,95 @@ public class LimitExecutor {
   }
 
   /**
+   * Convert a sales-related stream's current value into an absolute cap/floor amount's units,
+   * correcting for recharge/precharge kg riding along on top of the raw stream value.
+   *
+   * <p>When sales are specified in equipment units, recharge (of priorEquipment) and precharge
+   * (of newEquipment) are added on top of the stream's kg total rather than being absorbed within
+   * it (see {@code SalesRecalcStrategy}). A plain kg-to-units conversion divides by the raw
+   * initial charge alone, so it overcounts the number of equipment units the stream represents
+   * once servicing kg is riding on top, which can make an absolute units-denominated cap/floor
+   * misfire even when the true new-equipment count is well under the limit. The
+   * {@code implicitRecharge} and {@code implicitPrecharge} streams track exactly how much of the
+   * current total is such servicing kg (zero for kg/mt-tracked sales, where no such inflation
+   * occurs), so this method backs that amount out before dividing by the initial charge.</p>
+   *
+   * <p>This correction only applies when converting to equipment units; conversions to other
+   * units (kg, mt, %) are delegated unchanged to {@code unitConverter}.</p>
+   *
+   * @param unitConverter The unit converter configured for this stream
+   * @param stream The stream identifier being capped/floored (e.g., "sales", "domestic")
+   * @param currentValueRaw The stream's current raw value
+   * @param destinationUnits The cap/floor amount's units to convert into
+   * @return currentValueRaw converted into destinationUnits
+   */
+  private EngineNumber convertWithServicingAccounted(UnitConverter unitConverter,
+      String stream, EngineNumber currentValueRaw, String destinationUnits) {
+    if (!getIfServicingRequiresAccounting(stream, destinationUnits)) {
+      return unitConverter.convert(currentValueRaw, destinationUnits);
+    }
+
+    BigDecimal streamServicingKg = getStreamServicingKg(stream);
+    BigDecimal currentValueKg = unitConverter.convert(currentValueRaw, "kg").getValue();
+    BigDecimal newUnitsBasisKg = currentValueKg.subtract(streamServicingKg);
+    return unitConverter.convert(new EngineNumber(newUnitsBasisKg, "kg"), destinationUnits);
+  }
+
+  /**
+   * Determine whether the servicing correction in
+   * {@link #convertWithServicingAccounted} is applicable.
+   *
+   * <p>The correction only matters when converting to equipment units for a sales-related
+   * stream that actually has non-zero recharge/precharge kg riding on top of its raw value; in
+   * every other case, a plain kg-to-units conversion is already correct.</p>
+   *
+   * @param stream The stream identifier being capped/floored (e.g., "sales", "domestic")
+   * @param destinationUnits The cap/floor amount's units to convert into
+   * @return true if the servicing correction should be applied, false if a plain conversion
+   *     is sufficient
+   */
+  private boolean getIfServicingRequiresAccounting(String stream, String destinationUnits) {
+    boolean destinationIsUnits = "unit".equals(destinationUnits) || "units".equals(destinationUnits);
+    boolean isProductionMetastream = EngineSupportUtils.isProductionMetastream(stream);
+    boolean isSalesSubstream = EngineSupportUtils.isSalesSubstream(stream);
+    boolean isSalesRelated = isProductionMetastream || isSalesSubstream;
+    if (!destinationIsUnits || !isSalesRelated) {
+      return false;
+    }
+
+    EngineNumber implicitRecharge = engine.getStream("implicitRecharge");
+    EngineNumber implicitPrecharge = engine.getStream("implicitPrecharge");
+    BigDecimal totalServicingKg = implicitRecharge.getValue().add(implicitPrecharge.getValue());
+    return totalServicingKg.compareTo(BigDecimal.ZERO) != 0;
+  }
+
+  /**
+   * Get the recharge/precharge kg riding on top of a sales-related stream's raw value.
+   *
+   * <p>Sales substreams (domestic/import) only carry their distributed share of the total
+   * implicit servicing kg; the aggregate sales/virgin streams carry the full amount.</p>
+   *
+   * @param stream The stream identifier being capped/floored (e.g., "sales", "domestic")
+   * @return The servicing kg attributable to this stream
+   */
+  private BigDecimal getStreamServicingKg(String stream) {
+    EngineNumber implicitRecharge = engine.getStream("implicitRecharge");
+    EngineNumber implicitPrecharge = engine.getStream("implicitPrecharge");
+    BigDecimal totalServicingKg = implicitRecharge.getValue().add(implicitPrecharge.getValue());
+
+    if (EngineSupportUtils.isSalesSubstream(stream)) {
+      return EngineSupportUtils.getDistributedRecharge(
+          stream,
+          new EngineNumber(totalServicingKg, "kg"),
+          engine.getScope(),
+          engine.getStreamKeeper()
+      );
+    } else {
+      return totalServicingKg;
+    }
+  }
+
+  /**
    * Executes a cap operation to limit a stream to a maximum value.
    *
    * <p>Cap operations enforce maximum constraints on stream values, reducing the
@@ -271,8 +360,12 @@ public class LimitExecutor {
     UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(
         engine, stream);
     EngineNumber currentValueRaw = engine.getStream(stream);
-    EngineNumber currentValueInAmountUnits = unitConverter.convert(
-        currentValueRaw, amount.getUnits());
+    EngineNumber currentValueInAmountUnits = convertWithServicingAccounted(
+        unitConverter,
+        stream,
+        currentValueRaw,
+        amount.getUnits()
+    );
 
     boolean capSatisfied = currentValueInAmountUnits.getValue().compareTo(amount.getValue()) <= 0;
     if (capSatisfied) {
@@ -412,8 +505,12 @@ public class LimitExecutor {
     UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(
         engine, stream);
     EngineNumber currentValueRaw = engine.getStream(stream);
-    EngineNumber currentValueInAmountUnits = unitConverter.convert(
-        currentValueRaw, amount.getUnits());
+    EngineNumber currentValueInAmountUnits = convertWithServicingAccounted(
+        unitConverter,
+        stream,
+        currentValueRaw,
+        amount.getUnits()
+    );
 
     boolean floorSatisfied = currentValueInAmountUnits.getValue().compareTo(amount.getValue()) >= 0;
     if (floorSatisfied) {
