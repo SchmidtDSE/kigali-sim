@@ -301,6 +301,16 @@ class WasmLayer {
     self._pendingRequests = new Map();
     self._nextRequestId = 1;
     self._reportProgressCallback = reportProgressCallback;
+
+    /**
+     * The most recently started request's ID. Only this request's progress
+     * is forwarded to the UI callback, so an older, superseded request's
+     * progress cannot interleave with or overwrite a newer request's.
+     *
+     * @private
+     * @type {number|null}
+     */
+    self._latestRequestId = null;
   }
 
   /**
@@ -359,6 +369,7 @@ class WasmLayer {
 
     return new Promise((resolve, reject) => {
       const requestId = self._nextRequestId++;
+      self._latestRequestId = requestId;
 
       // Create scenario completion tracker
       const scenarioTracker = {};
@@ -489,6 +500,11 @@ class WasmLayer {
    * Report progress for a request, combining engine-reported and time-based
    * estimates by reporting whichever is higher.
    *
+   * Only forwards the update to the UI callback if this is still the latest
+   * request, so an older, superseded request (e.g. from an auto-refresh that
+   * started a new run before a previous one finished) cannot report stale
+   * progress after a newer request has taken over the progress bar.
+   *
    * @private
    * @param {number} requestId - The request ID.
    * @param {number} candidateProgress - A progress value between 0 and 1.
@@ -502,7 +518,7 @@ class WasmLayer {
 
     request.lastReportedProgress = Math.max(request.lastReportedProgress, candidateProgress);
 
-    if (self._reportProgressCallback) {
+    if (self._reportProgressCallback && requestId === self._latestRequestId) {
       self._reportProgressCallback(request.lastReportedProgress);
     }
   }
