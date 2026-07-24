@@ -28,7 +28,6 @@
 package org.kigalisim.engine.support;
 
 import java.math.BigDecimal;
-import java.math.MathContext;
 import java.util.Optional;
 import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
@@ -108,17 +107,7 @@ public class LimitExecutor {
     BigDecimal streamServicingKg = getStreamServicingKg(stream);
     BigDecimal currentValueKg = unitConverter.convert(currentValueRaw, "kg").getValue();
     BigDecimal newUnitsBasisKg = currentValueKg.subtract(streamServicingKg);
-    if (newUnitsBasisKg.compareTo(BigDecimal.ZERO) <= 0) {
-      return unitConverter.convert(currentValueRaw, destinationUnits);
-    }
-
-    EngineNumber initialCharge = engine.getInitialCharge(stream);
-    EngineNumber initialChargeKgPerUnit = unitConverter.convert(initialCharge, "kg / unit");
-    BigDecimal trueUnits = newUnitsBasisKg.divide(
-        initialChargeKgPerUnit.getValue(),
-        MathContext.DECIMAL128
-    );
-    return new EngineNumber(trueUnits, destinationUnits);
+    return unitConverter.convert(new EngineNumber(newUnitsBasisKg, "kg"), destinationUnits);
   }
 
   /**
