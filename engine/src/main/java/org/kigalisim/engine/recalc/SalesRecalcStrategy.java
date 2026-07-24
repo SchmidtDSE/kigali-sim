@@ -10,7 +10,6 @@
 package org.kigalisim.engine.recalc;
 
 import java.math.BigDecimal;
-import java.math.MathContext;
 import java.util.Optional;
 import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
@@ -124,11 +123,10 @@ public class SalesRecalcStrategy implements RecalcStrategy {
         .build();
     boolean hasUnitBasedSpecs = demandAnalysis.getHadUnitBasedSpecs();
     BigDecimal totalRequiredKg = demandAnalysis.getRequiredVirginMaterial();
+    BigDecimal rechargeResidualKg = demandAnalysis.getRechargeResidualKg();
 
     BigDecimal newDomesticKg = distribution.getPercentDomestic().multiply(totalRequiredKg);
     BigDecimal newImportKg = distribution.getPercentImport().multiply(totalRequiredKg);
-
-    BigDecimal rechargeResidualKg = rechargeVolume.getValue().subtract(implicitRechargeKg);
 
     updateSalesStreams(
         target,
@@ -400,7 +398,10 @@ public class SalesRecalcStrategy implements RecalcStrategy {
         BigDecimal domesticRechargeShareKg = distribution.getPercentDomestic()
             .multiply(rechargeResidualKg);
         EngineNumber newDomesticUnits = convertRequiredKgToUnits(
-            domesticKg, domesticRechargeShareKg, initialCharge, unitConverter);
+            domesticKg,
+            domesticRechargeShareKg,
+            unitConverter
+        );
         StreamUpdate domesticUpdate = new StreamUpdateBuilder()
             .setName("domestic")
             .setValue(newDomesticUnits)
@@ -416,7 +417,10 @@ public class SalesRecalcStrategy implements RecalcStrategy {
         BigDecimal importRechargeShareKg = distribution.getPercentImport()
             .multiply(rechargeResidualKg);
         EngineNumber newImportUnits = convertRequiredKgToUnits(
-            importKg, importRechargeShareKg, initialCharge, unitConverter);
+            importKg,
+            importRechargeShareKg,
+            unitConverter
+        );
         StreamUpdate importUpdate = new StreamUpdateBuilder()
             .setName("import")
             .setValue(newImportUnits)
@@ -472,26 +476,20 @@ public class SalesRecalcStrategy implements RecalcStrategy {
    * its own <em>fresh</em> precharge from the {@code newEquipment} stream (unaffected by this
    * update) rather than from the overcounted figure, the two disagree, and {@code
    * DemandAnalysisBuilder} nets a residual gap into {@code totalDemand} instead of the fresh and
-   * implicit precharge fully canceling (see PRECHARGE_RECOVERY_INDUCTION_INVESTIGATION.md).
-   * Backing out the recharge share here keeps the recorded unit count accurate, so later
-   * calls' fresh and implicit precharge stay consistent.</p>
+   * implicit precharge fully canceling. Backing out the recharge share here keeps the recorded
+   * unit count accurate, so later calls' fresh and implicit precharge stay consistent.</p>
    *
    * @param streamKg This stream's share of the required kg
    * @param streamRechargeShareKg This stream's share of the ordinary recharge residual (see
    *     {@link #execute}) in kg
-   * @param initialCharge The initial charge per unit
-   * @param unitConverter Unit converter for the kg-to-units conversion
+   * @param unitConverter Unit converter for the kg-to-units conversion, using whatever
+   *     amortized unit volume the caller has configured
    * @return The equivalent number of equipment units for this stream's share
    */
   private EngineNumber convertRequiredKgToUnits(BigDecimal streamKg,
-      BigDecimal streamRechargeShareKg, EngineNumber initialCharge, UnitConverter unitConverter) {
+      BigDecimal streamRechargeShareKg, UnitConverter unitConverter) {
     BigDecimal newUnitsBasisKg = streamKg.subtract(streamRechargeShareKg);
-    if (newUnitsBasisKg.compareTo(BigDecimal.ZERO) < 0) {
-      return unitConverter.convert(new EngineNumber(streamKg, "kg"), "units");
-    }
-
-    BigDecimal trueUnits = newUnitsBasisKg.divide(initialCharge.getValue(), MathContext.DECIMAL128);
-    return new EngineNumber(trueUnits, "units");
+    return unitConverter.convert(new EngineNumber(newUnitsBasisKg, "kg"), "units");
   }
 
 }
