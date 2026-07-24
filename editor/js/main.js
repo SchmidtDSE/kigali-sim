@@ -4,6 +4,7 @@
  * @license BSD, see LICENSE.md.
  */
 
+import {BuildGenerationTracker} from "build_generation_tracker";
 import {CodeEditorPresenter} from "code_editor";
 import {LocalStorageKeeper} from "local_storage_keeper";
 import {EphemeralStorageKeeper} from "storage_keeper";
@@ -51,6 +52,7 @@ class MainPresenter {
     self._hasCompilationErrors = false;
 
     self._runningIndicatorPresenter = new RunningIndicatorPresenter();
+    self._buildGenerationTracker = new BuildGenerationTracker();
 
     self._initStorageKeeper();
     self._initWasmBackend();
@@ -283,6 +285,7 @@ class MainPresenter {
   _onBuild(run, resetFilters, isAutoRefresh) {
     const self = this;
     self._buttonPanelPresenter.disable();
+    const generationId = self._buildGenerationTracker.startNewGeneration();
 
     if (resetFilters === undefined) {
       resetFilters = false;
@@ -316,6 +319,11 @@ class MainPresenter {
         try {
           const programResult = await self._wasmBackend.execute(code);
 
+          if (!self._buildGenerationTracker.isCurrent(generationId)) {
+            // A newer build has since started; discard this stale result.
+            return;
+          }
+
           self._runningIndicatorPresenter.hide();
 
           if (programResult.getParsedResults().length === 0) {
@@ -331,6 +339,11 @@ class MainPresenter {
             self._codeEditorPresenter.hideError();
           }
         } catch (e) {
+          if (!self._buildGenerationTracker.isCurrent(generationId)) {
+            // A newer build has since started; discard this stale error.
+            return;
+          }
+
           self._showErrorIndicator();
 
           console.log(e);
@@ -349,15 +362,20 @@ class MainPresenter {
       try {
         await execute();
       } catch (e) {
-        const message = "Execute error: " + e;
-        if (!isAutoRefresh) {
-          alertWithHelpOption(message);
-        } else {
-          self._codeEditorPresenter.showError(message);
+        if (self._buildGenerationTracker.isCurrent(generationId)) {
+          const message = "Execute error: " + e;
+          if (!isAutoRefresh) {
+            alertWithHelpOption(message);
+          } else {
+            self._codeEditorPresenter.showError(message);
+          }
+          captureSentryMessage(message, "error");
         }
-        captureSentryMessage(message, "error");
       }
-      self._buttonPanelPresenter.enable();
+
+      if (self._buildGenerationTracker.isCurrent(generationId)) {
+        self._buttonPanelPresenter.enable();
+      }
     };
 
     setTimeout(executeSafe, 50);
