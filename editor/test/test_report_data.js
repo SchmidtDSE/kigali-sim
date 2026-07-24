@@ -1,7 +1,9 @@
 import {WasmBackend, WasmLayer} from "wasm_backend";
 import {ReportDataWrapper, MetricStrategyBuilder} from "report_data";
+import {IndexedSimulationResult} from "indexed_simulation_result";
 import {FilterSet} from "user_config";
 import {EngineNumber} from "engine_number";
+import {TradeSupplement, EngineResultBuilder} from "engine_struct";
 
 function loadRemote(path) {
   return fetch(path).then((response) => response.text());
@@ -13,6 +15,9 @@ function buildReportDataTests() {
     const wasmLayer = new WasmLayer();
     const wasmBackend = new WasmBackend(wasmLayer);
 
+    // Runs every check against both ReportDataWrapper and IndexedSimulationResult so the
+    // indexed/cached implementation is continuously verified to match the reference
+    // implementation it wraps, not just spot-checked separately.
     const buildTest = (name, filepath, checks) => {
       QUnit.test(name, (assert) => {
         const done = assert.async();
@@ -23,9 +28,14 @@ function buildReportDataTests() {
             // Execute using WASM backend instead of old JS engine
             const backendResult = await wasmBackend.execute(content);
             const programResult = backendResult.getParsedResults();
-            const programResultWrapped = new ReportDataWrapper(programResult);
-            checks.forEach((check) => {
-              check(programResultWrapped, assert);
+            const wrappers = [
+              new ReportDataWrapper(programResult),
+              new IndexedSimulationResult(programResult),
+            ];
+            wrappers.forEach((programResultWrapped) => {
+              checks.forEach((check) => {
+                check(programResultWrapped, assert);
+              });
             });
           } catch (e) {
             console.log(e);
@@ -931,6 +941,163 @@ function buildReportDataTests() {
       assert.strictEqual(result.getValue(), 1.5,
         "Should keep same value for MkgCO2e (equivalent to tCO2e)");
       assert.strictEqual(result.getUnits(), "MkgCO2e / yr", "Should have correct output units");
+    });
+
+    const makeRow = (overrides) => {
+      const defaults = {
+        application: "app",
+        substance: "sub",
+        year: 1,
+        scenarioName: "bau",
+        domestic: 10,
+        importVal: 0,
+      };
+      const merged = Object.assign({}, defaults, overrides);
+
+      const tradeSupplement = new TradeSupplement(
+        new EngineNumber(0, "kg"),
+        new EngineNumber(0, "tCO2e"),
+        new EngineNumber(0, "units"),
+        new EngineNumber(0, "kg"),
+        new EngineNumber(0, "tCO2e"),
+      );
+
+      const builder = new EngineResultBuilder();
+      builder.setApplication(merged.application);
+      builder.setSubstance(merged.substance);
+      builder.setYear(merged.year);
+      builder.setScenarioName(merged.scenarioName);
+      builder.setTrialNumber(1);
+      builder.setDomesticValue(new EngineNumber(merged.domestic, "kg"));
+      builder.setImportValue(new EngineNumber(merged.importVal, "kg"));
+      builder.setExportValue(new EngineNumber(0, "kg"));
+      builder.setRecycleValue(new EngineNumber(0, "kg"));
+      builder.setDomesticConsumptionValue(new EngineNumber(0, "tCO2e"));
+      builder.setImportConsumptionValue(new EngineNumber(0, "tCO2e"));
+      builder.setExportConsumptionValue(new EngineNumber(0, "tCO2e"));
+      builder.setRecycleConsumptionValue(new EngineNumber(0, "tCO2e"));
+      builder.setPopulationValue(new EngineNumber(0, "units"));
+      builder.setPopulationNew(new EngineNumber(0, "units"));
+      builder.setRechargeEmissions(new EngineNumber(0, "tCO2e"));
+      builder.setEolEmissions(new EngineNumber(0, "tCO2e"));
+      builder.setInitialChargeEmissions(new EngineNumber(0, "tCO2e"));
+      builder.setEnergyConsumption(new EngineNumber(0, "kWh"));
+      builder.setTradeSupplement(tradeSupplement);
+      builder.setBankKg(new EngineNumber(0, "kg"));
+      builder.setBankTco2e(new EngineNumber(0, "tCO2e"));
+      builder.setBankChangeKg(new EngineNumber(0, "kg"));
+      builder.setBankChangeTco2e(new EngineNumber(0, "tCO2e"));
+
+      return builder.build();
+    };
+
+    QUnit.test("IndexedSimulationResult resolves exact application/substance filters", (assert) => {
+      const rows = [
+        makeRow({application: "Commercial Refrigeration", substance: "HFC-134a", domestic: 1}),
+        makeRow({application: "Commercial Refrigeration", substance: "R-600a", domestic: 2}),
+        makeRow({application: "Domestic Refrigeration", substance: "HFC-134a", domestic: 4}),
+      ];
+      const indexed = new IndexedSimulationResult(rows);
+
+      const filterSet = new FilterSet(
+        null,
+        null,
+        "Commercial Refrigeration",
+        "HFC-134a",
+        null,
+        null,
+        null,
+        false,
+      );
+      const filtered = indexed._applyFilterSet(filterSet);
+      assert.equal(filtered.length, 1,
+        "Exact application+substance filter should match exactly one row");
+      assert.equal(filtered[0].getDomestic().getValue(), 1);
+
+      const applications = indexed.getApplications(new FilterSet(
+        null, null, null, "HFC-134a", null, null, null, false,
+      ));
+      assert.equal(applications.size, 2);
+      assert.ok(applications.has("Commercial Refrigeration"));
+      assert.ok(applications.has("Domestic Refrigeration"));
+    });
+
+    QUnit.test("IndexedSimulationResult resolves meta-group (\"X - All\") filters", (assert) => {
+      const rows = [
+        makeRow({
+          application: "Commercial Refrigeration - HFC-134a",
+          substance: "sub",
+          domestic: 1,
+        }),
+        makeRow({
+          application: "Commercial Refrigeration - R-600a",
+          substance: "sub",
+          domestic: 2,
+        }),
+        makeRow({
+          application: "Domestic Refrigeration - HFC-134a",
+          substance: "sub",
+          domestic: 4,
+        }),
+      ];
+      const wrapper = new ReportDataWrapper(rows);
+      const indexed = new IndexedSimulationResult(rows);
+
+      const filterSet = new FilterSet(
+        null,
+        null,
+        "Commercial Refrigeration - All",
+        null,
+        "sales:domestic:kg / yr",
+        null,
+        null,
+        false,
+      );
+
+      const expected = wrapper.getMetric(filterSet);
+      const actual = indexed.getMetric(filterSet);
+      assert.closeTo(actual.getValue(), expected.getValue(), 0.0001,
+        "Meta-group filter should aggregate the same matching rows as ReportDataWrapper");
+      assert.closeTo(actual.getValue(), 3, 0.0001,
+        "Should sum only the two Commercial Refrigeration - * rows (1 + 2)");
+    });
+
+    QUnit.test("IndexedSimulationResult memoizes row filtering and aggregation", (assert) => {
+      const rows = [
+        makeRow({application: "app", substance: "sub", scenarioName: "bau", year: 1, domestic: 5}),
+        makeRow({application: "app", substance: "sub", scenarioName: "bau", year: 1, domestic: 7}),
+      ];
+      const indexed = new IndexedSimulationResult(rows);
+
+      const filterSet = new FilterSet(1, "bau", "app", "sub", null, null, null, false);
+
+      const first = indexed._applyFilterSet(filterSet);
+      const second = indexed._applyFilterSet(filterSet);
+      assert.strictEqual(first, second,
+        "Repeated identical row-filter queries should return the same cached array reference");
+
+      const firstAggregate = indexed._getAggregatedAfterFilter(filterSet);
+      const secondAggregate = indexed._getAggregatedAfterFilter(filterSet);
+      assert.strictEqual(firstAggregate, secondAggregate,
+        "Repeated identical aggregate queries should return the same cached instance");
+
+      const domesticValue = indexed.getDomestic(filterSet);
+      assert.closeTo(domesticValue.getValue(), 12, 0.0001, "Domestic total should be 5 + 7");
+    });
+
+    QUnit.test("IndexedSimulationResult builds separate indexes per attribution mode", (assert) => {
+      const rows = [
+        makeRow({application: "app", substance: "sub", scenarioName: "bau", year: 1, domestic: 5}),
+      ];
+      const indexed = new IndexedSimulationResult(rows);
+
+      const importerFilterSet = new FilterSet(null, null, null, null, null, null, null, true);
+      const exporterFilterSet = new FilterSet(null, null, null, null, null, null, null, false);
+
+      const importerScenarios = indexed.getScenarios(importerFilterSet);
+      const exporterScenarios = indexed.getScenarios(exporterFilterSet);
+      assert.ok(importerScenarios.has("bau"));
+      assert.ok(exporterScenarios.has("bau"));
     });
   });
 }
