@@ -443,6 +443,53 @@ public class PrechargeLiveTests {
   }
 
   /**
+   * Test that recycling with induced demand does not shrink equipment population when precharge
+   * (recharge of newEquipment) is configured.
+   *
+   * <p>Setup: SubA sells a flat 100 units/year and has both {@code recharge 100% of newEquipment
+   * with 1 kg/unit} (precharge) and {@code recharge 5% of priorEquipment with 1 kg/unit}
+   * configured. A policy recovers 50% of recharge-stage volume with 100% reuse and 50% induction.
+   * With 50% induction, half of the recovered material displaces virgin material 1-for-1 (no
+   * change in equipment) and the other half induces additional demand on top of BAU. Induction
+   * should never make total equipment LOWER than BAU with no recycling at all.</p>
+   *
+   * <p>Regression test: without precharge, this same policy correctly increases population
+   * relative to BAU (confirmed by a parallel scenario without precharge). With precharge enabled,
+   * population instead ends up BELOW BAU every year after year 1, the opposite of what induced
+   * demand should produce.</p>
+   */
+  @Test
+  public void testPrechargeWithRecoveryInductionDoesNotShrinkPopulation() throws IOException {
+    String qtaPath = "../examples/precharge_recycling_induction.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    Stream<EngineResult> bauStream = KigaliSimFacade.runScenario(program, "BAU", progress -> {});
+    List<EngineResult> bauResults = bauStream.collect(Collectors.toList());
+
+    Stream<EngineResult> recyclingStream = KigaliSimFacade.runScenario(
+        program, "With Recycling", progress -> {});
+    List<EngineResult> recyclingResults = recyclingStream.collect(Collectors.toList());
+
+    for (int year = 1; year <= 10; year++) {
+      EngineResult bauResult = LiveTestsUtil.getResult(bauResults.stream(), year, "Test", "SubA");
+      assertNotNull(bauResult, "Should have BAU result for SubA in year " + year);
+
+      EngineResult recyclingResult = LiveTestsUtil.getResult(
+          recyclingResults.stream(), year, "Test", "SubA");
+      assertNotNull(recyclingResult, "Should have Recycling result for SubA in year " + year);
+
+      double bauPopulation = bauResult.getPopulation().getValue().doubleValue();
+      double recyclingPopulation = recyclingResult.getPopulation().getValue().doubleValue();
+
+      assertTrue(recyclingPopulation >= bauPopulation,
+          "With 50% induction, equipment population in year " + year
+              + " should be at least as high as BAU (BAU=" + bauPopulation
+              + ", With Recycling=" + recyclingPopulation + ")");
+    }
+  }
+
+  /**
    * Test that recharge of newEquipment runs and produces results.
    */
   @Test
