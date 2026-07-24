@@ -28,6 +28,7 @@
 package org.kigalisim.engine.support;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.Optional;
 import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
@@ -73,6 +74,63 @@ public class LimitExecutor {
       throw new IllegalStateException(
           "Equipment stream operations should be handled by EquipmentChangeUtil");
     }
+  }
+
+  /**
+   * Convert a sales-related stream's current value into an absolute cap/floor amount's units,
+   * correcting for recharge/precharge kg riding along on top of the raw stream value.
+   *
+   * <p>When sales are specified in equipment units, recharge (of priorEquipment) and precharge
+   * (of newEquipment) are added on top of the stream's kg total rather than being absorbed within
+   * it (see {@code SalesRecalcStrategy}). A plain kg-to-units conversion divides by the raw
+   * initial charge alone, so it overcounts the number of equipment units the stream represents
+   * once servicing kg is riding on top, which can make an absolute units-denominated cap/floor
+   * misfire even when the true new-equipment count is well under the limit. The
+   * {@code implicitRecharge} and {@code implicitPrecharge} streams track exactly how much of the
+   * current total is such servicing kg (zero for kg/mt-tracked sales, where no such inflation
+   * occurs), so this method backs that amount out before dividing by the initial charge.</p>
+   *
+   * <p>This correction only applies when converting to equipment units; conversions to other
+   * units (kg, mt, %) are delegated unchanged to {@code unitConverter}.</p>
+   *
+   * @param unitConverter The unit converter configured for this stream
+   * @param stream The stream identifier being capped/floored (e.g., "sales", "domestic")
+   * @param currentValueRaw The stream's current raw value
+   * @param destinationUnits The cap/floor amount's units to convert into
+   * @return currentValueRaw converted into destinationUnits
+   */
+  private EngineNumber convertCurrentValueForLimitComparison(UnitConverter unitConverter,
+      String stream, EngineNumber currentValueRaw, String destinationUnits) {
+    boolean destinationIsUnits = "unit".equals(destinationUnits) || "units".equals(destinationUnits);
+    boolean isSalesRelated = EngineSupportUtils.isProductionMetastream(stream)
+        || EngineSupportUtils.isSalesSubstream(stream);
+    if (!destinationIsUnits || !isSalesRelated) {
+      return unitConverter.convert(currentValueRaw, destinationUnits);
+    }
+
+    EngineNumber implicitRecharge = engine.getStream("implicitRecharge");
+    EngineNumber implicitPrecharge = engine.getStream("implicitPrecharge");
+    BigDecimal totalServicingKg = implicitRecharge.getValue().add(implicitPrecharge.getValue());
+    if (totalServicingKg.compareTo(BigDecimal.ZERO) == 0) {
+      return unitConverter.convert(currentValueRaw, destinationUnits);
+    }
+
+    BigDecimal streamServicingKg = EngineSupportUtils.isSalesSubstream(stream)
+        ? EngineSupportUtils.getDistributedRecharge(stream, new EngineNumber(totalServicingKg, "kg"),
+            engine.getScope(), engine.getStreamKeeper())
+        : totalServicingKg;
+
+    BigDecimal currentValueKg = unitConverter.convert(currentValueRaw, "kg").getValue();
+    BigDecimal newUnitsBasisKg = currentValueKg.subtract(streamServicingKg);
+    if (newUnitsBasisKg.compareTo(BigDecimal.ZERO) <= 0) {
+      return unitConverter.convert(currentValueRaw, destinationUnits);
+    }
+
+    EngineNumber initialCharge = engine.getInitialCharge(stream);
+    EngineNumber initialChargeKgPerUnit = unitConverter.convert(initialCharge, "kg / unit");
+    BigDecimal trueUnits = newUnitsBasisKg.divide(
+        initialChargeKgPerUnit.getValue(), MathContext.DECIMAL128);
+    return new EngineNumber(trueUnits, destinationUnits);
   }
 
   /**
@@ -271,8 +329,8 @@ public class LimitExecutor {
     UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(
         engine, stream);
     EngineNumber currentValueRaw = engine.getStream(stream);
-    EngineNumber currentValueInAmountUnits = unitConverter.convert(
-        currentValueRaw, amount.getUnits());
+    EngineNumber currentValueInAmountUnits = convertCurrentValueForLimitComparison(
+        unitConverter, stream, currentValueRaw, amount.getUnits());
 
     boolean capSatisfied = currentValueInAmountUnits.getValue().compareTo(amount.getValue()) <= 0;
     if (capSatisfied) {
@@ -412,8 +470,8 @@ public class LimitExecutor {
     UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(
         engine, stream);
     EngineNumber currentValueRaw = engine.getStream(stream);
-    EngineNumber currentValueInAmountUnits = unitConverter.convert(
-        currentValueRaw, amount.getUnits());
+    EngineNumber currentValueInAmountUnits = convertCurrentValueForLimitComparison(
+        unitConverter, stream, currentValueRaw, amount.getUnits());
 
     boolean floorSatisfied = currentValueInAmountUnits.getValue().compareTo(amount.getValue()) >= 0;
     if (floorSatisfied) {
