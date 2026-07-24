@@ -232,6 +232,36 @@ function buildUiTranslatorTests() {
         assert.equal(recharge.getPopulationEngineNumber().getUnits(), "%", "Recharge population units should be %");
         assert.equal(recharge.getVolumeEngineNumber().getValue(), 0.2, "Recharge volume should be 0.2");
         assert.equal(recharge.getVolumeEngineNumber().getUnits(), "kg / unit", "Recharge volume units should be kg / unit");
+        assert.equal(
+          recharge.getTargetStream(),
+          "priorEquipment",
+          "Recharge without of-clause should default to priorEquipment",
+        );
+      },
+    ]);
+
+    buildTest("converts precharge with of newEquipment", "/examples/recharge_of_new.qta", [
+      (result, assert) => {
+        assert.ok(result.getIsCompatible(), "Program should be compatible");
+      },
+      (result, assert) => {
+        const applications = result.getApplications();
+        assert.equal(applications.length, 1, "Should have exactly 1 application");
+
+        const application = applications[0];
+        const substances = application.getSubstances();
+        assert.equal(substances.length, 1, "Application should have exactly 1 substance");
+
+        const substance = substances[0];
+        const recharges = substance.getRecharges();
+        assert.equal(recharges.length, 1, "Should have exactly 1 recharge command");
+
+        const recharge = recharges[0];
+        assert.equal(
+          recharge.getTargetStream(),
+          "newEquipment",
+          "Recharge with of newEquipment should have newEquipment target",
+        );
       },
     ]);
 

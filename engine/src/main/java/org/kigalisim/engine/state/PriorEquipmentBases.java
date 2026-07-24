@@ -27,6 +27,8 @@ public class PriorEquipmentBases {
   private boolean retireCalculatedThisStep;
   private Optional<EngineNumber> rechargeBasePopulation;
   private Optional<EngineNumber> appliedRechargeAmount;
+  private Optional<EngineNumber> prechargeBasePopulation;
+  private Optional<EngineNumber> appliedPrechargeAmount;
   private boolean recyclingCalculatedThisStep;
 
   /**
@@ -39,6 +41,8 @@ public class PriorEquipmentBases {
     retireCalculatedThisStep = false;
     rechargeBasePopulation = Optional.empty();
     appliedRechargeAmount = Optional.of(new EngineNumber(BigDecimal.ZERO, "kg"));
+    prechargeBasePopulation = Optional.empty();
+    appliedPrechargeAmount = Optional.of(new EngineNumber(BigDecimal.ZERO, "kg"));
     recyclingCalculatedThisStep = false;
   }
 
@@ -151,6 +155,42 @@ public class PriorEquipmentBases {
   }
 
   /**
+   * Get the precharge base population.
+   *
+   * @return The base population, or empty if not yet captured this step
+   */
+  public Optional<EngineNumber> getPrechargeBasePopulation() {
+    return prechargeBasePopulation;
+  }
+
+  /**
+   * Set the precharge base population.
+   *
+   * @param value The base population value
+   */
+  public void setPrechargeBasePopulation(EngineNumber value) {
+    prechargeBasePopulation = Optional.of(value);
+  }
+
+  /**
+   * Get the applied precharge amount.
+   *
+   * @return The total amount already precharged this step in kg
+   */
+  public Optional<EngineNumber> getAppliedPrechargeAmount() {
+    return appliedPrechargeAmount;
+  }
+
+  /**
+   * Set the applied precharge amount.
+   *
+   * @param value The total amount precharged this step in kg
+   */
+  public void setAppliedPrechargeAmount(EngineNumber value) {
+    appliedPrechargeAmount = Optional.of(value);
+  }
+
+  /**
    * Get whether recycling has been calculated this step.
    *
    * @return true if recycling was calculated, false otherwise
@@ -178,6 +218,8 @@ public class PriorEquipmentBases {
     retireCalculatedThisStep = false;
     rechargeBasePopulation = Optional.empty();
     appliedRechargeAmount = Optional.of(new EngineNumber(BigDecimal.ZERO, "kg"));
+    prechargeBasePopulation = Optional.empty();
+    appliedPrechargeAmount = Optional.of(new EngineNumber(BigDecimal.ZERO, "kg"));
     recyclingCalculatedThisStep = false;
   }
 

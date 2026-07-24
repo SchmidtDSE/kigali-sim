@@ -224,6 +224,8 @@ PRIOR_: 'prior';
 
 PRIOR_EQUIPMENT_: 'priorEquipment';
 
+NEW_EQUIPMENT_: 'newEquipment';
+
 EQUIPMENT_: 'equipment';
 
 BANK_: 'bank';
@@ -364,7 +366,9 @@ expression: number  # simpleExpression
  * -----------------
  **/
 
-stream: (PRIOR_EQUIPMENT_ | EQUIPMENT_ | BANK_ | PRIOR_BANK_ | EXPORT_ | IMPORT_ | DOMESTIC_ | SALES_ | VIRGIN_ | AGE_);
+stream: (PRIOR_EQUIPMENT_ | NEW_EQUIPMENT_ | EQUIPMENT_ | BANK_ | PRIOR_BANK_ | EXPORT_ | IMPORT_ | DOMESTIC_ | SALES_ | VIRGIN_ | AGE_);
+
+rechargeTarget: (PRIOR_EQUIPMENT_ | NEW_EQUIPMENT_);
 
 identifier: IDENTIFIER_  # identifierAsVar;
 
@@ -435,6 +439,8 @@ initialChargeStatement: INITIAL_ CHARGE_ WITH_ value=unitValue FOR_ target=strea
 
 rechargeStatement: RECHARGE_ population=unitValue WITH_ volume=unitValue  # rechargeAllYears
   | RECHARGE_ population=unitValue WITH_ volume=unitValue duration=during  # rechargeDuration
+  | RECHARGE_ population=unitValue OF_ target=rechargeTarget WITH_ volume=unitValue  # rechargeAllYearsWithTarget
+  | RECHARGE_ population=unitValue OF_ target=rechargeTarget WITH_ volume=unitValue duration=during  # rechargeDurationWithTarget
   ;
 
 recycleStatement: RECOVER_ volume=unitValue WITH_ yieldVal=unitValue REUSE_                                                        # recoverAllYears

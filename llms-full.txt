@@ -56,6 +56,8 @@ The about stanza is optional.
 - `equals X kgCO2e / kg` - Sets Global Warming Potential in kgCO2e units (kg is kilograms)
 - `equals X kwh / unit` - Sets energy consumption per unit
 
+Both GHG and energy intensities set via `equals` support optional `during` clauses (e.g. `equals 1 kwh / unit during year 2021`), allowing intensities to change over time to model energy efficiency improvements or refrigerant substitution. When a `during` clause is provided, the intensity is only set for the specified year(s); in other years, the prior intensity value is retained.
+
 #### Manufacturing and Trade
 - `initial charge with {amount} for {stream}` - Sets substance per unit where amount is typically X kg / unit
 - `enable {stream}` - Marks stream as enabled without setting values (required before recharge operations). By convention, place at top of substance definitions.
@@ -66,8 +68,11 @@ The about stanza is optional.
 
 #### Equipment Lifecycle
 - `retire {amount} <with replacement> <during>` - Equipment retirement rate, also called hazard rate or scrap rate (with replacement maintains equipment population)
-- `recharge {population} with {volume} <during>` - Service recharging (population = equipment to recharge, volume = substance per unit)
+- `recharge {population} with {volume} <during>` - Service recharging (population = equipment to recharge, volume = substance per unit). Defaults to priorEquipment. Use `of newEquipment` for precharge (servicing new equipment before sale).
+- `recharge {population} of {target} with {volume} <during>` - Service recharging with explicit target. Target can be `priorEquipment` (default, existing equipment) or `newEquipment` (precharge, new equipment before sale).
 - `set priorEquipment to {amount} <during>` - Pre-existing equipment.
+
+**Note**: Precharge may be useful when some leakage is expected before sale, so a top up prior to equipment's useful lifetime is required.
 
 #### Sales Assumptions (Bank Tracking)
 The `assume` command provides control over sales carryover behavior:

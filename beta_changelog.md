@@ -14,6 +14,22 @@ Finally, we want to again express our gratitude for your feedback and time.
 
 The following changes have been adopted and released.
 
+### Recharge of new equipment (precharge)
+
+**Status**: Released July 24, 2026
+
+**Classification**: Enhancement
+
+Added an optional `of` clause to the `recharge` command, allowing users to specify whether servicing applies to `priorEquipment` (the existing default) or `newEquipment`. When `of newEquipment` is specified, the recharge applies to new equipment prior to going into service. For example, this could account for substance lost in transit or storage before sale. Previously, this use case could only be approximated with manual calculations (e.g., `recharge 3 % of newEquipment with 1 kg / unit`). This formalized behavior now handles the recalculation logic across `recover`, `set`, `change`, `cap`, and `floor` operations automatically, including the circular case for volume-based sales with percentage-based precharge. The feature surfaces in the UI-based editor as a dropdown (defaulting to `priorEquipment`) in the servicing configuration. See [#807](https://github.com/SchmidtDSE/kigali-sim/issues/807), [#808](https://github.com/SchmidtDSE/kigali-sim/pull/808).
+
+### Time-varying equals
+
+**Status**: Released July 24, 2026
+
+**Classification**: Enhancement
+
+The `equals` command (which sets GHG intensity like `equals 1430 kgCO2e / kg` and energy intensity like `equals 1 kwh / unit`) now supports optional `during` clauses, allowing intensities to change over time. For example, `equals 1 kwh / unit during year 2021` sets the energy intensity for 2021 only. Previously, the grammar accepted this syntax but the operation was silently not constructed, so time-qualified `equals` statements had no effect. This enables modeling of energy efficiency improvements or GWP transitions (like refrigerant substitution) across the simulation horizon.
+
 ### Virgin keyword
 
 **Status**: Released June 11, 2026

@@ -35,6 +35,8 @@ public class StreamParameterization {
   private final Map<String, EngineNumber> initialCharge;
   private EngineNumber rechargePopulation;
   private EngineNumber rechargeIntensity;
+  private EngineNumber prechargePopulation;
+  private EngineNumber prechargeIntensity;
   private EngineNumber recoveryRateRecharge;
   private EngineNumber yieldRateRecharge;
   private EngineNumber recoveryRateEol;
@@ -64,6 +66,8 @@ public class StreamParameterization {
 
     rechargePopulation = new EngineNumber(BigDecimal.ZERO, "%");
     rechargeIntensity = new EngineNumber(BigDecimal.ZERO, "kg / unit");
+    prechargePopulation = new EngineNumber(BigDecimal.ZERO, "%");
+    prechargeIntensity = new EngineNumber(BigDecimal.ZERO, "kg / unit");
     recoveryRateRecharge = new EngineNumber(BigDecimal.ZERO, "%");
     yieldRateRecharge = new EngineNumber(BigDecimal.ZERO, "%");
     recoveryRateEol = new EngineNumber(BigDecimal.ZERO, "%");
@@ -173,6 +177,42 @@ public class StreamParameterization {
    */
   public EngineNumber getRechargeIntensity() {
     return rechargeIntensity;
+  }
+
+  /**
+   * Set the precharge population percentage.
+   *
+   * @param newValue The new precharge population value
+   */
+  public void setPrechargePopulation(EngineNumber newValue) {
+    prechargePopulation = clampRate(newValue);
+  }
+
+  /**
+   * Get the precharge population percentage.
+   *
+   * @return The current precharge population value
+   */
+  public EngineNumber getPrechargePopulation() {
+    return prechargePopulation;
+  }
+
+  /**
+   * Set the precharge intensity.
+   *
+   * @param newValue The new precharge intensity value
+   */
+  public void setPrechargeIntensity(EngineNumber newValue) {
+    prechargeIntensity = newValue;
+  }
+
+  /**
+   * Get the precharge intensity.
+   *
+   * @return The current precharge intensity value
+   */
+  public EngineNumber getPrechargeIntensity() {
+    return prechargeIntensity;
   }
 
   /**
@@ -453,6 +493,42 @@ public class StreamParameterization {
   }
 
   /**
+   * Get the precharge base population for cumulative calculations.
+   *
+   * @return The base population, or null if not yet captured this year
+   */
+  public Optional<EngineNumber> getPrechargeBasePopulation() {
+    return priorEquipmentBases.getPrechargeBasePopulation();
+  }
+
+  /**
+   * Set the precharge base population for cumulative calculations.
+   *
+   * @param value The base population value
+   */
+  public void setPrechargeBasePopulation(EngineNumber value) {
+    priorEquipmentBases.setPrechargeBasePopulation(value);
+  }
+
+  /**
+   * Get the applied precharge amount for cumulative calculations.
+   *
+   * @return The total amount already precharged this step in kg
+   */
+  public Optional<EngineNumber> getAppliedPrechargeAmount() {
+    return priorEquipmentBases.getAppliedPrechargeAmount();
+  }
+
+  /**
+   * Set the applied precharge amount for cumulative calculations.
+   *
+   * @param value The total amount precharged this step in kg
+   */
+  public void setAppliedPrechargeAmount(EngineNumber value) {
+    priorEquipmentBases.setAppliedPrechargeAmount(value);
+  }
+
+  /**
    * Get whether recycling has been calculated this step.
    *
    * @return true if recycling was calculated, false otherwise
@@ -483,14 +559,37 @@ public class StreamParameterization {
    * @param intensity The recharge intensity for this rate
    */
   public void accumulateRecharge(EngineNumber population, EngineNumber intensity) {
-    RechargeInformation currentInfo = new RechargeInformation(
+    ServicingInformation currentInfo = new ServicingInformation(
         rechargePopulation,
         rechargeIntensity
     );
-    RechargeInformation result = currentInfo.add(population, intensity);
+    ServicingInformation result = currentInfo.add(population, intensity);
 
     rechargePopulation = clampRate(result.getPopulation());
     rechargeIntensity = result.getIntensity();
+  }
+
+  /**
+   * Accumulate precharge parameters. Sets when not previously set, accumulates otherwise.
+   *
+   * <p>Multiple calls accumulate rates (addition) and intensities (weighted-average).
+   * Population rates are added, intensities are weighted-averaged using absolute values for weights
+   * to handle negative adjustments correctly.</p>
+   *
+   * <p>Weighted average formula: (|rate1| × intensity1 + |rate2| × intensity2) / (|rate1| + |rate2|)</p>
+   *
+   * @param population The precharge population rate to add
+   * @param intensity The precharge intensity for this rate
+   */
+  public void accumulatePrecharge(EngineNumber population, EngineNumber intensity) {
+    ServicingInformation currentInfo = new ServicingInformation(
+        prechargePopulation,
+        prechargeIntensity
+    );
+    ServicingInformation result = currentInfo.add(population, intensity);
+
+    prechargePopulation = clampRate(result.getPopulation());
+    prechargeIntensity = result.getIntensity();
   }
 
   /**
@@ -597,6 +696,10 @@ public class StreamParameterization {
     // Reset recharge tracking for new step
     rechargePopulation = new EngineNumber(BigDecimal.ZERO, "%");
     rechargeIntensity = new EngineNumber(BigDecimal.ZERO, "kg / unit");
+
+    // Reset precharge tracking for new step
+    prechargePopulation = new EngineNumber(BigDecimal.ZERO, "%");
+    prechargeIntensity = new EngineNumber(BigDecimal.ZERO, "kg / unit");
 
     // Reset cumulative tracking
     priorEquipmentBases.resetStateAtTimestep();

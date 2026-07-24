@@ -3,6 +3,7 @@ package org.kigalisim.engine.state;
 import java.util.Optional;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.recalc.SalesStreamDistribution;
+import org.kigalisim.engine.support.ValidatedBuilder;
 
 /**
  * Builder for creating SimulationStateUpdate instances.
@@ -10,7 +11,7 @@ import org.kigalisim.engine.recalc.SalesStreamDistribution;
  * <p>Provides a fluent interface for constructing SimulationStateUpdate objects
  * with validation and sensible defaults.</p>
  */
-public final class SimulationStateUpdateBuilder {
+public final class SimulationStateUpdateBuilder extends ValidatedBuilder<SimulationStateUpdate> {
   private UseKey useKey;
   private String name;
   private EngineNumber value;
@@ -22,6 +23,7 @@ public final class SimulationStateUpdateBuilder {
    * Creates a new SimulationStateUpdateBuilder with default values.
    */
   public SimulationStateUpdateBuilder() {
+    super("SimulationStateUpdate");
     // Default values are set in field declarations
   }
 
@@ -120,22 +122,24 @@ public final class SimulationStateUpdateBuilder {
   }
 
   /**
+   * Check that all required fields are set before construction.
+   *
+   * @throws IllegalStateException if required fields are not set
+   */
+  @Override
+  protected void validate() {
+    requireField(useKey, "useKey");
+    requireField(name, "name");
+    requireField(value, "value");
+  }
+
+  /**
    * Builds the SimulationStateUpdate.
    *
    * @return the built SimulationStateUpdate
-   * @throws IllegalStateException if required fields are not set
    */
-  public SimulationStateUpdate build() {
-    if (useKey == null) {
-      throw new IllegalStateException("UseKey is required");
-    }
-    if (name == null) {
-      throw new IllegalStateException("Name is required");
-    }
-    if (value == null) {
-      throw new IllegalStateException("Value is required");
-    }
-
+  @Override
+  protected SimulationStateUpdate buildInternal() {
     return new SimulationStateUpdate(
         useKey,
         name,

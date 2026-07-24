@@ -1,0 +1,26 @@
+start default
+
+  define application "Domestic Refrigeration"
+  
+    uses substance "HFC-134a"
+      enable import
+      initial charge with 0 kg / unit for domestic
+      initial charge with 1 kg / unit for import
+      initial charge with 0 kg / unit for export
+      equals 1430 kgCO2e / kg
+      equals 1 kwh / unit
+      set import to 100 units during year 2021
+      recharge 5 % with 1 kg / unit
+    end substance
+  
+  end application
+
+end default
+
+
+start simulations
+
+  simulate "BAU"
+  from years 2021 to 2030
+
+end simulations

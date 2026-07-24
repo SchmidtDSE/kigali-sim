@@ -5,6 +5,7 @@ import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.state.YearMatcher;
 import org.kigalisim.engine.support.EngineSupportUtils;
+import org.kigalisim.engine.support.ValidatedBuilder;
 
 /**
  * Builder for creating StreamUpdate instances.
@@ -12,7 +13,7 @@ import org.kigalisim.engine.support.EngineSupportUtils;
  * <p>Provides a fluent interface for constructing StreamUpdate objects with optional
  * parameters and validation.</p>
  */
-public final class StreamUpdateBuilder {
+public final class StreamUpdateBuilder extends ValidatedBuilder<StreamUpdate> {
   private String name;
   private EngineNumber value;
   private Optional<YearMatcher> yearMatcher = Optional.empty();
@@ -27,6 +28,7 @@ public final class StreamUpdateBuilder {
    * Creates a new StreamUpdateBuilder with default values.
    */
   public StreamUpdateBuilder() {
+    super("StreamUpdate");
     this.distribution = Optional.empty();
   }
 
@@ -177,15 +179,23 @@ public final class StreamUpdateBuilder {
   }
 
   /**
+   * Check that all required fields are set before construction.
+   *
+   * @throws IllegalStateException if name or value is not set
+   */
+  @Override
+  protected void validate() {
+    requireField(name, "name");
+    requireField(value, "value");
+  }
+
+  /**
    * Builds the StreamUpdate.
    *
    * @return the built StreamUpdate
-   * @throws IllegalStateException if name or value is not set
    */
-  public StreamUpdate build() {
-    if (name == null || value == null) {
-      throw new IllegalStateException("Name and value are required");
-    }
+  @Override
+  protected StreamUpdate buildInternal() {
     return new StreamUpdate(
         name,
         value,

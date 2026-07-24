@@ -1,5 +1,5 @@
 /**
- * Unit tests for the RechargeInformation class.
+ * Unit tests for the ServicingInformation class.
  *
  * @license BSD-3-Clause
  */
@@ -14,21 +14,21 @@ import org.junit.jupiter.api.Test;
 import org.kigalisim.engine.number.EngineNumber;
 
 /**
- * Tests for the RechargeInformation class.
+ * Tests for the ServicingInformation class.
  */
-public class RechargeInformationTest {
+public class ServicingInformationTest {
 
   /**
-   * Test that RechargeInformation can be initialized with valid parameters.
+   * Test that ServicingInformation can be initialized with valid parameters.
    */
   @Test
   public void testInitializes() {
     EngineNumber population = new EngineNumber(BigDecimal.TEN, "%");
     EngineNumber intensity = new EngineNumber(BigDecimal.ONE, "kg / unit");
 
-    RechargeInformation info = new RechargeInformation(population, intensity);
+    ServicingInformation info = new ServicingInformation(population, intensity);
 
-    assertNotNull(info, "RechargeInformation should be constructable");
+    assertNotNull(info, "ServicingInformation should be constructable");
     assertEquals(population.getValue(), info.getPopulation().getValue(),
         "Population should match");
     assertEquals(intensity.getValue(), info.getIntensity().getValue(),
@@ -36,7 +36,7 @@ public class RechargeInformationTest {
   }
 
   /**
-   * Test that RechargeInformation is immutable by returning the same objects.
+   * Test that ServicingInformation is immutable by returning the same objects.
    */
   @Test
   public void testGettersReturnCorrectValues() {
@@ -46,7 +46,7 @@ public class RechargeInformationTest {
     EngineNumber population = new EngineNumber(popValue, "%");
     EngineNumber intensity = new EngineNumber(intensValue, "kg / unit");
 
-    RechargeInformation info = new RechargeInformation(population, intensity);
+    ServicingInformation info = new ServicingInformation(population, intensity);
 
     assertEquals(popValue, info.getPopulation().getValue(),
         "getPopulation should return the initial population value");
@@ -69,13 +69,13 @@ public class RechargeInformationTest {
     // Start with zero population
     EngineNumber initialPopulation = new EngineNumber(BigDecimal.ZERO, "%");
     EngineNumber initialIntensity = new EngineNumber(BigDecimal.ZERO, "kg / unit");
-    RechargeInformation info = new RechargeInformation(initialPopulation, initialIntensity);
+    ServicingInformation info = new ServicingInformation(initialPopulation, initialIntensity);
 
     // Add new population and intensity
     EngineNumber newPopulation = new EngineNumber(BigDecimal.TEN, "%");
     EngineNumber newIntensity = new EngineNumber(new BigDecimal("2.5"), "kg / unit");
 
-    RechargeInformation result = info.add(newPopulation, newIntensity);
+    ServicingInformation result = info.add(newPopulation, newIntensity);
 
     assertEquals(new BigDecimal("10"), result.getPopulation().getValue(),
         "Population should be 10 after adding 10 to 0");
@@ -93,13 +93,13 @@ public class RechargeInformationTest {
     // Start with existing population and intensity
     EngineNumber initialPopulation = new EngineNumber(BigDecimal.TEN, "%");
     EngineNumber initialIntensity = new EngineNumber(new BigDecimal("2.0"), "kg / unit");
-    RechargeInformation info = new RechargeInformation(initialPopulation, initialIntensity);
+    ServicingInformation info = new ServicingInformation(initialPopulation, initialIntensity);
 
     // Add new population and intensity
     EngineNumber newPopulation = new EngineNumber(BigDecimal.valueOf(20), "%");
     EngineNumber newIntensity = new EngineNumber(new BigDecimal("3.0"), "kg / unit");
 
-    RechargeInformation result = info.add(newPopulation, newIntensity);
+    ServicingInformation result = info.add(newPopulation, newIntensity);
 
     assertEquals(new BigDecimal("30"), result.getPopulation().getValue(),
         "Population should be 30 (10 + 20)");
@@ -119,13 +119,13 @@ public class RechargeInformationTest {
     // Start with 5% at intensity 1.0
     EngineNumber initialPopulation = new EngineNumber(BigDecimal.valueOf(5), "%");
     EngineNumber initialIntensity = new EngineNumber(BigDecimal.ONE, "kg / unit");
-    RechargeInformation info = new RechargeInformation(initialPopulation, initialIntensity);
+    ServicingInformation info = new ServicingInformation(initialPopulation, initialIntensity);
 
     // Add 5% at intensity 3.0
     EngineNumber newPopulation = new EngineNumber(BigDecimal.valueOf(5), "%");
     EngineNumber newIntensity = new EngineNumber(new BigDecimal("3.0"), "kg / unit");
 
-    RechargeInformation result = info.add(newPopulation, newIntensity);
+    ServicingInformation result = info.add(newPopulation, newIntensity);
 
     assertEquals(new BigDecimal("10"), result.getPopulation().getValue(),
         "Population should be 10");
@@ -148,13 +148,13 @@ public class RechargeInformationTest {
     // Start with 20% at intensity 2.0
     EngineNumber initialPopulation = new EngineNumber(BigDecimal.valueOf(20), "%");
     EngineNumber initialIntensity = new EngineNumber(new BigDecimal("2.0"), "kg / unit");
-    RechargeInformation info = new RechargeInformation(initialPopulation, initialIntensity);
+    ServicingInformation info = new ServicingInformation(initialPopulation, initialIntensity);
 
     // Add negative 10% at intensity 4.0 (reduction with different intensity)
     EngineNumber negativePopulation = new EngineNumber(BigDecimal.valueOf(-10), "%");
     EngineNumber newIntensity = new EngineNumber(new BigDecimal("4.0"), "kg / unit");
 
-    RechargeInformation result = info.add(negativePopulation, newIntensity);
+    ServicingInformation result = info.add(negativePopulation, newIntensity);
 
     assertEquals(new BigDecimal("10"), result.getPopulation().getValue(),
         "Population should be 10 (20 - 10)");
@@ -175,13 +175,13 @@ public class RechargeInformationTest {
     // Start with 10% at intensity 2.5
     EngineNumber initialPopulation = new EngineNumber(BigDecimal.TEN, "%");
     EngineNumber initialIntensity = new EngineNumber(new BigDecimal("2.5"), "kg / unit");
-    RechargeInformation info = new RechargeInformation(initialPopulation, initialIntensity);
+    ServicingInformation info = new ServicingInformation(initialPopulation, initialIntensity);
 
     // Add zero population
     EngineNumber zeroPopulation = new EngineNumber(BigDecimal.ZERO, "%");
     EngineNumber newIntensity = new EngineNumber(new BigDecimal("3.5"), "kg / unit");
 
-    RechargeInformation result = info.add(zeroPopulation, newIntensity);
+    ServicingInformation result = info.add(zeroPopulation, newIntensity);
 
     assertEquals(new BigDecimal("10"), result.getPopulation().getValue(),
         "Population should remain 10");
@@ -201,7 +201,7 @@ public class RechargeInformationTest {
     // Start with 10% at intensity 1.0
     EngineNumber pop1 = new EngineNumber(BigDecimal.TEN, "%");
     EngineNumber int1 = new EngineNumber(BigDecimal.ONE, "kg / unit");
-    RechargeInformation result = new RechargeInformation(pop1, int1);
+    ServicingInformation result = new ServicingInformation(pop1, int1);
 
     // First addition: add 10% at 2.0
     EngineNumber pop2 = new EngineNumber(BigDecimal.TEN, "%");
@@ -237,12 +237,12 @@ public class RechargeInformationTest {
   public void testAddReturnsNewInstance() {
     EngineNumber initialPopulation = new EngineNumber(BigDecimal.TEN, "%");
     EngineNumber initialIntensity = new EngineNumber(BigDecimal.ONE, "kg / unit");
-    RechargeInformation original = new RechargeInformation(initialPopulation, initialIntensity);
+    ServicingInformation original = new ServicingInformation(initialPopulation, initialIntensity);
 
     EngineNumber newPopulation = new EngineNumber(BigDecimal.valueOf(5), "%");
     EngineNumber newIntensity = new EngineNumber(new BigDecimal("2.0"), "kg / unit");
 
-    RechargeInformation result = original.add(newPopulation, newIntensity);
+    ServicingInformation result = original.add(newPopulation, newIntensity);
 
     // Original should be unchanged
     assertEquals(new BigDecimal("10"), original.getPopulation().getValue(),
@@ -263,13 +263,13 @@ public class RechargeInformationTest {
     // Start with very small positive population
     EngineNumber initialPopulation = new EngineNumber(new BigDecimal("0.001"), "%");
     EngineNumber initialIntensity = new EngineNumber(new BigDecimal("1.5"), "kg / unit");
-    RechargeInformation info = new RechargeInformation(initialPopulation, initialIntensity);
+    ServicingInformation info = new ServicingInformation(initialPopulation, initialIntensity);
 
     // Add another small population
     EngineNumber newPopulation = new EngineNumber(new BigDecimal("0.002"), "%");
     EngineNumber newIntensity = new EngineNumber(new BigDecimal("2.5"), "kg / unit");
 
-    RechargeInformation result = info.add(newPopulation, newIntensity);
+    ServicingInformation result = info.add(newPopulation, newIntensity);
 
     assertEquals(new BigDecimal("0.003"), result.getPopulation().getValue(),
         "Population should be 0.003");
@@ -290,13 +290,13 @@ public class RechargeInformationTest {
     // Start with negative population (unusual but possible)
     EngineNumber initialPopulation = new EngineNumber(new BigDecimal("-5"), "%");
     EngineNumber initialIntensity = new EngineNumber(new BigDecimal("2.0"), "kg / unit");
-    RechargeInformation info = new RechargeInformation(initialPopulation, initialIntensity);
+    ServicingInformation info = new ServicingInformation(initialPopulation, initialIntensity);
 
     // Add positive population
     EngineNumber newPopulation = new EngineNumber(BigDecimal.TEN, "%");
     EngineNumber newIntensity = new EngineNumber(new BigDecimal("3.0"), "kg / unit");
 
-    RechargeInformation result = info.add(newPopulation, newIntensity);
+    ServicingInformation result = info.add(newPopulation, newIntensity);
 
     assertEquals(BigDecimal.valueOf(5), result.getPopulation().getValue(),
         "Population should be 5 (-5 + 10)");
@@ -316,12 +316,12 @@ public class RechargeInformationTest {
   public void testUnitsPreserved() {
     EngineNumber initialPopulation = new EngineNumber(new BigDecimal("10"), "%");
     EngineNumber initialIntensity = new EngineNumber(new BigDecimal("1.5"), "kg / unit");
-    RechargeInformation info = new RechargeInformation(initialPopulation, initialIntensity);
+    ServicingInformation info = new ServicingInformation(initialPopulation, initialIntensity);
 
     EngineNumber newPopulation = new EngineNumber(new BigDecimal("5"), "%");
     EngineNumber newIntensity = new EngineNumber(new BigDecimal("2.5"), "kg / unit");
 
-    RechargeInformation result = info.add(newPopulation, newIntensity);
+    ServicingInformation result = info.add(newPopulation, newIntensity);
 
     assertEquals("%", result.getPopulation().getUnits(),
         "Population units should remain %");

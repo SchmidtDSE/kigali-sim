@@ -385,6 +385,39 @@ public interface Engine {
   void recharge(EngineNumber volume, EngineNumber intensity, YearMatcher yearMatcher);
 
   /**
+   * Set servicing parameters for the current application and substance with explicit target.
+   *
+   * <p>When target is "priorEquipment", this is recharge (servicing existing equipment). When
+   * target is "newEquipment", this is precharge (servicing new equipment before sale).</p>
+   *
+   * @param volume The servicing volume to set (percentage of equipment requiring servicing)
+   * @param intensity The servicing intensity to set (substance amount per unit serviced)
+   * @param yearMatcher Matcher to determine if the change applies to current year
+   * @param target The target stream ("priorEquipment" for recharge, "newEquipment" for precharge)
+   */
+  void recharge(EngineNumber volume, EngineNumber intensity, YearMatcher yearMatcher, String target);
+
+  /**
+   * Get the precharge volume for the current application and substance.
+   *
+   * <p>Get the precharge servicing volume (across all precharge commands) within the current scope
+   * in the units last saved.</p>
+   *
+   * @return The precharge volume value like percent.
+   */
+  EngineNumber getPrechargeVolume();
+
+  /**
+   * Get the precharge intensity for the current application and substance.
+   *
+   * <p>Get the precharge servicing intensity (across all precharge commands) within the current
+   * scope in the units last saved.</p>
+   *
+   * @return The precharge intensity value in kg per unit.
+   */
+  EngineNumber getPrechargeIntensity();
+
+  /**
    * Set retirement rate for the current application and substance.
    *
    * <p>Set the retirement (also called) scrap rate within the current scope. This is the hazard

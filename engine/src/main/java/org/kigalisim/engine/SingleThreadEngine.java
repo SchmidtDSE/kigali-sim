@@ -464,7 +464,23 @@ public class SingleThreadEngine implements Engine {
   }
 
   @Override
+  public EngineNumber getPrechargeVolume() {
+    return simulationState.getPrechargePopulation(scope);
+  }
+
+  @Override
+  public EngineNumber getPrechargeIntensity() {
+    return simulationState.getPrechargeIntensity(scope);
+  }
+
+  @Override
   public void recharge(EngineNumber volume, EngineNumber intensity, YearMatcher yearMatcher) {
+    recharge(volume, intensity, yearMatcher, "priorEquipment");
+  }
+
+  @Override
+  public void recharge(EngineNumber volume, EngineNumber intensity, YearMatcher yearMatcher,
+      String target) {
     if (!getIsInRange(yearMatcher)) {
       return;
     }
@@ -478,13 +494,19 @@ public class SingleThreadEngine implements Engine {
       raiseNoAppOrSubstance("recalculating population change", " specified");
     }
 
-    simulationState.accumulateRecharge(scope, volume, intensity);
+    boolean isPrecharge = "newEquipment".equals(target);
+
+    if (isPrecharge) {
+      simulationState.accumulatePrecharge(scope, volume, intensity);
+    } else {
+      simulationState.accumulateRecharge(scope, volume, intensity);
+    }
 
     boolean isCarryOver = getIsCarryOver(scope);
 
-    if (isCarryOver) {
+    if (getSalesPersistThroughRecharge(isCarryOver, isPrecharge, simulationState, scope)) {
       // Preserve user's original unit-based intent
-      // Use executeStreamUpdate with the original value - this will automatically add recharge on top
+      // Use executeStreamUpdate with the original value - this will automatically add recharge/precharge on top
       EngineNumber lastSalesValue = simulationState.getLastSpecifiedValue(scope, "sales");
       StreamUpdate update = new StreamUpdateBuilder()
           .setName("sales")
@@ -511,13 +533,16 @@ public class SingleThreadEngine implements Engine {
       // Only clear implicit recharge if NOT using explicit recharge (i.e., when units were used)
       // This ensures implicit recharge persists for carried-over values
       if (useExplicitRecharge) {
-        SimulationStateUpdate clearImplicitRechargeStream = new SimulationStateUpdateBuilder()
+        SimulationStateUpdateBuilder builder = new SimulationStateUpdateBuilder()
             .setUseKey(scope)
-            .setName("implicitRecharge")
             .setValue(new EngineNumber(BigDecimal.ZERO, "kg"))
-            .setSubtractRecycling(false)
-            .build();
+            .setSubtractRecycling(false);
+
+        SimulationStateUpdate clearImplicitRechargeStream = builder.setName("implicitRecharge").build();
         simulationState.update(clearImplicitRechargeStream);
+
+        SimulationStateUpdate clearImplicitPrechargeStream = builder.setName("implicitPrecharge").build();
+        simulationState.update(clearImplicitPrechargeStream);
       }
     }
   }
@@ -845,6 +870,38 @@ public class SingleThreadEngine implements Engine {
    */
   private boolean hasUnitBasedSalesSpecifications() {
     return EngineSupportUtils.hasUnitBasedSalesSpecifications(simulationState, scope);
+  }
+
+  /**
+   * Determine whether sales should persist through recharge/precharge operations.
+   *
+   * <p>Returns true when the user's original unit-based sales intent should be preserved:
+   * during carry-over scenarios where no fresh specification exists, or during precharge
+   * when a last specified sales value is available.</p>
+   *
+   * <p>Precharge and recharge are intentionally asymmetric here. Recharge's population baseline
+   * (priorEquipment) is a persistent stream independent of this year's sales specification, so it
+   * can be re-derived from current state and only needs to replay the last sales value on true
+   * carry-over years. Precharge has no such independent baseline: new equipment is whatever this
+   * year's sales intent implies, so replaying the last specified value (fresh or carried over)
+   * is required whenever one is available, since the precharge configuration can change
+   * independent of whether sales was freshly specified.</p>
+   *
+   * @param isCarryOver true if this is a carry-over scenario
+   * @param isPrecharge true if this is a precharge operation
+   * @param simulationState the current simulation state
+   * @param scope the scope (application/substance) to check
+   * @return true if sales should persist through the recharge/precharge operation
+   */
+  private boolean getSalesPersistThroughRecharge(boolean isCarryOver, boolean isPrecharge,
+      SimulationState simulationState, UseKey scope) {
+    if (isCarryOver) {
+      return true;
+    } else if (isPrecharge && simulationState.hasLastSpecifiedValue(scope, "sales")) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   /**

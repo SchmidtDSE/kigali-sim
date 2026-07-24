@@ -11,6 +11,7 @@ package org.kigalisim.engine.serializer;
 
 import java.util.Optional;
 import org.kigalisim.engine.number.EngineNumber;
+import org.kigalisim.engine.support.ValidatedBuilder;
 
 /**
  * Builder pattern implementation for creating EngineResult objects.
@@ -18,7 +19,7 @@ import org.kigalisim.engine.number.EngineNumber;
  * <p>This builder ensures that all required fields are provided before
  * constructing an EngineResult instance.</p>
  */
-public class EngineResultBuilder {
+public class EngineResultBuilder extends ValidatedBuilder<EngineResult> {
   private Optional<String> application;
   private Optional<String> substance;
   private Optional<Integer> year;
@@ -48,6 +49,7 @@ public class EngineResultBuilder {
    * Create builder without any values initialized.
    */
   public EngineResultBuilder() {
+    super("EngineResult");
     application = Optional.empty();
     substance = Optional.empty();
     year = Optional.empty();
@@ -560,13 +562,12 @@ public class EngineResultBuilder {
   }
 
   /**
-   * Check that the builder is complete and create a new result.
+   * Create a new result from the values provided to this builder.
    *
    * @return The result built from the values provided to this builder
-   * @throws IllegalStateException if any required field is missing
    */
-  public EngineResult build() {
-    checkReadyToConstruct();
+  @Override
+  protected EngineResult buildInternal() {
     return new EngineResult(this);
   }
 
@@ -575,44 +576,31 @@ public class EngineResultBuilder {
    *
    * @throws IllegalStateException if any required field is missing
    */
-  private void checkReadyToConstruct() {
-    checkValid(application, "application");
-    checkValid(substance, "substance");
-    checkValid(year, "year");
-    checkValid(scenarioName, "scenarioName");
-    checkValid(trialNumber, "trialNumber");
-    checkValid(domesticValue, "domesticValue");
-    checkValid(importValue, "importValue");
-    checkValid(recycleValue, "recycleValue");
-    checkValid(domesticConsumptionValue, "domesticConsumptionValue");
-    checkValid(importConsumptionValue, "importConsumptionValue");
-    checkValid(recycleConsumptionValue, "recycleConsumptionValue");
-    checkValid(populationValue, "populationValue");
-    checkValid(populationNew, "populationNew");
-    checkValid(rechargeEmissions, "rechargeEmissions");
-    checkValid(eolEmissions, "eolEmissions");
-    checkValid(initialChargeEmissions, "initialChargeEmissions");
-    checkValid(energyConsumption, "energyConsumption");
-    checkValid(exportValue, "exportValue");
-    checkValid(exportConsumptionValue, "exportConsumptionValue");
-    checkValid(tradeSupplement, "tradeSupplement");
-    checkValid(bankKg, "bankKg");
-    checkValid(bankTco2e, "bankTco2e");
-    checkValid(bankChangeKg, "bankChangeKg");
-    checkValid(bankChangeTco2e, "bankChangeTco2e");
-  }
-
-  /**
-   * Check if a value is valid (not empty).
-   *
-   * @param value The optional value to check
-   * @param name The name of the field for error reporting
-   * @throws IllegalStateException if the value is empty
-   */
-  private void checkValid(Optional<?> value, String name) {
-    if (value.isEmpty()) {
-      throw new IllegalStateException(
-          "Could not make engine result because " + name + " was not given.");
-    }
+  @Override
+  protected void validate() {
+    requireField(application, "application");
+    requireField(substance, "substance");
+    requireField(year, "year");
+    requireField(scenarioName, "scenarioName");
+    requireField(trialNumber, "trialNumber");
+    requireField(domesticValue, "domesticValue");
+    requireField(importValue, "importValue");
+    requireField(recycleValue, "recycleValue");
+    requireField(domesticConsumptionValue, "domesticConsumptionValue");
+    requireField(importConsumptionValue, "importConsumptionValue");
+    requireField(recycleConsumptionValue, "recycleConsumptionValue");
+    requireField(populationValue, "populationValue");
+    requireField(populationNew, "populationNew");
+    requireField(rechargeEmissions, "rechargeEmissions");
+    requireField(eolEmissions, "eolEmissions");
+    requireField(initialChargeEmissions, "initialChargeEmissions");
+    requireField(energyConsumption, "energyConsumption");
+    requireField(exportValue, "exportValue");
+    requireField(exportConsumptionValue, "exportConsumptionValue");
+    requireField(tradeSupplement, "tradeSupplement");
+    requireField(bankKg, "bankKg");
+    requireField(bankTco2e, "bankTco2e");
+    requireField(bankChangeKg, "bankChangeKg");
+    requireField(bankChangeTco2e, "bankChangeTco2e");
   }
 }

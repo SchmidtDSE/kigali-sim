@@ -21,7 +21,7 @@ ace.define("ace/mode/qubectalk", [
     const samplingKeywords = "mean|normally|sample|std|uniformly|limit";
 
     const streams = [
-      "priorEquipment", "equipment", "priorBank", "bank", "export", "import",
+      "priorEquipment", "newEquipment", "equipment", "priorBank", "bank", "export", "import",
       "domestic", "sales", "virgin", "age",
     ].join("|");
 

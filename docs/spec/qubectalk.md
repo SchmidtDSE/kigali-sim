@@ -226,6 +226,15 @@ recharge 10 % each year with 0.12 kg / unit
 
 One may also recharge a number of units by changing `%` to `units`.
 
+**Servicing target (of clause)**: The `recharge` command supports an optional `of` clause that specifies which equipment population to service. By default (or with `of priorEquipment`), recharge services existing equipment that has already been deployed. With `of newEquipment` (also called "precharge"), recharge services new equipment before its sale, modeling substance needed for charge lost in transit or storage prior to sale.
+
+```
+recharge 10 % of priorEquipment with 0.12 kg / unit
+recharge 3 % of newEquipment with 1 kg / unit
+```
+
+When the `of` clause is omitted, the target defaults to `priorEquipment`. Precharge emissions are included in the `rechargeEmissions` output.
+
 ### Consumption
 The `equals` command can be used to specify two types of intensities:
 
@@ -247,6 +256,14 @@ equals 1430 kgCO2e / kg 100 kwh / unit
 ```
 
 Note that `tCO2e` refers to tonnes of CO2 equivalent, `kgCO2e` refers to kilograms of CO2 equivalent, and `kwh` refers to kilowatt hours. Both metrics help track different aspects of environmental impact.
+
+Both GHG and energy intensities support optional `during` clauses, allowing intensities to change over time (for example, to model energy efficiency improvements or refrigerant substitution):
+```
+equals 1 kwh / unit during year 2021
+equals 1430 kgCO2e / kg during years 2025 to 2030
+```
+
+When a `during` clause is provided, the intensity is only set for the specified year(s). In other years, the prior intensity value is retained.
 
 ### Bank Tracking
 The system tracks the "bank" of substance - the total amount of refrigerant contained within the equipment population currently in service. This is calculated using the initial charge values and equipment population.

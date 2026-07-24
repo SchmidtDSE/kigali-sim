@@ -90,7 +90,7 @@ class ChangeExecutorConfigBuilderTest {
         IllegalStateException.class,
         () -> builder.build()
     );
-    assertEquals("Stream is required", exception.getMessage());
+    assertEquals("stream is required to build a ChangeExecutorConfig", exception.getMessage());
   }
 
   @Test
@@ -103,7 +103,7 @@ class ChangeExecutorConfigBuilderTest {
         IllegalStateException.class,
         () -> builder.build()
     );
-    assertEquals("Amount is required", exception.getMessage());
+    assertEquals("amount is required to build a ChangeExecutorConfig", exception.getMessage());
   }
 
   @Test
@@ -116,7 +116,8 @@ class ChangeExecutorConfigBuilderTest {
         IllegalStateException.class,
         () -> builder.build()
     );
-    assertEquals("UseKeyEffective is required", exception.getMessage());
+    assertEquals("useKeyEffective is required to build a ChangeExecutorConfig",
+        exception.getMessage());
   }
 
   @Test
