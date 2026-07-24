@@ -7,7 +7,7 @@
 import {CodeEditorPresenter} from "code_editor";
 import {LocalStorageKeeper} from "local_storage_keeper";
 import {EphemeralStorageKeeper} from "storage_keeper";
-import {ReportDataWrapper} from "report_data";
+import {IndexedSimulationResult} from "indexed_simulation_result";
 import {ResultsPresenter} from "results";
 import {UiEditorPresenter} from "ui_editor";
 import {UiTranslatorCompiler} from "ui_translator";
@@ -388,7 +388,7 @@ class MainPresenter {
     }
     self._hideErrorIndicator();
 
-    const resultsWrapped = new ReportDataWrapper(backendResult.getParsedResults());
+    const resultsWrapped = new IndexedSimulationResult(backendResult.getParsedResults());
     self._resultsPresenter.showResults(resultsWrapped, backendResult);
   }
 

@@ -14,6 +14,14 @@ Finally, we want to again express our gratitude for your feedback and time.
 
 The following changes have been adopted and released.
 
+### Faster results visualization
+
+**Status**: Released July 24, 2026
+
+**Classification**: Enhancement
+
+Switching metrics, scenarios, applications, or substances in the results visualization is now much faster for large simulations. Previously, each interaction re-scanned the entire simulation results dataset from scratch on every click. Results are now indexed and cached so repeated queries resolve near-instantly, keeping the UI responsive even for simulations with many years, applications, substances, or trials.
+
 ### Recharge of new equipment (precharge)
 
 **Status**: Released July 24, 2026 (Preview July 23)

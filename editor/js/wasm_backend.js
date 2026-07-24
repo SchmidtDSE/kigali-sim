@@ -23,6 +23,21 @@ const DEFAULT_CORES = 2;
 const TIMEOUT_PER_SCENARIO = 45000;
 
 /**
+ * How often to re-evaluate time-based progress, in milliseconds.
+ *
+ * @type {number}
+ */
+const PROGRESS_TICK_INTERVAL_MS = 1000;
+
+/**
+ * Ceiling for time-based progress so a request never appears "complete"
+ * until it actually resolves, even if it consumes its whole time budget.
+ *
+ * @type {number}
+ */
+const MAX_TIME_BASED_PROGRESS = 0.9;
+
+/**
  * Parser for handling CSV report data returned from the WASM worker.
  * Uses the same parsing logic as the legacy backend.
  */
@@ -354,6 +369,13 @@ class WasmLayer {
       // Calculate total trials across all scenarios
       const totalTrials = Object.values(scenarioTrialCounts).reduce((sum, count) => sum + count, 0);
 
+      // Total time budget for this request (used as the hard failure timeout below).
+      const totalTimeAllowed = TIMEOUT_PER_SCENARIO * scenarioNames.length;
+
+      // Expected completion time for time-based progress estimation: the serial time
+      // budget divided by how many scenarios can actually run concurrently.
+      const timeExpectedMs = totalTimeAllowed / (self._poolSize - 1);
+
       // Store request with scenario tracking
       self._pendingRequests.set(requestId, {
         resolve,
@@ -366,7 +388,13 @@ class WasmLayer {
         scenarioTrialCounts: scenarioTrialCounts,
         totalTrials: totalTrials,
         scenarioProgressMap: {},
+        startTime: Date.now(),
+        timeExpectedMs: timeExpectedMs,
+        lastReportedProgress: 0,
+        progressTimerId: null,
       });
+
+      self._startProgressTimer(requestId);
 
       // Send requests for each scenario to workers in round-robin fashion
       scenarioNames.forEach((scenarioName, index) => {
@@ -384,14 +412,99 @@ class WasmLayer {
       });
 
       // Set timeout for long-running simulations
-      const totalTimeAllowed = TIMEOUT_PER_SCENARIO * scenarioNames.length;
       setTimeout(() => {
-        if (self._pendingRequests.has(requestId)) {
+        const pendingRequest = self._pendingRequests.get(requestId);
+        if (pendingRequest) {
+          self._stopProgressTimer(pendingRequest);
           self._pendingRequests.delete(requestId);
           reject(new Error("Simulation timeout"));
         }
       }, totalTimeAllowed);
     });
+  }
+
+  /**
+   * Start a periodic timer that reports a time-based progress estimate.
+   *
+   * Engine-reported progress only fires once per trial, so a single-trial
+   * scenario reports no progress at all until it finishes. This timer
+   * supplements that with an estimate based on elapsed time versus the
+   * request's expected completion time, so the progress bar keeps moving in
+   * the meantime.
+   *
+   * @private
+   * @param {number} requestId - The request ID.
+   */
+  _startProgressTimer(requestId) {
+    const self = this;
+    const request = self._pendingRequests.get(requestId);
+    if (!request) {
+      return;
+    }
+
+    request.progressTimerId = setInterval(() => {
+      const elapsed = Date.now() - request.startTime;
+      const timeProgress = Math.min(MAX_TIME_BASED_PROGRESS, elapsed / request.timeExpectedMs);
+      self._updateProgress(requestId, timeProgress);
+    }, PROGRESS_TICK_INTERVAL_MS);
+  }
+
+  /**
+   * Check whether a request has a running progress timer.
+   *
+   * @private
+   * @param {Object} request - The request object.
+   * @returns {boolean} True if request is non-null and has an active timer.
+   */
+  _hasProgressTimer(request) {
+    if (!request) {
+      return false;
+    } else if (request.progressTimerId === null) {
+      return false;
+    } else if (request.progressTimerId === undefined) {
+      return false;
+    } else {
+      return true;
+    }
+  }
+
+  /**
+   * Stop a request's progress timer, if running.
+   *
+   * @private
+   * @param {Object} request - The request object.
+   */
+  _stopProgressTimer(request) {
+    const self = this;
+
+    if (!self._hasProgressTimer(request)) {
+      return;
+    }
+
+    clearInterval(request.progressTimerId);
+    request.progressTimerId = null;
+  }
+
+  /**
+   * Report progress for a request, combining engine-reported and time-based
+   * estimates by reporting whichever is higher.
+   *
+   * @private
+   * @param {number} requestId - The request ID.
+   * @param {number} candidateProgress - A progress value between 0 and 1.
+   */
+  _updateProgress(requestId, candidateProgress) {
+    const self = this;
+    const request = self._pendingRequests.get(requestId);
+    if (!request) {
+      return;
+    }
+
+    request.lastReportedProgress = Math.max(request.lastReportedProgress, candidateProgress);
+
+    if (self._reportProgressCallback) {
+      self._reportProgressCallback(request.lastReportedProgress);
+    }
   }
 
   /**
@@ -425,10 +538,8 @@ class WasmLayer {
 
       const overallProgress = request.totalTrials > 0 ? completedTrials / request.totalTrials : 0;
 
-      // Report aggregated progress to callback
-      if (self._reportProgressCallback) {
-        self._reportProgressCallback(overallProgress);
-      }
+      // Combine with time-based estimate and report whichever is higher.
+      self._updateProgress(id, overallProgress);
       return;
     }
 
@@ -440,6 +551,7 @@ class WasmLayer {
     }
 
     if (!success) {
+      self._stopProgressTimer(request);
       self._pendingRequests.delete(id);
       request.reject(new Error(error || "Unknown WASM worker error"));
       return;
@@ -477,6 +589,7 @@ class WasmLayer {
         self._resolveCompleteRequests(id, request);
       }
     } catch (parseError) {
+      self._stopProgressTimer(request);
       self._pendingRequests.delete(id);
       request.reject(parseError);
     }
@@ -493,6 +606,8 @@ class WasmLayer {
    */
   _resolveCompleteRequests(id, request) {
     const self = this;
+
+    self._stopProgressTimer(request);
 
     // Combine CSV parts - use first part's header, then all data rows
     let combinedCsv = "";
@@ -541,6 +656,7 @@ class WasmLayer {
 
     // Reject any pending requests
     for (const [id, request] of self._pendingRequests) {
+      self._stopProgressTimer(request);
       request.reject(new Error("WASM Worker terminated"));
     }
     self._pendingRequests.clear();
