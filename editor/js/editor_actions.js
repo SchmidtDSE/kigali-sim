@@ -36,19 +36,26 @@ class RunningIndicatorPresenter {
   /**
    * Update the progress bar.
    *
+   * Only applies the update if it is an increase over the current value, so
+   * a late-arriving or out-of-order progress report cannot move the bar
+   * backwards. Use reset() to force the bar back to 0% for a new batch.
+   *
    * @param {number} percentage - Progress percentage (0-100)
    */
   updateProgress(percentage) {
     const self = this;
-    self._progressBar.value = percentage;
+    if (percentage > self._progressBar.value) {
+      self._progressBar.value = percentage;
+    }
   }
 
   /**
-   * Reset progress to 0%.
+   * Reset progress to 0%, bypassing the increase-only guard in
+   * updateProgress so a new batch always starts from a clean bar.
    */
   reset() {
     const self = this;
-    self.updateProgress(0);
+    self._progressBar.value = 0;
   }
 }
 
