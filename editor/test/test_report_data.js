@@ -1010,8 +1010,11 @@ function buildReportDataTests() {
         false,
       );
       const filtered = indexed._applyFilterSet(filterSet);
-      assert.equal(filtered.length, 1,
-        "Exact application+substance filter should match exactly one row");
+      assert.equal(
+        filtered.length,
+        1,
+        "Exact application+substance filter should match exactly one row",
+      );
       assert.equal(filtered[0].getDomestic().getValue(), 1);
 
       const applications = indexed.getApplications(new FilterSet(
@@ -1056,10 +1059,18 @@ function buildReportDataTests() {
 
       const expected = wrapper.getMetric(filterSet);
       const actual = indexed.getMetric(filterSet);
-      assert.closeTo(actual.getValue(), expected.getValue(), 0.0001,
-        "Meta-group filter should aggregate the same matching rows as ReportDataWrapper");
-      assert.closeTo(actual.getValue(), 3, 0.0001,
-        "Should sum only the two Commercial Refrigeration - * rows (1 + 2)");
+      assert.closeTo(
+        actual.getValue(),
+        expected.getValue(),
+        0.0001,
+        "Meta-group filter should aggregate the same matching rows as ReportDataWrapper",
+      );
+      assert.closeTo(
+        actual.getValue(),
+        3,
+        0.0001,
+        "Should sum only the two Commercial Refrigeration - * rows (1 + 2)",
+      );
     });
 
     QUnit.test("IndexedSimulationResult memoizes row filtering and aggregation", (assert) => {
@@ -1073,13 +1084,19 @@ function buildReportDataTests() {
 
       const first = indexed._applyFilterSet(filterSet);
       const second = indexed._applyFilterSet(filterSet);
-      assert.strictEqual(first, second,
-        "Repeated identical row-filter queries should return the same cached array reference");
+      assert.strictEqual(
+        first,
+        second,
+        "Repeated identical row-filter queries should return the same cached array reference",
+      );
 
       const firstAggregate = indexed._getAggregatedAfterFilter(filterSet);
       const secondAggregate = indexed._getAggregatedAfterFilter(filterSet);
-      assert.strictEqual(firstAggregate, secondAggregate,
-        "Repeated identical aggregate queries should return the same cached instance");
+      assert.strictEqual(
+        firstAggregate,
+        secondAggregate,
+        "Repeated identical aggregate queries should return the same cached instance",
+      );
 
       const domesticValue = indexed.getDomestic(filterSet);
       assert.closeTo(domesticValue.getValue(), 12, 0.0001, "Domestic total should be 5 + 7");

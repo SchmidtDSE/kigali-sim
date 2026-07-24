@@ -450,16 +450,39 @@ class WasmLayer {
   }
 
   /**
+   * Check whether a request has a running progress timer.
+   *
+   * @private
+   * @param {Object} request - The request object.
+   * @returns {boolean} True if request is non-null and has an active timer.
+   */
+  _hasProgressTimer(request) {
+    if (!request) {
+      return false;
+    } else if (request.progressTimerId === null) {
+      return false;
+    } else if (request.progressTimerId === undefined) {
+      return false;
+    } else {
+      return true;
+    }
+  }
+
+  /**
    * Stop a request's progress timer, if running.
    *
    * @private
    * @param {Object} request - The request object.
    */
   _stopProgressTimer(request) {
-    if (request && request.progressTimerId !== null && request.progressTimerId !== undefined) {
-      clearInterval(request.progressTimerId);
-      request.progressTimerId = null;
+    const self = this;
+
+    if (!self._hasProgressTimer(request)) {
+      return;
     }
+
+    clearInterval(request.progressTimerId);
+    request.progressTimerId = null;
   }
 
   /**

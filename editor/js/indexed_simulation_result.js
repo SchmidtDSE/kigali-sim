@@ -7,6 +7,329 @@
 import {ReportDataWrapper} from "report_data";
 
 /**
+ * Single-dimension index over row indices, keyed by exact value.
+ *
+ * Also maintains a meta-group prefix index so "X - All" style filter values
+ * (as used for applications and substances, see
+ * ReportDataWrapper.stepWithSubtype) can be resolved via a lookup instead of
+ * a scan. Building the meta-group index is a no-op for non-string keys (e.g.
+ * year) and for strings with no " - " separator (e.g. plain scenario names),
+ * so this class is safe to use uniformly across all indexed dimensions.
+ */
+class IndexAccumulator {
+  /**
+   * Create a new, empty index accumulator.
+   */
+  constructor() {
+    const self = this;
+
+    /**
+     * Row indices keyed by their exact value.
+     *
+     * @private
+     * @type {Map<*, Set<number>>}
+     */
+    self._exact = new Map();
+
+    /**
+     * Row indices keyed by meta-group prefix (the portion of a value up to
+     * and including a " - " boundary).
+     *
+     * @private
+     * @type {Map<string, Set<number>>}
+     */
+    self._metaGroupPrefix = new Map();
+  }
+
+  /**
+   * Register a row under a value, indexing both its exact value and any
+   * meta-group prefixes it implies.
+   *
+   * @param {*} key - The value to index (e.g. a scenario name or year).
+   * @param {number} rowIndex - The row's index in the underlying rows array.
+   */
+  addToIndex(key, rowIndex) {
+    const self = this;
+    self._addToMap(self._exact, key, rowIndex);
+    self._addMetaGroupPrefixes(key, rowIndex);
+  }
+
+  /**
+   * Get the distinct exact values registered in this index.
+   *
+   * @returns {IterableIterator<*>} The indexed values.
+   */
+  getKeys() {
+    const self = this;
+    return self._exact.keys();
+  }
+
+  /**
+   * Resolve the row indices matching a filter value.
+   *
+   * @param {*} filterVal - The value to look up.
+   * @param {boolean} allowMetaGroup - Whether a value ending in " - All"
+   *     should be resolved via the meta-group prefix index rather than
+   *     treated as an exact (and likely non-matching) value.
+   * @returns {Set<number>} Matching row indices, possibly empty.
+   */
+  getIndicies(filterVal, allowMetaGroup) {
+    const self = this;
+
+    const isMetaGroup = allowMetaGroup && typeof filterVal === "string" &&
+      filterVal.endsWith(" - All");
+
+    if (isMetaGroup) {
+      const prefix = filterVal.replaceAll(" - All", " - ");
+      return self._metaGroupPrefix.get(prefix) || new Set();
+    } else {
+      return self._exact.get(filterVal) || new Set();
+    }
+  }
+
+  /**
+   * Add a row index under a key within a map of sets, creating the set if
+   * this is the first row seen for that key.
+   *
+   * @private
+   * @param {Map<*, Set<number>>} map - The map to add to.
+   * @param {*} key - The key to add under.
+   * @param {number} rowIndex - The row index to add.
+   */
+  _addToMap(map, key, rowIndex) {
+    if (!map.has(key)) {
+      map.set(key, new Set());
+    }
+    map.get(key).add(rowIndex);
+  }
+
+  /**
+   * Register a row under every meta-group prefix implied by a string value.
+   *
+   * Splits on " - " and registers the row under each prefix formed by
+   * rejoining leading segments (e.g. "A - B - C" registers under "A - " and
+   * "A - B - "), mirroring the startsWith check in
+   * ReportDataWrapper.stepWithSubtype. No-ops for non-string values (e.g.
+   * year) or strings with no " - " separator.
+   *
+   * @private
+   * @param {*} name - The value to derive meta-group prefixes from.
+   * @param {number} rowIndex - The row index to register.
+   */
+  _addMetaGroupPrefixes(name, rowIndex) {
+    const self = this;
+
+    if (typeof name !== "string") {
+      return;
+    }
+
+    const parts = name.split(" - ");
+    let prefix = "";
+    for (let i = 0; i < parts.length - 1; i++) {
+      prefix += parts[i] + " - ";
+      self._addToMap(self._metaGroupPrefix, prefix, rowIndex);
+    }
+  }
+}
+
+/**
+ * Bundle of per-dimension indexes (scenario, year, application, substance)
+ * over a single, fixed rows array.
+ */
+class IndexAccumulatorSet {
+  /**
+   * Create a new, empty index accumulator set.
+   */
+  constructor() {
+    const self = this;
+
+    /**
+     * @private
+     * @type {Array<EngineResult>|null}
+     */
+    self._rows = null;
+
+    /**
+     * @private
+     * @type {IndexAccumulator}
+     */
+    self._byScenario = new IndexAccumulator();
+
+    /**
+     * @private
+     * @type {IndexAccumulator}
+     */
+    self._byYear = new IndexAccumulator();
+
+    /**
+     * @private
+     * @type {IndexAccumulator}
+     */
+    self._byApplication = new IndexAccumulator();
+
+    /**
+     * @private
+     * @type {IndexAccumulator}
+     */
+    self._bySubstance = new IndexAccumulator();
+  }
+
+  /**
+   * Index every row in an array.
+   *
+   * @param {Array<EngineResult>} rows - The rows to index.
+   */
+  indexRows(rows) {
+    const self = this;
+    self._rows = rows;
+    rows.forEach((row, index) => self._indexRow(row, index));
+  }
+
+  /**
+   * Get the rows array this instance was built from.
+   *
+   * @returns {Array<EngineResult>} The indexed rows.
+   */
+  getRows() {
+    const self = this;
+    return self._rows;
+  }
+
+  /**
+   * Get the distinct scenario names registered in this index.
+   *
+   * @returns {IterableIterator<string>} The indexed scenario names.
+   */
+  getScenarioKeys() {
+    const self = this;
+    return self._byScenario.getKeys();
+  }
+
+  /**
+   * Resolve row indices matching a scenario filter value.
+   *
+   * @param {string} scenario - The scenario name to look up.
+   * @returns {Set<number>} Matching row indices.
+   */
+  getIndiciesByScenario(scenario) {
+    const self = this;
+    return self._byScenario.getIndicies(scenario, false);
+  }
+
+  /**
+   * Resolve row indices matching a year filter value.
+   *
+   * @param {number} year - The year to look up.
+   * @returns {Set<number>} Matching row indices.
+   */
+  getIndiciesByYear(year) {
+    const self = this;
+    return self._byYear.getIndicies(year, false);
+  }
+
+  /**
+   * Resolve row indices matching an application filter value, including
+   * "X - All" meta-group values.
+   *
+   * @param {string} application - The application (or meta-group) to look up.
+   * @returns {Set<number>} Matching row indices.
+   */
+  getIndiciesByApplication(application) {
+    const self = this;
+    return self._byApplication.getIndicies(application, true);
+  }
+
+  /**
+   * Resolve row indices matching a substance filter value, including
+   * "X - All" meta-group values.
+   *
+   * @param {string} substance - The substance (or meta-group) to look up.
+   * @returns {Set<number>} Matching row indices.
+   */
+  getIndiciesBySubstance(substance) {
+    const self = this;
+    return self._bySubstance.getIndicies(substance, true);
+  }
+
+  /**
+   * Register a single row across all four dimension indexes.
+   *
+   * @private
+   * @param {EngineResult} row - The row to index.
+   * @param {number} index - The row's index in the rows array.
+   */
+  _indexRow(row, index) {
+    const self = this;
+    self._byScenario.addToIndex(row.getScenarioName(), index);
+    self._byYear.addToIndex(row.getYear(), index);
+    self._byApplication.addToIndex(row.getApplication(), index);
+    self._bySubstance.addToIndex(row.getSubstance(), index);
+  }
+}
+
+/**
+ * Resolves a set of candidate row-index Sets down to matching rows.
+ */
+class RowSetResolver {
+  /**
+   * Create a new resolver.
+   *
+   * @param {Array<EngineResult>} allRows - The full rows array to resolve
+   *     against and to return unchanged when no candidate sets are added.
+   */
+  constructor(allRows) {
+    const self = this;
+    self._allRows = allRows;
+    self._candidateSets = [];
+  }
+
+  /**
+   * Add a candidate row-index set that a matching row must belong to.
+   *
+   * @param {Set<number>} candidateSet - Row indices matching one filter
+   *     dimension.
+   */
+  addCandidateSet(candidateSet) {
+    const self = this;
+    self._candidateSets.push(candidateSet);
+  }
+
+  /**
+   * Resolve the rows matching every added candidate set.
+   *
+   * Returns all rows unchanged if no candidate sets were added (matching
+   * ReportDataWrapper's behavior of returning the raw data as-is when every
+   * filter field is null). Otherwise, intersects starting from the smallest
+   * candidate set so cost is bounded by the most selective filter rather
+   * than the full dataset. Each per-value set is populated in row order, so
+   * iterating the smallest set preserves the original array's relative
+   * ordering in the result.
+   *
+   * @returns {Array<EngineResult>} Matching rows, in original order.
+   */
+  resolve() {
+    const self = this;
+
+    if (self._candidateSets.length === 0) {
+      return self._allRows;
+    }
+
+    const sorted = [...self._candidateSets].sort((a, b) => a.size - b.size);
+    const smallest = sorted[0];
+    const rest = sorted.slice(1);
+
+    const matchingIndices = [];
+    smallest.forEach((index) => {
+      if (rest.every((set) => set.has(index))) {
+        matchingIndices.push(index);
+      }
+    });
+
+    return matchingIndices.map((index) => self._allRows[index]);
+  }
+}
+
+/**
  * Drop-in replacement for ReportDataWrapper that indexes the raw results by
  * scenario, year, application, and substance instead of re-scanning the full
  * results array on every query.
@@ -36,7 +359,7 @@ class IndexedSimulationResult extends ReportDataWrapper {
      * Lazily-built indexes, keyed by attribution mode ("importer"/"exporter").
      *
      * @private
-     * @type {Map<string, Object>}
+     * @type {Map<string, IndexAccumulatorSet>}
      */
     self._indexes = new Map();
 
@@ -73,10 +396,10 @@ class IndexedSimulationResult extends ReportDataWrapper {
 
     if (filterSet.getScenario() !== null) {
       return new Set([filterSet.getScenario()]);
+    } else {
+      const indexes = self._getOrBuildIndexes(filterSet);
+      return new Set(indexes.getScenarioKeys());
     }
-
-    const indexes = self._getOrBuildIndexes(filterSet);
-    return new Set(indexes.byScenario.keys());
   }
 
   /**
@@ -92,12 +415,12 @@ class IndexedSimulationResult extends ReportDataWrapper {
     const cacheKey = self._makeCacheKey(filterSet);
     if (self._rowFilterCache.has(cacheKey)) {
       return self._rowFilterCache.get(cacheKey);
+    } else {
+      const indexes = self._getOrBuildIndexes(filterSet);
+      const result = self._resolveFilteredRows(indexes, filterSet);
+      self._rowFilterCache.set(cacheKey, result);
+      return result;
     }
-
-    const indexes = self._getOrBuildIndexes(filterSet);
-    const result = self._resolveFilteredRows(indexes, filterSet);
-    self._rowFilterCache.set(cacheKey, result);
-    return result;
   }
 
   /**
@@ -116,11 +439,11 @@ class IndexedSimulationResult extends ReportDataWrapper {
     const cacheKey = self._makeCacheKey(filterSet);
     if (self._aggregateCache.has(cacheKey)) {
       return self._aggregateCache.get(cacheKey);
+    } else {
+      const result = super._getAggregatedAfterFilter(filterSet);
+      self._aggregateCache.set(cacheKey, result);
+      return result;
     }
-
-    const result = super._getAggregatedAfterFilter(filterSet);
-    self._aggregateCache.set(cacheKey, result);
-    return result;
   }
 
   /**
@@ -131,16 +454,16 @@ class IndexedSimulationResult extends ReportDataWrapper {
    *
    * @private
    * @param {FilterSet} filterSet - The filter criteria.
-   * @returns {string} A stable, collision-free cache key.
+   * @returns {string} A stable cache key.
    */
   _makeCacheKey(filterSet) {
-    return JSON.stringify([
+    return [
       filterSet.getYear(),
       filterSet.getScenario(),
       filterSet.getApplication(),
       filterSet.getSubstance(),
       filterSet.getAttributeImporter(),
-    ]);
+    ].map((value) => String(value)).join("|");
   }
 
   /**
@@ -150,7 +473,7 @@ class IndexedSimulationResult extends ReportDataWrapper {
    * @private
    * @param {FilterSet} filterSet - Used only to read the attribution mode and,
    *     on first build, to fetch the raw data for that mode.
-   * @returns {Object} The index bundle for this attribution mode.
+   * @returns {IndexAccumulatorSet} The index bundle for this attribution mode.
    */
   _getOrBuildIndexes(filterSet) {
     const self = this;
@@ -158,148 +481,65 @@ class IndexedSimulationResult extends ReportDataWrapper {
     const attributionKey = filterSet.getAttributeImporter() ? "importer" : "exporter";
     if (self._indexes.has(attributionKey)) {
       return self._indexes.get(attributionKey);
+    } else {
+      return self._buildIndexes(attributionKey, filterSet);
     }
-
-    const rows = super.getRawData(filterSet);
-
-    const byScenario = new Map();
-    const byYear = new Map();
-    const byApplicationExact = new Map();
-    const byApplicationMetaPrefix = new Map();
-    const bySubstanceExact = new Map();
-    const bySubstanceMetaPrefix = new Map();
-
-    const addToIndex = (map, key, rowIndex) => {
-      if (!map.has(key)) {
-        map.set(key, new Set());
-      }
-      map.get(key).add(rowIndex);
-    };
-
-    // Register every " - " boundary as a possible meta-group prefix (e.g. "A - B - C"
-    // registers under both "A - " and "A - B - "), mirroring the startsWith check in
-    // ReportDataWrapper's stepWithSubtype so meta-group ("X - All") filters resolve to
-    // an exact index lookup instead of a scan.
-    const addMetaGroupPrefixes = (map, name, rowIndex) => {
-      let searchFrom = 0;
-      while (true) {
-        const sepIndex = name.indexOf(" - ", searchFrom);
-        if (sepIndex === -1) {
-          break;
-        }
-        const prefix = name.substring(0, sepIndex + 3);
-        addToIndex(map, prefix, rowIndex);
-        searchFrom = sepIndex + 3;
-      }
-    };
-
-    rows.forEach((row, index) => {
-      addToIndex(byScenario, row.getScenarioName(), index);
-      addToIndex(byYear, row.getYear(), index);
-
-      const application = row.getApplication();
-      addToIndex(byApplicationExact, application, index);
-      addMetaGroupPrefixes(byApplicationMetaPrefix, application, index);
-
-      const substance = row.getSubstance();
-      addToIndex(bySubstanceExact, substance, index);
-      addMetaGroupPrefixes(bySubstanceMetaPrefix, substance, index);
-    });
-
-    const built = {
-      rows: rows,
-      byScenario: byScenario,
-      byYear: byYear,
-      byApplicationExact: byApplicationExact,
-      byApplicationMetaPrefix: byApplicationMetaPrefix,
-      bySubstanceExact: bySubstanceExact,
-      bySubstanceMetaPrefix: bySubstanceMetaPrefix,
-    };
-    self._indexes.set(attributionKey, built);
-    return built;
   }
 
   /**
-   * Resolve the row-index Set for an application or substance filter value,
-   * handling the "X - All" meta-group case exactly as
-   * ReportDataWrapper.stepWithSubtype does.
+   * Build and cache the indexes for an attribution mode.
    *
    * @private
-   * @param {string} filterVal - The application or substance filter value.
-   * @param {Map<string, Set<number>>} exactMap - Index of exact-match values.
-   * @param {Map<string, Set<number>>} metaPrefixMap - Index of meta-group
-   *     prefixes.
-   * @returns {Set<number>} Matching row indices, possibly empty.
+   * @param {string} attributionKey - "importer" or "exporter".
+   * @param {FilterSet} filterSet - Used only to fetch the raw data for this
+   *     attribution mode.
+   * @returns {IndexAccumulatorSet} The newly built index bundle.
    */
-  _resolveSubtypeSet(filterVal, exactMap, metaPrefixMap) {
-    const isMetaGroup = filterVal.endsWith(" - All");
-    if (!isMetaGroup) {
-      return exactMap.get(filterVal) || new Set();
-    }
+  _buildIndexes(attributionKey, filterSet) {
+    const self = this;
 
-    const withAllReplace = filterVal.replaceAll(" - All", " - ");
-    return metaPrefixMap.get(withAllReplace) || new Set();
+    const rows = super.getRawData(filterSet);
+    const indexes = new IndexAccumulatorSet();
+    indexes.indexRows(rows);
+
+    self._indexes.set(attributionKey, indexes);
+    return indexes;
   }
 
   /**
    * Resolve the filtered rows for a filter set using the built indexes.
    *
    * @private
-   * @param {Object} indexes - The index bundle for this filter set's
-   *     attribution mode.
+   * @param {IndexAccumulatorSet} indexes - The index bundle for this filter
+   *     set's attribution mode.
    * @param {FilterSet} filterSet - The filter criteria.
    * @returns {Array<EngineResult>} Matching rows, in original order.
    */
   _resolveFilteredRows(indexes, filterSet) {
-    const self = this;
-
-    const candidateSets = [];
+    const resolver = new RowSetResolver(indexes.getRows());
 
     const scenario = filterSet.getScenario();
     if (scenario !== null) {
-      candidateSets.push(indexes.byScenario.get(scenario) || new Set());
+      resolver.addCandidateSet(indexes.getIndiciesByScenario(scenario));
     }
 
     const year = filterSet.getYear();
     if (year !== null) {
-      candidateSets.push(indexes.byYear.get(year) || new Set());
+      resolver.addCandidateSet(indexes.getIndiciesByYear(year));
     }
 
     const app = filterSet.getApplication();
     if (app !== null) {
-      candidateSets.push(
-        self._resolveSubtypeSet(app, indexes.byApplicationExact, indexes.byApplicationMetaPrefix),
-      );
+      resolver.addCandidateSet(indexes.getIndiciesByApplication(app));
     }
 
     const sub = filterSet.getSubstance();
     if (sub !== null) {
-      candidateSets.push(
-        self._resolveSubtypeSet(sub, indexes.bySubstanceExact, indexes.bySubstanceMetaPrefix),
-      );
+      resolver.addCandidateSet(indexes.getIndiciesBySubstance(sub));
     }
 
-    if (candidateSets.length === 0) {
-      return indexes.rows;
-    }
-
-    // Intersect starting from the smallest set so cost is bounded by the most
-    // selective filter rather than the full dataset. Each per-value Set was
-    // populated in row order, so iterating the smallest set preserves the
-    // original array's relative ordering in the result.
-    candidateSets.sort((a, b) => a.size - b.size);
-    const smallest = candidateSets[0];
-    const rest = candidateSets.slice(1);
-
-    const matchingIndices = [];
-    smallest.forEach((index) => {
-      if (rest.every((set) => set.has(index))) {
-        matchingIndices.push(index);
-      }
-    });
-
-    return matchingIndices.map((index) => indexes.rows[index]);
+    return resolver.resolve();
   }
 }
 
-export {IndexedSimulationResult};
+export {IndexedSimulationResult, IndexAccumulator, IndexAccumulatorSet, RowSetResolver};
