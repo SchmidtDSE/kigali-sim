@@ -518,7 +518,7 @@ uses substance "R-407C"
 end substance
 ```
 
-Here leakage hazard rate linearly increases with age and retirement exponentially: 10 year average lifespan with 6% recharge during that lifetime.
+Here leakage hazard rate linearly increases with age and retirement exponentially: 10 year expected lifespan with 6% recharge during that lifetime.
 
 ## Projections
 
