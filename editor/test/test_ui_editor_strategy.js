@@ -3,9 +3,15 @@
  *
  * @license BSD, see LICENSE.md.
  */
-import {validateInductionInput, readDurationUi} from "ui_editor_strategy";
+import {
+  validateInductionInput,
+  readDurationUi,
+  initChangeCommandUi,
+  readChangeCommandUi,
+} from "ui_editor_strategy";
 import {EngineNumber} from "engine_number";
 import {ParsedYear} from "duration";
+import {Command} from "ui_translator_components";
 
 function buildUiEditorStrategyTests() {
   QUnit.module("ui_editor_strategy", function (hooks) {
@@ -235,6 +241,65 @@ function buildUiEditorStrategyTests() {
         const result = readDurationUi(root);
         assert.equal(result.getStart().getNumericYear(), 2025, "Should handle large year values");
         assert.equal(result.getEnd().getNumericYear(), 2030, "Should handle large year values");
+      });
+    });
+
+    QUnit.module("initChangeCommandUi", function () {
+      const noopStreamUpdater = {
+        getEnabledStreamsForCurrentContext: () => [],
+        updateStreamOptionStates: () => {},
+      };
+
+      function buildChangeCommandRoot() {
+        const template = document.getElementById("change-command-fixture");
+        const root = document.createElement("div");
+        root.appendChild(template.content.cloneNode(true));
+        return root;
+      }
+
+      QUnit.test("sets sign dropdown to '-' for a negative change value", function (assert) {
+        const root = buildChangeCommandRoot();
+        const command = new Command("change", "sales", new EngineNumber(-5, "% / year"), null);
+
+        initChangeCommandUi(command, root, null, "consumption", noopStreamUpdater);
+
+        assert.equal(
+          root.querySelector(".change-sign-input").value,
+          "-",
+          "Sign dropdown should reflect the negative value",
+        );
+        assert.equal(
+          root.querySelector(".change-amount-input").value,
+          "5",
+          "Amount should be shown unsigned",
+        );
+      });
+
+      QUnit.test("sets sign dropdown to '+' for a positive change value", function (assert) {
+        const root = buildChangeCommandRoot();
+        const command = new Command("change", "sales", new EngineNumber(5, "% / year"), null);
+
+        initChangeCommandUi(command, root, null, "consumption", noopStreamUpdater);
+
+        assert.equal(
+          root.querySelector(".change-sign-input").value,
+          "+",
+          "Sign dropdown should reflect the positive value",
+        );
+      });
+
+      QUnit.test("round trips a negative change value through init and read", function (assert) {
+        const root = buildChangeCommandRoot();
+        const command = new Command("change", "sales", new EngineNumber(-5, "% / year"), null);
+
+        initChangeCommandUi(command, root, null, "consumption", noopStreamUpdater);
+        const reread = readChangeCommandUi(root);
+
+        assert.equal(
+          reread.getValue().getValue(),
+          -5,
+          "Re-reading the UI should preserve the negative sign",
+        );
       });
     });
   });

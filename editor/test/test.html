@@ -7,7 +7,29 @@
     <div id="qunit-fixture"></div>
 
     <div id="ui-harness"></div>
-    
+
+    <template id="change-command-fixture">
+      <select class="change-target-input">
+        <option value="sales">sales</option>
+      </select>
+      <select class="change-sign-input">
+        <option value="+">+</option>
+        <option value="-">-</option>
+      </select>
+      <input class="change-amount-input" />
+      <select class="change-units-input">
+        <option value="% / year">% / year</option>
+      </select>
+      <span class="duration-subcomponent">
+        <select class="duration-type-input">
+          <option value="during all years">during all years</option>
+        </select>
+        <input class="duration-start" />
+        <span class="duration-to">to</span>
+        <input class="duration-end" />
+      </span>
+    </template>
+
     <!-- Test elements for auto-run functionality -->
     <div id="code-editor-pane" aria-hidden="false" style="display: none;">
       <input type="checkbox" id="auto-run-check" />
