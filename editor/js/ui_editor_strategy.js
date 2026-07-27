@@ -90,9 +90,17 @@ function initChangeCommandUi(itemObj, root, codeObj, context, streamUpdater) {
   setFieldValue(root.querySelector(".change-target-input"), itemObj, "sales", (x) =>
     x.getTarget(),
   );
-  setFieldValue(root.querySelector(".change-sign-input"), itemObj, "+", (x) =>
-    x.getValue() < 0 ? "-" : "+",
-  );
+  setFieldValue(root.querySelector(".change-sign-input"), itemObj, "+", (x) => {
+    const noValue = x.getValue() === null;
+    if (noValue) {
+      return "+";
+    }
+    const noNumericComponent = x.getValue().getValue() === null;
+    if (noNumericComponent) {
+      return "+";
+    }
+    return x.getValue().getValue() < 0 ? "-" : "+";
+  });
   setFieldValue(root.querySelector(".change-amount-input"), itemObj, 5, (x) => {
     if (x.getValue() === null || x.getValue().getValue() === null) {
       return 5;
