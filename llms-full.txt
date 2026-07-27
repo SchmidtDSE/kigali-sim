@@ -14,7 +14,7 @@ This tool provides simulation capabilities for:
 Kigali Sim supports both business-as-usual projections and policy intervention scenarios, making it useful for Kigali Amendment Implementation Plans (KIPs) and Montreal Protocol policy analysis.
 
 ## QubecTalk Domain Specific Language
-Kigali Sim uses QubecTalk, a HyperTalk-inspired domain-specific language for defining simulations. QubecTalk programs are human-readable and use natural language constructs.
+Kigali Sim uses QubecTalk (the name blends "data cube" and "Quebec," a Montreal Protocol nod), a HyperTalk-inspired domain-specific language for defining simulations. QubecTalk programs are human-readable and use natural language constructs.
 
 **Note**: In this documentation, pipe symbols (|) indicate command alternatives, not syntax. Chevrons (<) indicate optional values, curly braces ({) indicate required values. Neither are part of actual QubecTalk syntax.
 
