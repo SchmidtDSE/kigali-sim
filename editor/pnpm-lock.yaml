@@ -10,7 +10,7 @@ overrides:
   minimatch: '>=10.2.3'
   ws: '>=8.20.1'
   serialize-javascript: '>=7.0.5'
-  brace-expansion: 5.0.7
+  brace-expansion: 5.0.8
   '@babel/plugin-transform-modules-systemjs': '>=7.29.4'
   fast-uri: '>=3.1.4 <4'
   basic-ftp: '>=5.3.1 <6'
@@ -18,7 +18,7 @@ overrides:
   lodash: '>=4.18.0'
   picomatch: '>=2.3.2 <3'
   flatted: '>=3.4.2'
-  js-yaml@>=4.0.0: '>=4.2.0 <5'
+  js-yaml@>=4.0.0: '>=4.3.0 <5'
   js-yaml@<4.0.0: '>=3.15.0 <4'
   linkify-it: '>=5.0.2 <6'
   markdown-it: '>=14.2.0'
@@ -980,9 +980,9 @@ packages:
   bluebird@3.7.2:
     resolution: {integrity: sha512-XpNj6GDQzdfW+r2Wnn7xiSAd7TM3jzkxGXBGTtWKuSXv1xUV+azxAm8jdWZN06QTQk+2N2XB9jRDkvbmQmcRtg==}
 
-  brace-expansion@5.0.7:
-    resolution: {integrity: sha512-7oFy703dxfY3/NLxC1fh2SUCQ0H9rmAY+5EpDVfXjUTTs+HEwR2nYaqLv+GWcTsumwxPfiz6CzCNkwXwBUwqCA==}
-    engines: {node: 18 || 20 || >=22}
+  brace-expansion@5.0.8:
+    resolution: {integrity: sha512-JZyDyq3D4AUifKTPOB7DELf6XsB3WdPuNxCtob1vFXPsSXhdAiHBWJ/tJ8HAc9aH84BK+5JFZLNkJKx3G9kzQg==}
+    engines: {node: 20 || >=22}
 
   braces@3.0.3:
     resolution: {integrity: sha512-yQbXgO/OSZVD2IsiLlro+7Hf6Q18EJrKSEsdoMzKePKXct3gvD8oLcOQdIzGupr5Fj+EDe8gO/lxc1BzfMpxvA==}
@@ -3577,7 +3577,7 @@ snapshots:
 
   bluebird@3.7.2: {}
 
-  brace-expansion@5.0.7:
+  brace-expansion@5.0.8:
     dependencies:
       balanced-match: 4.0.3
 
@@ -4419,7 +4419,7 @@ snapshots:
 
   minimatch@10.2.4:
     dependencies:
-      brace-expansion: 5.0.7
+      brace-expansion: 5.0.8
 
   mitt@3.0.1: {}
 
