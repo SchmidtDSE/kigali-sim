@@ -58,9 +58,16 @@ class MainPresenter {
     self._initWasmBackend();
     self._initCodeEditor();
 
-    self._runInitialSource(self._localStorageKeeper.getSource());
+    const initialSource = self._localStorageKeeper.getSource();
+    self._runInitialSource(initialSource);
 
-    self._onCodeChange();
+    if (!initialSource) {
+      // If there was a saved source, _runInitialSource already triggered
+      // _onCodeChange (via setCode), which started a build. Calling it again
+      // here would start a redundant build that supersedes the real one,
+      // orphaning its running indicator.
+      self._onCodeChange();
+    }
     self._setupFileButtons();
     self._setupStorageControls();
     self._setupForceUpdateButton();
@@ -319,12 +326,12 @@ class MainPresenter {
         try {
           const programResult = await self._wasmBackend.execute(code);
 
+          self._runningIndicatorPresenter.hide();
+
           if (!self._buildGenerationTracker.isCurrent(generationId)) {
             // A newer build has since started; discard this stale result.
             return;
           }
-
-          self._runningIndicatorPresenter.hide();
 
           if (programResult.getParsedResults().length === 0) {
             self._showNoResultsMessage();
@@ -339,6 +346,8 @@ class MainPresenter {
             self._codeEditorPresenter.hideError();
           }
         } catch (e) {
+          self._runningIndicatorPresenter.hide();
+
           if (!self._buildGenerationTracker.isCurrent(generationId)) {
             // A newer build has since started; discard this stale error.
             return;
