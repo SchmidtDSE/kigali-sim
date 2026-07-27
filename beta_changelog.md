@@ -1,6 +1,6 @@
 # Beta Change Log
 
-Hello! Thank you for your help in refining Kigali Sim. During the beta testing period, we will be making changes in response to user and partner feedback.
+Hello! Thank you for using Kigali Sim and for your your help in refining Kigali Sim, improving this shared resource for everyone.
 
 **About this document:** This document tracks modifications which are expected to concern a majority of users. Note that the [GitHub commit log](https://github.com/SchmidtDSE/kigali-sim/commits) provides further public detail on all changes no matter how small. This document is now only updated for major changes after the close of the beta test. Please see [GitHub commit log](https://github.com/SchmidtDSE/kigali-sim/commits) for further details.
 
@@ -14,9 +14,17 @@ Finally, we want to again express our gratitude for your feedback and time.
 
 The following changes have been adopted and released.
 
+### Negative sign bug
+
+**Status** Full release July 27, 2026
+
+**Classification**: Bug
+
+Users who entered in a negative change in the designer UI did have their simulations run correctly. However, if they went back to the designer UI later, the default value for the dropdown menu for change direction flipped back to positive, potentially introducing issues for users who did not read the state of the dialog box. This bug is now resolved. Our sincere apologies. Note that this did not impact users interacting with Kigali Sim through code.
+
 ### Faster results visualization
 
-**Status**: Released July 24, 2026
+**Status**: Preview released July 24, 2026. Full release July 27, 2026.
 
 **Classification**: Enhancement
 
@@ -24,7 +32,7 @@ Switching metrics, scenarios, applications, or substances in the results visuali
 
 ### Recharge of new equipment (precharge)
 
-**Status**: Released July 24, 2026 (Preview July 23)
+**Status**: Preview released July 23, 2026. Full release July 27, 2026.
 
 **Classification**: Enhancement
 
