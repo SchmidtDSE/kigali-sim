@@ -16,7 +16,7 @@ The following changes have been adopted and released.
 
 ### Negative sign bug
 
-**Status** Full release July 27, 2026
+**Status**: Released July 27, 2026
 
 **Classification**: Bug
 
