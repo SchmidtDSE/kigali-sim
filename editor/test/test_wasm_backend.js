@@ -851,6 +851,146 @@ function buildWasmBackendTests() {
           done();
         });
       });
+
+      QUnit.test(
+        "only the latest overlapping runSimulation call reports progress",
+        function (assert) {
+          const done = assert.async();
+
+          const originalWorker = window.Worker;
+          const progressUpdates = [];
+          const workerMessages = [[], []];
+          const mockWorkers = [];
+
+          window.Worker = function () {
+            const workerIndex = mockWorkers.length;
+            const mockWorker = {
+              onmessage: null,
+              onerror: null,
+              postMessage: function (message) {
+                workerMessages[workerIndex].push(message);
+              },
+              terminate: function () {},
+            };
+            mockWorkers.push(mockWorker);
+            return mockWorker;
+          };
+
+          const progressCallback = (progress) => {
+            progressUpdates.push(progress);
+          };
+
+          const wasmLayer = new WasmLayer(progressCallback, 2);
+          const testCode = "test code";
+          const csvHeader = "scenario,trial,year,application,substance,domestic,import," +
+            "recycle,domesticConsumption,importConsumption," +
+            "recycleConsumption,population,populationNew,rechargeEmissions," +
+            "eolEmissions,energyConsumption,initialChargeValue," +
+            "initialChargeConsumption,importNewPopulation\n";
+
+          const makeResult = (scenarioName) => "OK\n\n" + csvHeader +
+            `${scenarioName},1,2024,TestApp,TestSub,0 kg,0 kg,0 kg,0 tCO2e,` +
+            "0 tCO2e,0 tCO2e,0 units,0 units,0 tCO2e,0 tCO2e,0 kwh," +
+            "0 kg,0 tCO2e,0 units";
+
+          wasmLayer.initialize().then(() => {
+            const olderPromise = wasmLayer.runSimulation(testCode, ["Older"], {"Older": 1});
+            const newerPromise = wasmLayer.runSimulation(testCode, ["Newer"], {"Newer": 1});
+
+            setTimeout(() => {
+              const olderId = workerMessages[0][0].id;
+              const newerId = workerMessages[1][0].id;
+
+              assert.notEqual(olderId, newerId, "Requests should have distinct IDs");
+              assert.equal(wasmLayer._latestRequestId, newerId,
+                "The most recently started request should be latest");
+
+              // A stale progress update from the older request should be suppressed.
+              mockWorkers[0].onmessage({
+                data: {
+                  resultType: "progress",
+                  id: olderId,
+                  scenarioName: "Older",
+                  progress: 0.9,
+                },
+              });
+
+              // A progress update from the current (newer) request should come through.
+              mockWorkers[1].onmessage({
+                data: {
+                  resultType: "progress",
+                  id: newerId,
+                  scenarioName: "Newer",
+                  progress: 0.1,
+                },
+              });
+
+              assert.deepEqual(progressUpdates, [0.1],
+                "Only the newer request's progress should reach the callback");
+
+              // Suppression should hold for subsequent updates too, not just the first.
+              mockWorkers[0].onmessage({
+                data: {
+                  resultType: "progress",
+                  id: olderId,
+                  scenarioName: "Older",
+                  progress: 0.95,
+                },
+              });
+              mockWorkers[1].onmessage({
+                data: {
+                  resultType: "progress",
+                  id: newerId,
+                  scenarioName: "Newer",
+                  progress: 0.2,
+                },
+              });
+
+              assert.deepEqual(progressUpdates, [0.1, 0.2],
+                "Suppression of the stale request's progress should continue");
+
+              // Both requests should still resolve successfully -- only progress
+              // reporting is suppressed, not result delivery.
+              mockWorkers[0].onmessage({
+                data: {
+                  resultType: "dataset",
+                  id: olderId,
+                  scenarioName: "Older",
+                  success: true,
+                  result: makeResult("Older"),
+                },
+              });
+              mockWorkers[1].onmessage({
+                data: {
+                  resultType: "dataset",
+                  id: newerId,
+                  scenarioName: "Newer",
+                  success: true,
+                  result: makeResult("Newer"),
+                },
+              });
+
+              Promise.all([olderPromise, newerPromise]).then(([olderResult, newerResult]) => {
+                assert.ok(olderResult instanceof BackendResult,
+                  "Older (stale) request should still resolve successfully");
+                assert.ok(newerResult instanceof BackendResult,
+                  "Newer request should resolve successfully");
+
+                window.Worker = originalWorker;
+                done();
+              }).catch((error) => {
+                window.Worker = originalWorker;
+                assert.ok(false, "Both requests should resolve: " + error.message);
+                done();
+              });
+            }, 0);
+          }).catch((error) => {
+            window.Worker = originalWorker;
+            assert.ok(false, "Initialization failed: " + error.message);
+            done();
+          });
+        },
+      );
     });
 
     QUnit.module("WasmBackend", function () {

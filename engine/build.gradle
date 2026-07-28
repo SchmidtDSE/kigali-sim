@@ -7,7 +7,7 @@ plugins {
   id "application"
   id "checkstyle"
   id "antlr"
-  id "org.teavm" version "0.12.1"
+  id "org.teavm" version "0.15.0"
   id "com.diffplug.spotless" version "7.0.2"
 }
 
@@ -39,8 +39,8 @@ dependencies {
   implementation("org.antlr:antlr4-runtime:4.13.2") // ANTLR runtime for generated code
 
   // Interaction with browser
-  implementation("org.teavm:teavm-core:0.12.1")
-  implementation("org.teavm:teavm-jso:0.12.1")
+  implementation("org.teavm:teavm-core:0.15.0")
+  implementation("org.teavm:teavm-jso:0.15.0")
 
   // CSV processing
   implementation("org.apache.commons:commons-csv:1.14.0")

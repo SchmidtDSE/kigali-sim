@@ -4,10 +4,11 @@
  * @license BSD, see LICENSE.md.
  */
 
+import {BuildGenerationTracker} from "build_generation_tracker";
 import {CodeEditorPresenter} from "code_editor";
 import {LocalStorageKeeper} from "local_storage_keeper";
 import {EphemeralStorageKeeper} from "storage_keeper";
-import {ReportDataWrapper} from "report_data";
+import {IndexedSimulationResult} from "indexed_simulation_result";
 import {ResultsPresenter} from "results";
 import {UiEditorPresenter} from "ui_editor";
 import {UiTranslatorCompiler} from "ui_translator";
@@ -51,14 +52,22 @@ class MainPresenter {
     self._hasCompilationErrors = false;
 
     self._runningIndicatorPresenter = new RunningIndicatorPresenter();
+    self._buildGenerationTracker = new BuildGenerationTracker();
 
     self._initStorageKeeper();
     self._initWasmBackend();
     self._initCodeEditor();
 
-    self._runInitialSource(self._localStorageKeeper.getSource());
+    const initialSource = self._localStorageKeeper.getSource();
+    self._runInitialSource(initialSource);
 
-    self._onCodeChange();
+    if (!initialSource) {
+      // If there was a saved source, _runInitialSource already triggered
+      // _onCodeChange (via setCode), which started a build. Calling it again
+      // here would start a redundant build that supersedes the real one,
+      // orphaning its running indicator.
+      self._onCodeChange();
+    }
     self._setupFileButtons();
     self._setupStorageControls();
     self._setupForceUpdateButton();
@@ -283,6 +292,7 @@ class MainPresenter {
   _onBuild(run, resetFilters, isAutoRefresh) {
     const self = this;
     self._buttonPanelPresenter.disable();
+    const generationId = self._buildGenerationTracker.startNewGeneration();
 
     if (resetFilters === undefined) {
       resetFilters = false;
@@ -318,6 +328,11 @@ class MainPresenter {
 
           self._runningIndicatorPresenter.hide();
 
+          if (!self._buildGenerationTracker.isCurrent(generationId)) {
+            // A newer build has since started; discard this stale result.
+            return;
+          }
+
           if (programResult.getParsedResults().length === 0) {
             self._showNoResultsMessage();
           } else {
@@ -331,6 +346,13 @@ class MainPresenter {
             self._codeEditorPresenter.hideError();
           }
         } catch (e) {
+          self._runningIndicatorPresenter.hide();
+
+          if (!self._buildGenerationTracker.isCurrent(generationId)) {
+            // A newer build has since started; discard this stale error.
+            return;
+          }
+
           self._showErrorIndicator();
 
           console.log(e);
@@ -349,15 +371,20 @@ class MainPresenter {
       try {
         await execute();
       } catch (e) {
-        const message = "Execute error: " + e;
-        if (!isAutoRefresh) {
-          alertWithHelpOption(message);
-        } else {
-          self._codeEditorPresenter.showError(message);
+        if (self._buildGenerationTracker.isCurrent(generationId)) {
+          const message = "Execute error: " + e;
+          if (!isAutoRefresh) {
+            alertWithHelpOption(message);
+          } else {
+            self._codeEditorPresenter.showError(message);
+          }
+          captureSentryMessage(message, "error");
         }
-        captureSentryMessage(message, "error");
       }
-      self._buttonPanelPresenter.enable();
+
+      if (self._buildGenerationTracker.isCurrent(generationId)) {
+        self._buttonPanelPresenter.enable();
+      }
     };
 
     setTimeout(executeSafe, 50);
@@ -388,7 +415,7 @@ class MainPresenter {
     }
     self._hideErrorIndicator();
 
-    const resultsWrapped = new ReportDataWrapper(backendResult.getParsedResults());
+    const resultsWrapped = new IndexedSimulationResult(backendResult.getParsedResults());
     self._resultsPresenter.showResults(resultsWrapped, backendResult);
   }
 

@@ -7,7 +7,29 @@
     <div id="qunit-fixture"></div>
 
     <div id="ui-harness"></div>
-    
+
+    <template id="change-command-fixture">
+      <select class="change-target-input">
+        <option value="sales">sales</option>
+      </select>
+      <select class="change-sign-input">
+        <option value="+">+</option>
+        <option value="-">-</option>
+      </select>
+      <input class="change-amount-input" />
+      <select class="change-units-input">
+        <option value="% / year">% / year</option>
+      </select>
+      <span class="duration-subcomponent">
+        <select class="duration-type-input">
+          <option value="during all years">during all years</option>
+        </select>
+        <input class="duration-start" />
+        <span class="duration-to">to</span>
+        <input class="duration-end" />
+      </span>
+    </template>
+
     <!-- Test elements for auto-run functionality -->
     <div id="code-editor-pane" aria-hidden="false" style="display: none;">
       <input type="checkbox" id="auto-run-check" />
@@ -96,6 +118,7 @@
     <script type="importmap">
         {
             "imports": {
+                "build_generation_tracker": "../js/build_generation_tracker.js?v=EPOCH",
                 "code_editor": "../js/code_editor.js?v=EPOCH",
                 "duplicate_util": "../js/duplicate_util.js?v=EPOCH",
                 "duration": "../js/duration.js?v=EPOCH",
@@ -103,6 +126,7 @@
                 "engine_const": "../js/engine_const.js?v=EPOCH",
                 "engine_number": "../js/engine_number.js?v=EPOCH",
                 "engine_struct": "../js/engine_struct.js?v=EPOCH",
+                "indexed_simulation_result": "../js/indexed_simulation_result.js?v=EPOCH",
                 "informational": "../js/informational.js?v=EPOCH",
                 "known_substance": "../js/known_substance.js?v=EPOCH",
                 "local_storage_keeper": "../js/local_storage_keeper.js?v=EPOCH",
@@ -112,6 +136,7 @@
                 "report_data": "../js/report_data.js?v=EPOCH",
                 "results": "../js/results.js?v=EPOCH",
                 "storage_keeper": "../js/storage_keeper.js?v=EPOCH",
+                "test_build_generation_tracker": "./test_build_generation_tracker.js?v=EPOCH",
                 "test_duration": "./test_duration.js?v=EPOCH",
                 "test_engine_number": "./test_engine_number.js?v=EPOCH",
                 "test_engine_struct": "./test_engine_struct.js?v=EPOCH",
@@ -201,6 +226,7 @@
         import {buildUpdateTests} from "test_update";
         import {buildWasmBackendTests} from "test_wasm_backend";
         import {buildDurationTests} from "test_duration";
+        import {buildBuildGenerationTrackerTests} from "test_build_generation_tracker";
 
         buildIntegrationTests();
         buildLocalStorageKeeperTests();
@@ -221,5 +247,6 @@
         buildUpdateTests();
         buildWasmBackendTests();
         buildDurationTests();
+        buildBuildGenerationTrackerTests();
     </script>
 </body>

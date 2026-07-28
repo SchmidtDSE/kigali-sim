@@ -123,11 +123,23 @@ public class SalesRecalcStrategy implements RecalcStrategy {
         .build();
     boolean hasUnitBasedSpecs = demandAnalysis.getHadUnitBasedSpecs();
     BigDecimal totalRequiredKg = demandAnalysis.getRequiredVirginMaterial();
+    BigDecimal rechargeResidualKg = demandAnalysis.getRechargeResidualKg();
 
     BigDecimal newDomesticKg = distribution.getPercentDomestic().multiply(totalRequiredKg);
     BigDecimal newImportKg = distribution.getPercentImport().multiply(totalRequiredKg);
 
-    updateSalesStreams(target, scopeEffective, newDomesticKg, newImportKg, distribution, hasUnitBasedSpecs, initialCharge, stateGetter, unitConverter);
+    updateSalesStreams(
+        target,
+        scopeEffective,
+        newDomesticKg,
+        newImportKg,
+        distribution,
+        hasUnitBasedSpecs,
+        initialCharge,
+        stateGetter,
+        unitConverter,
+        rechargeResidualKg
+    );
   }
 
   /**
@@ -366,11 +378,16 @@ public class SalesRecalcStrategy implements RecalcStrategy {
    * @param initialCharge Initial charge per unit for unit conversion
    * @param stateGetter State getter for unit conversion context
    * @param unitConverter Unit converter for kg-to-units conversion
+   * @param rechargeResidualKg The portion of ordinary recharge (of priorEquipment) volume not
+   *     already netted against implicitRecharge by {@code DemandAnalysisBuilder}, which rides
+   *     on top of domesticKg/importKg without being unit-scaled and so must be backed out
+   *     before converting to units
    */
   private void updateSalesStreams(Engine target, UseKey scopeEffective,
       BigDecimal domesticKg, BigDecimal importKg, SalesStreamDistribution distribution,
       boolean hasUnitBasedSpecs, EngineNumber initialCharge,
-      OverridingConverterStateGetter stateGetter, UnitConverter unitConverter) {
+      OverridingConverterStateGetter stateGetter, UnitConverter unitConverter,
+      BigDecimal rechargeResidualKg) {
     boolean hasDomestic = distribution.getPercentDomestic().compareTo(BigDecimal.ZERO) > 0;
     boolean hasImports = distribution.getPercentImport().compareTo(BigDecimal.ZERO) > 0;
 
@@ -378,8 +395,13 @@ public class SalesRecalcStrategy implements RecalcStrategy {
       stateGetter.setAmortizedUnitVolume(initialCharge);
 
       if (hasDomestic) {
-        EngineNumber newDomesticUnits = unitConverter.convert(
-            new EngineNumber(domesticKg, "kg"), "units");
+        BigDecimal domesticRechargeShareKg = distribution.getPercentDomestic()
+            .multiply(rechargeResidualKg);
+        EngineNumber newDomesticUnits = convertRequiredKgToUnits(
+            domesticKg,
+            domesticRechargeShareKg,
+            unitConverter
+        );
         StreamUpdate domesticUpdate = new StreamUpdateBuilder()
             .setName("domestic")
             .setValue(newDomesticUnits)
@@ -392,8 +414,13 @@ public class SalesRecalcStrategy implements RecalcStrategy {
       }
 
       if (hasImports) {
-        EngineNumber newImportUnits = unitConverter.convert(
-            new EngineNumber(importKg, "kg"), "units");
+        BigDecimal importRechargeShareKg = distribution.getPercentImport()
+            .multiply(rechargeResidualKg);
+        EngineNumber newImportUnits = convertRequiredKgToUnits(
+            importKg,
+            importRechargeShareKg,
+            unitConverter
+        );
         StreamUpdate importUpdate = new StreamUpdateBuilder()
             .setName("import")
             .setValue(newImportUnits)
@@ -433,6 +460,36 @@ public class SalesRecalcStrategy implements RecalcStrategy {
         target.executeStreamUpdate(importUpdate);
       }
     }
+  }
+
+  /**
+   * Convert a stream's share of required kg into equipment units, backing out the ordinary
+   * recharge share riding on top before dividing by the initial charge.
+   *
+   * <p>{@code streamKg} already has this stream's share of ordinary recharge (of
+   * priorEquipment) added on top by {@link org.kigalisim.engine.recalc.util.DemandAnalysisBuilder};
+   * that recharge is anchored to the independent {@code priorEquipment} stream and is not
+   * unit-scaled, so a plain {@code kg / initialCharge} division overcounts the implied unit
+   * count by the recharge share. Setting the stream to that overcounted unit count then makes
+   * {@code ImplicitRechargeUpdateBuilder} record an {@code implicitPrecharge} based on the
+   * overcount. Since a later recalculation this same tick (e.g. from {@code recover}) computes
+   * its own <em>fresh</em> precharge from the {@code newEquipment} stream (unaffected by this
+   * update) rather than from the overcounted figure, the two disagree, and {@code
+   * DemandAnalysisBuilder} nets a residual gap into {@code totalDemand} instead of the fresh and
+   * implicit precharge fully canceling. Backing out the recharge share here keeps the recorded
+   * unit count accurate, so later calls' fresh and implicit precharge stay consistent.</p>
+   *
+   * @param streamKg This stream's share of the required kg
+   * @param streamRechargeShareKg This stream's share of the ordinary recharge residual (see
+   *     {@link #execute}) in kg
+   * @param unitConverter Unit converter for the kg-to-units conversion, using whatever
+   *     amortized unit volume the caller has configured
+   * @return The equivalent number of equipment units for this stream's share
+   */
+  private EngineNumber convertRequiredKgToUnits(BigDecimal streamKg,
+      BigDecimal streamRechargeShareKg, UnitConverter unitConverter) {
+    BigDecimal newUnitsBasisKg = streamKg.subtract(streamRechargeShareKg);
+    return unitConverter.convert(new EngineNumber(newUnitsBasisKg, "kg"), "units");
   }
 
 }
