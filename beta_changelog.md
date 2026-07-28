@@ -16,7 +16,7 @@ The following changes have been adopted and released.
 
 ### Negative sign bug
 
-**Status**: Released July 27, 2026
+**Status**: Released July 28, 2026
 
 **Classification**: Bug
 
@@ -24,7 +24,7 @@ Users who entered in a negative change in the designer UI did have their simulat
 
 ### Faster results visualization
 
-**Status**: Preview released July 24, 2026. Full release July 27, 2026.
+**Status**: Preview released July 24, 2026. Full release July 28, 2026.
 
 **Classification**: Enhancement
 
@@ -32,7 +32,7 @@ Switching metrics, scenarios, applications, or substances in the results visuali
 
 ### Recharge of new equipment (precharge)
 
-**Status**: Preview released July 23, 2026. Full release July 27, 2026.
+**Status**: Preview released July 23, 2026. Full release July 28, 2026.
 
 **Classification**: Enhancement
 
