@@ -85,7 +85,8 @@ public class GetStreamOperationTest {
 
     // Verify the value was pushed onto the stack
     EngineNumber result = machine.getResult();
-    assertEquals(BigDecimal.valueOf(42), result.getValue(), "Stream value should be retrieved correctly");
+    assertEquals(BigDecimal.valueOf(42), result.getValue(),
+        "Stream value should be retrieved correctly");
     assertEquals("kg", result.getUnits(), "Stream units should be retrieved correctly");
   }
 
@@ -111,7 +112,8 @@ public class GetStreamOperationTest {
 
     // Verify the value was pushed onto the stack with converted units
     EngineNumber result = machine.getResult();
-    assertEquals(BigDecimal.valueOf(0.001), result.getValue(), "Stream value should be converted correctly");
+    assertEquals(BigDecimal.valueOf(0.001), result.getValue(),
+        "Stream value should be converted correctly");
     assertEquals("mt", result.getUnits(), "Stream units should be converted correctly");
   }
 
@@ -133,5 +135,130 @@ public class GetStreamOperationTest {
     // Verify the exception message
     assertTrue(exception.getMessage().contains("Unknown stream: non_existent_stream"),
         "Exception message should indicate unknown stream");
+  }
+
+  /**
+   * Test GetStreamOperation with yearsPast=1 retrieves prior year's stream value.
+   */
+  @Test
+  public void testExecuteWithYearsPast() {
+    // Set a stream value in the engine
+    EngineNumber number = new EngineNumber(BigDecimal.valueOf(42), "kg");
+    engine.enable("domestic", Optional.empty());
+    StreamUpdate update = new StreamUpdateBuilder()
+        .setName("domestic")
+        .setValue(number)
+        .setYearMatcher(Optional.empty())
+        .inferSubtractRecycling()
+        .build();
+    engine.executeStreamUpdate(update);
+
+    // Advance to the next year (creates prior state)
+    engine.incrementYear();
+
+    // Create and execute the operation with yearsPast=1
+    GetStreamOperation operation = new GetStreamOperation("domestic", 1);
+    operation.execute(machine);
+
+    // Verify the prior year's value was retrieved
+    EngineNumber result = machine.getResult();
+    assertEquals(BigDecimal.valueOf(42), result.getValue(),
+        "Prior year stream value should be retrieved correctly");
+    assertEquals("kg", result.getUnits(), "Stream units should be retrieved correctly");
+  }
+
+  /**
+   * Test GetStreamOperation with yearsPast=1 and unit conversion.
+   */
+  @Test
+  public void testExecuteWithYearsPastAndConversion() {
+    // Set a stream value in the engine
+    EngineNumber number = new EngineNumber(BigDecimal.valueOf(1), "kg");
+    engine.enable("domestic", Optional.empty());
+    StreamUpdate update = new StreamUpdateBuilder()
+        .setName("domestic")
+        .setValue(number)
+        .setYearMatcher(Optional.empty())
+        .inferSubtractRecycling()
+        .build();
+    engine.executeStreamUpdate(update);
+
+    // Advance to the next year (creates prior state)
+    engine.incrementYear();
+
+    // Create and execute the operation with yearsPast and unit conversion
+    GetStreamOperation operation = new GetStreamOperation("domestic", 1, "mt");
+    operation.execute(machine);
+
+    // Verify the prior year's value was retrieved and converted
+    EngineNumber result = machine.getResult();
+    assertEquals(BigDecimal.valueOf(0.001), result.getValue(),
+        "Prior year stream value should be converted correctly");
+    assertEquals("mt", result.getUnits(), "Stream units should be converted correctly");
+  }
+
+  /**
+   * Test GetStreamOperation with yearsPast and indirect substance access.
+   */
+  @Test
+  public void testExecuteWithYearsPastIndirect() {
+    // Set up second substance in the same application
+    engine.setSubstance("other substance");
+    engine.enable("domestic", Optional.empty());
+
+    // Go back to first substance and set a stream value
+    engine.setSubstance("test substance");
+    EngineNumber number = new EngineNumber(BigDecimal.valueOf(42), "kg");
+    engine.enable("domestic", Optional.empty());
+    StreamUpdate update = new StreamUpdateBuilder()
+        .setName("domestic")
+        .setValue(number)
+        .setYearMatcher(Optional.empty())
+        .inferSubtractRecycling()
+        .build();
+    engine.executeStreamUpdate(update);
+
+    // Advance to the next year (creates prior state)
+    engine.incrementYear();
+
+    // Create and execute the operation with yearsPast and targetSubstance
+    GetStreamOperation operation = new GetStreamOperation("domestic", 1, "other substance", "kg");
+    operation.execute(machine);
+
+    // Verify the prior year's value was retrieved from the target substance
+    EngineNumber result = machine.getResult();
+    assertEquals(BigDecimal.valueOf(42), result.getValue(),
+        "Prior year stream value from target substance should be retrieved correctly");
+    assertEquals("kg", result.getUnits(), "Stream units should be retrieved correctly");
+  }
+
+  /**
+   * Test GetStreamOperation with yearsPast=0 behaves like normal getStream.
+   */
+  @Test
+  public void testExecuteWithYearsPastZero() {
+    // Set a stream value in the engine
+    EngineNumber number = new EngineNumber(BigDecimal.valueOf(42), "kg");
+    engine.enable("domestic", Optional.empty());
+    StreamUpdate update = new StreamUpdateBuilder()
+        .setName("domestic")
+        .setValue(number)
+        .setYearMatcher(Optional.empty())
+        .inferSubtractRecycling()
+        .build();
+    engine.executeStreamUpdate(update);
+
+    // Advance to the next year (creates prior state)
+    engine.incrementYear();
+
+    // Create and execute the operation with yearsPast=0
+    GetStreamOperation operation = new GetStreamOperation("domestic", 0);
+    operation.execute(machine);
+
+    // Verify the current year's value is retrieved (same as normal getStream)
+    EngineNumber result = machine.getResult();
+    assertEquals(BigDecimal.valueOf(42), result.getValue(),
+        "Current year stream value should be retrieved correctly with yearsPast=0");
+    assertEquals("kg", result.getUnits(), "Stream units should be retrieved correctly");
   }
 }
