@@ -17,6 +17,7 @@ import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
@@ -1101,6 +1102,136 @@ public class SimulationStateTest {
     List<SubstanceInApplicationId> copySubstances = copy.getRegisteredSubstances();
     assertEquals(originalSubstances.size(), copySubstances.size(),
                  "Copy should have the same number of substances");
+  }
+
+
+  /**
+   * Test that getAtPrior(0) returns Optional.of(this).
+   */
+  @Test
+  public void testGetAtPriorZeroReturnsSelf() {
+    SimulationState keeper = createMockKeeper();
+    Scope testScope = createTestScope();
+    keeper.ensureSubstance(testScope);
+
+    Optional<SimulationState> result = keeper.getAtPrior(0);
+    assertTrue(result.isPresent(), "getAtPrior(0) should return a present Optional");
+    assertSame(keeper, result.get(), "getAtPrior(0) should return the same instance");
+  }
+
+  /**
+   * Test that getAtPrior(1) returns the prior state after incrementYear with correct values.
+   */
+  @Test
+  public void testGetAtPriorOneReturnsPrior() {
+    SimulationState keeper = createMockKeeper();
+    Scope testScope = createTestScope();
+    keeper.ensureSubstance(testScope);
+    keeper.markStreamAsEnabled(testScope, "domestic");
+
+    // Set a stream value using SimulationStateUpdate
+    SimulationStateUpdate domesticStream = new SimulationStateUpdateBuilder()
+        .setUseKey(testScope)
+        .setName("domestic")
+        .setValue(new EngineNumber(new BigDecimal("100"), "kg"))
+        .setSubtractRecycling(false)
+        .build();
+    keeper.update(domesticStream);
+
+    // Increment year
+    keeper.incrementYear();
+
+    // Verify getAtPrior(1) returns the prior state with the original value
+    Optional<SimulationState> priorState = keeper.getAtPrior(1);
+    assertTrue(priorState.isPresent(), "getAtPrior(1) should return a present Optional after incrementYear");
+    SimulationState prior = priorState.get();
+    EngineNumber priorDomestic = prior.getStream(testScope, "domestic");
+    assertEquals(new BigDecimal("100"), priorDomestic.getValue(),
+                 "Prior state should have the original stream value");
+    assertEquals("kg", priorDomestic.getUnits(),
+                 "Prior state should have correct units");
+  }
+
+  /**
+   * Test that getAtPrior(2) returns the oldest state after 2 increments,
+   * and getAtPrior(1) returns the intermediate state.
+   */
+  @Test
+  public void testGetAtPriorMultiYear() {
+    SimulationState keeper = createMockKeeper();
+    Scope testScope = createTestScope();
+    keeper.ensureSubstance(testScope);
+    keeper.markStreamAsEnabled(testScope, "domestic");
+
+    // Year 1: set value to 100
+    SimulationStateUpdate year1Stream = new SimulationStateUpdateBuilder()
+        .setUseKey(testScope)
+        .setName("domestic")
+        .setValue(new EngineNumber(new BigDecimal("100"), "kg"))
+        .setSubtractRecycling(false)
+        .build();
+    keeper.update(year1Stream);
+
+    // Increment to year 2
+    keeper.incrementYear();
+
+    // Year 2: change value to 200
+    SimulationStateUpdate year2Stream = new SimulationStateUpdateBuilder()
+        .setUseKey(testScope)
+        .setName("domestic")
+        .setValue(new EngineNumber(new BigDecimal("200"), "kg"))
+        .setSubtractRecycling(false)
+        .build();
+    keeper.update(year2Stream);
+
+    // Increment to year 3
+    keeper.incrementYear();
+
+    // Verify getAtPrior(2) returns year 1 state with value 100
+    Optional<SimulationState> prior2 = keeper.getAtPrior(2);
+    assertTrue(prior2.isPresent(), "getAtPrior(2) should return a present Optional");
+    EngineNumber prior2Domestic = prior2.get().getStream(testScope, "domestic");
+    assertEquals(new BigDecimal("100"), prior2Domestic.getValue(),
+                 "getAtPrior(2) should have year 1 value");
+
+    // Verify getAtPrior(1) returns year 2 state with value 200
+    Optional<SimulationState> prior1 = keeper.getAtPrior(1);
+    assertTrue(prior1.isPresent(), "getAtPrior(1) should return a present Optional");
+    EngineNumber prior1Domestic = prior1.get().getStream(testScope, "domestic");
+    assertEquals(new BigDecimal("200"), prior1Domestic.getValue(),
+                 "getAtPrior(1) should have year 2 value");
+  }
+
+  /**
+   * Test that requesting getAtPrior(n) where n exceeds available prior years returns Optional.empty().
+   */
+  @Test
+  public void testGetAtPriorEmpty() {
+    SimulationState keeper = createMockKeeper();
+    Scope testScope = createTestScope();
+    keeper.ensureSubstance(testScope);
+    keeper.markStreamAsEnabled(testScope, "domestic");
+
+    // Set a stream value
+    SimulationStateUpdate domesticStream = new SimulationStateUpdateBuilder()
+        .setUseKey(testScope)
+        .setName("domestic")
+        .setValue(new EngineNumber(new BigDecimal("100"), "kg"))
+        .setSubtractRecycling(false)
+        .build();
+    keeper.update(domesticStream);
+
+    // Increment twice (year 3)
+    keeper.incrementYear();
+    keeper.incrementYear();
+
+    // Requesting 4 years back should return empty (only 2 prior states exist)
+    Optional<SimulationState> result = keeper.getAtPrior(4);
+    assertTrue(result.isEmpty(), "getAtPrior(4) should return empty when only 2 prior states exist");
+
+    // Negative years should also return empty
+    Optional<SimulationState> negativeResult = keeper.getAtPrior(-1);
+    assertTrue(negativeResult.isEmpty(), "getAtPrior(-1) should return empty for negative years");
   }
 
 }
