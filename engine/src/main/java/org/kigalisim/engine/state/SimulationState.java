@@ -761,10 +761,7 @@ public class SimulationState {
    * linked list of prior states, enabling lookback N years via getAtPrior().</p>
    */
   public void incrementYear() {
-    // Create a deep copy of the current state BEFORE modifications
     SimulationState priorCopy = this.deepCopy();
-
-    // Set priorState on the deep copy to maintain the linked list
     priorCopy.priorState = this.priorState;
 
     currentYear += 1;
