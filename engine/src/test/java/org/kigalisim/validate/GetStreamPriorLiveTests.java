@@ -59,26 +59,14 @@ public class GetStreamPriorLiveTests {
     // Verify simulation completed without error
     assertTrue(resultsList.size() >= 20, "Should have at least 20 years of results");
 
-    // Year 1: 1000 units sold, no retirement (sales 9/10/11 years ago = 0)
-    EngineResult year1 = LiveTestsUtil.getResult(resultsList.stream(), 1, "Test", "SubA");
-    assertNotNull(year1, "Should have result for Test/SubA in year 1");
-    double popYear1 = year1.getPopulation().getValue().doubleValue();
-    assertEquals(1000.0, popYear1, 0.01,
-        "Year 1 population should be 1000 units, but was " + popYear1);
-
-    // Year 5: still 1000 units (no retirement yet, sales 9+ years ago = 0)
-    EngineResult year5 = LiveTestsUtil.getResult(resultsList.stream(), 5, "Test", "SubA");
-    assertNotNull(year5, "Should have result for Test/SubA in year 5");
-    double popYear5 = year5.getPopulation().getValue().doubleValue();
-    assertEquals(1000.0, popYear5, 0.01,
-        "Year 5 population should be 1000 units, but was " + popYear5);
-
-    // Year 9: still 1000 units (no retirement yet, sales 9+ years ago = 0)
-    EngineResult year9 = LiveTestsUtil.getResult(resultsList.stream(), 9, "Test", "SubA");
-    assertNotNull(year9, "Should have result for Test/SubA in year 9");
-    double popYear9 = year9.getPopulation().getValue().doubleValue();
-    assertEquals(1000.0, popYear9, 0.01,
-        "Year 9 population should be 1000 units, but was " + popYear9);
+    // Years 1, 5, 9: still 1000 units (no retirement yet, sales 9+ years ago = 0)
+    for (int year : new int[]{1, 5, 9}) {
+      EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), year, "Test", "SubA");
+      assertNotNull(result, "Should have result for Test/SubA in year " + year);
+      double pop = result.getPopulation().getValue().doubleValue();
+      assertEquals(1000.0, pop, 0.01,
+          "Year " + year + " population should be 1000 units, but was " + pop);
+    }
 
     // Year 10: sales 9 years ago = 1000, retire 0.2 * 1000 = 200 units -> 800
     EngineResult year10 = LiveTestsUtil.getResult(resultsList.stream(), 10, "Test", "SubA");
