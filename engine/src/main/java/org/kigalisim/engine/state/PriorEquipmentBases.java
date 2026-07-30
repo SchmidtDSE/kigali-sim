@@ -275,6 +275,7 @@ public class PriorEquipmentBases {
         appliedRechargeAmount,
         prechargeBasePopulation,
         appliedPrechargeAmount,
-        recyclingCalculatedThisStep);
+        recyclingCalculatedThisStep
+    );
   }
 }
