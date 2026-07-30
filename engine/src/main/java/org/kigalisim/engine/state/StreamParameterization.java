@@ -76,7 +76,7 @@ public class StreamParameterization {
     inductionRateRecharge = getDefaultInductionRate();
     inductionRateEol = getDefaultInductionRate();
 
-    priorEquipmentBases = new PriorEquipmentBases();
+    priorEquipmentBases = new MutablePriorEquipmentBases();
 
     setLastSpecifiedValue("domestic", ZERO_VOLUME);
     setLastSpecifiedValue("import", ZERO_VOLUME);
@@ -840,7 +840,7 @@ public class StreamParameterization {
     copy.salesIntentFreshlySet = this.salesIntentFreshlySet;
 
     // Deep copy priorEquipmentBases
-    copy.priorEquipmentBases = priorEquipmentBases.deepCopy();
+    copy.priorEquipmentBases = priorEquipmentBases.freeze();
 
     return copy;
   }
