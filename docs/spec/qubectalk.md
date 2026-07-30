@@ -525,8 +525,49 @@ set domestic to (100 * yearsElapsed / 10) mt
 
 These values can be used in any expression. Similar variables are also available for other timescales: `monthsElapsed`, `monthAbsolute`, `daysElapsed`, and `dayAbsolute`. These do not reset from year to year but accumulate from the start of the simulation. Note that month and day timescales are reserved for future use.
 
-### Get and set
-Developers can manually set a value of a stream:
+### Get
+The `get` command retrieves values from streams for use in expressions and calculations.
+
+**Syntax:**
+
+```
+get streamName
+get streamName as units
+get streamName of "substanceName"
+get streamName of "substanceName" as units
+get streamName N years ago
+get streamName N years ago as units
+get streamName N years ago of "substanceName"
+get streamName N years ago of "substanceName" as units
+```
+
+**Available Streams:** `sales`, `virgin`, `domestic`, `import`, `export`, `equipment`, `priorEquipment`, `bank`, `age`
+
+**Indirect Access (Cross-substance):** The `of "substanceName"` option allows you to access stream values from other substances within the same application.
+
+**Years-Ago Queries:** The `N years ago` syntax retrieves a stream value from N years before the current simulation year. This is useful for modeling fixed retirement schedules based on equipment age. Asking for a value before the simulation start returns 0.
+
+**Examples:**
+
+```
+define currentSales as get sales
+define currentSalesKg as get sales as kg
+define salesOther as get sales of "HFC-134a" as kg
+define equipmentCount as get equipment as units
+define priorEquip as get priorEquipment 5 years ago as units
+```
+
+### Set
+The `set` command manually sets a value of a stream.
+
+**Syntax:**
+
+```
+set streamName to amount <during>
+set streamName of "substanceName" to amount <during>
+```
+
+**Examples:**
 
 ```
 set import to 1 mt during year 2
@@ -535,16 +576,9 @@ set domestic of "HFC-134a" to 1 mt during year 2
 set priorEquipment to 1000 units during year 1
 ```
 
-If year is not specified, it is applied in all years. Values can also be retrieved in expressions:
+If year is not specified, it is applied in all years.
 
-```
-define currentSales as get sales
-define currentSalesKg as get sales as kg
-define salesOther as get sales of "HFC-134a" as kg
-define equipmentCount as get equipment as units
-```
-
-Setting an aggregate stream like sales will cause the value to be distributed proportionally to the prior value of the sub-streams. In the case of this example, this would be applied across import, domestic, and export. For `virgin`, the value is distributed proportionally across domestic and import without subtracting recycling.
+Setting an aggregate stream like `sales` will cause the value to be distributed proportionally to the prior value of the sub-streams. In the case of this example, this would be applied across import, domestic, and export. For `virgin`, the value is distributed proportionally across domestic and import without subtracting recycling.
 
 ### Age stream
 The `age` stream provides access to the weighted average age of equipment in the population. This is a read-only computed stream:

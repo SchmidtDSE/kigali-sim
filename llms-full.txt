@@ -119,7 +119,7 @@ Kigali Sim uses DecimalFormat number formatting (comma for thousands, period for
 
 #### Advanced Features
 - **Variables**: `define identifier as expression` and `get identifier` (scoped to enclosing start/end block)
-- **Stream access**: `get {stream}` - access streams like `sales`, `virgin`, `equipment`, `age`, etc.
+- **Stream access**: `get {stream}` - access streams like `sales`, `virgin`, `equipment`, `age`, etc. Supports `N years ago` queries (e.g., `get priorEquipment 5 years ago`) for historical values.
 - **Unit conversions**: `get {stream} as {units}` like `get import of "substance" as mt` or `get age as years`
 - **Age stream**: `get age as years` provides weighted average equipment age for age-dependent policies (read-only, computed)
 - **Constraints**: `limit expression to [min,max]`, `limit expression to [,max]` (min of negative infinity), `limit expression to [min,]` (max of infinity)
@@ -502,9 +502,29 @@ The bank columns (bankKg, bankTCO2e, bankChangeKg, bankChangeTCO2e) represent th
 
 Bank calculations use initial charge values and GWP (Global Warming Potential) from the equals statement to convert equipment population (units) to substance volume (kg) and GHG impact (tCO2e). The change columns show the difference from the previous year, reflecting net increase or decrease in the substance bank.
 
-## Variable Hazards
+## Hazards Schedule
 
-Constant % / year having recharge or retirement recommended for simple scripts but variable hazards can use age of equipment where `get age` yields average age of equipment:
+Constant hazard rates are recommended for simple scripts. Variable schedules are recommended for sophisticated models. Fixed schedules should only be used when the user is very sure or has confirmed they know exact age and retirement expectations (ask the user the first time they use it if they are certain).
+
+### Constant
+
+Constant hazard is `x % / year` (or just `x %`). Each year, each unit has a `x %` chance of retiring. Recommended for simple scripts when exact age data is unavailable.
+
+### Fixed Schedule
+
+Retirement occurs at specific ages. Example: 20% at 9 years, 60% at 10 years, 20% at 11 years (10-year expected lifespan):
+
+```
+retire (0.2 * (get priorEquipment 9 years ago as units)) units / year
+retire (0.6 * (get priorEquipment 10 years ago as units)) units / year
+retire (0.2 * (get priorEquipment 11 years ago as units)) units / year
+```
+
+Asking for a value before simulation start returns 0. Only use when user knows exact equipment ages.
+
+### Variable Schedule
+
+Variable hazards can use age of equipment where `get age` yields average age of equipment:
 
 ```
 uses substance "R-407C"

@@ -21,7 +21,8 @@
           <li><a href="#motivation">Motivation</a></li>
           <li><a href="#using-default-assumptions">Using default assumptions</a></li>
           <li><a href="#increasing-hazard-rates-with-age">Increasing hazard rates with age</a></li>
-          <li><a href="#fitting-a-function">Fitting a function</a></li>
+          <li><a href="#exact-retirement-schedule">Exact retirement schedule</a></li>
+          <li><a href="#fitting-a-function">Fitting a function (optional)</a></li>
           <li><a href="#conclusion">Conclusion</a></li>
           <li><a href="#next-steps">Next Steps</a></li>
         </ul>
@@ -88,13 +89,60 @@ end substance</code></pre>
         </p>
       </section>
 
+      <section class="major" id="exact-retirement-schedule">
+        <h2>Exact retirement schedule</h2>
+
+        <p>
+          Sometimes you may know the exact age of equipment already in service and want to model a precise retirement schedule rather than a continuous hazard function. For example, you might have data showing that a specific percentage of equipment retires at specific ages.
+        </p>
+
+        <p>
+          Let's consider an example for HFC-134a in commercial refrigeration where the retirement schedule is: 20% of equipment retires at 9 years, 60% at 10 years, and 20% at 11 years. This pattern means equipment has a 10-year expected lifespan but with a narrow window of retirement concentrated around that age.
+        </p>
+
+        <p>
+          To model this, you use the `get streamName N years ago` syntax to retrieve the equipment population from N years ago (when those units were sold) and apply the retirement fraction:
+        </p>
+
+        <pre><code class="language-qubectalk">start default
+
+  define application "Commercial Refrigeration"
+
+    uses substance "HFC-134a"
+      enable domestic
+      initial charge with 1 kg / unit for domestic
+      equals 1430 kgCO2e / kg
+      set sales to 1000 units during year 1
+      set sales to 0 units during year 2
+      retire (0.2 * (get priorEquipment 9 years ago as units)) units / year
+      retire (0.6 * (get priorEquipment 10 years ago as units)) units / year
+      retire (0.2 * (get priorEquipment 11 years ago as units)) units / year
+    end substance
+
+  end application
+
+end default
+
+
+start simulations
+
+  simulate "BAU"
+  from years 1 to 20
+
+end simulations</code></pre>
+
+        <p>
+          This approach only works if the user knows the exact age of equipment. If you are uncertain about equipment ages, it may be more appropriate to use a continuous hazard function (like the age-dependent approach from the previous section) or a constant percentage retirement rate.
+        </p>
+      </section>
+
       <section class="major" id="fitting-a-function">
         <h2>Fitting a function (optional)</h2>
         <p>
           In our first example, we assumed we already knew the hazard function: a specific estimate of how much we expect the probability of retirement (or servicing) to change with equipment age. This captures some important real-world dynamics! However, some users might not have that detailed information. 
         </p>
         <p>
-          Let's consider a second optional example. For those with just a little calculus or maybe some background in operations research or reliability engineering, let's address a slightly more messy situation where maybe we have some basic data about equipment but not an exact hazard function. Specifically, let's assume:
+          In our second example, we used a fixed retirement schedule based on exact equipment ages. For those who have neither a precise hazard function nor exact age data but do have some aggregate observations, let's consider a third optional example. For those with just a little calculus or maybe some background in operations research or reliability engineering, let's address a slightly more messy situation where maybe we have some basic data about equipment but not an exact hazard function. Specifically, let's assume:
         </p>
         <ul>
           <li>We have about an average 10 year lifespan or, more precisely, we find that a unit has about a 50% chance of having retired by the end of 10 years of service.</li>
