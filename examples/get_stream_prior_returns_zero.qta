@@ -1,0 +1,25 @@
+start default
+
+  define application "Test"
+
+    uses substance "SubA"
+      enable domestic
+      initial charge with 1 kg / unit for domestic
+      equals 1 kgCO2e / kg
+      set domestic to 500 kg during year 1
+      # get priorEquipment 5 years ago should return 0 since no equipment exists before year 1
+      set priorEquipment to (get priorEquipment 5 years ago as units) + 100 units during year 1
+      retire 5 % / year
+    end substance
+
+  end application
+
+end default
+
+
+start simulations
+
+  simulate "BAU"
+  from years 1 to 5
+
+end simulations

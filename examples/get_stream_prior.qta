@@ -1,0 +1,27 @@
+start default
+
+  define application "Test"
+
+    uses substance "SubA"
+      enable import
+      initial charge with 1 kg / unit for import
+      equals 1 kgCO2e / kg
+      equals 1 kwh / unit
+      set sales to 1000 units during year 1
+      set sales to 0 units during year 2
+      retire (0.2 * (get priorEquipment 9 years ago as units)) units / year
+      retire (0.6 * (get priorEquipment 10 years ago as units)) units / year
+      retire (0.2 * (get priorEquipment 11 years ago as units)) units / year
+    end substance
+
+  end application
+
+end default
+
+
+start simulations
+
+  simulate "BAU"
+  from years 1 to 20
+
+end simulations

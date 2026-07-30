@@ -364,6 +364,92 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    * {@inheritDoc}
    */
   @Override
+  public Fragment visitGetStreamPrior(QubecTalkParser.GetStreamPriorContext ctx) {
+    String streamName = visit(ctx.target).getString();
+
+    // Parse the years past from the INTEGER_ token
+    int yearsPast = Integer.parseInt(ctx.INTEGER_().getText());
+
+    Operation operation = new JointOperation(
+        new GetStreamOperation(streamName, yearsPast),
+        new RemoveUnitsOperation()
+    );
+
+    return new OperationFragment(operation);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Fragment visitGetStreamPriorConversion(
+      QubecTalkParser.GetStreamPriorConversionContext ctx) {
+    String streamName = visit(ctx.target).getString();
+
+    // Parse the years past from the INTEGER_ token
+    int yearsPast = Integer.parseInt(ctx.INTEGER_().getText());
+
+    UnitFragment unitFragment = (UnitFragment) visit(ctx.conversion);
+    String unitConversion = unitFragment.getUnit();
+
+    Operation operation = new JointOperation(
+        new GetStreamOperation(streamName, yearsPast, unitConversion),
+        new RemoveUnitsOperation()
+    );
+
+    return new OperationFragment(operation);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Fragment visitGetStreamIndirectPrior(
+      QubecTalkParser.GetStreamIndirectPriorContext ctx) {
+    String streamName = visit(ctx.target).getString();
+
+    // Parse the years past from the INTEGER_ token
+    int yearsPast = Integer.parseInt(ctx.INTEGER_().getText());
+
+    String targetSubstance = visit(ctx.rescope).getString();
+
+    Operation operation = new JointOperation(
+        new GetStreamOperation(streamName, yearsPast, targetSubstance, null),
+        new RemoveUnitsOperation()
+    );
+
+    return new OperationFragment(operation);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Fragment visitGetStreamIndirectPriorConversion(
+      QubecTalkParser.GetStreamIndirectPriorConversionContext ctx) {
+    String streamName = visit(ctx.target).getString();
+
+    // Parse the years past from the INTEGER_ token
+    int yearsPast = Integer.parseInt(ctx.INTEGER_().getText());
+
+    String targetSubstance = visit(ctx.rescope).getString();
+
+    UnitFragment unitFragment = (UnitFragment) visit(ctx.conversion);
+    String unitConversion = unitFragment.getUnit();
+
+    Operation operation = new JointOperation(
+        new GetStreamOperation(streamName, yearsPast, targetSubstance, unitConversion),
+        new RemoveUnitsOperation()
+    );
+
+    return new OperationFragment(operation);
+  }
+
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
   public Fragment visitLimitBoundExpression(QubecTalkParser.LimitBoundExpressionContext ctx) {
     return visitChildren(ctx);
   }

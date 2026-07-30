@@ -1,0 +1,27 @@
+start default
+
+  define application "Test"
+
+    uses substance "SubA"
+      enable domestic
+      initial charge with 10 kg / unit for domestic
+      equals 100 tCO2e / mt
+      set domestic to 5000 kg during year 1
+      set domestic to 10000 kg during year 2
+      set domestic to 15000 kg during year 3
+      # get domestic 2 years ago as mt should convert kg to megatonnes
+      set priorEquipment to (get domestic 2 years ago as mt) * 1000000 units during year 3
+      retire 5 % / year
+    end substance
+
+  end application
+
+end default
+
+
+start simulations
+
+  simulate "BAU"
+  from years 1 to 5
+
+end simulations
