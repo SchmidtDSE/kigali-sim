@@ -223,4 +223,37 @@ public class PriorEquipmentBases {
     recyclingCalculatedThisStep = false;
   }
 
+
+  /**
+   * Create a deep copy of this prior equipment bases instance.
+   *
+   * <p>All mutable fields, including Optional-wrapped EngineNumber instances,
+   * are deep copied so that mutations on the copy do not affect the original.</p>
+   *
+   * @return A deep copy of this PriorEquipmentBases instance
+   */
+  public PriorEquipmentBases deepCopy() {
+    PriorEquipmentBases copy = new PriorEquipmentBases();
+
+    // Deep copy Optional<EngineNumber> fields
+    copy.retirementBasePopulation = retirementBasePopulation.map(
+        v -> new EngineNumber(v.getValue(), v.getUnits()));
+    copy.appliedRetirementAmount = appliedRetirementAmount.map(
+        v -> new EngineNumber(v.getValue(), v.getUnits()));
+    copy.rechargeBasePopulation = rechargeBasePopulation.map(
+        v -> new EngineNumber(v.getValue(), v.getUnits()));
+    copy.appliedRechargeAmount = appliedRechargeAmount.map(
+        v -> new EngineNumber(v.getValue(), v.getUnits()));
+    copy.prechargeBasePopulation = prechargeBasePopulation.map(
+        v -> new EngineNumber(v.getValue(), v.getUnits()));
+    copy.appliedPrechargeAmount = appliedPrechargeAmount.map(
+        v -> new EngineNumber(v.getValue(), v.getUnits()));
+
+    // Copy primitive fields
+    copy.hasReplacementThisStep = this.hasReplacementThisStep;
+    copy.retireCalculatedThisStep = this.retireCalculatedThisStep;
+    copy.recyclingCalculatedThisStep = this.recyclingCalculatedThisStep;
+
+    return copy;
+  }
 }

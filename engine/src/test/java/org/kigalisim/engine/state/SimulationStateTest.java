@@ -1074,6 +1074,8 @@ public class SimulationStateTest {
     assertEquals(new BigDecimal("100"), originalSales.getValue(),
                  "Original lastSpecifiedValue should be unchanged after mutating copy");
 
+    // Enable streams on the copy before setting values
+    copy.markStreamAsEnabled(testScope, "domestic");
     // Mutate streams on the copy - set a stream value
     SimulationStateUpdate copyStream = new SimulationStateUpdateBuilder()
         .setUseKey(testScope)

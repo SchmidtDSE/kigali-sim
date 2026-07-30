@@ -795,4 +795,56 @@ public class StreamParameterization {
       default -> false;
     };
   }
+
+  /**
+   * Create a deep copy of this stream parameterization.
+   *
+   * <p>All mutable fields, including maps and EngineNumber instances, are deep copied
+   * so that mutations on the copy do not affect the original.</p>
+   *
+   * @return A deep copy of this StreamParameterization instance
+   */
+  public StreamParameterization deepCopy() {
+    StreamParameterization copy = new StreamParameterization();
+
+    // Deep copy EngineNumber fields
+    copy.setGhgIntensity(new EngineNumber(ghgIntensity.getValue(), ghgIntensity.getUnits()));
+    copy.setEnergyIntensity(new EngineNumber(energyIntensity.getValue(), energyIntensity.getUnits()));
+    copy.setRechargePopulation(new EngineNumber(rechargePopulation.getValue(), rechargePopulation.getUnits()));
+    copy.setRechargeIntensity(new EngineNumber(rechargeIntensity.getValue(), rechargeIntensity.getUnits()));
+    copy.setPrechargePopulation(new EngineNumber(prechargePopulation.getValue(), prechargePopulation.getUnits()));
+    copy.setPrechargeIntensity(new EngineNumber(prechargeIntensity.getValue(), prechargeIntensity.getUnits()));
+    copy.setRecoveryRate(new EngineNumber(recoveryRateRecharge.getValue(), recoveryRateRecharge.getUnits()));
+    copy.setYieldRate(new EngineNumber(yieldRateRecharge.getValue(), yieldRateRecharge.getUnits()));
+    copy.setRecoveryRate(new EngineNumber(recoveryRateEol.getValue(), recoveryRateEol.getUnits()), RecoveryStage.EOL);
+    copy.setYieldRate(new EngineNumber(yieldRateEol.getValue(), yieldRateEol.getUnits()), RecoveryStage.EOL);
+    copy.setRetirementRate(new EngineNumber(retirementRate.getValue(), retirementRate.getUnits()));
+    copy.setInductionRate(new EngineNumber(inductionRateRecharge.getValue(), inductionRateRecharge.getUnits()));
+    copy.setInductionRate(new EngineNumber(inductionRateEol.getValue(), inductionRateEol.getUnits()), RecoveryStage.EOL);
+
+    // Deep copy initialCharge map
+    for (Map.Entry<String, EngineNumber> entry : initialCharge.entrySet()) {
+      EngineNumber value = entry.getValue();
+      copy.setInitialCharge(entry.getKey(),
+          new EngineNumber(value.getValue(), value.getUnits()));
+    }
+
+    // Deep copy lastSpecifiedValue map
+    for (Map.Entry<String, EngineNumber> entry : lastSpecifiedValue.entrySet()) {
+      EngineNumber value = entry.getValue();
+      copy.setLastSpecifiedValue(entry.getKey(),
+          new EngineNumber(value.getValue(), value.getUnits()));
+    }
+
+    // Deep copy enabledStreams set
+    copy.enabledStreams.addAll(enabledStreams);
+
+    // Copy primitive fields
+    copy.salesIntentFreshlySet = this.salesIntentFreshlySet;
+
+    // Deep copy priorEquipmentBases
+    copy.priorEquipmentBases = priorEquipmentBases.deepCopy();
+
+    return copy;
+  }
 }

@@ -2225,4 +2225,41 @@ public class SimulationState {
     StreamParameterization parameterization = getParameterization(useKey);
     parameterization.clearLastSpecifiedValue(stream);
   }
+
+  /**
+   * Create a deep copy of this simulation state.
+   *
+   * <p>All mutable fields, including maps and EngineNumber instances, are deep copied
+   * so that mutations on the copy do not affect the original. The state getter and
+   * unit converter dependencies are shared (not copied) as they are configuration objects.</p>
+   *
+   * @return A deep copy of this SimulationState instance
+   */
+  public SimulationState deepCopy() {
+    SimulationState copy = new SimulationState(stateGetter, unitConverter);
+
+    // Deep copy substances map (each StreamParameterization is deep copied)
+    for (Map.Entry<String, StreamParameterization> entry : substances.entrySet()) {
+      copy.substances.put(entry.getKey(), entry.getValue().deepCopy());
+    }
+
+    // Deep copy streams map
+    for (Map.Entry<String, EngineNumber> entry : streams.entrySet()) {
+      EngineNumber value = entry.getValue();
+      copy.streams.put(entry.getKey(),
+          new EngineNumber(value.getValue(), value.getUnits()));
+    }
+
+    // Deep copy priorStreams map
+    for (Map.Entry<String, EngineNumber> entry : priorStreams.entrySet()) {
+      EngineNumber value = entry.getValue();
+      copy.priorStreams.put(entry.getKey(),
+          new EngineNumber(value.getValue(), value.getUnits()));
+    }
+
+    // Copy primitive field
+    copy.currentYear = this.currentYear;
+
+    return copy;
+  }
 }
