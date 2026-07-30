@@ -1035,6 +1035,10 @@ public class SimulationStateTest {
 
   /**
    * Test that deepCopy creates an independent copy for SimulationState.
+   *
+   * <p>Per-substance parameterization is frozen as part of the copy (see
+   * {@link MutableStreamParameterization#freeze()}), so mutating it via the copy
+   * now throws rather than silently diverging from the original.</p>
    */
   @Test
   public void testDeepCopyIndependent() {
@@ -1048,36 +1052,49 @@ public class SimulationStateTest {
     original.setInitialCharge(testScope, "domestic", new EngineNumber(new BigDecimal("3.0"), "kg / unit"));
     original.setInitialCharge(testScope, "import", new EngineNumber(new BigDecimal("2.0"), "kg / unit"));
     original.setLastSpecifiedValue(testScope, "sales", new EngineNumber(new BigDecimal("100"), "units"));
+    original.markStreamAsEnabled(testScope, "domestic");
 
     // Deep copy
     SimulationState copy = original.deepCopy();
 
-    // Mutate the copy's ghgIntensity
-    copy.setGhgIntensity(testScope, new EngineNumber(new BigDecimal("9.9"), "kgCO2e / kg"));
+    // The copy's per-substance parameterization is frozen; mutating it throws
+    assertThrows(UnsupportedOperationException.class,
+        () -> copy.setGhgIntensity(testScope, new EngineNumber(new BigDecimal("9.9"), "kgCO2e / kg")),
+        "Copy's frozen parameterization should reject mutation");
     assertEquals(new BigDecimal("2.5"), original.getGhgIntensity(testScope).getValue(),
-                 "Original ghgIntensity should be unchanged after mutating copy");
+                 "Original ghgIntensity should be unaffected by the rejected mutation attempt");
+    assertEquals(new BigDecimal("2.5"), copy.getGhgIntensity(testScope).getValue(),
+                 "Copy should retain the value captured at deep copy time");
 
-    // Mutate the copy's energyIntensity
-    copy.setEnergyIntensity(testScope, new EngineNumber(new BigDecimal("8.8"), "kwh / kg"));
+    assertThrows(UnsupportedOperationException.class,
+        () -> copy.setEnergyIntensity(testScope, new EngineNumber(new BigDecimal("8.8"), "kwh / kg")),
+        "Copy's frozen parameterization should reject mutation");
     assertEquals(new BigDecimal("1.5"), original.getEnergyIntensity(testScope).getValue(),
-                 "Original energyIntensity should be unchanged after mutating copy");
+                 "Original energyIntensity should be unaffected by the rejected mutation attempt");
 
-    // Mutate the copy's initialCharge map entries
-    copy.setInitialCharge(testScope, "domestic", new EngineNumber(new BigDecimal("99.0"), "kg / unit"));
+    assertThrows(UnsupportedOperationException.class,
+        () -> copy.setInitialCharge(
+            testScope, "domestic", new EngineNumber(new BigDecimal("99.0"), "kg / unit")),
+        "Copy's frozen parameterization should reject mutation");
     assertEquals(new BigDecimal("3.0"), original.getInitialCharge(testScope, "domestic").getValue(),
-                 "Original initialCharge should be unchanged after mutating copy");
+                 "Original initialCharge should be unaffected by the rejected mutation attempt");
     assertEquals(new BigDecimal("2.0"), original.getInitialCharge(testScope, "import").getValue(),
-                 "Original import initialCharge should be unchanged after mutating copy");
+                 "Original import initialCharge should be unaffected by the rejected mutation attempt");
+    assertEquals(new BigDecimal("3.0"), copy.getInitialCharge(testScope, "domestic").getValue(),
+                 "Copy should retain the initialCharge captured at deep copy time");
 
-    // Mutate the copy's lastSpecifiedValue map entries
-    copy.setLastSpecifiedValue(testScope, "sales", new EngineNumber(new BigDecimal("999"), "units"));
+    assertThrows(UnsupportedOperationException.class,
+        () -> copy.setLastSpecifiedValue(
+            testScope, "sales", new EngineNumber(new BigDecimal("999"), "units")),
+        "Copy's frozen parameterization should reject mutation");
     EngineNumber originalSales = original.getLastSpecifiedValue(testScope, "sales");
     assertNotNull(originalSales, "Original lastSpecifiedValue should still exist");
     assertEquals(new BigDecimal("100"), originalSales.getValue(),
-                 "Original lastSpecifiedValue should be unchanged after mutating copy");
+                 "Original lastSpecifiedValue should be unaffected by the rejected mutation attempt");
 
-    // Enable streams on the copy before setting values
-    copy.markStreamAsEnabled(testScope, "domestic");
+    // "domestic" was enabled on the original before the copy, so this readable flag
+    // carries over via freeze(); the top-level streams map is still an independent
+    // mutable copy, so it can still be updated directly.
     // Mutate streams on the copy - set a stream value
     SimulationStateUpdate copyStream = new SimulationStateUpdateBuilder()
         .setUseKey(testScope)

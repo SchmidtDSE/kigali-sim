@@ -104,7 +104,7 @@ public class SimulationState {
       return;
     }
 
-    StreamParameterization parameterization = new StreamParameterization();
+    StreamParameterization parameterization = new MutableStreamParameterization();
     substances.put(key, parameterization);
 
     ensureSubstanceSales(useKey);
@@ -2263,7 +2263,7 @@ public class SimulationState {
 
     // Deep copy substances map (each StreamParameterization is deep copied)
     for (Map.Entry<String, StreamParameterization> entry : substances.entrySet()) {
-      copy.substances.put(entry.getKey(), entry.getValue().deepCopy());
+      copy.substances.put(entry.getKey(), entry.getValue().freeze());
     }
 
     // Copy streams map (EngineNumber is immutable, so references may be shared)
