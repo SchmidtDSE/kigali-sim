@@ -31,6 +31,7 @@ import org.kigalisim.engine.serializer.EngineResult;
 import org.kigalisim.engine.serializer.EngineResultSerializer;
 import org.kigalisim.engine.state.ConverterStateGetter;
 import org.kigalisim.engine.state.EngineConstants;
+import org.kigalisim.engine.state.MutableSimulationState;
 import org.kigalisim.engine.state.OverridingConverterStateGetter;
 import org.kigalisim.engine.state.Scope;
 import org.kigalisim.engine.state.SimpleUseKey;
@@ -102,7 +103,7 @@ public class SingleThreadEngine implements Engine {
 
     stateGetter = new ConverterStateGetter(this);
     unitConverter = new UnitConverter(stateGetter);
-    simulationState = new SimulationState(
+    simulationState = new MutableSimulationState(
         new OverridingConverterStateGetter(stateGetter),
         unitConverter
     );
