@@ -199,6 +199,9 @@ public class GetStreamOperationTest {
 
   /**
    * Test GetStreamOperation with yearsPast and indirect substance access.
+   *
+   * <p>This test verifies that when targetSubstance is specified, the operation correctly
+   * retrieves the stream value from the prior year's state for the target substance.</p>
    */
   @Test
   public void testExecuteWithYearsPastIndirect() {
@@ -206,10 +209,8 @@ public class GetStreamOperationTest {
     engine.setSubstance("other substance");
     engine.enable("domestic", Optional.empty());
 
-    // Go back to first substance and set a stream value
-    engine.setSubstance("test substance");
+    // Set a stream value for the target substance (other substance)
     EngineNumber number = new EngineNumber(BigDecimal.valueOf(42), "kg");
-    engine.enable("domestic", Optional.empty());
     StreamUpdate update = new StreamUpdateBuilder()
         .setName("domestic")
         .setValue(number)
@@ -222,6 +223,7 @@ public class GetStreamOperationTest {
     engine.incrementYear();
 
     // Create and execute the operation with yearsPast and targetSubstance
+    // This should get domestic from "other substance" 1 year ago
     GetStreamOperation operation = new GetStreamOperation("domestic", 1, "other substance", "kg");
     operation.execute(machine);
 

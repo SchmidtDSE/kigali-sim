@@ -32,7 +32,7 @@ public class GetStreamOperation implements Operation {
    * @param streamName The name of the stream to get.
    */
   public GetStreamOperation(String streamName) {
-    this(streamName, 0);
+    this(streamName, 0, Optional.empty(), Optional.empty());
   }
 
   /**
@@ -42,10 +42,7 @@ public class GetStreamOperation implements Operation {
    * @param yearsPast The number of years to look back. Zero means current year.
    */
   public GetStreamOperation(String streamName, int yearsPast) {
-    this.streamName = streamName;
-    this.units = Optional.empty();
-    this.targetSubstance = Optional.empty();
-    this.yearsPast = yearsPast;
+    this(streamName, yearsPast, Optional.empty(), Optional.empty());
   }
 
   /**
@@ -55,8 +52,7 @@ public class GetStreamOperation implements Operation {
    * @param units The units to convert to.
    */
   public GetStreamOperation(String streamName, String units) {
-    this(streamName, 0);
-    this.units = Optional.of(units);
+    this(streamName, 0, Optional.of(units), Optional.empty());
   }
 
   /**
@@ -67,10 +63,7 @@ public class GetStreamOperation implements Operation {
    * @param units The units to convert to.
    */
   public GetStreamOperation(String streamName, int yearsPast, String units) {
-    this.streamName = streamName;
-    this.units = Optional.of(units);
-    this.targetSubstance = Optional.empty();
-    this.yearsPast = yearsPast;
+    this(streamName, yearsPast, Optional.of(units), Optional.empty());
   }
 
   /**
@@ -81,7 +74,7 @@ public class GetStreamOperation implements Operation {
    * @param units The units to convert to.
    */
   public GetStreamOperation(String streamName, String targetSubstance, String units) {
-    this(streamName, 0, targetSubstance, units);
+    this(streamName, 0, Optional.of(units), Optional.of(targetSubstance));
   }
 
   /**
@@ -93,9 +86,22 @@ public class GetStreamOperation implements Operation {
    * @param units The units to convert to.
    */
   public GetStreamOperation(String streamName, int yearsPast, String targetSubstance, String units) {
+    this(streamName, yearsPast, Optional.of(units), Optional.of(targetSubstance));
+  }
+
+  /**
+   * Internal constructor with Optional parameters.
+   *
+   * @param streamName The name of the stream to get.
+   * @param yearsPast The number of years to look back. Zero means current year.
+   * @param units Optional units to convert to.
+   * @param targetSubstance Optional target substance for indirect access.
+   */
+  GetStreamOperation(String streamName, int yearsPast,
+      Optional<String> units, Optional<String> targetSubstance) {
     this.streamName = streamName;
-    this.units = Optional.of(units);
-    this.targetSubstance = Optional.of(targetSubstance);
+    this.units = units;
+    this.targetSubstance = targetSubstance;
     this.yearsPast = yearsPast;
   }
 
