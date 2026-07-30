@@ -325,11 +325,6 @@ public class SingleThreadEngine implements Engine {
   }
 
   @Override
-  public EngineNumber getStreamFor(UseKey key, String stream) {
-    return simulationState.getStream(key, stream);
-  }
-
-  @Override
   public EngineNumber getStream(String name, Optional<UseKey> useKey, Optional<String> conversion,
       int yearsPast) {
     // When yearsPast is zero, delegate to the existing getStream method
@@ -352,6 +347,13 @@ public class SingleThreadEngine implements Engine {
     // Apply conversion if specified
     return conversion.map(conv -> unitConverter.convert(value, conv)).orElse(value);
   }
+
+  @Override
+  public EngineNumber getStreamFor(UseKey key, String stream) {
+    return simulationState.getStream(key, stream);
+  }
+
+
 
   @Override
   public void defineVariable(String name) {
