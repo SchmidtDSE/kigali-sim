@@ -452,4 +452,66 @@ public class StreamParameterizationTest {
     assertFalse(parameterization.isSalesIntentFreshlySet(), "Flag should remain false when percentage values are ignored");
   }
 
+
+  /**
+   * Test that deepCopy creates an independent copy for StreamParameterization.
+   */
+  @Test
+  public void testDeepCopyIndependent() {
+    StreamParameterization original = new StreamParameterization();
+
+    // Set some non-default values
+    original.setGhgIntensity(new EngineNumber(new BigDecimal("2.5"), "kgCO2e / kg"));
+    original.setEnergyIntensity(new EngineNumber(new BigDecimal("1.5"), "kwh / kg"));
+    original.setInitialCharge("domestic", new EngineNumber(new BigDecimal("3.0"), "kg / unit"));
+    original.setInitialCharge("import", new EngineNumber(new BigDecimal("2.0"), "kg / unit"));
+    original.setLastSpecifiedValue("sales", new EngineNumber(new BigDecimal("100"), "units"));
+    original.setLastSpecifiedValue("domestic", new EngineNumber(new BigDecimal("50"), "kg"));
+
+    // Deep copy
+    StreamParameterization copy = original.deepCopy();
+
+    // Mutate the copy's ghgIntensity
+    copy.setGhgIntensity(new EngineNumber(new BigDecimal("9.9"), "kgCO2e / kg"));
+    assertEquals(new BigDecimal("2.5"), original.getGhgIntensity().getValue(),
+                 "Original ghgIntensity should be unchanged after mutating copy");
+    assertEquals("kgCO2e / kg", original.getGhgIntensity().getUnits(),
+                 "Original ghgIntensity units should be unchanged after mutating copy");
+
+    // Mutate the copy's energyIntensity
+    copy.setEnergyIntensity(new EngineNumber(new BigDecimal("8.8"), "kwh / kg"));
+    assertEquals(new BigDecimal("1.5"), original.getEnergyIntensity().getValue(),
+                 "Original energyIntensity should be unchanged after mutating copy");
+    assertEquals("kwh / kg", original.getEnergyIntensity().getUnits(),
+                 "Original energyIntensity units should be unchanged after mutating copy");
+
+    // Mutate the copy's initialCharge map entries
+    copy.setInitialCharge("domestic", new EngineNumber(new BigDecimal("99.0"), "kg / unit"));
+    assertEquals(new BigDecimal("3.0"), original.getInitialCharge("domestic").getValue(),
+                 "Original initialCharge should be unchanged after mutating copy");
+    assertEquals(new BigDecimal("2.0"), original.getInitialCharge("import").getValue(),
+                 "Original import initialCharge should be unchanged after mutating copy");
+
+    // Mutate the copy's lastSpecifiedValue map entries
+    copy.setLastSpecifiedValue("sales", new EngineNumber(new BigDecimal("999"), "units"));
+    EngineNumber originalSales = original.getLastSpecifiedValue("sales");
+    assertNotNull(originalSales, "Original lastSpecifiedValue should still exist");
+    assertEquals(new BigDecimal("100"), originalSales.getValue(),
+                 "Original lastSpecifiedValue should be unchanged after mutating copy");
+
+    copy.setLastSpecifiedValue("domestic", new EngineNumber(new BigDecimal("888"), "kg"));
+    EngineNumber originalDomestic = original.getLastSpecifiedValue("domestic");
+    assertNotNull(originalDomestic, "Original lastSpecifiedValue for domestic should still exist");
+    assertEquals(new BigDecimal("50"), originalDomestic.getValue(),
+                 "Original lastSpecifiedValue for domestic should be unchanged after mutating copy");
+
+    // Verify the copy has the mutated values
+    assertEquals(new BigDecimal("9.9"), copy.getGhgIntensity().getValue(),
+                 "Copy should have the mutated ghgIntensity");
+    assertEquals(new BigDecimal("99.0"), copy.getInitialCharge("domestic").getValue(),
+                 "Copy should have the mutated initialCharge");
+    assertEquals(new BigDecimal("999"), copy.getLastSpecifiedValue("sales").getValue(),
+                 "Copy should have the mutated lastSpecifiedValue");
+  }
+
 }

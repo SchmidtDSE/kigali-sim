@@ -1030,4 +1030,75 @@ public class SimulationStateTest {
       keeper.update(simulationStateUpdate);
     }, "Should throw exception for invalid stream name");
   }
+
+  /**
+   * Test that deepCopy creates an independent copy for SimulationState.
+   */
+  @Test
+  public void testDeepCopyIndependent() {
+    SimulationState original = createMockKeeper();
+    Scope testScope = createTestScope();
+    original.ensureSubstance(testScope);
+
+    // Set some non-default values on the original
+    original.setGhgIntensity(testScope, new EngineNumber(new BigDecimal("2.5"), "kgCO2e / kg"));
+    original.setEnergyIntensity(testScope, new EngineNumber(new BigDecimal("1.5"), "kwh / kg"));
+    original.setInitialCharge(testScope, "domestic", new EngineNumber(new BigDecimal("3.0"), "kg / unit"));
+    original.setInitialCharge(testScope, "import", new EngineNumber(new BigDecimal("2.0"), "kg / unit"));
+    original.setLastSpecifiedValue(testScope, "sales", new EngineNumber(new BigDecimal("100"), "units"));
+
+    // Deep copy
+    SimulationState copy = original.deepCopy();
+
+    // Mutate the copy's ghgIntensity
+    copy.setGhgIntensity(testScope, new EngineNumber(new BigDecimal("9.9"), "kgCO2e / kg"));
+    assertEquals(new BigDecimal("2.5"), original.getGhgIntensity(testScope).getValue(),
+                 "Original ghgIntensity should be unchanged after mutating copy");
+
+    // Mutate the copy's energyIntensity
+    copy.setEnergyIntensity(testScope, new EngineNumber(new BigDecimal("8.8"), "kwh / kg"));
+    assertEquals(new BigDecimal("1.5"), original.getEnergyIntensity(testScope).getValue(),
+                 "Original energyIntensity should be unchanged after mutating copy");
+
+    // Mutate the copy's initialCharge map entries
+    copy.setInitialCharge(testScope, "domestic", new EngineNumber(new BigDecimal("99.0"), "kg / unit"));
+    assertEquals(new BigDecimal("3.0"), original.getInitialCharge(testScope, "domestic").getValue(),
+                 "Original initialCharge should be unchanged after mutating copy");
+    assertEquals(new BigDecimal("2.0"), original.getInitialCharge(testScope, "import").getValue(),
+                 "Original import initialCharge should be unchanged after mutating copy");
+
+    // Mutate the copy's lastSpecifiedValue map entries
+    copy.setLastSpecifiedValue(testScope, "sales", new EngineNumber(new BigDecimal("999"), "units"));
+    EngineNumber originalSales = original.getLastSpecifiedValue(testScope, "sales");
+    assertNotNull(originalSales, "Original lastSpecifiedValue should still exist");
+    assertEquals(new BigDecimal("100"), originalSales.getValue(),
+                 "Original lastSpecifiedValue should be unchanged after mutating copy");
+
+    // Mutate streams on the copy - set a stream value
+    SimulationStateUpdate copyStream = new SimulationStateUpdateBuilder()
+        .setUseKey(testScope)
+        .setName("domestic")
+        .setValue(new EngineNumber(new BigDecimal("500"), "kg"))
+        .setSubtractRecycling(false)
+        .build();
+    copy.update(copyStream);
+
+    // Original should be unchanged
+    EngineNumber originalDomestic = original.getStream(testScope, "domestic");
+    assertEquals(BigDecimal.ZERO, originalDomestic.getValue(),
+                 "Original domestic stream should be unchanged after mutating copy");
+
+    // Verify the copy has the mutated values
+    EngineNumber copyDomestic = copy.getStream(testScope, "domestic");
+    assertEquals(new BigDecimal("500"), copyDomestic.getValue(),
+                 "Copy should have the mutated domestic stream");
+
+    // Verify the copy's parameterization is independent
+    // The SubstanceInApplicationId for the scope should work
+    List<SubstanceInApplicationId> originalSubstances = original.getRegisteredSubstances();
+    List<SubstanceInApplicationId> copySubstances = copy.getRegisteredSubstances();
+    assertEquals(originalSubstances.size(), copySubstances.size(),
+                 "Copy should have the same number of substances");
+  }
+
 }
