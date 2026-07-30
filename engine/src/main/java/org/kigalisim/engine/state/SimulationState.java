@@ -2258,15 +2258,11 @@ public class SimulationState {
   public SimulationState deepCopy() {
     SimulationState copy = new SimulationState(stateGetter, unitConverter);
 
-    // Deep copy substances map (each StreamParameterization is deep copied)
     for (Map.Entry<String, StreamParameterization> entry : substances.entrySet()) {
       copy.substances.put(entry.getKey(), entry.getValue().deepCopy());
     }
 
-    // Copy streams map (EngineNumber is immutable, so references may be shared)
     copy.streams.putAll(streams);
-
-    // Copy primitive field
     copy.currentYear = this.currentYear;
 
     return copy;

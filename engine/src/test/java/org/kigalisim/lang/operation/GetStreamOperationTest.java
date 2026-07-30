@@ -85,9 +85,16 @@ public class GetStreamOperationTest {
 
     // Verify the value was pushed onto the stack
     EngineNumber result = machine.getResult();
-    assertEquals(BigDecimal.valueOf(42), result.getValue(),
-        "Stream value should be retrieved correctly");
-    assertEquals("kg", result.getUnits(), "Stream units should be retrieved correctly");
+    assertEquals(
+        BigDecimal.valueOf(42),
+        result.getValue(),
+        "Stream value should be retrieved correctly"
+    );
+    assertEquals(
+        "kg",
+        result.getUnits(),
+        "Stream units should be retrieved correctly"
+    );
   }
 
   /**
@@ -112,9 +119,16 @@ public class GetStreamOperationTest {
 
     // Verify the value was pushed onto the stack with converted units
     EngineNumber result = machine.getResult();
-    assertEquals(BigDecimal.valueOf(0.001), result.getValue(),
-        "Stream value should be converted correctly");
-    assertEquals("mt", result.getUnits(), "Stream units should be converted correctly");
+    assertEquals(
+        BigDecimal.valueOf(0.001),
+        result.getValue(),
+        "Stream value should be converted correctly"
+    );
+    assertEquals(
+        "mt",
+        result.getUnits(),
+        "Stream units should be converted correctly"
+    );
   }
 
   /**
@@ -162,9 +176,16 @@ public class GetStreamOperationTest {
 
     // Verify the prior year's value was retrieved
     EngineNumber result = machine.getResult();
-    assertEquals(BigDecimal.valueOf(42), result.getValue(),
-        "Prior year stream value should be retrieved correctly");
-    assertEquals("kg", result.getUnits(), "Stream units should be retrieved correctly");
+    assertEquals(
+        BigDecimal.valueOf(42),
+        result.getValue(),
+        "Prior year stream value should be retrieved correctly"
+    );
+    assertEquals(
+        "kg",
+        result.getUnits(),
+        "Stream units should be retrieved correctly"
+    );
   }
 
   /**
@@ -192,9 +213,16 @@ public class GetStreamOperationTest {
 
     // Verify the prior year's value was retrieved and converted
     EngineNumber result = machine.getResult();
-    assertEquals(BigDecimal.valueOf(0.001), result.getValue(),
-        "Prior year stream value should be converted correctly");
-    assertEquals("mt", result.getUnits(), "Stream units should be converted correctly");
+    assertEquals(
+        BigDecimal.valueOf(0.001),
+        result.getValue(),
+        "Prior year stream value should be converted correctly"
+    );
+    assertEquals(
+        "mt",
+        result.getUnits(),
+        "Stream units should be converted correctly"
+    );
   }
 
   /**
@@ -229,9 +257,16 @@ public class GetStreamOperationTest {
 
     // Verify the prior year's value was retrieved from the target substance
     EngineNumber result = machine.getResult();
-    assertEquals(BigDecimal.valueOf(42), result.getValue(),
-        "Prior year stream value from target substance should be retrieved correctly");
-    assertEquals("kg", result.getUnits(), "Stream units should be retrieved correctly");
+    assertEquals(
+        BigDecimal.valueOf(42),
+        result.getValue(),
+        "Prior year stream value from target substance should be retrieved correctly"
+    );
+    assertEquals(
+        "kg",
+        result.getUnits(),
+        "Stream units should be retrieved correctly"
+    );
   }
 
   /**
@@ -259,8 +294,15 @@ public class GetStreamOperationTest {
 
     // Verify the current year's value is retrieved (same as normal getStream)
     EngineNumber result = machine.getResult();
-    assertEquals(BigDecimal.valueOf(42), result.getValue(),
-        "Current year stream value should be retrieved correctly with yearsPast=0");
-    assertEquals("kg", result.getUnits(), "Stream units should be retrieved correctly");
+    assertEquals(
+        BigDecimal.valueOf(42),
+        result.getValue(),
+        "Current year stream value should be retrieved correctly with yearsPast=0"
+    );
+    assertEquals(
+        "kg",
+        result.getUnits(),
+        "Stream units should be retrieved correctly"
+    );
   }
 }

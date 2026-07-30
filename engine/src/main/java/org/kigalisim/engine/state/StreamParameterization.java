@@ -808,7 +808,6 @@ public class StreamParameterization {
   public StreamParameterization deepCopy() {
     StreamParameterization copy = new StreamParameterization();
 
-    // Copy EngineNumber fields (immutable, references may be shared)
     copy.setGhgIntensity(ghgIntensity);
     copy.setEnergyIntensity(energyIntensity);
     copy.setRechargePopulation(rechargePopulation);
@@ -823,23 +822,16 @@ public class StreamParameterization {
     copy.setInductionRate(inductionRateRecharge);
     copy.setInductionRate(inductionRateEol, RecoveryStage.EOL);
 
-    // Copy initialCharge map (EngineNumber is immutable, references may be shared)
     for (Map.Entry<String, EngineNumber> entry : initialCharge.entrySet()) {
       copy.setInitialCharge(entry.getKey(), entry.getValue());
     }
 
-    // Copy lastSpecifiedValue map (EngineNumber is immutable, references may be shared)
     for (Map.Entry<String, EngineNumber> entry : lastSpecifiedValue.entrySet()) {
       copy.setLastSpecifiedValue(entry.getKey(), entry.getValue());
     }
 
-    // Copy enabledStreams set
     copy.enabledStreams.addAll(enabledStreams);
-
-    // Copy primitive field (after loops to override salesIntentFreshlySet side effects)
     copy.salesIntentFreshlySet = this.salesIntentFreshlySet;
-
-    // Deep copy priorEquipmentBases
     copy.priorEquipmentBases = priorEquipmentBases.deepCopy();
 
     return copy;

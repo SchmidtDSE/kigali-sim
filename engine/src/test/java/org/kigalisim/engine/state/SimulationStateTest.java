@@ -1054,27 +1054,42 @@ public class SimulationStateTest {
 
     // Mutate the copy's ghgIntensity
     copy.setGhgIntensity(testScope, new EngineNumber(new BigDecimal("9.9"), "kgCO2e / kg"));
-    assertEquals(new BigDecimal("2.5"), original.getGhgIntensity(testScope).getValue(),
-                 "Original ghgIntensity should be unchanged after mutating copy");
+    assertEquals(
+        new BigDecimal("2.5"),
+        original.getGhgIntensity(testScope).getValue(),
+        "Original ghgIntensity should be unchanged after mutating copy"
+    );
 
     // Mutate the copy's energyIntensity
     copy.setEnergyIntensity(testScope, new EngineNumber(new BigDecimal("8.8"), "kwh / kg"));
-    assertEquals(new BigDecimal("1.5"), original.getEnergyIntensity(testScope).getValue(),
-                 "Original energyIntensity should be unchanged after mutating copy");
+    assertEquals(
+        new BigDecimal("1.5"),
+        original.getEnergyIntensity(testScope).getValue(),
+        "Original energyIntensity should be unchanged after mutating copy"
+    );
 
     // Mutate the copy's initialCharge map entries
     copy.setInitialCharge(testScope, "domestic", new EngineNumber(new BigDecimal("99.0"), "kg / unit"));
-    assertEquals(new BigDecimal("3.0"), original.getInitialCharge(testScope, "domestic").getValue(),
-                 "Original initialCharge should be unchanged after mutating copy");
-    assertEquals(new BigDecimal("2.0"), original.getInitialCharge(testScope, "import").getValue(),
-                 "Original import initialCharge should be unchanged after mutating copy");
+    assertEquals(
+        new BigDecimal("3.0"),
+        original.getInitialCharge(testScope, "domestic").getValue(),
+        "Original initialCharge should be unchanged after mutating copy"
+    );
+    assertEquals(
+        new BigDecimal("2.0"),
+        original.getInitialCharge(testScope, "import").getValue(),
+        "Original import initialCharge should be unchanged after mutating copy"
+    );
 
     // Mutate the copy's lastSpecifiedValue map entries
     copy.setLastSpecifiedValue(testScope, "sales", new EngineNumber(new BigDecimal("999"), "units"));
     EngineNumber originalSales = original.getLastSpecifiedValue(testScope, "sales");
     assertNotNull(originalSales, "Original lastSpecifiedValue should still exist");
-    assertEquals(new BigDecimal("100"), originalSales.getValue(),
-                 "Original lastSpecifiedValue should be unchanged after mutating copy");
+    assertEquals(
+        new BigDecimal("100"),
+        originalSales.getValue(),
+        "Original lastSpecifiedValue should be unchanged after mutating copy"
+    );
 
     // Enable streams on the copy before setting values
     copy.markStreamAsEnabled(testScope, "domestic");
@@ -1089,20 +1104,29 @@ public class SimulationStateTest {
 
     // Original should be unchanged
     EngineNumber originalDomestic = original.getStream(testScope, "domestic");
-    assertEquals(BigDecimal.ZERO, originalDomestic.getValue(),
-                 "Original domestic stream should be unchanged after mutating copy");
+    assertEquals(
+        BigDecimal.ZERO,
+        originalDomestic.getValue(),
+        "Original domestic stream should be unchanged after mutating copy"
+    );
 
     // Verify the copy has the mutated values
     EngineNumber copyDomestic = copy.getStream(testScope, "domestic");
-    assertEquals(new BigDecimal("500"), copyDomestic.getValue(),
-                 "Copy should have the mutated domestic stream");
+    assertEquals(
+        new BigDecimal("500"),
+        copyDomestic.getValue(),
+        "Copy should have the mutated domestic stream"
+    );
 
     // Verify the copy's parameterization is independent
     // The SubstanceInApplicationId for the scope should work
     List<SubstanceInApplicationId> originalSubstances = original.getRegisteredSubstances();
     List<SubstanceInApplicationId> copySubstances = copy.getRegisteredSubstances();
-    assertEquals(originalSubstances.size(), copySubstances.size(),
-                 "Copy should have the same number of substances");
+    assertEquals(
+        originalSubstances.size(),
+        copySubstances.size(),
+        "Copy should have the same number of substances"
+    );
   }
 
 
@@ -1147,10 +1171,16 @@ public class SimulationStateTest {
     assertTrue(priorState.isPresent(), "getAtPrior(1) should return a present Optional after incrementYear");
     SimulationState prior = priorState.get();
     EngineNumber priorDomestic = prior.getStream(testScope, "domestic");
-    assertEquals(new BigDecimal("100"), priorDomestic.getValue(),
-                 "Prior state should have the original stream value");
-    assertEquals("kg", priorDomestic.getUnits(),
-                 "Prior state should have correct units");
+    assertEquals(
+        new BigDecimal("100"),
+        priorDomestic.getValue(),
+        "Prior state should have the original stream value"
+    );
+    assertEquals(
+        "kg",
+        priorDomestic.getUnits(),
+        "Prior state should have correct units"
+    );
   }
 
   /**
@@ -1192,15 +1222,21 @@ public class SimulationStateTest {
     Optional<SimulationState> prior2 = keeper.getAtPrior(2);
     assertTrue(prior2.isPresent(), "getAtPrior(2) should return a present Optional");
     EngineNumber prior2Domestic = prior2.get().getStream(testScope, "domestic");
-    assertEquals(new BigDecimal("100"), prior2Domestic.getValue(),
-                 "getAtPrior(2) should have year 1 value");
+    assertEquals(
+        new BigDecimal("100"),
+        prior2Domestic.getValue(),
+        "getAtPrior(2) should have year 1 value"
+    );
 
     // Verify getAtPrior(1) returns year 2 state with value 200
     Optional<SimulationState> prior1 = keeper.getAtPrior(1);
     assertTrue(prior1.isPresent(), "getAtPrior(1) should return a present Optional");
     EngineNumber prior1Domestic = prior1.get().getStream(testScope, "domestic");
-    assertEquals(new BigDecimal("200"), prior1Domestic.getValue(),
-                 "getAtPrior(1) should have year 2 value");
+    assertEquals(
+        new BigDecimal("200"),
+        prior1Domestic.getValue(),
+        "getAtPrior(1) should have year 2 value"
+    );
   }
 
   /**

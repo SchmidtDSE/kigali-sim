@@ -39,60 +39,119 @@ public class StreamParameterizationTest {
 
     // Test GHG intensity default
     EngineNumber ghgIntensity = parameterization.getGhgIntensity();
-    assertEquals(BigDecimal.ZERO, ghgIntensity.getValue(), "GHG intensity should default to 0");
-    assertEquals("tCO2e / kg", ghgIntensity.getUnits(),
-                 "GHG intensity should have correct units");
+    assertEquals(
+        BigDecimal.ZERO,
+        ghgIntensity.getValue(),
+        "GHG intensity should default to 0"
+    );
+    assertEquals(
+        "tCO2e / kg",
+        ghgIntensity.getUnits(),
+        "GHG intensity should have correct units"
+    );
 
     // Test energy intensity default
     EngineNumber energyIntensity = parameterization.getEnergyIntensity();
-    assertEquals(BigDecimal.ZERO, energyIntensity.getValue(),
-                 "Energy intensity should default to 0");
-    assertEquals("kwh / kg", energyIntensity.getUnits(),
-                 "Energy intensity should have correct units");
+    assertEquals(
+        BigDecimal.ZERO,
+        energyIntensity.getValue(),
+        "Energy intensity should default to 0"
+    );
+    assertEquals(
+        "kwh / kg",
+        energyIntensity.getUnits(),
+        "Energy intensity should have correct units"
+    );
 
     // Test initial charge defaults
     EngineNumber manufactureCharge = parameterization.getInitialCharge("domestic");
-    assertEquals(BigDecimal.ONE, manufactureCharge.getValue(),
-                 "Manufacture charge should default to 1");
-    assertEquals("kg / unit", manufactureCharge.getUnits(),
-                 "Manufacture charge should have correct units");
+    assertEquals(
+        BigDecimal.ONE,
+        manufactureCharge.getValue(),
+        "Manufacture charge should default to 1"
+    );
+    assertEquals(
+        "kg / unit",
+        manufactureCharge.getUnits(),
+        "Manufacture charge should have correct units"
+    );
 
     EngineNumber importCharge = parameterization.getInitialCharge("import");
-    assertEquals(BigDecimal.ONE, importCharge.getValue(),
-                 "Import charge should default to 1");
-    assertEquals("kg / unit", importCharge.getUnits(),
-                 "Import charge should have correct units");
+    assertEquals(
+        BigDecimal.ONE,
+        importCharge.getValue(),
+        "Import charge should default to 1"
+    );
+    assertEquals(
+        "kg / unit",
+        importCharge.getUnits(),
+        "Import charge should have correct units"
+    );
 
     // Test recharge population default
     EngineNumber rechargePopulation = parameterization.getRechargePopulation();
-    assertEquals(BigDecimal.ZERO, rechargePopulation.getValue(),
-                 "Recharge population should default to 0");
-    assertEquals("%", rechargePopulation.getUnits(),
-                 "Recharge population should have correct units");
+    assertEquals(
+        BigDecimal.ZERO,
+        rechargePopulation.getValue(),
+        "Recharge population should default to 0"
+    );
+    assertEquals(
+        "%",
+        rechargePopulation.getUnits(),
+        "Recharge population should have correct units"
+    );
 
     // Test recharge intensity default
     EngineNumber rechargeIntensity = parameterization.getRechargeIntensity();
-    assertEquals(BigDecimal.ZERO, rechargeIntensity.getValue(),
-                 "Recharge intensity should default to 0");
-    assertEquals("kg / unit", rechargeIntensity.getUnits(),
-                 "Recharge intensity should have correct units");
+    assertEquals(
+        BigDecimal.ZERO,
+        rechargeIntensity.getValue(),
+        "Recharge intensity should default to 0"
+    );
+    assertEquals(
+        "kg / unit",
+        rechargeIntensity.getUnits(),
+        "Recharge intensity should have correct units"
+    );
 
     // Test recovery rate default
     EngineNumber recoveryRate = parameterization.getRecoveryRate();
-    assertEquals(BigDecimal.ZERO, recoveryRate.getValue(),
-                 "Recovery rate should default to 0");
-    assertEquals("%", recoveryRate.getUnits(), "Recovery rate should have correct units");
+    assertEquals(
+        BigDecimal.ZERO,
+        recoveryRate.getValue(),
+        "Recovery rate should default to 0"
+    );
+    assertEquals(
+        "%",
+        recoveryRate.getUnits(),
+        "Recovery rate should have correct units"
+    );
 
     // Test yield rate default
     EngineNumber yieldRate = parameterization.getYieldRate();
-    assertEquals(BigDecimal.ZERO, yieldRate.getValue(), "Yield rate should default to 0");
-    assertEquals("%", yieldRate.getUnits(), "Yield rate should have correct units");
+    assertEquals(
+        BigDecimal.ZERO,
+        yieldRate.getValue(),
+        "Yield rate should default to 0"
+    );
+    assertEquals(
+        "%",
+        yieldRate.getUnits(),
+        "Yield rate should have correct units"
+    );
 
     // Test retirement rate default
     EngineNumber retirementRate = parameterization.getRetirementRate();
-    assertEquals(BigDecimal.ZERO, retirementRate.getValue(),
-                 "Retirement rate should default to 0");
-    assertEquals("%", retirementRate.getUnits(), "Retirement rate should have correct units");
+    assertEquals(
+        BigDecimal.ZERO,
+        retirementRate.getValue(),
+        "Retirement rate should default to 0"
+    );
+    assertEquals(
+        "%",
+        retirementRate.getUnits(),
+        "Retirement rate should have correct units"
+    );
 
   }
 
@@ -107,10 +166,16 @@ public class StreamParameterizationTest {
     parameterization.setGhgIntensity(newValue);
     EngineNumber retrieved = parameterization.getGhgIntensity();
 
-    assertEquals(new BigDecimal("2.5"), retrieved.getValue(),
-                 "Should retrieve set GHG intensity value");
-    assertEquals("kgCO2e / kg", retrieved.getUnits(),
-                 "Should retrieve correct GHG intensity units");
+    assertEquals(
+        new BigDecimal("2.5"),
+        retrieved.getValue(),
+        "Should retrieve set GHG intensity value"
+    );
+    assertEquals(
+        "kgCO2e / kg",
+        retrieved.getUnits(),
+        "Should retrieve correct GHG intensity units"
+    );
   }
 
   /**
@@ -124,10 +189,16 @@ public class StreamParameterizationTest {
     parameterization.setEnergyIntensity(newValue);
     EngineNumber retrieved = parameterization.getEnergyIntensity();
 
-    assertEquals(new BigDecimal("1.5"), retrieved.getValue(),
-                 "Should retrieve set energy intensity value");
-    assertEquals("kwh / kg", retrieved.getUnits(),
-                 "Should retrieve correct energy intensity units");
+    assertEquals(
+        new BigDecimal("1.5"),
+        retrieved.getValue(),
+        "Should retrieve set energy intensity value"
+    );
+    assertEquals(
+        "kwh / kg",
+        retrieved.getUnits(),
+        "Should retrieve correct energy intensity units"
+    );
   }
 
   /**
@@ -141,10 +212,16 @@ public class StreamParameterizationTest {
     parameterization.setInitialCharge("domestic", newValue);
     EngineNumber retrieved = parameterization.getInitialCharge("domestic");
 
-    assertEquals(new BigDecimal("2.0"), retrieved.getValue(),
-                 "Should retrieve set initial charge value");
-    assertEquals("kg / unit", retrieved.getUnits(),
-                 "Should retrieve correct initial charge units");
+    assertEquals(
+        new BigDecimal("2.0"),
+        retrieved.getValue(),
+        "Should retrieve set initial charge value"
+    );
+    assertEquals(
+        "kg / unit",
+        retrieved.getUnits(),
+        "Should retrieve correct initial charge units"
+    );
   }
 
   /**
@@ -158,10 +235,16 @@ public class StreamParameterizationTest {
     parameterization.setInitialCharge("import", newValue);
     EngineNumber retrieved = parameterization.getInitialCharge("import");
 
-    assertEquals(new BigDecimal("1.8"), retrieved.getValue(),
-                 "Should retrieve set initial charge value");
-    assertEquals("kg / unit", retrieved.getUnits(),
-                 "Should retrieve correct initial charge units");
+    assertEquals(
+        new BigDecimal("1.8"),
+        retrieved.getValue(),
+        "Should retrieve set initial charge value"
+    );
+    assertEquals(
+        "kg / unit",
+        retrieved.getUnits(),
+        "Should retrieve correct initial charge units"
+    );
   }
 
   /**
@@ -192,9 +275,16 @@ public class StreamParameterizationTest {
     parameterization.setRechargePopulation(newValue);
     EngineNumber retrieved = parameterization.getRechargePopulation();
 
-    assertEquals(new BigDecimal("15.5"), retrieved.getValue(),
-                 "Should retrieve set recharge population value");
-    assertEquals("%", retrieved.getUnits(), "Should retrieve correct recharge population units");
+    assertEquals(
+        new BigDecimal("15.5"),
+        retrieved.getValue(),
+        "Should retrieve set recharge population value"
+    );
+    assertEquals(
+        "%",
+        retrieved.getUnits(),
+        "Should retrieve correct recharge population units"
+    );
   }
 
   /**
@@ -208,10 +298,16 @@ public class StreamParameterizationTest {
     parameterization.setRechargeIntensity(newValue);
     EngineNumber retrieved = parameterization.getRechargeIntensity();
 
-    assertEquals(new BigDecimal("0.5"), retrieved.getValue(),
-                 "Should retrieve set recharge intensity value");
-    assertEquals("kg / unit", retrieved.getUnits(),
-                 "Should retrieve correct recharge intensity units");
+    assertEquals(
+        new BigDecimal("0.5"),
+        retrieved.getValue(),
+        "Should retrieve set recharge intensity value"
+    );
+    assertEquals(
+        "kg / unit",
+        retrieved.getUnits(),
+        "Should retrieve correct recharge intensity units"
+    );
   }
 
   /**
@@ -225,9 +321,16 @@ public class StreamParameterizationTest {
     parameterization.setRecoveryRate(newValue);
     EngineNumber retrieved = parameterization.getRecoveryRate();
 
-    assertEquals(new BigDecimal("80.0"), retrieved.getValue(),
-                 "Should retrieve set recovery rate value");
-    assertEquals("%", retrieved.getUnits(), "Should retrieve correct recovery rate units");
+    assertEquals(
+        new BigDecimal("80.0"),
+        retrieved.getValue(),
+        "Should retrieve set recovery rate value"
+    );
+    assertEquals(
+        "%",
+        retrieved.getUnits(),
+        "Should retrieve correct recovery rate units"
+    );
   }
 
   /**
@@ -241,9 +344,16 @@ public class StreamParameterizationTest {
     parameterization.setYieldRate(newValue);
     EngineNumber retrieved = parameterization.getYieldRate();
 
-    assertEquals(new BigDecimal("90.0"), retrieved.getValue(),
-                 "Should retrieve set yield rate value");
-    assertEquals("%", retrieved.getUnits(), "Should retrieve correct yield rate units");
+    assertEquals(
+        new BigDecimal("90.0"),
+        retrieved.getValue(),
+        "Should retrieve set yield rate value"
+    );
+    assertEquals(
+        "%",
+        retrieved.getUnits(),
+        "Should retrieve correct yield rate units"
+    );
   }
 
 
@@ -258,9 +368,16 @@ public class StreamParameterizationTest {
     parameterization.setRetirementRate(newValue);
     EngineNumber retrieved = parameterization.getRetirementRate();
 
-    assertEquals(new BigDecimal("10.0"), retrieved.getValue(),
-                 "Should retrieve set retirement rate value");
-    assertEquals("%", retrieved.getUnits(), "Should retrieve correct retirement rate units");
+    assertEquals(
+        new BigDecimal("10.0"),
+        retrieved.getValue(),
+        "Should retrieve set retirement rate value"
+    );
+    assertEquals(
+        "%",
+        retrieved.getUnits(),
+        "Should retrieve correct retirement rate units"
+    );
   }
 
   // Note: Tests for deprecated setLastSalesUnits and getLastSalesUnits methods have been removed.
@@ -280,12 +397,24 @@ public class StreamParameterizationTest {
     // Test getting the value back
     EngineNumber retrieved = parameterization.getLastSpecifiedValue("import");
     assertNotNull(retrieved, "Retrieved value should not be null");
-    assertEquals(new BigDecimal("500"), retrieved.getValue(), "Value should match");
-    assertEquals("units", retrieved.getUnits(), "Units should match");
+    assertEquals(
+        new BigDecimal("500"),
+        retrieved.getValue(),
+        "Value should match"
+    );
+    assertEquals(
+        "units",
+        retrieved.getUnits(),
+        "Units should match"
+    );
 
     // Test getting a non-existent value
     EngineNumber nonExistent = parameterization.getLastSpecifiedValue("sales");
-    assertEquals(null, nonExistent, "Non-existent value should be null");
+    assertEquals(
+        null,
+        nonExistent,
+        "Non-existent value should be null"
+    );
   }
 
   /**
@@ -302,12 +431,24 @@ public class StreamParameterizationTest {
     // Test getting the value back
     EngineNumber retrieved = parameterization.getLastSpecifiedValue("virgin");
     assertNotNull(retrieved, "Retrieved value should not be null");
-    assertEquals(new BigDecimal("500"), retrieved.getValue(), "Value should match");
-    assertEquals("units", retrieved.getUnits(), "Units should match");
+    assertEquals(
+        new BigDecimal("500"),
+        retrieved.getValue(),
+        "Value should match"
+    );
+    assertEquals(
+        "units",
+        retrieved.getUnits(),
+        "Units should match"
+    );
 
     // Test getting a non-existent value
     EngineNumber nonExistent = parameterization.getLastSpecifiedValue("sales");
-    assertEquals(null, nonExistent, "Non-existent value should be null");
+    assertEquals(
+        null,
+        nonExistent,
+        "Non-existent value should be null"
+    );
   }
 
   /**
@@ -360,9 +501,16 @@ public class StreamParameterizationTest {
 
     // Original value should still be there
     EngineNumber retrieved = parameterization.getLastSpecifiedValue("sales");
-    assertEquals("kg", retrieved.getUnits(), "Units should still be kg, not %");
-    assertEquals(new BigDecimal("100"), retrieved.getValue(),
-                 "Value should be unchanged");
+    assertEquals(
+        "kg",
+        retrieved.getUnits(),
+        "Units should still be kg, not %"
+    );
+    assertEquals(
+        new BigDecimal("100"),
+        retrieved.getValue(),
+        "Value should be unchanged"
+    );
   }
 
   /**
@@ -473,45 +621,78 @@ public class StreamParameterizationTest {
 
     // Mutate the copy's ghgIntensity
     copy.setGhgIntensity(new EngineNumber(new BigDecimal("9.9"), "kgCO2e / kg"));
-    assertEquals(new BigDecimal("2.5"), original.getGhgIntensity().getValue(),
-                 "Original ghgIntensity should be unchanged after mutating copy");
-    assertEquals("kgCO2e / kg", original.getGhgIntensity().getUnits(),
-                 "Original ghgIntensity units should be unchanged after mutating copy");
+    assertEquals(
+        new BigDecimal("2.5"),
+        original.getGhgIntensity().getValue(),
+        "Original ghgIntensity should be unchanged after mutating copy"
+    );
+    assertEquals(
+        "kgCO2e / kg",
+        original.getGhgIntensity().getUnits(),
+        "Original ghgIntensity units should be unchanged after mutating copy"
+    );
 
     // Mutate the copy's energyIntensity
     copy.setEnergyIntensity(new EngineNumber(new BigDecimal("8.8"), "kwh / kg"));
-    assertEquals(new BigDecimal("1.5"), original.getEnergyIntensity().getValue(),
-                 "Original energyIntensity should be unchanged after mutating copy");
-    assertEquals("kwh / kg", original.getEnergyIntensity().getUnits(),
-                 "Original energyIntensity units should be unchanged after mutating copy");
+    assertEquals(
+        new BigDecimal("1.5"),
+        original.getEnergyIntensity().getValue(),
+        "Original energyIntensity should be unchanged after mutating copy"
+    );
+    assertEquals(
+        "kwh / kg",
+        original.getEnergyIntensity().getUnits(),
+        "Original energyIntensity units should be unchanged after mutating copy"
+    );
 
     // Mutate the copy's initialCharge map entries
     copy.setInitialCharge("domestic", new EngineNumber(new BigDecimal("99.0"), "kg / unit"));
-    assertEquals(new BigDecimal("3.0"), original.getInitialCharge("domestic").getValue(),
-                 "Original initialCharge should be unchanged after mutating copy");
-    assertEquals(new BigDecimal("2.0"), original.getInitialCharge("import").getValue(),
-                 "Original import initialCharge should be unchanged after mutating copy");
+    assertEquals(
+        new BigDecimal("3.0"),
+        original.getInitialCharge("domestic").getValue(),
+        "Original initialCharge should be unchanged after mutating copy"
+    );
+    assertEquals(
+        new BigDecimal("2.0"),
+        original.getInitialCharge("import").getValue(),
+        "Original import initialCharge should be unchanged after mutating copy"
+    );
 
     // Mutate the copy's lastSpecifiedValue map entries
     copy.setLastSpecifiedValue("sales", new EngineNumber(new BigDecimal("999"), "units"));
     EngineNumber originalSales = original.getLastSpecifiedValue("sales");
     assertNotNull(originalSales, "Original lastSpecifiedValue should still exist");
-    assertEquals(new BigDecimal("100"), originalSales.getValue(),
-                 "Original lastSpecifiedValue should be unchanged after mutating copy");
+    assertEquals(
+        new BigDecimal("100"),
+        originalSales.getValue(),
+        "Original lastSpecifiedValue should be unchanged after mutating copy"
+    );
 
     copy.setLastSpecifiedValue("domestic", new EngineNumber(new BigDecimal("888"), "kg"));
     EngineNumber originalDomestic = original.getLastSpecifiedValue("domestic");
     assertNotNull(originalDomestic, "Original lastSpecifiedValue for domestic should still exist");
-    assertEquals(new BigDecimal("50"), originalDomestic.getValue(),
-                 "Original lastSpecifiedValue for domestic should be unchanged after mutating copy");
+    assertEquals(
+        new BigDecimal("50"),
+        originalDomestic.getValue(),
+        "Original lastSpecifiedValue for domestic should be unchanged after mutating copy"
+    );
 
     // Verify the copy has the mutated values
-    assertEquals(new BigDecimal("9.9"), copy.getGhgIntensity().getValue(),
-                 "Copy should have the mutated ghgIntensity");
-    assertEquals(new BigDecimal("99.0"), copy.getInitialCharge("domestic").getValue(),
-                 "Copy should have the mutated initialCharge");
-    assertEquals(new BigDecimal("999"), copy.getLastSpecifiedValue("sales").getValue(),
-                 "Copy should have the mutated lastSpecifiedValue");
+    assertEquals(
+        new BigDecimal("9.9"),
+        copy.getGhgIntensity().getValue(),
+        "Copy should have the mutated ghgIntensity"
+    );
+    assertEquals(
+        new BigDecimal("99.0"),
+        copy.getInitialCharge("domestic").getValue(),
+        "Copy should have the mutated initialCharge"
+    );
+    assertEquals(
+        new BigDecimal("999"),
+        copy.getLastSpecifiedValue("sales").getValue(),
+        "Copy should have the mutated lastSpecifiedValue"
+    );
   }
 
 }

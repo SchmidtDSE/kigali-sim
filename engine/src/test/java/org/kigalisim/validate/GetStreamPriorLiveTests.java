@@ -59,54 +59,50 @@ public class GetStreamPriorLiveTests {
     // Verify simulation completed without error
     assertTrue(resultsList.size() >= 20, "Should have at least 20 years of results");
 
-    // Year 1: 1000 units sold, no retirement (sales 9/10/11 years ago = 0)
-    EngineResult year1 = LiveTestsUtil.getResult(resultsList.stream(), 1, "Test", "SubA");
-    assertNotNull(year1, "Should have result for Test/SubA in year 1");
-    double popYear1 = year1.getPopulation().getValue().doubleValue();
-    assertEquals(1000.0, popYear1, 0.01,
-        "Year 1 population should be 1000 units, but was " + popYear1);
-
-    // Year 5: still 1000 units (no retirement yet, sales 9+ years ago = 0)
-    EngineResult year5 = LiveTestsUtil.getResult(resultsList.stream(), 5, "Test", "SubA");
-    assertNotNull(year5, "Should have result for Test/SubA in year 5");
-    double popYear5 = year5.getPopulation().getValue().doubleValue();
-    assertEquals(1000.0, popYear5, 0.01,
-        "Year 5 population should be 1000 units, but was " + popYear5);
-
-    // Year 9: still 1000 units (no retirement yet, sales 9+ years ago = 0)
-    EngineResult year9 = LiveTestsUtil.getResult(resultsList.stream(), 9, "Test", "SubA");
-    assertNotNull(year9, "Should have result for Test/SubA in year 9");
-    double popYear9 = year9.getPopulation().getValue().doubleValue();
-    assertEquals(1000.0, popYear9, 0.01,
-        "Year 9 population should be 1000 units, but was " + popYear9);
+    // Years 1, 5, 9: still 1000 units (no retirement yet, sales 9+ years ago = 0)
+    for (int year : new int[]{1, 5, 9}) {
+      EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), year, "Test", "SubA");
+      assertNotNull(result, "Should have result for Test/SubA in year " + year);
+      double pop = result.getPopulation().getValue().doubleValue();
+      assertEquals(1000.0, pop, 0.01,
+          "Year " + year + " population should be 1000 units, but was " + pop);
+    }
 
     // Year 10: sales 9 years ago = 1000, retire 0.2 * 1000 = 200 units -> 800
     EngineResult year10 = LiveTestsUtil.getResult(resultsList.stream(), 10, "Test", "SubA");
     assertNotNull(year10, "Should have result for Test/SubA in year 10");
     double popYear10 = year10.getPopulation().getValue().doubleValue();
-    assertEquals(800.0, popYear10, 0.01,
-        "Year 10 population should be 800 units (1000 - 200 retired), but was " + popYear10);
+    assertEquals(
+        800.0, popYear10, 0.01,
+        "Year 10 population should be 800 units (1000 - 200 retired), but was " + popYear10
+    );
 
     // Year 11: sales 10 years ago = 1000, retire 0.6 * 1000 = 600 units -> 200
     EngineResult year11 = LiveTestsUtil.getResult(resultsList.stream(), 11, "Test", "SubA");
     assertNotNull(year11, "Should have result for Test/SubA in year 11");
     double popYear11 = year11.getPopulation().getValue().doubleValue();
-    assertEquals(200.0, popYear11, 0.01,
-        "Year 11 population should be 200 units (800 - 600 retired), but was " + popYear11);
+    assertEquals(
+        200.0, popYear11, 0.01,
+        "Year 11 population should be 200 units (800 - 600 retired), but was " + popYear11
+    );
 
     // Year 12: sales 11 years ago = 1000, retire 0.2 * 1000 = 200 units -> 0
     EngineResult year12 = LiveTestsUtil.getResult(resultsList.stream(), 12, "Test", "SubA");
     assertNotNull(year12, "Should have result for Test/SubA in year 12");
     double popYear12 = year12.getPopulation().getValue().doubleValue();
-    assertEquals(0.0, popYear12, 0.01,
-        "Year 12 population should be 0 units, but was " + popYear12);
+    assertEquals(
+        0.0, popYear12, 0.01,
+        "Year 12 population should be 0 units, but was " + popYear12
+    );
 
     // Year 15: all equipment retired
     EngineResult year15 = LiveTestsUtil.getResult(resultsList.stream(), 15, "Test", "SubA");
     assertNotNull(year15, "Should have result for Test/SubA in year 15");
     double popYear15 = year15.getPopulation().getValue().doubleValue();
-    assertEquals(0.0, popYear15, 0.01,
-        "Year 15 population should be 0 units, but was " + popYear15);
+    assertEquals(
+        0.0, popYear15, 0.01,
+        "Year 15 population should be 0 units, but was " + popYear15
+    );
 
     // Year 20: all equipment retired (sales were set to 0 in year 2, so no new equipment)
     EngineResult year20 = LiveTestsUtil.getResult(resultsList.stream(), 20, "Test", "SubA");
@@ -143,16 +139,20 @@ public class GetStreamPriorLiveTests {
     EngineResult year1 = LiveTestsUtil.getResult(resultsList.stream(), 1, "Test", "SubA");
     assertNotNull(year1, "Should have result for Test/SubA in year 1");
     double popYear1 = year1.getPopulation().getValue().doubleValue();
-    assertEquals(595.0, popYear1, 0.01,
+    assertEquals(
+        595.0, popYear1, 0.01,
         "Year 1 population should be 595 units (priorEquipment=100, retire 5%, + domestic=500), "
-        + "but was " + popYear1);
+        + "but was " + popYear1
+    );
 
     // Year 2: 595 * 0.95 + 500 = 565.25 + 500 = 1065.25
     EngineResult year2 = LiveTestsUtil.getResult(resultsList.stream(), 2, "Test", "SubA");
     assertNotNull(year2, "Should have result for Test/SubA in year 2");
     double popYear2 = year2.getPopulation().getValue().doubleValue();
-    assertEquals(1065.25, popYear2, 0.01,
-        "Year 2 population should be 1065.25 units, but was " + popYear2);
+    assertEquals(
+        1065.25, popYear2, 0.01,
+        "Year 2 population should be 1065.25 units, but was " + popYear2
+    );
   }
 
   /**
@@ -184,11 +184,15 @@ public class GetStreamPriorLiveTests {
     EngineResult year1 = LiveTestsUtil.getResult(resultsList.stream(), 1, "Test", "SubA");
     assertNotNull(year1, "Should have result for Test/SubA in year 1");
     double domesticYear1 = year1.getDomestic().getValue().doubleValue();
-    assertEquals(5000.0, domesticYear1, 0.01,
-        "Year 1 domestic should be 5000 kg, but was " + domesticYear1);
-    assertEquals(500.0, year1.getPopulation().getValue().doubleValue(), 0.01,
+    assertEquals(
+        5000.0, domesticYear1, 0.01,
+        "Year 1 domestic should be 5000 kg, but was " + domesticYear1
+    );
+    assertEquals(
+        500.0, year1.getPopulation().getValue().doubleValue(), 0.01,
         "Year 1 population should be 500 units (5000 kg / 10 kg/unit), but was "
-        + year1.getPopulation().getValue());
+        + year1.getPopulation().getValue()
+    );
 
     // Year 3: simulation should still be running (proves prior conversion works)
     EngineResult year3 = LiveTestsUtil.getResult(resultsList.stream(), 3, "Test", "SubA");
@@ -231,15 +235,19 @@ public class GetStreamPriorLiveTests {
     EngineResult year1OtherSub = LiveTestsUtil.getResult(resultsList.stream(), 1, "Test", "OtherSub");
     assertNotNull(year1OtherSub, "Should have result for Test/OtherSub in year 1");
     double popYear1Other = year1OtherSub.getPopulation().getValue().doubleValue();
-    assertEquals(300.0, popYear1Other, 0.01,
-        "Year 1 OtherSub population should be 300 units, but was " + popYear1Other);
+    assertEquals(
+        300.0, popYear1Other, 0.01,
+        "Year 1 OtherSub population should be 300 units, but was " + popYear1Other
+    );
 
     // Year 1: MainSub population = 1000 units (1000 kg / 1 kg/unit)
     EngineResult year1MainSub = LiveTestsUtil.getResult(resultsList.stream(), 1, "Test", "MainSub");
     assertNotNull(year1MainSub, "Should have result for Test/MainSub in year 1");
     double popYear1Main = year1MainSub.getPopulation().getValue().doubleValue();
-    assertEquals(1000.0, popYear1Main, 0.01,
-        "Year 1 MainSub population should be 1000 units, but was " + popYear1Main);
+    assertEquals(
+        1000.0, popYear1Main, 0.01,
+        "Year 1 MainSub population should be 1000 units, but was " + popYear1Main
+    );
 
     // Year 2: MainSub population should be greater than year 1 (proves cross-substance
     // prior access works - sales from OtherSub is being added)
