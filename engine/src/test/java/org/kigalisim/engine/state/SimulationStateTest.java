@@ -1054,6 +1054,14 @@ public class SimulationStateTest {
     original.setLastSpecifiedValue(testScope, "sales", new EngineNumber(new BigDecimal("100"), "units"));
     original.markStreamAsEnabled(testScope, "domestic");
 
+    SimulationStateUpdate initialDomesticStream = new SimulationStateUpdateBuilder()
+        .setUseKey(testScope)
+        .setName("domestic")
+        .setValue(new EngineNumber(new BigDecimal("100"), "kg"))
+        .setSubtractRecycling(false)
+        .build();
+    original.update(initialDomesticStream);
+
     // Freeze
     SimulationState frozen = original.freeze();
     assertNotNull(frozen, "freeze() should return a non-null snapshot");
@@ -1064,6 +1072,14 @@ public class SimulationStateTest {
     original.setInitialCharge(testScope, "domestic", new EngineNumber(new BigDecimal("99.0"), "kg / unit"));
     original.setLastSpecifiedValue(testScope, "sales", new EngineNumber(new BigDecimal("999"), "units"));
 
+    SimulationStateUpdate mutatedDomesticStream = new SimulationStateUpdateBuilder()
+        .setUseKey(testScope)
+        .setName("domestic")
+        .setValue(new EngineNumber(new BigDecimal("500"), "kg"))
+        .setSubtractRecycling(false)
+        .build();
+    original.update(mutatedDomesticStream);
+
     // The frozen snapshot should retain the values as of the freeze() call
     assertEquals(new BigDecimal("2.5"), frozen.getGhgIntensity(testScope).getValue(),
                  "Frozen ghgIntensity should be unaffected by later mutation of the original");
@@ -1073,6 +1089,8 @@ public class SimulationStateTest {
                  "Frozen initialCharge should be unaffected by later mutation of the original");
     assertEquals(new BigDecimal("2.0"), frozen.getInitialCharge(testScope, "import").getValue(),
                  "Frozen import initialCharge should be unaffected by later mutation of the original");
+    assertEquals(new BigDecimal("100"), frozen.getStream(testScope, "domestic").getValue(),
+                 "Frozen domestic stream should be unaffected by later mutation of the original");
     EngineNumber frozenSales = frozen.getLastSpecifiedValue(testScope, "sales");
     assertNotNull(frozenSales, "Frozen lastSpecifiedValue should still exist");
     assertEquals(new BigDecimal("100"), frozenSales.getValue(),
@@ -1083,6 +1101,8 @@ public class SimulationStateTest {
                  "Original should have the mutated ghgIntensity");
     assertEquals(new BigDecimal("999"), original.getLastSpecifiedValue(testScope, "sales").getValue(),
                  "Original should have the mutated lastSpecifiedValue");
+    assertEquals(new BigDecimal("500"), original.getStream(testScope, "domestic").getValue(),
+                 "Original should have the mutated domestic stream");
 
     // Registered substances should match in count between original and frozen snapshot
     List<SubstanceInApplicationId> originalSubstances = original.getRegisteredSubstances();
@@ -1108,72 +1128,136 @@ public class SimulationStateTest {
     SimulationState frozen = createMockKeeper().freeze();
     Scope testScope = createTestScope();
 
-    assertThrows(UnsupportedOperationException.class, () -> frozen.ensureSubstance(testScope));
-    assertThrows(UnsupportedOperationException.class, () -> frozen.setCurrentYear(5));
-    assertThrows(UnsupportedOperationException.class, () -> frozen.incrementYear());
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.ensureSubstance(testScope)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setCurrentYear(5)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.incrementYear()
+    );
 
     EngineNumber value = new EngineNumber(BigDecimal.ONE, "kg");
-    assertThrows(UnsupportedOperationException.class,
-        () -> frozen.setGhgIntensity(testScope, value));
-    assertThrows(UnsupportedOperationException.class,
-        () -> frozen.setEnergyIntensity(testScope, value));
-    assertThrows(UnsupportedOperationException.class,
-        () -> frozen.setInitialCharge(testScope, "domestic", value));
-    assertThrows(UnsupportedOperationException.class,
-        () -> frozen.setRechargePopulation(testScope, value));
-    assertThrows(UnsupportedOperationException.class,
-        () -> frozen.setRechargeIntensity(testScope, value));
-    assertThrows(UnsupportedOperationException.class,
-        () -> frozen.accumulateRecharge(testScope, value, value));
-    assertThrows(UnsupportedOperationException.class,
-        () -> frozen.setRechargeBasePopulation(testScope, value));
-    assertThrows(UnsupportedOperationException.class,
-        () -> frozen.setAppliedRechargeAmount(testScope, value));
-    assertThrows(UnsupportedOperationException.class,
-        () -> frozen.setPrechargePopulation(testScope, value));
-    assertThrows(UnsupportedOperationException.class,
-        () -> frozen.setPrechargeIntensity(testScope, value));
-    assertThrows(UnsupportedOperationException.class,
-        () -> frozen.accumulatePrecharge(testScope, value, value));
-    assertThrows(UnsupportedOperationException.class,
-        () -> frozen.setPrechargeBasePopulation(testScope, value));
-    assertThrows(UnsupportedOperationException.class,
-        () -> frozen.setAppliedPrechargeAmount(testScope, value));
-    assertThrows(UnsupportedOperationException.class,
-        () -> frozen.setRecyclingCalculatedThisStep(testScope, true));
-    assertThrows(UnsupportedOperationException.class,
-        () -> frozen.setRecoveryRate(testScope, value));
-    assertThrows(UnsupportedOperationException.class,
-        () -> frozen.setYieldRate(testScope, value));
-    assertThrows(UnsupportedOperationException.class,
-        () -> frozen.setInductionRate(testScope, value));
-    assertThrows(UnsupportedOperationException.class,
-        () -> frozen.setRetirementRate(testScope, value));
-    assertThrows(UnsupportedOperationException.class,
-        () -> frozen.setRetirementBasePopulation(testScope, value));
-    assertThrows(UnsupportedOperationException.class,
-        () -> frozen.setAppliedRetirementAmount(testScope, value));
-    assertThrows(UnsupportedOperationException.class,
-        () -> frozen.setHasReplacementThisStep(testScope, true));
-    assertThrows(UnsupportedOperationException.class,
-        () -> frozen.setRetireCalculatedThisStep(testScope, true));
-    assertThrows(UnsupportedOperationException.class,
-        () -> frozen.setLastSpecifiedValue(testScope, "domestic", value));
-    assertThrows(UnsupportedOperationException.class,
-        () -> frozen.resetSalesIntentFlag(testScope));
-    assertThrows(UnsupportedOperationException.class,
-        () -> frozen.markStreamAsEnabled(testScope, "domestic"));
-    assertThrows(UnsupportedOperationException.class,
-        () -> frozen.clearLastSpecifiedValue(testScope, "domestic"));
-    assertThrows(UnsupportedOperationException.class, () -> {
-      SimulationStateUpdate update = new SimulationStateUpdateBuilder()
-          .setUseKey(testScope)
-          .setName("domestic")
-          .setValue(value)
-          .setSubtractRecycling(false)
-          .build();
-      frozen.update(update);
-    });
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setGhgIntensity(testScope, value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setEnergyIntensity(testScope, value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setInitialCharge(testScope, "domestic", value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setRechargePopulation(testScope, value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setRechargeIntensity(testScope, value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.accumulateRecharge(testScope, value, value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setRechargeBasePopulation(testScope, value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setAppliedRechargeAmount(testScope, value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setPrechargePopulation(testScope, value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setPrechargeIntensity(testScope, value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.accumulatePrecharge(testScope, value, value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setPrechargeBasePopulation(testScope, value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setAppliedPrechargeAmount(testScope, value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setRecyclingCalculatedThisStep(testScope, true)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setRecoveryRate(testScope, value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setYieldRate(testScope, value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setInductionRate(testScope, value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setRetirementRate(testScope, value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setRetirementBasePopulation(testScope, value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setAppliedRetirementAmount(testScope, value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setHasReplacementThisStep(testScope, true)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setRetireCalculatedThisStep(testScope, true)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setLastSpecifiedValue(testScope, "domestic", value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.resetSalesIntentFlag(testScope)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.markStreamAsEnabled(testScope, "domestic")
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.clearLastSpecifiedValue(testScope, "domestic")
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> {
+          SimulationStateUpdate update = new SimulationStateUpdateBuilder()
+              .setUseKey(testScope)
+              .setName("domestic")
+              .setValue(value)
+              .setSubtractRecycling(false)
+              .build();
+          frozen.update(update);
+        }
+    );
   }
 
   /**
@@ -1192,9 +1276,11 @@ public class SimulationStateTest {
     assertTrue(priorState.isPresent(), "getAtPrior(1) should return a present Optional");
 
     SimulationState prior = priorState.get();
-    assertThrows(UnsupportedOperationException.class,
+    assertThrows(
+        UnsupportedOperationException.class,
         () -> prior.setCurrentYear(99),
-        "Prior state returned by getAtPrior should reject mutation");
+        "Prior state returned by getAtPrior should reject mutation"
+    );
   }
 
 

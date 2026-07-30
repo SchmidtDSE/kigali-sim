@@ -329,16 +329,14 @@ public class SingleThreadEngine implements Engine {
   @Override
   public EngineNumber getStream(String name, Optional<UseKey> useKey, Optional<String> conversion,
       int yearsPast) {
-    // When yearsPast is zero, delegate to the existing getStream method
     if (yearsPast == 0) {
       return getStream(name, useKey, conversion);
     }
 
-    // Get the prior state from N years ago
     UseKey effectiveKey = useKey.orElse(scope);
     Optional<SimulationState> prior = simulationState.getAtPrior(yearsPast);
 
-    // If no prior state exists, return zero in the requested (or stream-native) units
+    // Return zero in the requested (or stream-native) units, not just empty units
     if (prior.isEmpty()) {
       String nativeUnits = EngineConstants.getBaseUnits(name);
       EngineNumber nativeZero = new EngineNumber(
@@ -346,10 +344,7 @@ public class SingleThreadEngine implements Engine {
       return conversion.map(conv -> unitConverter.convert(nativeZero, conv)).orElse(nativeZero);
     }
 
-    // Get the stream value from the prior state
     EngineNumber value = prior.get().getStream(effectiveKey, name);
-
-    // Apply conversion if specified
     return conversion.map(conv -> unitConverter.convert(value, conv)).orElse(value);
   }
 
