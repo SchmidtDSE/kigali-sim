@@ -535,17 +535,8 @@ public class SimulationState {
    */
   private EngineNumber getStreamDirect(UseKey useKey, String name, boolean priorYear) {
     String key = getKey(useKey, name);
-    if (priorYear) {
-      // Traverse the linked list of prior states to find the requested year
-      Optional<SimulationState> stateToCheck = priorState;
-      int yearsBack = 1;
-      while (stateToCheck.isPresent() && yearsBack < 1) {
-        stateToCheck = stateToCheck.get().priorState;
-        yearsBack++;
-      }
-      if (stateToCheck.isPresent() && stateToCheck.get().streams.containsKey(key)) {
-        return stateToCheck.get().streams.get(key);
-      }
+    if (priorYear && priorState.isPresent() && priorState.get().streams.containsKey(key)) {
+      return priorState.get().streams.get(key);
     }
 
     EngineNumber result = streams.get(key);
@@ -753,14 +744,13 @@ public class SimulationState {
   public Optional<SimulationState> getAtPrior(int years) {
     if (years < 0) {
       return Optional.empty();
-    }
-    if (years == 0) {
+    } else if (years == 0) {
       return Optional.of(this);
-    }
-    if (priorState.isEmpty()) {
+    } else if (priorState.isEmpty()) {
       return Optional.empty();
+    } else {
+      return priorState.get().getAtPrior(years - 1);
     }
-    return priorState.get().getAtPrior(years - 1);
   }
 
 
@@ -2261,9 +2251,10 @@ public class SimulationState {
   /**
    * Create a deep copy of this simulation state.
    *
-   * <p>All mutable fields, including maps and EngineNumber instances, are deep copied
-   * so that mutations on the copy do not affect the original. The state getter and
-   * unit converter dependencies are shared (not copied) as they are configuration objects.</p>
+   * <p>The mutable maps are copied so that additions and removals on the copy do
+   * not affect the original. EngineNumber instances are immutable, so their
+   * references can be shared. The state getter and unit converter dependencies
+   * are shared (not copied) as they are configuration objects.</p>
    *
    * @return A deep copy of this SimulationState instance
    */
@@ -2275,12 +2266,8 @@ public class SimulationState {
       copy.substances.put(entry.getKey(), entry.getValue().deepCopy());
     }
 
-    // Deep copy streams map
-    for (Map.Entry<String, EngineNumber> entry : streams.entrySet()) {
-      EngineNumber value = entry.getValue();
-      copy.streams.put(entry.getKey(),
-          new EngineNumber(value.getValue(), value.getUnits()));
-    }
+    // Copy streams map (EngineNumber is immutable, so references may be shared)
+    copy.streams.putAll(streams);
 
     // Copy primitive field
     copy.currentYear = this.currentYear;

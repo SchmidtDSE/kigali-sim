@@ -1,5 +1,5 @@
 /**
- * Live tests for get stream N years ago operations including priorEquipment
+ * Live tests for get stream N years ago operations including sales
  * with time-shifted access, unit conversion, and cross-substance access.
  *
  * @license BSD-3-Clause
@@ -22,7 +22,7 @@ import org.kigalisim.lang.program.ParsedProgram;
 
 /**
  * Tests that validate get stream N years ago operations work correctly
- * in full simulation scenarios. Tests priorEquipment time-shifted access,
+ * in full simulation scenarios. Tests sales time-shifted access,
  * zero-before-start behavior, unit conversion with prior values,
  * and cross-substance prior access.
  */
@@ -31,19 +31,18 @@ public class GetStreamPriorLiveTests {
   /**
    * Test the retirement schedule from the issue example.
    *
-   * <p>Uses get_stream_prior.qta which tests priorEquipment with time-shifted
+   * <p>Uses get_stream_prior.qta which tests sales with time-shifted
    * retirement:
    * <ul>
-   *   <li>Year 1: 1000 units sold, no retirement (priorEquipment 9/10/11 years ago = 0)</li>
-   *   <li>Years 2-9: 0 units sold, no retirement (priorEquipment still 0 for 9+ years ago)</li>
-   *   <li>Year 10: priorEquipment 9 years ago = 1000, retire 0.2 * 1000 = 200 units</li>
-   *   <li>Year 11: priorEquipment 10 years ago = 1000, retire 0.6 * 1000 = 600 units</li>
-   *   <li>Year 12+: priorEquipment 11 years ago = 1000, retire 0.2 * 1000 = 200 units</li>
+   *   <li>Year 1: 1000 units sold, no retirement (sales 9/10/11 years ago = 0)</li>
+   *   <li>Years 2-9: 0 units sold, no retirement (sales still 0 for 9+ years ago)</li>
+   *   <li>Year 10: sales 9 years ago = 1000, retire 0.2 * 1000 = 200 units -> 800</li>
+   *   <li>Year 11: sales 10 years ago = 1000, retire 0.6 * 1000 = 600 units -> 200</li>
+   *   <li>Year 12: sales 11 years ago = 1000, retire 0.2 * 1000 = 200 units -> 0</li>
    *   <li>After year 12: all 1000 units retired, equipment = 0</li>
    * </ul>
    *
-   * <p>Note: Retirement is applied at end of year, so the reported population is
-   * the start-of-year value before retirement.
+   * <p>The reported population is the end-of-year value after retirement is applied.
    */
   @Test
   public void testGetStreamPriorWithRetirementSchedule() throws IOException {
@@ -60,46 +59,42 @@ public class GetStreamPriorLiveTests {
     // Verify simulation completed without error
     assertTrue(resultsList.size() >= 20, "Should have at least 20 years of results");
 
-    // Year 1: 1000 units sold, no retirement (priorEquipment 9/10/11 years ago = 0)
+    // Year 1: 1000 units sold, no retirement (sales 9/10/11 years ago = 0)
     EngineResult year1 = LiveTestsUtil.getResult(resultsList.stream(), 1, "Test", "SubA");
     assertNotNull(year1, "Should have result for Test/SubA in year 1");
     double popYear1 = year1.getPopulation().getValue().doubleValue();
     assertEquals(1000.0, popYear1, 0.01,
         "Year 1 population should be 1000 units, but was " + popYear1);
 
-    // Year 5: still 1000 units (no retirement yet, priorEquipment 9+ years ago = 0)
+    // Year 5: still 1000 units (no retirement yet, sales 9+ years ago = 0)
     EngineResult year5 = LiveTestsUtil.getResult(resultsList.stream(), 5, "Test", "SubA");
     assertNotNull(year5, "Should have result for Test/SubA in year 5");
     double popYear5 = year5.getPopulation().getValue().doubleValue();
     assertEquals(1000.0, popYear5, 0.01,
         "Year 5 population should be 1000 units, but was " + popYear5);
 
-    // Year 9: still 1000 units (no retirement yet, priorEquipment 9+ years ago = 0)
+    // Year 9: still 1000 units (no retirement yet, sales 9+ years ago = 0)
     EngineResult year9 = LiveTestsUtil.getResult(resultsList.stream(), 9, "Test", "SubA");
     assertNotNull(year9, "Should have result for Test/SubA in year 9");
     double popYear9 = year9.getPopulation().getValue().doubleValue();
     assertEquals(1000.0, popYear9, 0.01,
         "Year 9 population should be 1000 units, but was " + popYear9);
 
-    // Year 10: priorEquipment 9 years ago = 1000, retire 0.2 * 1000 = 200 units
-    // Retirement applied at end of year, so reported value is start-of-year = 1000
+    // Year 10: sales 9 years ago = 1000, retire 0.2 * 1000 = 200 units -> 800
     EngineResult year10 = LiveTestsUtil.getResult(resultsList.stream(), 10, "Test", "SubA");
     assertNotNull(year10, "Should have result for Test/SubA in year 10");
     double popYear10 = year10.getPopulation().getValue().doubleValue();
-    assertEquals(1000.0, popYear10, 0.01,
-        "Year 10 population should be 1000 units (start of year, retirement applied at end), "
-        + "but was " + popYear10);
+    assertEquals(800.0, popYear10, 0.01,
+        "Year 10 population should be 800 units (1000 - 200 retired), but was " + popYear10);
 
-    // Year 11: start of year = 800 (after year 10's retirement of 200)
-    // priorEquipment 9y ago = 1000 (retire 200) + 10y ago = 1000 (retire 600) = 800 total
-    // Retirement applied at end of year, so reported value is start-of-year = 800
+    // Year 11: sales 10 years ago = 1000, retire 0.6 * 1000 = 600 units -> 200
     EngineResult year11 = LiveTestsUtil.getResult(resultsList.stream(), 11, "Test", "SubA");
     assertNotNull(year11, "Should have result for Test/SubA in year 11");
     double popYear11 = year11.getPopulation().getValue().doubleValue();
-    assertEquals(800.0, popYear11, 0.01,
-        "Year 11 population should be 800 units (start of year), but was " + popYear11);
+    assertEquals(200.0, popYear11, 0.01,
+        "Year 11 population should be 200 units (800 - 600 retired), but was " + popYear11);
 
-    // Year 12: start of year = 0 (after year 11's retirement of 800)
+    // Year 12: sales 11 years ago = 1000, retire 0.2 * 1000 = 200 units -> 0
     EngineResult year12 = LiveTestsUtil.getResult(resultsList.stream(), 12, "Test", "SubA");
     assertNotNull(year12, "Should have result for Test/SubA in year 12");
     double popYear12 = year12.getPopulation().getValue().doubleValue();
@@ -122,10 +117,10 @@ public class GetStreamPriorLiveTests {
   }
 
   /**
-   * Test that get priorEquipment returns 0 when querying before simulation start.
+   * Test that get sales returns 0 when querying before simulation start.
    *
    * <p>Uses get_stream_prior_returns_zero.qta which sets priorEquipment based on
-   * get priorEquipment 5 years ago. Since no equipment exists 5 years before year 1,
+   * get sales 5 years ago. Since no sales exist 5 years before year 1,
    * the value should be 0.
    */
   @Test
@@ -209,12 +204,12 @@ public class GetStreamPriorLiveTests {
   }
 
   /**
-   * Test cross-substance priorEquipment access.
+   * Test cross-substance sales access.
    *
    * <p>Uses get_stream_prior_multi_substance.qta which tests:
    * <ul>
-   *   <li>get priorEquipment 1 years ago of "OtherSub" as units</li>
-   *   <li>MainSub references OtherSub's prior equipment in year 2</li>
+   *   <li>get sales 1 years ago of "OtherSub" as units</li>
+   *   <li>MainSub references OtherSub's prior sales in year 2</li>
    * </ul>
    */
   @Test
@@ -247,14 +242,14 @@ public class GetStreamPriorLiveTests {
         "Year 1 MainSub population should be 1000 units, but was " + popYear1Main);
 
     // Year 2: MainSub population should be greater than year 1 (proves cross-substance
-    // prior access works - priorEquipment from OtherSub is being added)
+    // prior access works - sales from OtherSub is being added)
     EngineResult year2MainSub = LiveTestsUtil.getResult(resultsList.stream(), 2, "Test", "MainSub");
     assertNotNull(year2MainSub, "Should have result for Test/MainSub in year 2");
     double popYear2Main = year2MainSub.getPopulation().getValue().doubleValue();
     assertTrue(popYear2Main > popYear1Main,
         "Year 2 MainSub population (" + popYear2Main
         + ") should be greater than year 1 (" + popYear1Main
-        + ") due to cross-substance priorEquipment access, but was not");
+        + ") due to cross-substance sales access, but was not");
 
     // Year 2: OtherSub should still have positive population
     EngineResult year2OtherSub = LiveTestsUtil.getResult(resultsList.stream(), 2, "Test", "OtherSub");

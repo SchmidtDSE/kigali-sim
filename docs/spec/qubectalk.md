@@ -554,7 +554,7 @@ define currentSales as get sales
 define currentSalesKg as get sales as kg
 define salesOther as get sales of "HFC-134a" as kg
 define equipmentCount as get equipment as units
-define priorEquip as get priorEquipment 5 years ago as units
+define priorSales as get sales 5 years ago as units
 ```
 
 ### Set

@@ -93,15 +93,11 @@ end substance</code></pre>
         <h2>Exact retirement schedule</h2>
 
         <p>
-          Sometimes you may know the exact age of equipment already in service and want to model a precise retirement schedule rather than a continuous hazard function. For example, you might have data showing that a specific percentage of equipment retires at specific ages.
+          It is somewhat uncommon for countries to know the equipment in service duration. So, it is typically not ideal to, for example, retire all equipment at exactly 10 years of service. Even so, sometimes you may know the exact age of equipment already in service and want to model a precise hazard rate per year of equipment age instead of a continuous hazard function. For example, you might have data showing that a specific percentage of equipment retires at specific ages.
         </p>
 
         <p>
-          Let's consider an example for HFC-134a in commercial refrigeration where the retirement schedule is: 20% of equipment retires at 9 years, 60% at 10 years, and 20% at 11 years. This pattern means equipment has a 10-year expected lifespan but with a narrow window of retirement concentrated around that age.
-        </p>
-
-        <p>
-          To model this, you use the `get streamName N years ago` syntax to retrieve the equipment population from N years ago (when those units were sold) and apply the retirement fraction:
+          Let's consider an example for HFC-134a in commercial refrigeration where the retirement schedule is: 20% of equipment retires at 9 years, 60% at 10 years, and 20% at 11 years. This pattern means equipment has a 10-year expected lifespan but with a narrow window of retirement concentrated around that age. To model this, you use the `get streamName N years ago` syntax to retrieve the equipment population from N years ago (when those units were sold) and apply the retirement fraction:
         </p>
 
         <pre><code class="language-qubectalk">start default
@@ -114,9 +110,9 @@ end substance</code></pre>
       equals 1430 kgCO2e / kg
       set sales to 1000 units during year 1
       set sales to 0 units during year 2
-      retire (0.2 * (get priorEquipment 9 years ago as units)) units / year
-      retire (0.6 * (get priorEquipment 10 years ago as units)) units / year
-      retire (0.2 * (get priorEquipment 11 years ago as units)) units / year
+      retire (0.2 * (get sales 9 years ago as units)) units / year
+      retire (0.6 * (get sales 10 years ago as units)) units / year
+      retire (0.2 * (get sales 11 years ago as units)) units / year
     end substance
 
   end application

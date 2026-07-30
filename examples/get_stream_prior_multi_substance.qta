@@ -7,7 +7,7 @@ start default
       initial charge with 1 kg / unit for domestic
       equals 1 kgCO2e / kg
       set domestic to 1000 kg during year 1
-      set priorEquipment to (get priorEquipment 1 years ago of "OtherSub" as units) + 500 units during year 2
+      set priorEquipment to (get sales 1 years ago of "OtherSub" as units) + 500 units during year 2
       retire 5 % / year
     end substance
 

@@ -47,6 +47,38 @@ public class PriorEquipmentBases {
   }
 
   /**
+   * Create a new PriorEquipmentBases instance with the specified field values.
+   *
+   * <p>This is used by {@link #deepCopy()} to construct a copy without relying on
+   * the default initialization or direct field mutation after construction.</p>
+   *
+   * @param retirementBasePopulation The retirement base population, or empty if not captured
+   * @param appliedRetirementAmount The total amount already retired this step
+   * @param hasReplacementThisStep Whether replacement was used in this step's retire commands
+   * @param retireCalculatedThisStep Whether retire has been calculated this step
+   * @param rechargeBasePopulation The recharge base population, or empty if not captured
+   * @param appliedRechargeAmount The total amount already recharged this step in kg
+   * @param prechargeBasePopulation The precharge base population, or empty if not captured
+   * @param appliedPrechargeAmount The total amount already precharged this step in kg
+   * @param recyclingCalculatedThisStep Whether recycling has been calculated this step
+   */
+  private PriorEquipmentBases(Optional<EngineNumber> retirementBasePopulation,
+      Optional<EngineNumber> appliedRetirementAmount, boolean hasReplacementThisStep,
+      boolean retireCalculatedThisStep, Optional<EngineNumber> rechargeBasePopulation,
+      Optional<EngineNumber> appliedRechargeAmount, Optional<EngineNumber> prechargeBasePopulation,
+      Optional<EngineNumber> appliedPrechargeAmount, boolean recyclingCalculatedThisStep) {
+    this.retirementBasePopulation = retirementBasePopulation;
+    this.appliedRetirementAmount = appliedRetirementAmount;
+    this.hasReplacementThisStep = hasReplacementThisStep;
+    this.retireCalculatedThisStep = retireCalculatedThisStep;
+    this.rechargeBasePopulation = rechargeBasePopulation;
+    this.appliedRechargeAmount = appliedRechargeAmount;
+    this.prechargeBasePopulation = prechargeBasePopulation;
+    this.appliedPrechargeAmount = appliedPrechargeAmount;
+    this.recyclingCalculatedThisStep = recyclingCalculatedThisStep;
+  }
+
+  /**
    * Get the retirement base population.
    *
    * @return The base population, or empty if not yet captured this step
@@ -227,33 +259,22 @@ public class PriorEquipmentBases {
   /**
    * Create a deep copy of this prior equipment bases instance.
    *
-   * <p>All mutable fields, including Optional-wrapped EngineNumber instances,
-   * are deep copied so that mutations on the copy do not affect the original.</p>
+   * <p>EngineNumber instances are immutable and Optional is immutable, so the
+   * Optionals can be shared directly between this instance and the copy without
+   * risk of cross-contamination from later mutations.</p>
    *
    * @return A deep copy of this PriorEquipmentBases instance
    */
   public PriorEquipmentBases deepCopy() {
-    PriorEquipmentBases copy = new PriorEquipmentBases();
-
-    // Deep copy Optional<EngineNumber> fields
-    copy.retirementBasePopulation = retirementBasePopulation.map(
-        v -> new EngineNumber(v.getValue(), v.getUnits()));
-    copy.appliedRetirementAmount = appliedRetirementAmount.map(
-        v -> new EngineNumber(v.getValue(), v.getUnits()));
-    copy.rechargeBasePopulation = rechargeBasePopulation.map(
-        v -> new EngineNumber(v.getValue(), v.getUnits()));
-    copy.appliedRechargeAmount = appliedRechargeAmount.map(
-        v -> new EngineNumber(v.getValue(), v.getUnits()));
-    copy.prechargeBasePopulation = prechargeBasePopulation.map(
-        v -> new EngineNumber(v.getValue(), v.getUnits()));
-    copy.appliedPrechargeAmount = appliedPrechargeAmount.map(
-        v -> new EngineNumber(v.getValue(), v.getUnits()));
-
-    // Copy primitive fields
-    copy.hasReplacementThisStep = this.hasReplacementThisStep;
-    copy.retireCalculatedThisStep = this.retireCalculatedThisStep;
-    copy.recyclingCalculatedThisStep = this.recyclingCalculatedThisStep;
-
-    return copy;
+    return new PriorEquipmentBases(
+        retirementBasePopulation,
+        appliedRetirementAmount,
+        hasReplacementThisStep,
+        retireCalculatedThisStep,
+        rechargeBasePopulation,
+        appliedRechargeAmount,
+        prechargeBasePopulation,
+        appliedPrechargeAmount,
+        recyclingCalculatedThisStep);
   }
 }

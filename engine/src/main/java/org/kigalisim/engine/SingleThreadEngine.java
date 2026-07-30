@@ -353,8 +353,6 @@ public class SingleThreadEngine implements Engine {
     return simulationState.getStream(key, stream);
   }
 
-
-
   @Override
   public void defineVariable(String name) {
     switch (name) {

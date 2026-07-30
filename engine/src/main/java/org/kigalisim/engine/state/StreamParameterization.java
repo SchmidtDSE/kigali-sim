@@ -799,47 +799,44 @@ public class StreamParameterization {
   /**
    * Create a deep copy of this stream parameterization.
    *
-   * <p>All mutable fields, including maps and EngineNumber instances, are deep copied
-   * so that mutations on the copy do not affect the original.</p>
+   * <p>The mutable maps and sets are copied so that additions and removals on the
+   * copy do not affect the original. EngineNumber instances are immutable, so
+   * their references can be shared. The prior equipment bases are deep copied.</p>
    *
    * @return A deep copy of this StreamParameterization instance
    */
   public StreamParameterization deepCopy() {
     StreamParameterization copy = new StreamParameterization();
 
-    // Deep copy EngineNumber fields
-    copy.setGhgIntensity(new EngineNumber(ghgIntensity.getValue(), ghgIntensity.getUnits()));
-    copy.setEnergyIntensity(new EngineNumber(energyIntensity.getValue(), energyIntensity.getUnits()));
-    copy.setRechargePopulation(new EngineNumber(rechargePopulation.getValue(), rechargePopulation.getUnits()));
-    copy.setRechargeIntensity(new EngineNumber(rechargeIntensity.getValue(), rechargeIntensity.getUnits()));
-    copy.setPrechargePopulation(new EngineNumber(prechargePopulation.getValue(), prechargePopulation.getUnits()));
-    copy.setPrechargeIntensity(new EngineNumber(prechargeIntensity.getValue(), prechargeIntensity.getUnits()));
-    copy.setRecoveryRate(new EngineNumber(recoveryRateRecharge.getValue(), recoveryRateRecharge.getUnits()));
-    copy.setYieldRate(new EngineNumber(yieldRateRecharge.getValue(), yieldRateRecharge.getUnits()));
-    copy.setRecoveryRate(new EngineNumber(recoveryRateEol.getValue(), recoveryRateEol.getUnits()), RecoveryStage.EOL);
-    copy.setYieldRate(new EngineNumber(yieldRateEol.getValue(), yieldRateEol.getUnits()), RecoveryStage.EOL);
-    copy.setRetirementRate(new EngineNumber(retirementRate.getValue(), retirementRate.getUnits()));
-    copy.setInductionRate(new EngineNumber(inductionRateRecharge.getValue(), inductionRateRecharge.getUnits()));
-    copy.setInductionRate(new EngineNumber(inductionRateEol.getValue(), inductionRateEol.getUnits()), RecoveryStage.EOL);
+    // Copy EngineNumber fields (immutable, references may be shared)
+    copy.setGhgIntensity(ghgIntensity);
+    copy.setEnergyIntensity(energyIntensity);
+    copy.setRechargePopulation(rechargePopulation);
+    copy.setRechargeIntensity(rechargeIntensity);
+    copy.setPrechargePopulation(prechargePopulation);
+    copy.setPrechargeIntensity(prechargeIntensity);
+    copy.setRecoveryRate(recoveryRateRecharge);
+    copy.setYieldRate(yieldRateRecharge);
+    copy.setRecoveryRate(recoveryRateEol, RecoveryStage.EOL);
+    copy.setYieldRate(yieldRateEol, RecoveryStage.EOL);
+    copy.setRetirementRate(retirementRate);
+    copy.setInductionRate(inductionRateRecharge);
+    copy.setInductionRate(inductionRateEol, RecoveryStage.EOL);
 
-    // Deep copy initialCharge map
+    // Copy initialCharge map (EngineNumber is immutable, references may be shared)
     for (Map.Entry<String, EngineNumber> entry : initialCharge.entrySet()) {
-      EngineNumber value = entry.getValue();
-      copy.setInitialCharge(entry.getKey(),
-          new EngineNumber(value.getValue(), value.getUnits()));
+      copy.setInitialCharge(entry.getKey(), entry.getValue());
     }
 
-    // Deep copy lastSpecifiedValue map
+    // Copy lastSpecifiedValue map (EngineNumber is immutable, references may be shared)
     for (Map.Entry<String, EngineNumber> entry : lastSpecifiedValue.entrySet()) {
-      EngineNumber value = entry.getValue();
-      copy.setLastSpecifiedValue(entry.getKey(),
-          new EngineNumber(value.getValue(), value.getUnits()));
+      copy.setLastSpecifiedValue(entry.getKey(), entry.getValue());
     }
 
-    // Deep copy enabledStreams set
+    // Copy enabledStreams set
     copy.enabledStreams.addAll(enabledStreams);
 
-    // Copy primitive fields
+    // Copy primitive field (after loops to override salesIntentFreshlySet side effects)
     copy.salesIntentFreshlySet = this.salesIntentFreshlySet;
 
     // Deep copy priorEquipmentBases
