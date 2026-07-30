@@ -255,6 +255,25 @@ public interface Engine {
    */
   EngineNumber getStream(String name, Optional<UseKey> useKey, Optional<String> conversion);
 
+   /**
+    * Get the stream value for a given application, substance, and lookback period.
+    *
+    * <p>Get the value of a stream from a specified number of years in the past. When
+    * yearsPast is zero, retrieves the current year's value. When yearsPast is positive,
+    * traverses the simulation state history to find the value from that many years ago.
+    * If no prior state exists for the requested year, returns a zero EngineNumber.</p>
+    *
+    * @param name The name of the stream to retrieve like sales.
+    * @param useKey The key containing application and substance information.
+    * @param conversion The conversion specification for units (like mt), or empty for no
+    *     conversion.
+    * @param yearsPast The number of years to look back. Zero means current year.
+    * @return The value of the stream from the specified number of years ago, possibly
+    *     converted, or EngineNumber.ZERO if no prior state exists.
+    */
+   EngineNumber getStream(String name, Optional<UseKey> useKey, Optional<String> conversion,
+       int yearsPast);
+
   /**
    * Get the stream value with default scope and no conversion.
    *
