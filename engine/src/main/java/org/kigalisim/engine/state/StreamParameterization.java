@@ -795,4 +795,45 @@ public class StreamParameterization {
       default -> false;
     };
   }
+
+  /**
+   * Create a deep copy of this stream parameterization.
+   *
+   * <p>The mutable maps and sets are copied so that additions and removals on the
+   * copy do not affect the original. EngineNumber instances are immutable, so
+   * their references can be shared. The prior equipment bases are deep copied.</p>
+   *
+   * @return A deep copy of this StreamParameterization instance
+   */
+  public StreamParameterization deepCopy() {
+    StreamParameterization copy = new StreamParameterization();
+
+    copy.setGhgIntensity(ghgIntensity);
+    copy.setEnergyIntensity(energyIntensity);
+    copy.setRechargePopulation(rechargePopulation);
+    copy.setRechargeIntensity(rechargeIntensity);
+    copy.setPrechargePopulation(prechargePopulation);
+    copy.setPrechargeIntensity(prechargeIntensity);
+    copy.setRecoveryRate(recoveryRateRecharge);
+    copy.setYieldRate(yieldRateRecharge);
+    copy.setRecoveryRate(recoveryRateEol, RecoveryStage.EOL);
+    copy.setYieldRate(yieldRateEol, RecoveryStage.EOL);
+    copy.setRetirementRate(retirementRate);
+    copy.setInductionRate(inductionRateRecharge);
+    copy.setInductionRate(inductionRateEol, RecoveryStage.EOL);
+
+    for (Map.Entry<String, EngineNumber> entry : initialCharge.entrySet()) {
+      copy.setInitialCharge(entry.getKey(), entry.getValue());
+    }
+
+    for (Map.Entry<String, EngineNumber> entry : lastSpecifiedValue.entrySet()) {
+      copy.setLastSpecifiedValue(entry.getKey(), entry.getValue());
+    }
+
+    copy.enabledStreams.addAll(enabledStreams);
+    copy.salesIntentFreshlySet = this.salesIntentFreshlySet;
+    copy.priorEquipmentBases = priorEquipmentBases.deepCopy();
+
+    return copy;
+  }
 }

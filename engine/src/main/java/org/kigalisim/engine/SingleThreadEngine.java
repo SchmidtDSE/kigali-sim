@@ -325,6 +325,24 @@ public class SingleThreadEngine implements Engine {
   }
 
   @Override
+  public EngineNumber getStream(String name, Optional<UseKey> useKey, Optional<String> conversion,
+      int yearsPast) {
+    if (yearsPast == 0) {
+      return getStream(name, useKey, conversion);
+    }
+
+    UseKey effectiveKey = useKey.orElse(scope);
+    Optional<SimulationState> prior = simulationState.getAtPrior(yearsPast);
+
+    if (prior.isEmpty()) {
+      return new EngineNumber(BigDecimal.ZERO, "");
+    }
+
+    EngineNumber value = prior.get().getStream(effectiveKey, name);
+    return conversion.map(conv -> unitConverter.convert(value, conv)).orElse(value);
+  }
+
+  @Override
   public EngineNumber getStreamFor(UseKey key, String stream) {
     return simulationState.getStream(key, stream);
   }

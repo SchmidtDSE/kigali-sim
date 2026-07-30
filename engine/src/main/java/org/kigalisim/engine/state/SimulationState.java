@@ -35,7 +35,7 @@ public class SimulationState {
 
   private final Map<String, StreamParameterization> substances;
   private final Map<String, EngineNumber> streams;
-  private final Map<String, EngineNumber> priorStreams;
+  private Optional<SimulationState> priorState;
   private final OverridingConverterStateGetter stateGetter;
   private final UnitConverter unitConverter;
   private int currentYear;
@@ -49,7 +49,7 @@ public class SimulationState {
   public SimulationState(OverridingConverterStateGetter stateGetter, UnitConverter unitConverter) {
     this.substances = new HashMap<>();
     this.streams = new HashMap<>();
-    this.priorStreams = new HashMap<>();
+    this.priorState = Optional.empty();
     this.stateGetter = stateGetter;
     this.unitConverter = unitConverter;
   }
@@ -535,8 +535,8 @@ public class SimulationState {
    */
   private EngineNumber getStreamDirect(UseKey useKey, String name, boolean priorYear) {
     String key = getKey(useKey, name);
-    if (priorYear && priorStreams.containsKey(key)) {
-      return priorStreams.get(key);
+    if (priorYear && priorState.isPresent() && priorState.get().streams.containsKey(key)) {
+      return priorState.get().streams.get(key);
     }
 
     EngineNumber result = streams.get(key);
@@ -730,12 +730,41 @@ public class SimulationState {
   }
 
   /**
+   * Get the simulation state from N years ago.
+   *
+   * <p>Returns Optional.empty() if years is negative. Returns Optional.of(this) if years is 0.
+   * Otherwise traverses the linked list of prior states: getAtPrior(1) returns the state from
+   * the previous year, getAtPrior(2) returns the state from two years ago, and so on.
+   * If the linked list is exhausted before reaching the requested year, returns Optional.empty().</p>
+   *
+   * @param years The number of years to look back
+   * @return Optional.of(this) if years is 0, Optional.of(priorState) if years is 1,
+   *     traversing the linked list for larger values, or Optional.empty() if not available
+   */
+  public Optional<SimulationState> getAtPrior(int years) {
+    if (years < 0) {
+      return Optional.empty();
+    } else if (years == 0) {
+      return Optional.of(this);
+    } else if (priorState.isEmpty()) {
+      return Optional.empty();
+    } else {
+      return priorState.get().getAtPrior(years - 1);
+    }
+  }
+
+
+  /**
    * Increment the year, updating populations and resetting internal params.
+   *
+   * <p>Creates a deep copy of the current state before modifications to build the
+   * linked list of prior states, enabling lookback N years via getAtPrior().</p>
    */
   public void incrementYear() {
-    currentYear += 1;
+    SimulationState priorCopy = this.deepCopy();
+    priorCopy.priorState = this.priorState;
 
-    snapshotStreams();
+    currentYear += 1;
 
     for (String key : substances.keySet()) {
       String[] keyPieces = key.split("\t");
@@ -759,19 +788,9 @@ public class SimulationState {
       SimpleUseKey useKey = new SimpleUseKey(application, substance);
       resetStreamRecycling(useKey);
     }
-  }
 
-  /**
-   * Snapshot all current stream values to prior streams for next year reference.
-   *
-   * <p>This method preserves the current state of all streams before transitioning
-   * to a new year, allowing subsequent calculations to reference prior year values.</p>
-   */
-  private void snapshotStreams() {
-    priorStreams.clear();
-    for (String name : streams.keySet()) {
-      priorStreams.put(name, streams.get(name));
-    }
+    // Set priorState to the deep copy of the previous year's state
+    this.priorState = Optional.of(priorCopy);
   }
 
   /**
@@ -2224,5 +2243,28 @@ public class SimulationState {
   public void clearLastSpecifiedValue(UseKey useKey, String stream) {
     StreamParameterization parameterization = getParameterization(useKey);
     parameterization.clearLastSpecifiedValue(stream);
+  }
+
+  /**
+   * Create a deep copy of this simulation state.
+   *
+   * <p>The mutable maps are copied so that additions and removals on the copy do
+   * not affect the original. EngineNumber instances are immutable, so their
+   * references can be shared. The state getter and unit converter dependencies
+   * are shared (not copied) as they are configuration objects.</p>
+   *
+   * @return A deep copy of this SimulationState instance
+   */
+  public SimulationState deepCopy() {
+    SimulationState copy = new SimulationState(stateGetter, unitConverter);
+
+    for (Map.Entry<String, StreamParameterization> entry : substances.entrySet()) {
+      copy.substances.put(entry.getKey(), entry.getValue().deepCopy());
+    }
+
+    copy.streams.putAll(streams);
+    copy.currentYear = this.currentYear;
+
+    return copy;
   }
 }
