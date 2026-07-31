@@ -1,5 +1,5 @@
 # Kigali Sim - Montreal Protocol Policy Simulation Tool
-v=20260302
+v=20260731
 
 Kigali Sim is an open source web-based simulation engine for modeling substances, applications, and policies related to the Montreal Protocol and Kigali Amendment. See [llms.txt](llms.txt) (http://kigalisim.org/llms.txt) for an index of additional documentation and tutorials. It can model high global warming potential greenhouse gases such as HFCs and supports business-as-usual scenarios as well as policy interventions.
 
@@ -148,7 +148,7 @@ Streams may be `domestic|import|export|sales|virgin|equipment|priorEquipment|ban
 - `virgin`: domestic and import only (excludes recycling and exports)
 - `priorEquipment`: equipment active coming into current year
 - `equipment`: equipment active, either from prior or new
-- `age`: weighted average equipment age (read-only, Advanced Editor only)
+- `age`: weighted average equipment age (read-only)
 
 ```qubectalk
 set bank to 1000 units during year 1990         # Same as: set equipment to 1000 units
@@ -181,7 +181,7 @@ The `age` stream tracks the weighted average age of equipment in the population.
 - With new equipment additions, age is the weighted average based on equipment quantities
 - Usage: `get age as years` in formulas
 - Example: `retire (get age as years) * 1 %` for age-dependent retirement
-- **Advanced Editor only** - not available in Designer UI
+- No dedicated Basic Editor widget, but this can be typed directly into a Basic Editor numeric field (e.g. the retirement box) as a formula string, which is preserved as-is
 
 **Note**: The `enable` command only works with `domestic`, `import`, and `export` streams. Streams must be enabled (either explicitly with `enable` or implicitly by setting non-zero values) before operations like `recharge` that require sales distribution calculations.
 
@@ -284,7 +284,7 @@ start policy "HFC Phasedown"
       recover 20 % with 80 % reuse with 25 % induction at eol during years 4 to 10
       replace 50% of domestic with "R-600a" during years 6 to onwards
 
-      # Example: Age-dependent retirement (Advanced Editor only)
+      # Example: Age-dependent retirement (can be typed as a formula into a Basic Editor numeric field)
       # retire (get age as years) * 1 % each year during years 5 to onwards
     end substance
 
@@ -331,10 +331,11 @@ When working with AI assistants, you may want to specify that only UI Editor com
 
 **Not Supported in UI Editor (Advanced Editor Only):**
 - **About stanza**: Metadata and descriptions (`start about`/`end about`)
-- **Code expressions**: Variables (`define`/`get`), arithmetic, conditionals (`if`/`else`/`endif`), boolean/comparison operators (`and`, `or`, `xor`, `==`, `!=`, `<`, `>`, `<=`, `>=`), constraints (`limit`), and complex mathematical expressions
+- **Code expressions**: Variables (`define`), conditionals (`if`/`else`/`endif`), boolean/comparison operators (`and`, `or`, `xor`, `==`, `!=`, `<`, `>`, `<=`, `>=`), and constraints (`limit`) all require the Advanced Editor's code view
 - **Probabilistic features**: Distributions (`sample normally`, `sample uniformly`) and Monte Carlo trials (`across X trials`)
-- **Advanced streams**: `get {stream}`, unit conversions (`get {stream} as {units}`), and age stream (`get age as years`) for age-dependent policies
-- **Multi-substance policies**: Policies affecting multiple substances simultaneously
+- **Multi-substance policies**: Policies affecting multiple substances simultaneously (a single policy in the Basic Editor can only modify one substance)
+
+**Formula fields (partial UI Editor support):** The Basic Editor has no dedicated widget for building `get {stream}`, `get {stream} N years ago`, unit conversions (`get {stream} as {units}`), the `age` stream (`get age as years`), or arithmetic on these (e.g. `(get age as years) * 1`). However, its numeric fields (e.g. retirement, recharge) accept a formula string typed in directly instead of a plain number — the Basic Editor preserves it as-is and passes it through, so these expressions work in practice even without a UI for constructing them. See `tutorial_15.html` for a worked example.
 
 **Example UI-Compatible Code:**
 ```
@@ -515,9 +516,9 @@ Constant hazard is `x % / year` (or just `x %`). Each year, each unit has a `x %
 Retirement occurs at specific ages. Example: 20% at 9 years, 60% at 10 years, 20% at 11 years (10-year expected lifespan):
 
 ```
-retire (0.2 * (get sales 9 years ago as units)) units / year
-retire (0.6 * (get sales 10 years ago as units)) units / year
-retire (0.2 * (get sales 11 years ago as units)) units / year
+retire (0.2 * (get newEquipment 9 years ago as units)) units / year
+retire (0.6 * (get newEquipment 10 years ago as units)) units / year
+retire (0.2 * (get newEquipment 11 years ago as units)) units / year
 ```
 
 Asking for a value before simulation start returns 0. Only use when user knows exact equipment ages.
