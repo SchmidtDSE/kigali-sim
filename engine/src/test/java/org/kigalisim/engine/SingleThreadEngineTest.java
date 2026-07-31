@@ -205,9 +205,16 @@ public class SingleThreadEngineTest {
 
     EngineNumber result = engine.getStream(
         "domestic", Optional.of(engine.getScope()), Optional.empty(), 5);
-    assertEquals(BigDecimal.ZERO, result.getValue(), "Should be zero before sim start");
-    assertEquals("kg", result.getUnits(),
-        "Should have domestic's native kg units, not an empty units string");
+    assertEquals(
+        BigDecimal.ZERO,
+        result.getValue(),
+        "Should be zero before sim start"
+    );
+    assertEquals(
+        "kg",
+        result.getUnits(),
+        "Should have domestic's native kg units, not an empty units string"
+    );
   }
 
   /**
@@ -224,9 +231,16 @@ public class SingleThreadEngineTest {
 
     EngineNumber result = engine.getStream(
         "equipment", Optional.of(engine.getScope()), Optional.of("kg"), 5);
-    assertEquals(BigDecimal.ZERO, result.getValue(), "Should be zero before sim start");
-    assertEquals("kg", result.getUnits(),
-        "Should honor the requested conversion units even before sim start");
+    assertEquals(
+        BigDecimal.ZERO,
+        result.getValue(),
+        "Should be zero before sim start"
+    );
+    assertEquals(
+        "kg",
+        result.getUnits(),
+        "Should honor the requested conversion units even before sim start"
+    );
   }
 
   /**

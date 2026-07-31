@@ -33,8 +33,11 @@ public class PriorEquipmentBasesTest {
     assertNotNull(bases, "MutablePriorEquipmentBases should be constructable");
     assertTrue(bases.getRetirementBasePopulation().isEmpty(),
         "Retirement base population should start empty");
-    assertEquals(BigDecimal.ZERO, bases.getAppliedRetirementAmount().get().getValue(),
-        "Applied retirement amount should start at zero");
+    assertEquals(
+        BigDecimal.ZERO,
+        bases.getAppliedRetirementAmount().get().getValue(),
+        "Applied retirement amount should start at zero"
+    );
     assertFalse(bases.getHasReplacementThisStep(), "Should not have replacement initially");
     assertFalse(bases.getRecyclingCalculatedThisStep(), "Recycling should not be calculated yet");
   }
@@ -50,16 +53,22 @@ public class PriorEquipmentBasesTest {
 
     PriorEquipmentBases frozen = original.freeze();
 
-    assertEquals(BigDecimal.valueOf(100), frozen.getRetirementBasePopulation().get().getValue(),
-        "Frozen snapshot should carry over retirement base population");
+    assertEquals(
+        BigDecimal.valueOf(100),
+        frozen.getRetirementBasePopulation().get().getValue(),
+        "Frozen snapshot should carry over retirement base population"
+    );
     assertTrue(frozen.getHasReplacementThisStep(), "Frozen snapshot should carry over replacement flag");
 
     // Mutating the original after freezing should not affect the snapshot
     original.setRetirementBasePopulation(new EngineNumber(BigDecimal.valueOf(999), "units"));
     original.setHasReplacementThisStep(false);
 
-    assertEquals(BigDecimal.valueOf(100), frozen.getRetirementBasePopulation().get().getValue(),
-        "Frozen snapshot should not be affected by later mutation of the original");
+    assertEquals(
+        BigDecimal.valueOf(100),
+        frozen.getRetirementBasePopulation().get().getValue(),
+        "Frozen snapshot should not be affected by later mutation of the original"
+    );
     assertTrue(frozen.getHasReplacementThisStep(),
         "Frozen snapshot should not be affected by later mutation of the original");
   }
@@ -82,26 +91,46 @@ public class PriorEquipmentBasesTest {
     PriorEquipmentBases frozen = new MutablePriorEquipmentBases().freeze();
     EngineNumber value = new EngineNumber(BigDecimal.ONE, "units");
 
-    assertThrows(UnsupportedOperationException.class,
-        () -> frozen.setRetirementBasePopulation(value));
-    assertThrows(UnsupportedOperationException.class,
-        () -> frozen.setAppliedRetirementAmount(value));
-    assertThrows(UnsupportedOperationException.class,
-        () -> frozen.setHasReplacementThisStep(true));
-    assertThrows(UnsupportedOperationException.class,
-        () -> frozen.setRetireCalculatedThisStep(true));
-    assertThrows(UnsupportedOperationException.class,
-        () -> frozen.setRechargeBasePopulation(value));
-    assertThrows(UnsupportedOperationException.class,
-        () -> frozen.setAppliedRechargeAmount(value));
-    assertThrows(UnsupportedOperationException.class,
-        () -> frozen.setPrechargeBasePopulation(value));
-    assertThrows(UnsupportedOperationException.class,
-        () -> frozen.setAppliedPrechargeAmount(value));
-    assertThrows(UnsupportedOperationException.class,
-        () -> frozen.setRecyclingCalculatedThisStep(true));
-    assertThrows(UnsupportedOperationException.class,
-        () -> frozen.resetStateAtTimestep());
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setRetirementBasePopulation(value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setAppliedRetirementAmount(value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setHasReplacementThisStep(true)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setRetireCalculatedThisStep(true)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setRechargeBasePopulation(value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setAppliedRechargeAmount(value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setPrechargeBasePopulation(value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setAppliedPrechargeAmount(value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setRecyclingCalculatedThisStep(true)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.resetStateAtTimestep()
+    );
   }
 
   /**

@@ -1081,34 +1081,64 @@ public class SimulationStateTest {
     original.update(mutatedDomesticStream);
 
     // The frozen snapshot should retain the values as of the freeze() call
-    assertEquals(new BigDecimal("2.5"), frozen.getGhgIntensity(testScope).getValue(),
-                 "Frozen ghgIntensity should be unaffected by later mutation of the original");
-    assertEquals(new BigDecimal("1.5"), frozen.getEnergyIntensity(testScope).getValue(),
-                 "Frozen energyIntensity should be unaffected by later mutation of the original");
-    assertEquals(new BigDecimal("3.0"), frozen.getInitialCharge(testScope, "domestic").getValue(),
-                 "Frozen initialCharge should be unaffected by later mutation of the original");
-    assertEquals(new BigDecimal("2.0"), frozen.getInitialCharge(testScope, "import").getValue(),
-                 "Frozen import initialCharge should be unaffected by later mutation of the original");
-    assertEquals(new BigDecimal("100"), frozen.getStream(testScope, "domestic").getValue(),
-                 "Frozen domestic stream should be unaffected by later mutation of the original");
+    assertEquals(
+        new BigDecimal("2.5"),
+        frozen.getGhgIntensity(testScope).getValue(),
+        "Frozen ghgIntensity should be unaffected by later mutation of the original"
+    );
+    assertEquals(
+        new BigDecimal("1.5"),
+        frozen.getEnergyIntensity(testScope).getValue(),
+        "Frozen energyIntensity should be unaffected by later mutation of the original"
+    );
+    assertEquals(
+        new BigDecimal("3.0"),
+        frozen.getInitialCharge(testScope, "domestic").getValue(),
+        "Frozen initialCharge should be unaffected by later mutation of the original"
+    );
+    assertEquals(
+        new BigDecimal("2.0"),
+        frozen.getInitialCharge(testScope, "import").getValue(),
+        "Frozen import initialCharge should be unaffected by later mutation of the original"
+    );
+    assertEquals(
+        new BigDecimal("100"),
+        frozen.getStream(testScope, "domestic").getValue(),
+        "Frozen domestic stream should be unaffected by later mutation of the original"
+    );
     EngineNumber frozenSales = frozen.getLastSpecifiedValue(testScope, "sales");
     assertNotNull(frozenSales, "Frozen lastSpecifiedValue should still exist");
-    assertEquals(new BigDecimal("100"), frozenSales.getValue(),
-                 "Frozen lastSpecifiedValue should be unaffected by later mutation of the original");
+    assertEquals(
+        new BigDecimal("100"),
+        frozenSales.getValue(),
+        "Frozen lastSpecifiedValue should be unaffected by later mutation of the original"
+    );
 
     // Verify the original retains the mutated values
-    assertEquals(new BigDecimal("9.9"), original.getGhgIntensity(testScope).getValue(),
-                 "Original should have the mutated ghgIntensity");
-    assertEquals(new BigDecimal("999"), original.getLastSpecifiedValue(testScope, "sales").getValue(),
-                 "Original should have the mutated lastSpecifiedValue");
-    assertEquals(new BigDecimal("500"), original.getStream(testScope, "domestic").getValue(),
-                 "Original should have the mutated domestic stream");
+    assertEquals(
+        new BigDecimal("9.9"),
+        original.getGhgIntensity(testScope).getValue(),
+        "Original should have the mutated ghgIntensity"
+    );
+    assertEquals(
+        new BigDecimal("999"),
+        original.getLastSpecifiedValue(testScope, "sales").getValue(),
+        "Original should have the mutated lastSpecifiedValue"
+    );
+    assertEquals(
+        new BigDecimal("500"),
+        original.getStream(testScope, "domestic").getValue(),
+        "Original should have the mutated domestic stream"
+    );
 
     // Registered substances should match in count between original and frozen snapshot
     List<SubstanceInApplicationId> originalSubstances = original.getRegisteredSubstances();
     List<SubstanceInApplicationId> frozenSubstances = frozen.getRegisteredSubstances();
-    assertEquals(originalSubstances.size(), frozenSubstances.size(),
-                 "Frozen snapshot should have the same number of substances");
+    assertEquals(
+        originalSubstances.size(),
+        frozenSubstances.size(),
+        "Frozen snapshot should have the same number of substances"
+    );
   }
 
   /**
@@ -1325,10 +1355,16 @@ public class SimulationStateTest {
     assertTrue(priorState.isPresent(), "getAtPrior(1) should return a present Optional after incrementYear");
     SimulationState prior = priorState.get();
     EngineNumber priorDomestic = prior.getStream(testScope, "domestic");
-    assertEquals(new BigDecimal("100"), priorDomestic.getValue(),
-                 "Prior state should have the original stream value");
-    assertEquals("kg", priorDomestic.getUnits(),
-                 "Prior state should have correct units");
+    assertEquals(
+        new BigDecimal("100"),
+        priorDomestic.getValue(),
+        "Prior state should have the original stream value"
+    );
+    assertEquals(
+        "kg",
+        priorDomestic.getUnits(),
+        "Prior state should have correct units"
+    );
   }
 
   /**
@@ -1370,15 +1406,21 @@ public class SimulationStateTest {
     Optional<SimulationState> prior2 = keeper.getAtPrior(2);
     assertTrue(prior2.isPresent(), "getAtPrior(2) should return a present Optional");
     EngineNumber prior2Domestic = prior2.get().getStream(testScope, "domestic");
-    assertEquals(new BigDecimal("100"), prior2Domestic.getValue(),
-                 "getAtPrior(2) should have year 1 value");
+    assertEquals(
+        new BigDecimal("100"),
+        prior2Domestic.getValue(),
+        "getAtPrior(2) should have year 1 value"
+    );
 
     // Verify getAtPrior(1) returns year 2 state with value 200
     Optional<SimulationState> prior1 = keeper.getAtPrior(1);
     assertTrue(prior1.isPresent(), "getAtPrior(1) should return a present Optional");
     EngineNumber prior1Domestic = prior1.get().getStream(testScope, "domestic");
-    assertEquals(new BigDecimal("200"), prior1Domestic.getValue(),
-                 "getAtPrior(1) should have year 2 value");
+    assertEquals(
+        new BigDecimal("200"),
+        prior1Domestic.getValue(),
+        "getAtPrior(1) should have year 2 value"
+    );
   }
 
   /**
