@@ -9,12 +9,14 @@ package org.kigalisim.engine.state;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
 import org.junit.jupiter.api.Test;
 import org.kigalisim.engine.number.EngineNumber;
+import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
 
 /**
  * Tests for the StreamParameterization class.
@@ -26,7 +28,7 @@ public class StreamParameterizationTest {
    */
   @Test
   public void testInitializes() {
-    StreamParameterization parameterization = new StreamParameterization();
+    StreamParameterization parameterization = new MutableStreamParameterization();
     assertNotNull(parameterization, "StreamParameterization should be constructable");
   }
 
@@ -35,7 +37,7 @@ public class StreamParameterizationTest {
    */
   @Test
   public void testResetInternalsSetsDefaultValues() {
-    StreamParameterization parameterization = new StreamParameterization();
+    StreamParameterization parameterization = new MutableStreamParameterization();
 
     // Test GHG intensity default
     EngineNumber ghgIntensity = parameterization.getGhgIntensity();
@@ -160,7 +162,7 @@ public class StreamParameterizationTest {
    */
   @Test
   public void testGhgIntensityGetterAndSetter() {
-    StreamParameterization parameterization = new StreamParameterization();
+    StreamParameterization parameterization = new MutableStreamParameterization();
     EngineNumber newValue = new EngineNumber(new BigDecimal("2.5"), "kgCO2e / kg");
 
     parameterization.setGhgIntensity(newValue);
@@ -183,7 +185,7 @@ public class StreamParameterizationTest {
    */
   @Test
   public void testEnergyIntensityGetterAndSetter() {
-    StreamParameterization parameterization = new StreamParameterization();
+    StreamParameterization parameterization = new MutableStreamParameterization();
     EngineNumber newValue = new EngineNumber(new BigDecimal("1.5"), "kwh / kg");
 
     parameterization.setEnergyIntensity(newValue);
@@ -206,7 +208,7 @@ public class StreamParameterizationTest {
    */
   @Test
   public void testInitialChargeGetterAndSetterForManufacture() {
-    StreamParameterization parameterization = new StreamParameterization();
+    StreamParameterization parameterization = new MutableStreamParameterization();
     EngineNumber newValue = new EngineNumber(new BigDecimal("2.0"), "kg / unit");
 
     parameterization.setInitialCharge("domestic", newValue);
@@ -229,7 +231,7 @@ public class StreamParameterizationTest {
    */
   @Test
   public void testInitialChargeGetterAndSetterForImport() {
-    StreamParameterization parameterization = new StreamParameterization();
+    StreamParameterization parameterization = new MutableStreamParameterization();
     EngineNumber newValue = new EngineNumber(new BigDecimal("1.8"), "kg / unit");
 
     parameterization.setInitialCharge("import", newValue);
@@ -252,7 +254,7 @@ public class StreamParameterizationTest {
    */
   @Test
   public void testInitialChargeThrowsErrorForInvalidStream() {
-    StreamParameterization parameterization = new StreamParameterization();
+    StreamParameterization parameterization = new MutableStreamParameterization();
     EngineNumber newValue = new EngineNumber(BigDecimal.ONE, "kg / unit");
 
     assertThrows(IllegalArgumentException.class, () -> {
@@ -269,7 +271,7 @@ public class StreamParameterizationTest {
    */
   @Test
   public void testRechargePopulationGetterAndSetter() {
-    StreamParameterization parameterization = new StreamParameterization();
+    StreamParameterization parameterization = new MutableStreamParameterization();
     EngineNumber newValue = new EngineNumber(new BigDecimal("15.5"), "%");
 
     parameterization.setRechargePopulation(newValue);
@@ -292,7 +294,7 @@ public class StreamParameterizationTest {
    */
   @Test
   public void testRechargeIntensityGetterAndSetter() {
-    StreamParameterization parameterization = new StreamParameterization();
+    StreamParameterization parameterization = new MutableStreamParameterization();
     EngineNumber newValue = new EngineNumber(new BigDecimal("0.5"), "kg / unit");
 
     parameterization.setRechargeIntensity(newValue);
@@ -315,7 +317,7 @@ public class StreamParameterizationTest {
    */
   @Test
   public void testRecoveryRateGetterAndSetter() {
-    StreamParameterization parameterization = new StreamParameterization();
+    StreamParameterization parameterization = new MutableStreamParameterization();
     EngineNumber newValue = new EngineNumber(new BigDecimal("80.0"), "%");
 
     parameterization.setRecoveryRate(newValue);
@@ -338,7 +340,7 @@ public class StreamParameterizationTest {
    */
   @Test
   public void testYieldRateGetterAndSetter() {
-    StreamParameterization parameterization = new StreamParameterization();
+    StreamParameterization parameterization = new MutableStreamParameterization();
     EngineNumber newValue = new EngineNumber(new BigDecimal("90.0"), "%");
 
     parameterization.setYieldRate(newValue);
@@ -362,7 +364,7 @@ public class StreamParameterizationTest {
    */
   @Test
   public void testRetirementRateGetterAndSetter() {
-    StreamParameterization parameterization = new StreamParameterization();
+    StreamParameterization parameterization = new MutableStreamParameterization();
     EngineNumber newValue = new EngineNumber(new BigDecimal("10.0"), "%");
 
     parameterization.setRetirementRate(newValue);
@@ -388,7 +390,7 @@ public class StreamParameterizationTest {
    */
   @Test
   public void testSetAndGetLastSpecifiedValue() {
-    StreamParameterization parameterization = new StreamParameterization();
+    StreamParameterization parameterization = new MutableStreamParameterization();
 
     // Test setting a value
     EngineNumber testValue = new EngineNumber(new BigDecimal("500"), "units");
@@ -422,7 +424,7 @@ public class StreamParameterizationTest {
    */
   @Test
   public void testSetAndGetLastSpecifiedValueForVirgin() {
-    StreamParameterization parameterization = new StreamParameterization();
+    StreamParameterization parameterization = new MutableStreamParameterization();
 
     // Test setting a value for virgin stream
     EngineNumber testValue = new EngineNumber(new BigDecimal("500"), "units");
@@ -456,7 +458,7 @@ public class StreamParameterizationTest {
    */
   @Test
   public void testHasLastSpecifiedValue() {
-    StreamParameterization parameterization = new StreamParameterization();
+    StreamParameterization parameterization = new MutableStreamParameterization();
 
     // Initially should not have any values for sales
     assertFalse(parameterization.hasLastSpecifiedValue("sales"), "Should not have value initially");
@@ -474,7 +476,7 @@ public class StreamParameterizationTest {
    */
   @Test
   public void testHasLastSpecifiedValueImplicit() {
-    StreamParameterization parameterization = new StreamParameterization();
+    StreamParameterization parameterization = new MutableStreamParameterization();
 
     // Initially should not have any values for sales
     assertFalse(parameterization.hasLastSpecifiedValue("sales"), "Should not have value initially");
@@ -489,7 +491,7 @@ public class StreamParameterizationTest {
    */
   @Test
   public void testSetLastSpecifiedValueIgnoresPercentages() {
-    StreamParameterization parameterization = new StreamParameterization();
+    StreamParameterization parameterization = new MutableStreamParameterization();
 
     // Set initial value
     EngineNumber initialValue = new EngineNumber(new BigDecimal("100"), "kg");
@@ -518,7 +520,7 @@ public class StreamParameterizationTest {
    */
   @Test
   public void testSalesIntentFreshlySetDefaultValue() {
-    StreamParameterization parameterization = new StreamParameterization();
+    StreamParameterization parameterization = new MutableStreamParameterization();
     assertFalse(parameterization.isSalesIntentFreshlySet(), "Sales intent flag should default to false");
   }
 
@@ -527,7 +529,7 @@ public class StreamParameterizationTest {
    */
   @Test
   public void testSalesIntentFreshlySetGetterAndSetter() {
-    StreamParameterization parameterization = new StreamParameterization();
+    StreamParameterization parameterization = new MutableStreamParameterization();
 
     // Set to true
     parameterization.setSalesIntentFreshlySet(true);
@@ -543,7 +545,7 @@ public class StreamParameterizationTest {
    */
   @Test
   public void testSetLastSpecifiedValueSetsSalesIntentFlag() {
-    StreamParameterization parameterization = new StreamParameterization();
+    StreamParameterization parameterization = new MutableStreamParameterization();
 
     // Initially false
     assertFalse(parameterization.isSalesIntentFreshlySet(), "Flag should start false");
@@ -575,7 +577,7 @@ public class StreamParameterizationTest {
    */
   @Test
   public void testSetLastSpecifiedValueDoesNotSetFlagForNonSalesStreams() {
-    StreamParameterization parameterization = new StreamParameterization();
+    StreamParameterization parameterization = new MutableStreamParameterization();
 
     // Set value for non-sales stream
     EngineNumber otherValue = new EngineNumber(new BigDecimal("200"), "kg");
@@ -590,7 +592,7 @@ public class StreamParameterizationTest {
    */
   @Test
   public void testPercentageValuesDontSetSalesIntentFlag() {
-    StreamParameterization parameterization = new StreamParameterization();
+    StreamParameterization parameterization = new MutableStreamParameterization();
 
     // Try to set percentage value for sales stream
     EngineNumber percentValue = new EngineNumber(new BigDecimal("50"), "%");
@@ -602,11 +604,11 @@ public class StreamParameterizationTest {
 
 
   /**
-   * Test that deepCopy creates an independent copy for StreamParameterization.
+   * Test that freeze() creates an independent, immutable snapshot for StreamParameterization.
    */
   @Test
-  public void testDeepCopyIndependent() {
-    StreamParameterization original = new StreamParameterization();
+  public void testFreezeIndependent() {
+    MutableStreamParameterization original = new MutableStreamParameterization();
 
     // Set some non-default values
     original.setGhgIntensity(new EngineNumber(new BigDecimal("2.5"), "kgCO2e / kg"));
@@ -616,82 +618,229 @@ public class StreamParameterizationTest {
     original.setLastSpecifiedValue("sales", new EngineNumber(new BigDecimal("100"), "units"));
     original.setLastSpecifiedValue("domestic", new EngineNumber(new BigDecimal("50"), "kg"));
 
-    // Deep copy
-    StreamParameterization copy = original.deepCopy();
+    // Freeze
+    StreamParameterization frozen = original.freeze();
+    assertNotNull(frozen, "freeze() should return a non-null snapshot");
 
-    // Mutate the copy's ghgIntensity
-    copy.setGhgIntensity(new EngineNumber(new BigDecimal("9.9"), "kgCO2e / kg"));
+    // Mutate the original after freezing
+    original.setGhgIntensity(new EngineNumber(new BigDecimal("9.9"), "kgCO2e / kg"));
+    original.setEnergyIntensity(new EngineNumber(new BigDecimal("8.8"), "kwh / kg"));
+    original.setInitialCharge("domestic", new EngineNumber(new BigDecimal("99.0"), "kg / unit"));
+    original.setLastSpecifiedValue("sales", new EngineNumber(new BigDecimal("999"), "units"));
+    original.setLastSpecifiedValue("domestic", new EngineNumber(new BigDecimal("888"), "kg"));
+
+    // The frozen snapshot should retain the values as of the freeze() call
     assertEquals(
         new BigDecimal("2.5"),
-        original.getGhgIntensity().getValue(),
-        "Original ghgIntensity should be unchanged after mutating copy"
+        frozen.getGhgIntensity().getValue(),
+        "Frozen ghgIntensity should be unaffected by later mutation of the original"
     );
     assertEquals(
         "kgCO2e / kg",
-        original.getGhgIntensity().getUnits(),
-        "Original ghgIntensity units should be unchanged after mutating copy"
+        frozen.getGhgIntensity().getUnits(),
+        "Frozen ghgIntensity units should be unaffected by later mutation of the original"
     );
-
-    // Mutate the copy's energyIntensity
-    copy.setEnergyIntensity(new EngineNumber(new BigDecimal("8.8"), "kwh / kg"));
     assertEquals(
         new BigDecimal("1.5"),
-        original.getEnergyIntensity().getValue(),
-        "Original energyIntensity should be unchanged after mutating copy"
+        frozen.getEnergyIntensity().getValue(),
+        "Frozen energyIntensity should be unaffected by later mutation of the original"
     );
-    assertEquals(
-        "kwh / kg",
-        original.getEnergyIntensity().getUnits(),
-        "Original energyIntensity units should be unchanged after mutating copy"
-    );
-
-    // Mutate the copy's initialCharge map entries
-    copy.setInitialCharge("domestic", new EngineNumber(new BigDecimal("99.0"), "kg / unit"));
     assertEquals(
         new BigDecimal("3.0"),
-        original.getInitialCharge("domestic").getValue(),
-        "Original initialCharge should be unchanged after mutating copy"
+        frozen.getInitialCharge("domestic").getValue(),
+        "Frozen initialCharge should be unaffected by later mutation of the original"
     );
     assertEquals(
         new BigDecimal("2.0"),
-        original.getInitialCharge("import").getValue(),
-        "Original import initialCharge should be unchanged after mutating copy"
+        frozen.getInitialCharge("import").getValue(),
+        "Frozen import initialCharge should be unaffected by later mutation of the original"
     );
 
-    // Mutate the copy's lastSpecifiedValue map entries
-    copy.setLastSpecifiedValue("sales", new EngineNumber(new BigDecimal("999"), "units"));
-    EngineNumber originalSales = original.getLastSpecifiedValue("sales");
-    assertNotNull(originalSales, "Original lastSpecifiedValue should still exist");
+    EngineNumber frozenSales = frozen.getLastSpecifiedValue("sales");
+    assertNotNull(frozenSales, "Frozen lastSpecifiedValue should still exist");
     assertEquals(
         new BigDecimal("100"),
-        originalSales.getValue(),
-        "Original lastSpecifiedValue should be unchanged after mutating copy"
+        frozenSales.getValue(),
+        "Frozen lastSpecifiedValue should be unaffected by later mutation of the original"
     );
 
-    copy.setLastSpecifiedValue("domestic", new EngineNumber(new BigDecimal("888"), "kg"));
-    EngineNumber originalDomestic = original.getLastSpecifiedValue("domestic");
-    assertNotNull(originalDomestic, "Original lastSpecifiedValue for domestic should still exist");
+    EngineNumber frozenDomestic = frozen.getLastSpecifiedValue("domestic");
+    assertNotNull(frozenDomestic, "Frozen lastSpecifiedValue for domestic should still exist");
     assertEquals(
         new BigDecimal("50"),
-        originalDomestic.getValue(),
-        "Original lastSpecifiedValue for domestic should be unchanged after mutating copy"
+        frozenDomestic.getValue(),
+        "Frozen lastSpecifiedValue for domestic should be unaffected by later mutation"
     );
 
-    // Verify the copy has the mutated values
+    // Verify the original retains the mutated values
     assertEquals(
         new BigDecimal("9.9"),
-        copy.getGhgIntensity().getValue(),
-        "Copy should have the mutated ghgIntensity"
+        original.getGhgIntensity().getValue(),
+        "Original should have the mutated ghgIntensity"
     );
     assertEquals(
         new BigDecimal("99.0"),
-        copy.getInitialCharge("domestic").getValue(),
-        "Copy should have the mutated initialCharge"
+        original.getInitialCharge("domestic").getValue(),
+        "Original should have the mutated initialCharge"
     );
     assertEquals(
         new BigDecimal("999"),
-        copy.getLastSpecifiedValue("sales").getValue(),
-        "Copy should have the mutated lastSpecifiedValue"
+        original.getLastSpecifiedValue("sales").getValue(),
+        "Original should have the mutated lastSpecifiedValue"
+    );
+  }
+
+  /**
+   * Test that freeze() on an already-frozen instance returns the same instance.
+   */
+  @Test
+  public void testFreezeIsIdempotent() {
+    StreamParameterization frozen = new MutableStreamParameterization().freeze();
+    assertSame(frozen, frozen.freeze(), "Freezing an already-frozen instance should return itself");
+  }
+
+  /**
+   * Test that freezing a StreamParameterization also freezes its nested priorEquipmentBases.
+   */
+  @Test
+  public void testFreezeFreezesPriorEquipmentBases() {
+    MutableStreamParameterization original = new MutableStreamParameterization();
+    StreamParameterization frozen = original.freeze();
+
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setRetirementBasePopulation(new EngineNumber(BigDecimal.TEN, "units")),
+        "Nested priorEquipmentBases on a frozen StreamParameterization should also be frozen"
+    );
+  }
+
+  /**
+   * Test that every mutator on a frozen instance throws UnsupportedOperationException.
+   */
+  @Test
+  public void testFrozenMutatorsThrow() {
+    StreamParameterization frozen = new MutableStreamParameterization().freeze();
+    EngineNumber value = new EngineNumber(BigDecimal.ONE, "kg");
+
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setGhgIntensity(value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setEnergyIntensity(value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setInitialCharge("domestic", value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setRechargePopulation(value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setRechargeIntensity(value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setPrechargePopulation(value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setPrechargeIntensity(value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setRecoveryRate(value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setRecoveryRate(value, RecoveryStage.EOL)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setYieldRate(value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setYieldRate(value, RecoveryStage.EOL)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setInductionRate(value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setInductionRate(value, RecoveryStage.EOL)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setRetirementRate(value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setRetirementBasePopulation(value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setAppliedRetirementAmount(value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setHasReplacementThisStep(true)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setRetireCalculatedThisStep(true)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setRechargeBasePopulation(value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setAppliedRechargeAmount(value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setPrechargeBasePopulation(value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setAppliedPrechargeAmount(value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setRecyclingCalculatedThisStep(true)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.accumulateRecharge(value, value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.accumulatePrecharge(value, value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setLastSpecifiedValue("domestic", value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.markStreamAsEnabled("domestic")
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setSalesIntentFreshlySet(true)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.resetStateAtTimestep()
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.clearLastSpecifiedValue("domestic")
     );
   }
 

@@ -192,6 +192,58 @@ public class SingleThreadEngineTest {
   }
 
   /**
+   * Test that a years-ago query before the simulation start returns a zero in the
+   * stream's native units rather than an empty-units zero.
+   */
+  @Test
+  public void testGetStreamYearsPastBeforeStartReturnsNativeUnitsZero() {
+    SingleThreadEngine engine = new SingleThreadEngine(1, 3);
+
+    engine.setStanza("default");
+    engine.setApplication("test app");
+    engine.setSubstance("test substance");
+
+    EngineNumber result = engine.getStream(
+        "domestic", Optional.of(engine.getScope()), Optional.empty(), 5);
+    assertEquals(
+        BigDecimal.ZERO,
+        result.getValue(),
+        "Should be zero before sim start"
+    );
+    assertEquals(
+        "kg",
+        result.getUnits(),
+        "Should have domestic's native kg units, not an empty units string"
+    );
+  }
+
+  /**
+   * Test that a years-ago query before the simulation start honors an explicit
+   * "as &lt;conversion&gt;" request instead of returning the stream's native units.
+   */
+  @Test
+  public void testGetStreamYearsPastBeforeStartReturnsRequestedUnitsZero() {
+    SingleThreadEngine engine = new SingleThreadEngine(1, 3);
+
+    engine.setStanza("default");
+    engine.setApplication("test app");
+    engine.setSubstance("test substance");
+
+    EngineNumber result = engine.getStream(
+        "equipment", Optional.of(engine.getScope()), Optional.of("kg"), 5);
+    assertEquals(
+        BigDecimal.ZERO,
+        result.getValue(),
+        "Should be zero before sim start"
+    );
+    assertEquals(
+        "kg",
+        result.getUnits(),
+        "Should honor the requested conversion units even before sim start"
+    );
+  }
+
+  /**
    * Test that setting stream without application/substance throws error.
    */
   @Test

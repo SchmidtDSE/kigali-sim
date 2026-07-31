@@ -92,7 +92,7 @@ public class SimulationStateTest {
     when(mockOverridingStateGetter.getPopulationChange(any(UnitConverter.class)))
         .thenReturn(new EngineNumber(new BigDecimal("10"), "units"));
 
-    return new SimulationState(mockOverridingStateGetter, unitConverter);
+    return new MutableSimulationState(mockOverridingStateGetter, unitConverter);
   }
 
   /**
@@ -1034,11 +1034,15 @@ public class SimulationStateTest {
   }
 
   /**
-   * Test that deepCopy creates an independent copy for SimulationState.
+   * Test that freeze() creates an independent, immutable snapshot for SimulationState.
+   *
+   * <p>The frozen snapshot retains the values captured at freeze time, and every
+   * mutator on the snapshot throws {@link UnsupportedOperationException} rather
+   * than silently diverging from (or corrupting) the live original.</p>
    */
   @Test
-  public void testDeepCopyIndependent() {
-    SimulationState original = createMockKeeper();
+  public void testFreezeIndependent() {
+    MutableSimulationState original = (MutableSimulationState) createMockKeeper();
     Scope testScope = createTestScope();
     original.ensureSubstance(testScope);
 
@@ -1048,84 +1052,264 @@ public class SimulationStateTest {
     original.setInitialCharge(testScope, "domestic", new EngineNumber(new BigDecimal("3.0"), "kg / unit"));
     original.setInitialCharge(testScope, "import", new EngineNumber(new BigDecimal("2.0"), "kg / unit"));
     original.setLastSpecifiedValue(testScope, "sales", new EngineNumber(new BigDecimal("100"), "units"));
+    original.markStreamAsEnabled(testScope, "domestic");
 
-    // Deep copy
-    SimulationState copy = original.deepCopy();
+    SimulationStateUpdate initialDomesticStream = new SimulationStateUpdateBuilder()
+        .setUseKey(testScope)
+        .setName("domestic")
+        .setValue(new EngineNumber(new BigDecimal("100"), "kg"))
+        .setSubtractRecycling(false)
+        .build();
+    original.update(initialDomesticStream);
 
-    // Mutate the copy's ghgIntensity
-    copy.setGhgIntensity(testScope, new EngineNumber(new BigDecimal("9.9"), "kgCO2e / kg"));
-    assertEquals(
-        new BigDecimal("2.5"),
-        original.getGhgIntensity(testScope).getValue(),
-        "Original ghgIntensity should be unchanged after mutating copy"
-    );
+    // Freeze
+    SimulationState frozen = original.freeze();
+    assertNotNull(frozen, "freeze() should return a non-null snapshot");
 
-    // Mutate the copy's energyIntensity
-    copy.setEnergyIntensity(testScope, new EngineNumber(new BigDecimal("8.8"), "kwh / kg"));
-    assertEquals(
-        new BigDecimal("1.5"),
-        original.getEnergyIntensity(testScope).getValue(),
-        "Original energyIntensity should be unchanged after mutating copy"
-    );
+    // Mutate the original after freezing
+    original.setGhgIntensity(testScope, new EngineNumber(new BigDecimal("9.9"), "kgCO2e / kg"));
+    original.setEnergyIntensity(testScope, new EngineNumber(new BigDecimal("8.8"), "kwh / kg"));
+    original.setInitialCharge(testScope, "domestic", new EngineNumber(new BigDecimal("99.0"), "kg / unit"));
+    original.setLastSpecifiedValue(testScope, "sales", new EngineNumber(new BigDecimal("999"), "units"));
 
-    // Mutate the copy's initialCharge map entries
-    copy.setInitialCharge(testScope, "domestic", new EngineNumber(new BigDecimal("99.0"), "kg / unit"));
-    assertEquals(
-        new BigDecimal("3.0"),
-        original.getInitialCharge(testScope, "domestic").getValue(),
-        "Original initialCharge should be unchanged after mutating copy"
-    );
-    assertEquals(
-        new BigDecimal("2.0"),
-        original.getInitialCharge(testScope, "import").getValue(),
-        "Original import initialCharge should be unchanged after mutating copy"
-    );
-
-    // Mutate the copy's lastSpecifiedValue map entries
-    copy.setLastSpecifiedValue(testScope, "sales", new EngineNumber(new BigDecimal("999"), "units"));
-    EngineNumber originalSales = original.getLastSpecifiedValue(testScope, "sales");
-    assertNotNull(originalSales, "Original lastSpecifiedValue should still exist");
-    assertEquals(
-        new BigDecimal("100"),
-        originalSales.getValue(),
-        "Original lastSpecifiedValue should be unchanged after mutating copy"
-    );
-
-    // Enable streams on the copy before setting values
-    copy.markStreamAsEnabled(testScope, "domestic");
-    // Mutate streams on the copy - set a stream value
-    SimulationStateUpdate copyStream = new SimulationStateUpdateBuilder()
+    SimulationStateUpdate mutatedDomesticStream = new SimulationStateUpdateBuilder()
         .setUseKey(testScope)
         .setName("domestic")
         .setValue(new EngineNumber(new BigDecimal("500"), "kg"))
         .setSubtractRecycling(false)
         .build();
-    copy.update(copyStream);
+    original.update(mutatedDomesticStream);
 
-    // Original should be unchanged
-    EngineNumber originalDomestic = original.getStream(testScope, "domestic");
+    // The frozen snapshot should retain the values as of the freeze() call
     assertEquals(
-        BigDecimal.ZERO,
-        originalDomestic.getValue(),
-        "Original domestic stream should be unchanged after mutating copy"
+        new BigDecimal("2.5"),
+        frozen.getGhgIntensity(testScope).getValue(),
+        "Frozen ghgIntensity should be unaffected by later mutation of the original"
+    );
+    assertEquals(
+        new BigDecimal("1.5"),
+        frozen.getEnergyIntensity(testScope).getValue(),
+        "Frozen energyIntensity should be unaffected by later mutation of the original"
+    );
+    assertEquals(
+        new BigDecimal("3.0"),
+        frozen.getInitialCharge(testScope, "domestic").getValue(),
+        "Frozen initialCharge should be unaffected by later mutation of the original"
+    );
+    assertEquals(
+        new BigDecimal("2.0"),
+        frozen.getInitialCharge(testScope, "import").getValue(),
+        "Frozen import initialCharge should be unaffected by later mutation of the original"
+    );
+    assertEquals(
+        new BigDecimal("100"),
+        frozen.getStream(testScope, "domestic").getValue(),
+        "Frozen domestic stream should be unaffected by later mutation of the original"
+    );
+    EngineNumber frozenSales = frozen.getLastSpecifiedValue(testScope, "sales");
+    assertNotNull(frozenSales, "Frozen lastSpecifiedValue should still exist");
+    assertEquals(
+        new BigDecimal("100"),
+        frozenSales.getValue(),
+        "Frozen lastSpecifiedValue should be unaffected by later mutation of the original"
     );
 
-    // Verify the copy has the mutated values
-    EngineNumber copyDomestic = copy.getStream(testScope, "domestic");
+    // Verify the original retains the mutated values
+    assertEquals(
+        new BigDecimal("9.9"),
+        original.getGhgIntensity(testScope).getValue(),
+        "Original should have the mutated ghgIntensity"
+    );
+    assertEquals(
+        new BigDecimal("999"),
+        original.getLastSpecifiedValue(testScope, "sales").getValue(),
+        "Original should have the mutated lastSpecifiedValue"
+    );
     assertEquals(
         new BigDecimal("500"),
-        copyDomestic.getValue(),
-        "Copy should have the mutated domestic stream"
+        original.getStream(testScope, "domestic").getValue(),
+        "Original should have the mutated domestic stream"
     );
 
-    // Verify the copy's parameterization is independent
-    // The SubstanceInApplicationId for the scope should work
+    // Registered substances should match in count between original and frozen snapshot
     List<SubstanceInApplicationId> originalSubstances = original.getRegisteredSubstances();
-    List<SubstanceInApplicationId> copySubstances = copy.getRegisteredSubstances();
+    List<SubstanceInApplicationId> frozenSubstances = frozen.getRegisteredSubstances();
     assertEquals(
         originalSubstances.size(),
-        copySubstances.size(),
-        "Copy should have the same number of substances"
+        frozenSubstances.size(),
+        "Frozen snapshot should have the same number of substances"
+    );
+  }
+
+  /**
+   * Test that freeze() on an already-frozen instance returns the same instance.
+   */
+  @Test
+  public void testFreezeIsIdempotent() {
+    SimulationState frozen = createMockKeeper().freeze();
+    assertSame(frozen, frozen.freeze(), "Freezing an already-frozen instance should return itself");
+  }
+
+  /**
+   * Test that every mutator on a frozen SimulationState throws UnsupportedOperationException.
+   */
+  @Test
+  public void testFrozenMutatorsThrow() {
+    SimulationState frozen = createMockKeeper().freeze();
+    Scope testScope = createTestScope();
+
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.ensureSubstance(testScope)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setCurrentYear(5)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.incrementYear()
+    );
+
+    EngineNumber value = new EngineNumber(BigDecimal.ONE, "kg");
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setGhgIntensity(testScope, value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setEnergyIntensity(testScope, value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setInitialCharge(testScope, "domestic", value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setRechargePopulation(testScope, value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setRechargeIntensity(testScope, value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.accumulateRecharge(testScope, value, value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setRechargeBasePopulation(testScope, value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setAppliedRechargeAmount(testScope, value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setPrechargePopulation(testScope, value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setPrechargeIntensity(testScope, value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.accumulatePrecharge(testScope, value, value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setPrechargeBasePopulation(testScope, value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setAppliedPrechargeAmount(testScope, value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setRecyclingCalculatedThisStep(testScope, true)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setRecoveryRate(testScope, value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setYieldRate(testScope, value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setInductionRate(testScope, value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setRetirementRate(testScope, value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setRetirementBasePopulation(testScope, value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setAppliedRetirementAmount(testScope, value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setHasReplacementThisStep(testScope, true)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setRetireCalculatedThisStep(testScope, true)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.setLastSpecifiedValue(testScope, "domestic", value)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.resetSalesIntentFlag(testScope)
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.markStreamAsEnabled(testScope, "domestic")
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> frozen.clearLastSpecifiedValue(testScope, "domestic")
+    );
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> {
+          SimulationStateUpdate update = new SimulationStateUpdateBuilder()
+              .setUseKey(testScope)
+              .setName("domestic")
+              .setValue(value)
+              .setSubtractRecycling(false)
+              .build();
+          frozen.update(update);
+        }
+    );
+  }
+
+  /**
+   * Regression test guarding the linked-list safety property: a prior state returned
+   * by getAtPrior(1) must reject mutation, so accidental writes cannot silently
+   * corrupt historical state.
+   */
+  @Test
+  public void testGetAtPriorReturnsFrozenState() {
+    SimulationState keeper = createMockKeeper();
+    Scope testScope = createTestScope();
+    keeper.ensureSubstance(testScope);
+    keeper.incrementYear();
+
+    Optional<SimulationState> priorState = keeper.getAtPrior(1);
+    assertTrue(priorState.isPresent(), "getAtPrior(1) should return a present Optional");
+
+    SimulationState prior = priorState.get();
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> prior.setCurrentYear(99),
+        "Prior state returned by getAtPrior should reject mutation"
     );
   }
 

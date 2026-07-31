@@ -30,6 +30,8 @@ import org.kigalisim.engine.recalc.StreamUpdateBuilder;
 import org.kigalisim.engine.serializer.EngineResult;
 import org.kigalisim.engine.serializer.EngineResultSerializer;
 import org.kigalisim.engine.state.ConverterStateGetter;
+import org.kigalisim.engine.state.EngineConstants;
+import org.kigalisim.engine.state.MutableSimulationState;
 import org.kigalisim.engine.state.OverridingConverterStateGetter;
 import org.kigalisim.engine.state.Scope;
 import org.kigalisim.engine.state.SimpleUseKey;
@@ -101,7 +103,7 @@ public class SingleThreadEngine implements Engine {
 
     stateGetter = new ConverterStateGetter(this);
     unitConverter = new UnitConverter(stateGetter);
-    simulationState = new SimulationState(
+    simulationState = new MutableSimulationState(
         new OverridingConverterStateGetter(stateGetter),
         unitConverter
     );
@@ -334,8 +336,12 @@ public class SingleThreadEngine implements Engine {
     UseKey effectiveKey = useKey.orElse(scope);
     Optional<SimulationState> prior = simulationState.getAtPrior(yearsPast);
 
+    // Return zero in the requested (or stream-native) units, not just empty units
     if (prior.isEmpty()) {
-      return new EngineNumber(BigDecimal.ZERO, "");
+      String nativeUnits = EngineConstants.getBaseUnits(name);
+      EngineNumber nativeZero = new EngineNumber(
+          BigDecimal.ZERO, nativeUnits != null ? nativeUnits : "");
+      return conversion.map(conv -> unitConverter.convert(nativeZero, conv)).orElse(nativeZero);
     }
 
     EngineNumber value = prior.get().getStream(effectiveKey, name);
