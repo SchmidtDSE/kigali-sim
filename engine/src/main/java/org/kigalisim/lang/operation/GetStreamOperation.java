@@ -14,12 +14,17 @@ import org.kigalisim.lang.machine.PushDownMachine;
 
 /**
  * Operation to get a stream value.
+ *
+ * <p>Retrieves a stream value from the engine's current scope or from a specified substance scope.
+ * Supports optional unit conversion and optional lookback to prior years via the {@code yearsPast}
+ * parameter.</p>
  */
 public class GetStreamOperation implements Operation {
 
   private final String streamName;
   private final Optional<String> units;
   private final Optional<String> targetSubstance;
+  private final int yearsPast;
 
   /**
    * Create a new GetStreamOperation.
@@ -27,9 +32,17 @@ public class GetStreamOperation implements Operation {
    * @param streamName The name of the stream to get.
    */
   public GetStreamOperation(String streamName) {
-    this.streamName = streamName;
-    this.units = Optional.empty();
-    this.targetSubstance = Optional.empty();
+    this(streamName, 0, Optional.empty(), Optional.empty());
+  }
+
+  /**
+   * Create a new GetStreamOperation with a lookback period.
+   *
+   * @param streamName The name of the stream to get.
+   * @param yearsPast The number of years to look back. Zero means current year.
+   */
+  public GetStreamOperation(String streamName, int yearsPast) {
+    this(streamName, yearsPast, Optional.empty(), Optional.empty());
   }
 
   /**
@@ -39,9 +52,18 @@ public class GetStreamOperation implements Operation {
    * @param units The units to convert to.
    */
   public GetStreamOperation(String streamName, String units) {
-    this.streamName = streamName;
-    this.units = Optional.of(units);
-    this.targetSubstance = Optional.empty();
+    this(streamName, 0, Optional.of(units), Optional.empty());
+  }
+
+  /**
+   * Create a new GetStreamOperation with unit conversion and lookback period.
+   *
+   * @param streamName The name of the stream to get.
+   * @param yearsPast The number of years to look back. Zero means current year.
+   * @param units The units to convert to.
+   */
+  public GetStreamOperation(String streamName, int yearsPast, String units) {
+    this(streamName, yearsPast, Optional.of(units), Optional.empty());
   }
 
   /**
@@ -52,9 +74,35 @@ public class GetStreamOperation implements Operation {
    * @param units The units to convert to.
    */
   public GetStreamOperation(String streamName, String targetSubstance, String units) {
+    this(streamName, 0, Optional.of(units), Optional.of(targetSubstance));
+  }
+
+  /**
+   * Create a new GetStreamOperation with scope resolution, unit conversion, and lookback period.
+   *
+   * @param streamName The name of the stream to get.
+   * @param yearsPast The number of years to look back. Zero means current year.
+   * @param targetSubstance The substance name to resolve to (for indirect access).
+   * @param units The units to convert to.
+   */
+  public GetStreamOperation(String streamName, int yearsPast, String targetSubstance, String units) {
+    this(streamName, yearsPast, Optional.of(units), Optional.of(targetSubstance));
+  }
+
+  /**
+   * Internal constructor with Optional parameters.
+   *
+   * @param streamName The name of the stream to get.
+   * @param yearsPast The number of years to look back. Zero means current year.
+   * @param units Optional units to convert to.
+   * @param targetSubstance Optional target substance for indirect access.
+   */
+  GetStreamOperation(String streamName, int yearsPast,
+      Optional<String> units, Optional<String> targetSubstance) {
     this.streamName = streamName;
-    this.targetSubstance = Optional.of(targetSubstance);
-    this.units = Optional.of(units);
+    this.units = units;
+    this.targetSubstance = targetSubstance;
+    this.yearsPast = yearsPast;
   }
 
   /** {@inheritDoc} */
@@ -89,9 +137,9 @@ public class GetStreamOperation implements Operation {
     Scope targetScope = currentScope.getWithSubstance(targetSubstance.get());
 
     if (units.isPresent()) {
-      return engine.getStream(streamName, Optional.of(targetScope), units);
+      return engine.getStream(streamName, Optional.of(targetScope), units, yearsPast);
     } else {
-      return engine.getStream(streamName, Optional.of(targetScope), Optional.empty());
+      return engine.getStream(streamName, Optional.of(targetScope), Optional.empty(), yearsPast);
     }
   }
 
@@ -108,9 +156,9 @@ public class GetStreamOperation implements Operation {
   private EngineNumber executeSameScope(Engine engine) {
     if (units.isPresent()) {
       Scope scope = engine.getScope();
-      return engine.getStream(streamName, Optional.of(scope), units);
+      return engine.getStream(streamName, Optional.of(scope), units, yearsPast);
     } else {
-      return engine.getStream(streamName);
+      return engine.getStream(streamName, Optional.empty(), Optional.empty(), yearsPast);
     }
   }
 }

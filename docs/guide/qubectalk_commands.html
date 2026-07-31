@@ -194,7 +194,15 @@ floor import to 100 units displacing by units "R-600a" during years 2028 to 2032
 
         <p><strong>Purpose:</strong> Retrieves values from streams for use in expressions and calculations.</p>
 
-        <p><strong>Syntax:</strong> <code>get streamName [of "substanceName"] [as units]</code></p>
+        <p><strong>Syntax:</strong></p>
+        <pre><code class="language-qubectalk">get streamName
+get streamName as units
+get streamName of "substanceName"
+get streamName of "substanceName" as units
+get streamName N years ago
+get streamName N years ago as units
+get streamName N years ago of "substanceName"
+get streamName N years ago of "substanceName" as units</code></pre>
 
         <p><strong>Available Streams:</strong></p>
         <ul>
@@ -206,6 +214,15 @@ floor import to 100 units displacing by units "R-600a" during years 2028 to 2032
         <p><strong>Indirect Access (Cross-substance):</strong></p>
 
         <p>The <code>of "substanceName"</code> option allows you to access stream values from other substances within the same application. This is useful for creating dependencies between substances.</p>
+
+        <p><strong>Years-Ago Queries:</strong></p>
+
+        <p>The <code>N years ago</code> syntax allows you to retrieve a stream value from N years before the current simulation year. This is particularly useful for modeling fixed retirement schedules based on equipment age.</p>
+
+        <p><strong>Example:</strong></p>
+        <pre><code class="language-qubectalk">get sales 5 years ago as units</code></pre>
+
+        <p><strong>Note:</strong> Asking for a value before the simulation start (e.g., asking for 5 years ago when the simulation is in year 3) returns 0.</p>
 
         <p><strong>Examples:</strong></p>
         <pre><code class="language-qubectalk"># Direct stream access
@@ -222,7 +239,12 @@ define substanceADomestic as get domestic of "substance a" as kg
 set domestic to (get domestic of "substance a" as kg) * 1.5 during year 1
 
 # Unit conversion with indirect access
-define substanceAInMT as get import of "substance a" as mt</code></pre>
+define substanceAInMT as get import of "substance a" as mt
+
+# Years-ago access for fixed retirement schedules
+retire (0.2 * (get sales 9 years ago as units)) units / year
+retire (0.6 * (get sales 10 years ago as units)) units / year
+retire (0.2 * (get sales 11 years ago as units)) units / year</code></pre>
 
         <p><strong>Note:</strong> The <code>age</code> stream is a computed value that tracks the weighted average age of equipment. It starts at 0 years for new equipment and increases annually. This feature is only available in the Advanced Editor.</p>
       </section>

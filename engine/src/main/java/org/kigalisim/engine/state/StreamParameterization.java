@@ -1,5 +1,5 @@
 /**
- * Class for managing stream-specific parameters and settings.
+ * Interface for managing stream-specific parameters and settings.
  *
  * <p>Handles configuration of GHG intensity, initial charge, recharge rates,
  * recovery rates, and other stream-specific values.</p>
@@ -9,220 +9,147 @@
 
 package org.kigalisim.engine.state;
 
-import static org.kigalisim.engine.state.SimulationState.ZERO_VOLUME;
-
-import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
 
 /**
- * Class for managing stream-specific parameters and settings.
+ * Interface for managing stream-specific parameters and settings.
  *
- * <p>Handles configuration of GHG intensity, initial charge, recharge rates,
- * recovery rates, and other stream-specific values.</p>
+ * <p>Implemented by {@link MutableStreamParameterization} for live, mutable
+ * substance parameterization during a simulation and by
+ * {@link FrozenStreamParameterization} for immutable snapshots captured for
+ * prior-year lookups.</p>
  */
-public class StreamParameterization {
-
-  private static final BigDecimal ONE_HUNDRED = BigDecimal.valueOf(100);
-
-  private EngineNumber ghgIntensity;
-  private EngineNumber energyIntensity;
-  private final Map<String, EngineNumber> initialCharge;
-  private EngineNumber rechargePopulation;
-  private EngineNumber rechargeIntensity;
-  private EngineNumber prechargePopulation;
-  private EngineNumber prechargeIntensity;
-  private EngineNumber recoveryRateRecharge;
-  private EngineNumber yieldRateRecharge;
-  private EngineNumber recoveryRateEol;
-  private EngineNumber yieldRateEol;
-  private EngineNumber retirementRate;
-  private EngineNumber inductionRateRecharge;
-  private EngineNumber inductionRateEol;
-  private final Map<String, EngineNumber> lastSpecifiedValue;
-  private final Set<String> enabledStreams;
-  private boolean salesIntentFreshlySet;
-  private PriorEquipmentBases priorEquipmentBases;
+public interface StreamParameterization {
 
   /**
-   * Create a new stream parameterization instance.
+   * Determine whether a stream name is a sales-related substream on which
+   * initial charge may be set.
+   *
+   * <p>Shared between {@link MutableStreamParameterization} and
+   * {@link FrozenStreamParameterization} so the set of valid substream names
+   * cannot drift between the two implementations.</p>
+   *
+   * @param name The stream name to check
+   * @return True if the stream is a sales substream on which initial charge
+   *     is allowed, false otherwise
    */
-  public StreamParameterization() {
-    this.initialCharge = new HashMap<>();
-    this.enabledStreams = new HashSet<>();
-    this.lastSpecifiedValue = new HashMap<>();
-    this.salesIntentFreshlySet = false;
-
-    ghgIntensity = new EngineNumber(BigDecimal.ZERO, "tCO2e / kg");
-    energyIntensity = new EngineNumber(BigDecimal.ZERO, "kwh / kg");
-
-    initialCharge.put("domestic", new EngineNumber(BigDecimal.ONE, "kg / unit"));
-    initialCharge.put("import", new EngineNumber(BigDecimal.ONE, "kg / unit"));
-
-    rechargePopulation = new EngineNumber(BigDecimal.ZERO, "%");
-    rechargeIntensity = new EngineNumber(BigDecimal.ZERO, "kg / unit");
-    prechargePopulation = new EngineNumber(BigDecimal.ZERO, "%");
-    prechargeIntensity = new EngineNumber(BigDecimal.ZERO, "kg / unit");
-    recoveryRateRecharge = new EngineNumber(BigDecimal.ZERO, "%");
-    yieldRateRecharge = new EngineNumber(BigDecimal.ZERO, "%");
-    recoveryRateEol = new EngineNumber(BigDecimal.ZERO, "%");
-    yieldRateEol = new EngineNumber(BigDecimal.ZERO, "%");
-    retirementRate = new EngineNumber(BigDecimal.ZERO, "%");
-    inductionRateRecharge = getDefaultInductionRate();
-    inductionRateEol = getDefaultInductionRate();
-
-    priorEquipmentBases = new PriorEquipmentBases();
-
-    setLastSpecifiedValue("domestic", ZERO_VOLUME);
-    setLastSpecifiedValue("import", ZERO_VOLUME);
-    setLastSpecifiedValue("export", ZERO_VOLUME);
-    setSalesIntentFreshlySet(false);
+  static boolean isInitialChargeStreamAllowed(String name) {
+    return switch (name) {
+      case "domestic", "import", "export", "recycle", "recycleRecharge", "recycleEol", "virgin" -> true;
+      default -> false;
+    };
   }
-
 
   /**
    * Set the greenhouse gas intensity.
    *
    * @param newValue The new GHG intensity value
    */
-  public void setGhgIntensity(EngineNumber newValue) {
-    ghgIntensity = newValue;
-  }
+  void setGhgIntensity(EngineNumber newValue);
 
   /**
    * Get the greenhouse gas intensity.
    *
    * @return The current GHG intensity value
    */
-  public EngineNumber getGhgIntensity() {
-    return ghgIntensity;
-  }
+  EngineNumber getGhgIntensity();
 
   /**
    * Set the energy intensity.
    *
    * @param newValue The new energy intensity value
    */
-  public void setEnergyIntensity(EngineNumber newValue) {
-    energyIntensity = newValue;
-  }
+  void setEnergyIntensity(EngineNumber newValue);
 
   /**
    * Get the energy intensity.
    *
    * @return The current energy intensity value
    */
-  public EngineNumber getEnergyIntensity() {
-    return energyIntensity;
-  }
+  EngineNumber getEnergyIntensity();
 
   /**
    * Set the initial charge for a stream.
    *
    * @param stream The stream identifier ('domestic' or 'import')
    * @param newValue The new initial charge value
+   * @throws IllegalArgumentException If the stream is not a sales substream
    */
-  public void setInitialCharge(String stream, EngineNumber newValue) {
-    ensureSalesStreamAllowed(stream);
-    initialCharge.put(stream, newValue);
-  }
+  void setInitialCharge(String stream, EngineNumber newValue);
 
   /**
    * Get the initial charge for a stream.
    *
    * @param stream The stream identifier ('domestic' or 'import')
    * @return The initial charge value for the stream
+   * @throws IllegalArgumentException If the stream is not a sales substream
    */
-  public EngineNumber getInitialCharge(String stream) {
-    ensureSalesStreamAllowed(stream);
-    return initialCharge.get(stream);
-  }
+  EngineNumber getInitialCharge(String stream);
 
   /**
    * Set the recharge population percentage.
    *
    * @param newValue The new recharge population value
    */
-  public void setRechargePopulation(EngineNumber newValue) {
-    rechargePopulation = clampRate(newValue);
-  }
+  void setRechargePopulation(EngineNumber newValue);
 
   /**
    * Get the recharge population percentage.
    *
    * @return The current recharge population value
    */
-  public EngineNumber getRechargePopulation() {
-    return rechargePopulation;
-  }
+  EngineNumber getRechargePopulation();
 
   /**
    * Set the recharge intensity.
    *
    * @param newValue The new recharge intensity value
    */
-  public void setRechargeIntensity(EngineNumber newValue) {
-    rechargeIntensity = newValue;
-  }
+  void setRechargeIntensity(EngineNumber newValue);
 
   /**
    * Get the recharge intensity.
    *
    * @return The current recharge intensity value
    */
-  public EngineNumber getRechargeIntensity() {
-    return rechargeIntensity;
-  }
+  EngineNumber getRechargeIntensity();
 
   /**
    * Set the precharge population percentage.
    *
    * @param newValue The new precharge population value
    */
-  public void setPrechargePopulation(EngineNumber newValue) {
-    prechargePopulation = clampRate(newValue);
-  }
+  void setPrechargePopulation(EngineNumber newValue);
 
   /**
    * Get the precharge population percentage.
    *
    * @return The current precharge population value
    */
-  public EngineNumber getPrechargePopulation() {
-    return prechargePopulation;
-  }
+  EngineNumber getPrechargePopulation();
 
   /**
    * Set the precharge intensity.
    *
    * @param newValue The new precharge intensity value
    */
-  public void setPrechargeIntensity(EngineNumber newValue) {
-    prechargeIntensity = newValue;
-  }
+  void setPrechargeIntensity(EngineNumber newValue);
 
   /**
    * Get the precharge intensity.
    *
    * @return The current precharge intensity value
    */
-  public EngineNumber getPrechargeIntensity() {
-    return prechargeIntensity;
-  }
+  EngineNumber getPrechargeIntensity();
 
   /**
    * Set the recovery rate percentage.
    *
    * @param newValue The new recovery rate value
    */
-  public void setRecoveryRate(EngineNumber newValue) {
-    recoveryRateRecharge = newValue;
-  }
+  void setRecoveryRate(EngineNumber newValue);
 
   /**
    * Set the recovery rate percentage for a specific stage.
@@ -230,22 +157,14 @@ public class StreamParameterization {
    * @param newValue The new recovery rate value
    * @param stage The recovery stage (EOL or RECHARGE)
    */
-  public void setRecoveryRate(EngineNumber newValue, RecoveryStage stage) {
-    switch (stage) {
-      case EOL -> recoveryRateEol = newValue;
-      case RECHARGE -> recoveryRateRecharge = newValue;
-      default -> throw new IllegalArgumentException("Unknown recovery stage: " + stage);
-    }
-  }
+  void setRecoveryRate(EngineNumber newValue, RecoveryStage stage);
 
   /**
    * Get the recovery rate percentage.
    *
    * @return The current recovery rate value
    */
-  public EngineNumber getRecoveryRate() {
-    return recoveryRateRecharge;
-  }
+  EngineNumber getRecoveryRate();
 
   /**
    * Get the recovery rate percentage for a specific stage.
@@ -253,21 +172,14 @@ public class StreamParameterization {
    * @param stage The recovery stage (EOL or RECHARGE)
    * @return The current recovery rate value
    */
-  public EngineNumber getRecoveryRate(RecoveryStage stage) {
-    return switch (stage) {
-      case EOL -> recoveryRateEol;
-      case RECHARGE -> recoveryRateRecharge;
-    };
-  }
+  EngineNumber getRecoveryRate(RecoveryStage stage);
 
   /**
    * Set the yield rate percentage for recycling.
    *
    * @param newValue The new yield rate value
    */
-  public void setYieldRate(EngineNumber newValue) {
-    yieldRateRecharge = newValue;
-  }
+  void setYieldRate(EngineNumber newValue);
 
   /**
    * Set the yield rate percentage for recycling for a specific stage.
@@ -275,22 +187,14 @@ public class StreamParameterization {
    * @param newValue The new yield rate value
    * @param stage The recovery stage (EOL or RECHARGE)
    */
-  public void setYieldRate(EngineNumber newValue, RecoveryStage stage) {
-    switch (stage) {
-      case EOL -> yieldRateEol = newValue;
-      case RECHARGE -> yieldRateRecharge = newValue;
-      default -> throw new IllegalArgumentException("Unknown recovery stage: " + stage);
-    }
-  }
+  void setYieldRate(EngineNumber newValue, RecoveryStage stage);
 
   /**
    * Get the yield rate percentage for recycling.
    *
    * @return The current yield rate value
    */
-  public EngineNumber getYieldRate() {
-    return yieldRateRecharge;
-  }
+  EngineNumber getYieldRate();
 
   /**
    * Get the yield rate percentage for recycling for a specific stage.
@@ -298,21 +202,14 @@ public class StreamParameterization {
    * @param stage The recovery stage (EOL or RECHARGE)
    * @return The current yield rate value
    */
-  public EngineNumber getYieldRate(RecoveryStage stage) {
-    return switch (stage) {
-      case EOL -> yieldRateEol;
-      case RECHARGE -> yieldRateRecharge;
-    };
-  }
+  EngineNumber getYieldRate(RecoveryStage stage);
 
   /**
    * Set the induction rate percentage for recycling.
    *
    * @param newValue The new induction rate value
    */
-  public void setInductionRate(EngineNumber newValue) {
-    inductionRateRecharge = newValue;
-  }
+  void setInductionRate(EngineNumber newValue);
 
   /**
    * Set the induction rate percentage for recycling for a specific stage.
@@ -320,22 +217,14 @@ public class StreamParameterization {
    * @param newValue The new induction rate value
    * @param stage The recovery stage (EOL or RECHARGE)
    */
-  public void setInductionRate(EngineNumber newValue, RecoveryStage stage) {
-    switch (stage) {
-      case EOL -> inductionRateEol = newValue;
-      case RECHARGE -> inductionRateRecharge = newValue;
-      default -> throw new IllegalArgumentException("Unknown recovery stage: " + stage);
-    }
-  }
+  void setInductionRate(EngineNumber newValue, RecoveryStage stage);
 
   /**
    * Get the induction rate percentage for recycling.
    *
    * @return The current induction rate value
    */
-  public EngineNumber getInductionRate() {
-    return inductionRateRecharge;
-  }
+  EngineNumber getInductionRate();
 
   /**
    * Get the induction rate percentage for recycling for a specific stage.
@@ -343,208 +232,152 @@ public class StreamParameterization {
    * @param stage The recovery stage (EOL or RECHARGE)
    * @return The current induction rate value
    */
-  public EngineNumber getInductionRate(RecoveryStage stage) {
-    return switch (stage) {
-      case EOL -> inductionRateEol;
-      case RECHARGE -> inductionRateRecharge;
-    };
-  }
-
-  /**
-   * Get the default induction rate (100% - induced demand behavior).
-   *
-   * @return EngineNumber representing 100% induction
-   */
-  private static EngineNumber getDefaultInductionRate() {
-    return new EngineNumber(new BigDecimal("100"), "%");
-  }
+  EngineNumber getInductionRate(RecoveryStage stage);
 
   /**
    * Set the retirement rate percentage.
    *
-   * <p>This method accumulates retirement rates across multiple retire commands
-   * in the same year to support cumulative retirement behavior. If the resulting
-   * retirement rate is negative, it is clamped to zero (no retirement).</p>
+   * <p>On a live (mutable) parameterization, this accumulates retirement
+   * rates across multiple retire commands in the same year to support
+   * cumulative retirement behavior. If the resulting retirement rate is
+   * negative, it is clamped to zero (no retirement).</p>
    *
    * @param newValue The new retirement rate value to add
    */
-  public void setRetirementRate(EngineNumber newValue) {
-    BigDecimal currentValue = retirementRate.getValue();
-    BigDecimal newTotal = currentValue.add(newValue.getValue());
-    EngineNumber candidateRetirementRate = new EngineNumber(newTotal, newValue.getUnits());
-    retirementRate = clampRate(candidateRetirementRate);
-  }
+  void setRetirementRate(EngineNumber newValue);
 
   /**
    * Get the retirement rate percentage.
    *
    * @return The current retirement rate value
    */
-  public EngineNumber getRetirementRate() {
-    return retirementRate;
-  }
+  EngineNumber getRetirementRate();
 
   /**
    * Get the retirement base population for cumulative calculations.
    *
    * @return The base population, or empty if not yet captured this step
    */
-  public Optional<EngineNumber> getRetirementBasePopulation() {
-    return priorEquipmentBases.getRetirementBasePopulation();
-  }
+  Optional<EngineNumber> getRetirementBasePopulation();
 
   /**
    * Set the retirement base population for cumulative calculations.
    *
    * @param value The base population value
    */
-  public void setRetirementBasePopulation(EngineNumber value) {
-    priorEquipmentBases.setRetirementBasePopulation(value);
-  }
+  void setRetirementBasePopulation(EngineNumber value);
 
   /**
    * Get the applied retirement amount for cumulative calculations.
    *
    * @return The total amount already retired this step
    */
-  public Optional<EngineNumber> getAppliedRetirementAmount() {
-    return priorEquipmentBases.getAppliedRetirementAmount();
-  }
+  Optional<EngineNumber> getAppliedRetirementAmount();
 
   /**
    * Set the applied retirement amount for cumulative calculations.
    *
    * @param value The total amount retired this step
    */
-  public void setAppliedRetirementAmount(EngineNumber value) {
-    priorEquipmentBases.setAppliedRetirementAmount(value);
-  }
+  void setAppliedRetirementAmount(EngineNumber value);
 
   /**
    * Get the replacement mode for this step's retire commands.
    *
    * @return true if with replacement, false if without replacement
    */
-  public boolean getHasReplacementThisStep() {
-    return priorEquipmentBases.getHasReplacementThisStep();
-  }
+  boolean getHasReplacementThisStep();
 
   /**
    * Set the replacement mode for this step's retire commands.
    *
    * @param value true for with replacement, false for without replacement
    */
-  public void setHasReplacementThisStep(boolean value) {
-    priorEquipmentBases.setHasReplacementThisStep(value);
-  }
+  void setHasReplacementThisStep(boolean value);
 
   /**
    * Get whether retire has been calculated this step.
    *
    * @return true if retire was calculated, false otherwise
    */
-  public boolean getRetireCalculatedThisStep() {
-    return priorEquipmentBases.getRetireCalculatedThisStep();
-  }
+  boolean getRetireCalculatedThisStep();
 
   /**
    * Set whether retire has been calculated this step.
    *
    * @param calculated true if retire was calculated, false otherwise
    */
-  public void setRetireCalculatedThisStep(boolean calculated) {
-    priorEquipmentBases.setRetireCalculatedThisStep(calculated);
-  }
+  void setRetireCalculatedThisStep(boolean calculated);
 
   /**
    * Get the recharge base population for cumulative calculations.
    *
    * @return The base population, or empty if not yet captured this step
    */
-  public Optional<EngineNumber> getRechargeBasePopulation() {
-    return priorEquipmentBases.getRechargeBasePopulation();
-  }
+  Optional<EngineNumber> getRechargeBasePopulation();
 
   /**
    * Set the recharge base population for cumulative calculations.
    *
    * @param value The base population value
    */
-  public void setRechargeBasePopulation(EngineNumber value) {
-    priorEquipmentBases.setRechargeBasePopulation(value);
-  }
+  void setRechargeBasePopulation(EngineNumber value);
 
   /**
    * Get the applied recharge amount for cumulative calculations.
    *
    * @return The total amount already recharged this step in kg
    */
-  public Optional<EngineNumber> getAppliedRechargeAmount() {
-    return priorEquipmentBases.getAppliedRechargeAmount();
-  }
+  Optional<EngineNumber> getAppliedRechargeAmount();
 
   /**
    * Set the applied recharge amount for cumulative calculations.
    *
    * @param value The total amount recharged this step in kg
    */
-  public void setAppliedRechargeAmount(EngineNumber value) {
-    priorEquipmentBases.setAppliedRechargeAmount(value);
-  }
+  void setAppliedRechargeAmount(EngineNumber value);
 
   /**
    * Get the precharge base population for cumulative calculations.
    *
-   * @return The base population, or null if not yet captured this year
+   * @return The base population, or empty if not yet captured this year
    */
-  public Optional<EngineNumber> getPrechargeBasePopulation() {
-    return priorEquipmentBases.getPrechargeBasePopulation();
-  }
+  Optional<EngineNumber> getPrechargeBasePopulation();
 
   /**
    * Set the precharge base population for cumulative calculations.
    *
    * @param value The base population value
    */
-  public void setPrechargeBasePopulation(EngineNumber value) {
-    priorEquipmentBases.setPrechargeBasePopulation(value);
-  }
+  void setPrechargeBasePopulation(EngineNumber value);
 
   /**
    * Get the applied precharge amount for cumulative calculations.
    *
    * @return The total amount already precharged this step in kg
    */
-  public Optional<EngineNumber> getAppliedPrechargeAmount() {
-    return priorEquipmentBases.getAppliedPrechargeAmount();
-  }
+  Optional<EngineNumber> getAppliedPrechargeAmount();
 
   /**
    * Set the applied precharge amount for cumulative calculations.
    *
    * @param value The total amount precharged this step in kg
    */
-  public void setAppliedPrechargeAmount(EngineNumber value) {
-    priorEquipmentBases.setAppliedPrechargeAmount(value);
-  }
+  void setAppliedPrechargeAmount(EngineNumber value);
 
   /**
    * Get whether recycling has been calculated this step.
    *
    * @return true if recycling was calculated, false otherwise
    */
-  public boolean isRecyclingCalculatedThisStep() {
-    return priorEquipmentBases.getRecyclingCalculatedThisStep();
-  }
+  boolean isRecyclingCalculatedThisStep();
 
   /**
    * Set whether recycling has been calculated this step.
    *
    * @param calculated true if recycling was calculated, false otherwise
    */
-  public void setRecyclingCalculatedThisStep(boolean calculated) {
-    priorEquipmentBases.setRecyclingCalculatedThisStep(calculated);
-  }
+  void setRecyclingCalculatedThisStep(boolean calculated);
 
   /**
    * Accumulate recharge parameters. Sets when not previously set, accumulates otherwise.
@@ -558,16 +391,7 @@ public class StreamParameterization {
    * @param population The recharge population rate to add
    * @param intensity The recharge intensity for this rate
    */
-  public void accumulateRecharge(EngineNumber population, EngineNumber intensity) {
-    ServicingInformation currentInfo = new ServicingInformation(
-        rechargePopulation,
-        rechargeIntensity
-    );
-    ServicingInformation result = currentInfo.add(population, intensity);
-
-    rechargePopulation = clampRate(result.getPopulation());
-    rechargeIntensity = result.getIntensity();
-  }
+  void accumulateRecharge(EngineNumber population, EngineNumber intensity);
 
   /**
    * Accumulate precharge parameters. Sets when not previously set, accumulates otherwise.
@@ -581,40 +405,19 @@ public class StreamParameterization {
    * @param population The precharge population rate to add
    * @param intensity The precharge intensity for this rate
    */
-  public void accumulatePrecharge(EngineNumber population, EngineNumber intensity) {
-    ServicingInformation currentInfo = new ServicingInformation(
-        prechargePopulation,
-        prechargeIntensity
-    );
-    ServicingInformation result = currentInfo.add(population, intensity);
-
-    prechargePopulation = clampRate(result.getPopulation());
-    prechargeIntensity = result.getIntensity();
-  }
+  void accumulatePrecharge(EngineNumber population, EngineNumber intensity);
 
   /**
    * Set the last specified value for a stream.
    *
    * <p>This tracks the value and units last used when setting streams
-   * to preserve user intent across carry-over years.</p>
+   * to preserve user intent across carry-over years. Percentage-unit values
+   * are ignored so they do not impact last recorded values.</p>
    *
    * @param streamName The name of the stream
    * @param value The last specified value with units
    */
-  public void setLastSpecifiedValue(String streamName, EngineNumber value) {
-    // Ignore percentage units to avoid impacting last recorded values
-    if (value != null && value.getUnits() != null && value.getUnits().contains("%")) {
-      return;
-    }
-    lastSpecifiedValue.put(streamName, value);
-
-    // Set the flag if this is a sales-related stream
-    if (getIsSalesStream(streamName)) {
-      salesIntentFreshlySet = true;
-    }
-  }
-
-
+  void setLastSpecifiedValue(String streamName, EngineNumber value);
 
   /**
    * Get the last specified value for a stream.
@@ -622,9 +425,7 @@ public class StreamParameterization {
    * @param streamName The name of the stream
    * @return The last specified value with units, or null if not set
    */
-  public EngineNumber getLastSpecifiedValue(String streamName) {
-    return lastSpecifiedValue.get(streamName);
-  }
+  EngineNumber getLastSpecifiedValue(String streamName);
 
   /**
    * Check if a stream has a last specified value.
@@ -632,19 +433,14 @@ public class StreamParameterization {
    * @param streamName The name of the stream
    * @return true if the stream has a last specified value, false otherwise
    */
-  public boolean hasLastSpecifiedValue(String streamName) {
-    return lastSpecifiedValue.containsKey(streamName);
-  }
-
+  boolean hasLastSpecifiedValue(String streamName);
 
   /**
    * Mark a stream as having been enabled (set to non-zero value).
    *
    * @param streamName The name of the stream to mark as enabled
    */
-  public void markStreamAsEnabled(String streamName) {
-    enabledStreams.add(streamName);
-  }
+  void markStreamAsEnabled(String streamName);
 
   /**
    * Check if a stream has ever been enabled (set to non-zero value).
@@ -652,102 +448,30 @@ public class StreamParameterization {
    * @param streamName The name of the stream to check
    * @return true if the stream has been enabled, false otherwise
    */
-  public boolean hasStreamBeenEnabled(String streamName) {
-    return enabledStreams.contains(streamName);
-  }
+  boolean hasStreamBeenEnabled(String streamName);
 
   /**
    * Check if sales intent has been freshly set in the current processing cycle.
    *
    * @return true if sales intent was freshly set, false otherwise
    */
-  public boolean isSalesIntentFreshlySet() {
-    return salesIntentFreshlySet;
-  }
+  boolean isSalesIntentFreshlySet();
 
   /**
    * Set the flag indicating whether sales intent has been freshly set.
    *
    * @param freshlySet true if sales intent was freshly set, false otherwise
    */
-  public void setSalesIntentFreshlySet(boolean freshlySet) {
-    this.salesIntentFreshlySet = freshlySet;
-  }
+  void setSalesIntentFreshlySet(boolean freshlySet);
 
   /**
    * Reset state at the beginning of a timestep.
    *
-   * <p>This method resets recovery rate to 0% and induction rate to 100% between steps since
+   * <p>This resets recovery rate to 0% and induction rate to 100% between steps since
    * recycling programs may cease and should not be expected to continue unchanged, but default
    * induction behavior should return to induced demand (100%).</p>
    */
-  public void resetStateAtTimestep() {
-    // Reset recovery to 0% between steps since recycling programs may cease
-    recoveryRateRecharge = new EngineNumber(BigDecimal.ZERO, "%");
-    recoveryRateEol = new EngineNumber(BigDecimal.ZERO, "%");
-
-    // Reset induction to 100% (default induced demand behavior)
-    inductionRateRecharge = getDefaultInductionRate();
-    inductionRateEol = getDefaultInductionRate();
-
-    // Reset retirement tracking for new step
-    retirementRate = new EngineNumber(BigDecimal.ZERO, "%");
-
-    // Reset recharge tracking for new step
-    rechargePopulation = new EngineNumber(BigDecimal.ZERO, "%");
-    rechargeIntensity = new EngineNumber(BigDecimal.ZERO, "kg / unit");
-
-    // Reset precharge tracking for new step
-    prechargePopulation = new EngineNumber(BigDecimal.ZERO, "%");
-    prechargeIntensity = new EngineNumber(BigDecimal.ZERO, "kg / unit");
-
-    // Reset cumulative tracking
-    priorEquipmentBases.resetStateAtTimestep();
-  }
-
-  /**
-   * Check if a stream name is a sales stream.
-   *
-   * @param name The stream name to check
-   * @return True if the stream is a sales stream, false otherwise
-   */
-  private boolean getIsSalesStreamAllowed(String name) {
-    return switch (name) {
-      case "domestic", "import", "export", "recycle", "recycleRecharge", "recycleEol", "virgin" -> true;
-      default -> false;
-    };
-  }
-
-  /**
-   * Ensure the stream name is a sales substream.
-   *
-   * @param name The stream name to validate
-   * @throws IllegalArgumentException If the stream name is not a sales substream
-   */
-  private void ensureSalesStreamAllowed(String name) {
-    if (!getIsSalesStreamAllowed(name)) {
-      throw new IllegalArgumentException("Must address a sales substream.");
-    }
-  }
-
-  /**
-   * Ensure that a value is positive and, if a percent, 100 or less.
-   *
-   * @param target The value to clamp to [0,] or [0, 100] if percent.
-   * @return The value after clamping.
-   */
-  private EngineNumber clampRate(EngineNumber target) {
-    if (target.getValue().compareTo(BigDecimal.ZERO) < 0) {
-      return new EngineNumber(BigDecimal.ZERO, target.getUnits());
-    }
-
-    boolean isOver100 = target.getValue().compareTo(ONE_HUNDRED) > 0;
-    if (isOver100 && target.getUnits().equals("%")) {
-      return new EngineNumber(ONE_HUNDRED, target.getUnits());
-    }
-
-    return target;
-  }
+  void resetStateAtTimestep();
 
   /**
    * Clear the last specified value in this parameterization.
@@ -764,35 +488,18 @@ public class StreamParameterization {
    *
    * @param stream The name of the stream like "sales" or "import" in which to clear.
    */
-  public void clearLastSpecifiedValue(String stream) {
-    switch (stream) {
-      case "sales", "virgin" -> {
-        lastSpecifiedValue.remove("sales");
-        lastSpecifiedValue.remove("import");
-        lastSpecifiedValue.remove("domestic");
-        lastSpecifiedValue.remove("virgin");
-        setSalesIntentFreshlySet(false);
-      }
-      case "domestic", "import" -> {
-        lastSpecifiedValue.remove(stream);
-        lastSpecifiedValue.remove("sales");
-        lastSpecifiedValue.remove("virgin");
-        setSalesIntentFreshlySet(false);
-      }
-      default -> lastSpecifiedValue.remove(stream);
-    }
-  }
+  void clearLastSpecifiedValue(String stream);
 
   /**
-   * Check if a stream name is a sales stream.
+   * Get an immutable snapshot of this instance.
    *
-   * @param streamName The stream name to check
-   * @return True if the stream is a sales stream, false otherwise
+   * <p>The snapshot shares immutable {@link EngineNumber}-typed values by reference
+   * but copies mutable containers (maps/sets) and recursively freezes the nested
+   * prior equipment bases, so later mutation of this instance does not affect the
+   * snapshot.</p>
+   *
+   * @return An immutable snapshot backed by {@link FrozenStreamParameterization}, or
+   *     this same instance if it is already frozen
    */
-  private boolean getIsSalesStream(String streamName) {
-    return switch (streamName) {
-      case "sales", "domestic", "import", "virgin" -> true;
-      default -> false;
-    };
-  }
+  StreamParameterization freeze();
 }
