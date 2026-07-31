@@ -56,22 +56,84 @@ function getIsLikelyFormula(value) {
 }
 
 /**
+ * Status describing whether a single numeric input value is valid.
+ */
+class NumericInputStatus {
+  /**
+   * Create a new NumericInputStatus.
+   *
+   * @param {boolean} isValid - Whether the value is likely valid.
+   * @param {boolean} isAmbiguous - Whether the value has an ambiguous number format.
+   * @param {boolean} isParseError - Whether the value failed to parse.
+   * @param {NumberParseResult|null} parseResult - The parse result, or null if
+   *     the value was not run through the number parser.
+   */
+  constructor(isValid, isAmbiguous, isParseError, parseResult) {
+    const self = this;
+    self._isValid = isValid;
+    self._isAmbiguous = isAmbiguous;
+    self._isParseError = isParseError;
+    self._parseResult = parseResult;
+  }
+
+  /**
+   * Check if the value is likely valid.
+   *
+   * @returns {boolean} True if the value is OK, false if it looks suspect.
+   */
+  isValid() {
+    const self = this;
+    return self._isValid;
+  }
+
+  /**
+   * Check if the value has an ambiguous number format.
+   *
+   * @returns {boolean} True if the value is ambiguous.
+   */
+  isAmbiguous() {
+    const self = this;
+    return self._isAmbiguous;
+  }
+
+  /**
+   * Check if the value failed to parse.
+   *
+   * @returns {boolean} True if the value failed to parse.
+   */
+  isParseError() {
+    const self = this;
+    return self._isParseError;
+  }
+
+  /**
+   * Get the underlying number parse result.
+   *
+   * @returns {NumberParseResult|null} The parse result, or null if the value
+   *     was not run through the number parser.
+   */
+  getParseResult() {
+    const self = this;
+    return self._parseResult;
+  }
+}
+
+/**
  * Determines the validity status of a single numeric input value.
  *
  * @param {string} value - The input value being validated.
  * @param {boolean} isDurationField - Whether the field is a duration field,
  *     allowing valid QubecTalk year keywords.
- * @returns {Object} Object with isValid, isAmbiguous, isParseError, and
- *     parseResult fields describing the value's status.
+ * @returns {NumericInputStatus} Status describing the value's validity.
  */
 function getNumericInputStatus(value, isDurationField) {
   if (getIsLikelyFormula(value)) {
-    return {isValid: true, isAmbiguous: false, isParseError: false, parseResult: null};
+    return new NumericInputStatus(true, false, false, null);
   }
 
   const isValidYearKeyword = isDurationField && VALID_YEAR_KEYWORDS.includes(value.toLowerCase());
   if (isValidYearKeyword) {
-    return {isValid: true, isAmbiguous: false, isParseError: false, parseResult: null};
+    return new NumericInputStatus(true, false, false, null);
   }
 
   const isLikelyInvalid = NUMERIC_INPUT_INVALID_PATTERNS.some((pattern) => pattern.test(value));
@@ -83,7 +145,7 @@ function getNumericInputStatus(value, isDurationField) {
 
   const isValid = !(isLikelyInvalid || isAmbiguous || isParseError);
 
-  return {isValid, isAmbiguous, isParseError, parseResult};
+  return new NumericInputStatus(isValid, isAmbiguous, isParseError, parseResult);
 }
 
 /**
@@ -95,7 +157,7 @@ function getNumericInputStatus(value, isDurationField) {
  * @returns {boolean} True if the value is OK, false if it looks suspect.
  */
 function validateNumericInput(value, isDurationField) {
-  return getNumericInputStatus(value, isDurationField).isValid;
+  return getNumericInputStatus(value, isDurationField).isValid();
 }
 
 /**
@@ -401,21 +463,18 @@ function validateNumericInputs(dialog, dialogType) {
     }
 
     const isDurationField = getIsDurationField(input);
-    const {isValid, isAmbiguous, isParseError, parseResult} = getNumericInputStatus(
-      value,
-      isDurationField,
-    );
+    const status = getNumericInputStatus(value, isDurationField);
 
-    if (!isValid) {
+    if (!status.isValid()) {
       // Get field description from aria-label
       const fieldDescription = input.getAttribute("aria-label") || "Unknown field";
 
       const {suggestion, description} = getNumericInputSuggestionAndDescription(
         fieldDescription,
         value,
-        isAmbiguous,
-        isParseError,
-        parseResult,
+        status.isAmbiguous(),
+        status.isParseError(),
+        status.getParseResult(),
         numberParser,
       );
 
