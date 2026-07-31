@@ -745,6 +745,81 @@ function buildUiTranslatorTests() {
       },
     ]);
 
+    QUnit.test("translates retire command with years-ago formula", function (assert) {
+      const code = `
+start default
+  define application "test"
+    uses substance "test"
+      enable domestic
+      equals 1 tCO2e / mt
+      initial charge with 1 kg / unit for domestic
+      set domestic to 100 mt during year 1
+      retire (get sales 5 years ago as %) * 10 % / year
+    end substance
+  end application
+end default
+`;
+
+      const compiler = new UiTranslatorCompiler();
+      const result = compiler.compile(code);
+      assert.strictEqual(result.getErrors().length, 0, "Should compile without errors");
+
+      const program = result.getProgram();
+      const substance = program.getApplications()[0].getSubstances()[0];
+
+      const retire = substance.getRetire();
+      assert.ok(retire !== null, "Retire command should be present");
+
+      const retireValue = retire.getValue();
+      assert.equal(retireValue.getUnits(), "% / year");
+
+      const rawValue = retireValue.getValue();
+      assert.ok(
+        typeof rawValue === "string" && rawValue.includes("years ago"),
+        "Years-ago formula text should be preserved, not blanked out",
+      );
+    });
+
+    QUnit.test("translates retire command with indirect years-ago conversion formula", function (assert) {
+      const code = `
+start default
+  define application "test"
+    uses substance "other"
+      enable domestic
+      equals 1 tCO2e / mt
+      initial charge with 1 kg / unit for domestic
+      set domestic to 100 mt during year 1
+    end substance
+
+    uses substance "test"
+      enable domestic
+      equals 1 tCO2e / mt
+      initial charge with 1 kg / unit for domestic
+      set domestic to 100 mt during year 1
+      retire (get sales 5 years ago of "other" as %) * 10 % / year
+    end substance
+  end application
+end default
+`;
+
+      const compiler = new UiTranslatorCompiler();
+      const result = compiler.compile(code);
+      assert.strictEqual(result.getErrors().length, 0, "Should compile without errors");
+
+      const program = result.getProgram();
+      const application = program.getApplications()[0];
+      const substance = application.getSubstances().find((x) => x.getName() === "test");
+
+      const retire = substance.getRetire();
+      const rawValue = retire.getValue().getValue();
+      assert.ok(
+        typeof rawValue === "string" &&
+          rawValue.includes("years ago") &&
+          rawValue.includes('of "other"'),
+        "Indirect years-ago formula text should be preserved with substance reference",
+      );
+    });
+
     QUnit.test("preprocessEachYearSyntax - removes end-of-line each year", function (assert) {
       // Test basic removal cases
       const input1 = "retire 5 % each year";

@@ -14,9 +14,25 @@ Finally, we want to again express our gratitude for your feedback and time.
 
 The following changes have been adopted and released.
 
+### Get X years ago
+
+**Status**: Preview released July 30, 2026. Full release July 31, 2026.
+
+**Classification**: Enhancement
+
+Added a `get ... X years ago` accessor allowing QubecTalk authors to retrieve a value from a prior year relative to the simulation's current year. This makes it easier to reference historical values in formulas (for example, comparing against the prior year's bank or sales) without manually tracking offsets. See [#821](https://github.com/SchmidtDSE/kigali-sim/issues/821).
+
+### Smarter warning on formulas
+
+**Status**: Preview released July 30, 2026. Full release July 31, 2026.
+
+**Classification**: Enhancement
+
+Warnings surfaced when authoring formulas are now smarter, reducing false alarms while still flagging genuinely problematic expressions. This helps users focus on real issues in their QubecTalk code instead of dismissing noise. See [#825](https://github.com/SchmidtDSE/kigali-sim/pull/825).
+
 ### Negative sign bug
 
-**Status**: Released July 27, 2026
+**Status**: Released July 28, 2026
 
 **Classification**: Bug
 
@@ -24,7 +40,7 @@ Users who entered in a negative change in the designer UI did have their simulat
 
 ### Faster results visualization
 
-**Status**: Preview released July 24, 2026. Full release July 27, 2026.
+**Status**: Preview released July 24, 2026. Full release July 28, 2026.
 
 **Classification**: Enhancement
 
@@ -32,7 +48,7 @@ Switching metrics, scenarios, applications, or substances in the results visuali
 
 ### Recharge of new equipment (precharge)
 
-**Status**: Preview released July 23, 2026. Full release July 27, 2026.
+**Status**: Preview released July 23, 2026. Full release July 28, 2026.
 
 **Classification**: Enhancement
 

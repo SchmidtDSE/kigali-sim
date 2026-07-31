@@ -358,6 +358,61 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
   }
 
   /**
+   * Visit a years-ago stream access expression node.
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {string} The years-ago stream access text.
+   */
+  visitGetStreamPrior(ctx) {
+    const self = this;
+    const yearsAgo = ctx.getChild(2).getText();
+    return "get " + ctx.getChild(1).getText() + " " + yearsAgo + " years ago";
+  }
+
+  /**
+   * Visit a years-ago stream conversion expression node.
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {string} The years-ago stream conversion text.
+   */
+  visitGetStreamPriorConversion(ctx) {
+    const self = this;
+    const yearsAgo = ctx.getChild(2).getText();
+    const part1 = "get " + ctx.getChild(1).getText() + " " + yearsAgo + " years ago";
+    const part2 = " as " + ctx.getChild(6).getText();
+    return part1 + part2;
+  }
+
+  /**
+   * Visit an indirect years-ago stream access expression node.
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {string} The indirect years-ago stream access text.
+   */
+  visitGetStreamIndirectPrior(ctx) {
+    const self = this;
+    const yearsAgo = ctx.getChild(2).getText();
+    const part1 = "get " + ctx.getChild(1).getText() + " " + yearsAgo + " years ago";
+    const part2 = " of " + ctx.getChild(6).getText();
+    return part1 + part2;
+  }
+
+  /**
+   * Visit an indirect years-ago stream conversion expression node.
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {string} The indirect years-ago stream conversion text.
+   */
+  visitGetStreamIndirectPriorConversion(ctx) {
+    const self = this;
+    const yearsAgo = ctx.getChild(2).getText();
+    const part1 = "get " + ctx.getChild(1).getText() + " " + yearsAgo + " years ago";
+    const part2 = " of " + ctx.getChild(6).getText();
+    const part3 = " as " + ctx.getChild(8).getText();
+    return part1 + part2 + part3;
+  }
+
+  /**
    * Visit a minimum limit expression node.
    *
    * @param {Object} ctx - The parse tree node context.

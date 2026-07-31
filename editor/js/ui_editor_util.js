@@ -17,6 +17,19 @@ const NUMERIC_INPUT_INVALID_PATTERNS = [
 ];
 
 /**
+ * Warning message shown when numeric fields contain potentially invalid values.
+ *
+ * The %s placeholder is replaced with the list of flagged fields.
+ *
+ * @constant {string}
+ */
+const NUMERIC_INPUT_WARNING_MESSAGE = "The following numeric fields contain potentially " +
+  "invalid values:\n\n%s\n\n" +
+  "These values may cause simulation errors. You can:\n" +
+  "• Click \"Continue\" if these are intentional (equations, etc.)\n" +
+  "• Click \"Cancel\" to review and correct the values";
+
+/**
  * Determines if an input element is a duration field.
  *
  * @param {HTMLElement} input - The input element to check.
@@ -30,6 +43,121 @@ function getIsDurationField(input) {
   } else {
     return false;
   }
+}
+
+/**
+ * Determines if a numeric input value is likely an intentional formula.
+ *
+ * @param {string} value - The input value being validated.
+ * @returns {boolean} True if the value looks like a "get ... as ..." formula.
+ */
+function getIsLikelyFormula(value) {
+  return value.includes("get ") && value.includes(" as ");
+}
+
+/**
+ * Status describing whether a single numeric input value is valid.
+ */
+class NumericInputStatus {
+  /**
+   * Create a new NumericInputStatus.
+   *
+   * @param {boolean} isValid - Whether the value is likely valid.
+   * @param {boolean} isAmbiguous - Whether the value has an ambiguous number format.
+   * @param {boolean} isParseError - Whether the value failed to parse.
+   * @param {NumberParseResult|null} parseResult - The parse result, or null if
+   *     the value was not run through the number parser.
+   */
+  constructor(isValid, isAmbiguous, isParseError, parseResult) {
+    const self = this;
+    self._isValid = isValid;
+    self._isAmbiguous = isAmbiguous;
+    self._isParseError = isParseError;
+    self._parseResult = parseResult;
+  }
+
+  /**
+   * Check if the value is likely valid.
+   *
+   * @returns {boolean} True if the value is OK, false if it looks suspect.
+   */
+  isValid() {
+    const self = this;
+    return self._isValid;
+  }
+
+  /**
+   * Check if the value has an ambiguous number format.
+   *
+   * @returns {boolean} True if the value is ambiguous.
+   */
+  isAmbiguous() {
+    const self = this;
+    return self._isAmbiguous;
+  }
+
+  /**
+   * Check if the value failed to parse.
+   *
+   * @returns {boolean} True if the value failed to parse.
+   */
+  isParseError() {
+    const self = this;
+    return self._isParseError;
+  }
+
+  /**
+   * Get the underlying number parse result.
+   *
+   * @returns {NumberParseResult|null} The parse result, or null if the value
+   *     was not run through the number parser.
+   */
+  getParseResult() {
+    const self = this;
+    return self._parseResult;
+  }
+}
+
+/**
+ * Determines the validity status of a single numeric input value.
+ *
+ * @param {string} value - The input value being validated.
+ * @param {boolean} isDurationField - Whether the field is a duration field,
+ *     allowing valid QubecTalk year keywords.
+ * @returns {NumericInputStatus} Status describing the value's validity.
+ */
+function getNumericInputStatus(value, isDurationField) {
+  if (getIsLikelyFormula(value)) {
+    return new NumericInputStatus(true, false, false, null);
+  }
+
+  const isValidYearKeyword = isDurationField && VALID_YEAR_KEYWORDS.includes(value.toLowerCase());
+  if (isValidYearKeyword) {
+    return new NumericInputStatus(true, false, false, null);
+  }
+
+  const isLikelyInvalid = NUMERIC_INPUT_INVALID_PATTERNS.some((pattern) => pattern.test(value));
+
+  const numberParser = new NumberParseUtil();
+  const isAmbiguous = numberParser.isAmbiguous(value);
+  const parseResult = numberParser.parseFlexibleNumber(value);
+  const isParseError = !parseResult.isSuccess();
+
+  const isValid = !(isLikelyInvalid || isAmbiguous || isParseError);
+
+  return new NumericInputStatus(isValid, isAmbiguous, isParseError, parseResult);
+}
+
+/**
+ * Determines if a single numeric input value is likely valid.
+ *
+ * @param {string} value - The input value being validated.
+ * @param {boolean} isDurationField - Whether the field is a duration field,
+ *     allowing valid QubecTalk year keywords.
+ * @returns {boolean} True if the value is OK, false if it looks suspect.
+ */
+function validateNumericInput(value, isDurationField) {
+  return getNumericInputStatus(value, isDurationField).isValid();
 }
 
 /**
@@ -334,34 +462,19 @@ function validateNumericInputs(dialog, dialogType) {
       return; // Skip empty values (may be optional)
     }
 
-    // Allow valid QubecTalk year keywords for duration fields
     const isDurationField = getIsDurationField(input);
-    const isValidYearKeyword = isDurationField && VALID_YEAR_KEYWORDS.includes(value.toLowerCase());
+    const status = getNumericInputStatus(value, isDurationField);
 
-    if (isValidYearKeyword) {
-      return; // Skip validation for valid year keywords
-    }
-
-    // Check against invalid patterns
-    const isLikelyInvalid = NUMERIC_INPUT_INVALID_PATTERNS.some((pattern) => pattern.test(value));
-
-    // Check for ambiguous number formats
-    const isAmbiguous = numberParser.isAmbiguous(value);
-
-    // Check if the number fails to parse (e.g., European format)
-    const parseResult = numberParser.parseFlexibleNumber(value);
-    const isParseError = !parseResult.isSuccess();
-
-    if (isLikelyInvalid || isAmbiguous || isParseError) {
+    if (!status.isValid()) {
       // Get field description from aria-label
       const fieldDescription = input.getAttribute("aria-label") || "Unknown field";
 
       const {suggestion, description} = getNumericInputSuggestionAndDescription(
         fieldDescription,
         value,
-        isAmbiguous,
-        isParseError,
-        parseResult,
+        status.isAmbiguous(),
+        status.isParseError(),
+        status.getParseResult(),
         numberParser,
       );
 
@@ -388,14 +501,34 @@ function validateNumericInputs(dialog, dialogType) {
     }
   }).join("\n\n");
 
-  const message = "The following numeric fields contain potentially " +
-    `invalid values:\n\n${fieldList}\n\n` +
-    "These values may cause simulation errors. You can:\n" +
-    "• Click \"Continue\" if these are intentional (equations, etc.)\n" +
-    "• Click \"Cancel\" to review and correct the values";
+  const message = NUMERIC_INPUT_WARNING_MESSAGE.replace("%s", fieldList);
 
   // Prompt user for confirmation
   return confirm(message);
+}
+
+/**
+ * Determines if a simulation's start and end year inputs describe a
+ * reasonable duration.
+ *
+ * @param {string} startValue - The start year input value.
+ * @param {string} endValue - The end year input value.
+ * @returns {boolean} True if the duration is OK, false if it looks suspect
+ *     (spans over 1000 years).
+ */
+function validateSimulationDurationInput(startValue, endValue) {
+  // Only check if both values are simple integers (no equations, etc.)
+  const isSimpleInteger = (value) => /^\d+$/.test(value);
+
+  if (!isSimpleInteger(startValue) || !isSimpleInteger(endValue)) {
+    return true; // Skip validation for non-simple integers
+  }
+
+  const startYear = parseInt(startValue, 10);
+  const endYear = parseInt(endValue, 10);
+  const duration = endYear - startYear;
+
+  return duration <= 1000;
 }
 
 /**
@@ -416,26 +549,19 @@ function validateSimulationDuration(dialog) {
   const startValue = startInput.value.trim();
   const endValue = endInput.value.trim();
 
-  // Only check if both values are simple integers (no equations, etc.)
-  const isSimpleInteger = (value) => /^\d+$/.test(value);
-
-  if (!isSimpleInteger(startValue) || !isSimpleInteger(endValue)) {
-    return true; // Skip validation for non-simple integers
+  if (validateSimulationDurationInput(startValue, endValue)) {
+    return true;
   }
 
   const startYear = parseInt(startValue, 10);
   const endYear = parseInt(endValue, 10);
   const duration = endYear - startYear;
 
-  if (duration > 1000) {
-    const message = `This simulation spans ${duration} years (${startYear} to ${endYear}), ` +
-      "which is over 1000 years.\n\n" +
-      "Do you want to continue with this duration?";
+  const message = `This simulation spans ${duration} years (${startYear} to ${endYear}), ` +
+    "which is over 1000 years.\n\n" +
+    "Do you want to continue with this duration?";
 
-    return confirm(message);
-  }
-
-  return true;
+  return confirm(message);
 }
 
 /**
@@ -561,6 +687,8 @@ export {
   setupDialogInternalLinks,
   setupDurationSelector,
   updateDurationSelector,
+  validateNumericInput,
   validateNumericInputs,
   validateSimulationDuration,
+  validateSimulationDurationInput,
 };
