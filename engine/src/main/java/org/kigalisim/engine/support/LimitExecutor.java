@@ -288,12 +288,11 @@ public class LimitExecutor {
     if (hasPrior) {
       EngineNumber newCappedValue;
       if (lastSpecified.hasEquipmentUnits()) {
-        // The last-specified value is in equipment units. Applying a percent here must scale the
-        // user-specified unit count (e.g. 90% of 1000 units = 900 units), NOT convert the percent
-        // against the population base, which would make the cap enormous and non-binding.
         BigDecimal factor = amount.getValue().divide(BigDecimal.valueOf(100));
         newCappedValue = new EngineNumber(
-            lastSpecified.getValue().multiply(factor), lastSpecified.getUnits());
+            lastSpecified.getValue().multiply(factor),
+            lastSpecified.getUnits()
+        );
       } else {
         EngineNumber percentPriorYear = new EngineNumber(amount.getValue(), "% prior year");
         newCappedValue = unitConverter.convert(percentPriorYear, lastSpecified.getUnits());
