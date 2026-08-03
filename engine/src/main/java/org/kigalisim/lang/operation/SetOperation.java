@@ -57,6 +57,12 @@ public class SetOperation implements Operation {
     valueOperation.execute(machine);
     EngineNumber result = machine.getResult();
 
+    String units = result.getUnits();
+    if (units != null && units.endsWith("eachyear")) {
+      String actualUnit = units.replace("eachyear", "");
+      result = new EngineNumber(result.getValue(), actualUnit);
+    }
+
     ParsedDuring parsedDuring = duringMaybe.orElseGet(
         () -> new ParsedDuring(Optional.empty(), Optional.empty())
     );

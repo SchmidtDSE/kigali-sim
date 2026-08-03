@@ -374,23 +374,25 @@ public class DisplaceExecutor {
     }
 
     EngineNumber currentValue = engine.getStream(stream);
-    simulationState.setLastSpecifiedValue(scope, stream,
-        convertToSameUnitsAsLastSpecified(simulationState, scope, stream, currentValue));
+    EngineNumber valueToRecord =
+        convertToSameUnitsAsLastSpecified(simulationState, scope, stream, currentValue);
+    simulationState.setLastSpecifiedValue(scope, stream, valueToRecord);
 
     // For "sales" or "virgin" stream, also update lastSpecified for component streams (domestic/import)
     if (EngineSupportUtils.isProductionMetastream(stream)) {
       EngineNumber domesticValue = engine.getStream("domestic");
       EngineNumber importValue = engine.getStream("import");
-      simulationState.setLastSpecifiedValue(scope, "domestic",
-          convertToSameUnitsAsLastSpecified(simulationState, scope, "domestic", domesticValue));
-      simulationState.setLastSpecifiedValue(scope, "import",
-          convertToSameUnitsAsLastSpecified(simulationState, scope, "import", importValue));
+      EngineNumber domesticToRecord =
+          convertToSameUnitsAsLastSpecified(simulationState, scope, "domestic", domesticValue);
+      EngineNumber importToRecord =
+          convertToSameUnitsAsLastSpecified(simulationState, scope, "import", importValue);
+      simulationState.setLastSpecifiedValue(scope, "domestic", domesticToRecord);
+      simulationState.setLastSpecifiedValue(scope, "import", importToRecord);
     } else if (isSalesSubstream(stream)) {
-      // A component stream (domestic/import) was displaced. Keep the "sales" metastream's
-      // lastSpecified in sync so unit-based sales carry-over tracks the displaced volume.
       EngineNumber salesValue = engine.getStream("sales");
-      simulationState.setLastSpecifiedValue(scope, "sales",
-          convertToSameUnitsAsLastSpecified(simulationState, scope, "sales", salesValue));
+      EngineNumber salesToRecord =
+          convertToSameUnitsAsLastSpecified(simulationState, scope, "sales", salesValue);
+      simulationState.setLastSpecifiedValue(scope, "sales", salesToRecord);
     }
 
     if (crossSubstanceDisplace) {
@@ -399,29 +401,29 @@ public class DisplaceExecutor {
   }
 
   /**
-   * Converts a value to the units of the last-specified value it is overwriting, when that
-   * last-specified value uses equipment units.
+   * Converts a value to the units of the last-specified value it is overwriting.
    *
    * <p>Displacement operates in volume (kg) but the value being overwritten may have been
-   * recorded in equipment units. Recording the displaced value in kg would silently change the
-   * tracking mode and break unit-based carry-over / percentage-change semantics. When the prior
-   * last-specified value is unit-based, convert the new value to units before recording it.</p>
+   * recorded in different units (e.g. equipment units). Recording the displaced value without
+   * conversion would silently change the tracking mode and break unit-based carry-over /
+   * percentage-change semantics. When a prior last-specified value exists, convert the new value
+   * to the prior value's units before recording it.</p>
    *
    * @param simulationState the simulation state holding the last-specified value
    * @param scope the scope (application/substance) of the stream
    * @param stream the stream identifier
    * @param value the new value to record
-   * @return the value, converted to equipment units if the prior last-specified value was
-   *     unit-based and the new value is not; otherwise the value unchanged
+   * @return the value converted to the prior last-specified value's units, or the value unchanged
+   *     if there is no prior last-specified value
    */
   private EngineNumber convertToSameUnitsAsLastSpecified(SimulationState simulationState,
       Scope scope, String stream, EngineNumber value) {
     EngineNumber lastSpecified = simulationState.getLastSpecifiedValue(scope, stream);
-    if (lastSpecified == null || !lastSpecified.hasEquipmentUnits() || value.hasEquipmentUnits()) {
+    if (lastSpecified == null) {
       return value;
     }
     UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(engine, stream);
-    return unitConverter.convert(value, "units");
+    return unitConverter.convert(value, lastSpecified.getUnits());
   }
 
   /**
