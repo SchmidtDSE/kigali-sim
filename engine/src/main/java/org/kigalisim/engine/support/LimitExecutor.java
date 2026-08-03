@@ -286,8 +286,11 @@ public class LimitExecutor {
     boolean hasPrior = lastSpecified != null;
 
     if (hasPrior) {
-      EngineNumber percentPriorYear = new EngineNumber(amount.getValue(), "% prior year");
-      EngineNumber newCappedValue = unitConverter.convert(percentPriorYear, lastSpecified.getUnits());
+      BigDecimal factor = amount.getValue().divide(BigDecimal.valueOf(100));
+      EngineNumber newCappedValue = new EngineNumber(
+          lastSpecified.getValue().multiply(factor),
+          lastSpecified.getUnits()
+      );
 
       EngineNumber currentInKg = unitConverter.convert(currentValueRaw, "kg");
       EngineNumber newCappedInKg = unitConverter.convert(newCappedValue, "kg");
@@ -500,8 +503,11 @@ public class LimitExecutor {
     boolean hasPrior = lastSpecified != null;
 
     if (hasPrior) {
-      EngineNumber percentPriorYear = new EngineNumber(amount.getValue(), "% prior year");
-      EngineNumber newFloorValue = unitConverter.convert(percentPriorYear, lastSpecified.getUnits());
+      BigDecimal factor = amount.getValue().divide(BigDecimal.valueOf(100));
+      EngineNumber newFloorValue = new EngineNumber(
+          lastSpecified.getValue().multiply(factor),
+          lastSpecified.getUnits()
+      );
 
       EngineNumber currentInKg = unitConverter.convert(currentValueRaw, "kg");
       EngineNumber newFloorInKg = unitConverter.convert(newFloorValue, "kg");
