@@ -374,18 +374,63 @@ public class DisplaceExecutor {
     }
 
     EngineNumber currentValue = engine.getStream(stream);
-    simulationState.setLastSpecifiedValue(scope, stream, currentValue);
+    simulationState.setLastSpecifiedValue(scope, stream,
+        convertToSameUnitsAsLastSpecified(simulationState, scope, stream, currentValue));
 
     // For "sales" or "virgin" stream, also update lastSpecified for component streams (domestic/import)
     if (EngineSupportUtils.isProductionMetastream(stream)) {
       EngineNumber domesticValue = engine.getStream("domestic");
       EngineNumber importValue = engine.getStream("import");
-      simulationState.setLastSpecifiedValue(scope, "domestic", domesticValue);
-      simulationState.setLastSpecifiedValue(scope, "import", importValue);
+      simulationState.setLastSpecifiedValue(scope, "domestic",
+          convertToSameUnitsAsLastSpecified(simulationState, scope, "domestic", domesticValue));
+      simulationState.setLastSpecifiedValue(scope, "import",
+          convertToSameUnitsAsLastSpecified(simulationState, scope, "import", importValue));
+    } else if (isSalesSubstream(stream)) {
+      // A component stream (domestic/import) was displaced. Keep the "sales" metastream's
+      // lastSpecified in sync so unit-based sales carry-over tracks the displaced volume.
+      EngineNumber salesValue = engine.getStream("sales");
+      simulationState.setLastSpecifiedValue(scope, "sales",
+          convertToSameUnitsAsLastSpecified(simulationState, scope, "sales", salesValue));
     }
 
     if (crossSubstanceDisplace) {
       engine.setSubstance(originalSubstance);
     }
+  }
+
+  /**
+   * Converts a value to the units of the last-specified value it is overwriting, when that
+   * last-specified value uses equipment units.
+   *
+   * <p>Displacement operates in volume (kg) but the value being overwritten may have been
+   * recorded in equipment units. Recording the displaced value in kg would silently change the
+   * tracking mode and break unit-based carry-over / percentage-change semantics. When the prior
+   * last-specified value is unit-based, convert the new value to units before recording it.</p>
+   *
+   * @param simulationState the simulation state holding the last-specified value
+   * @param scope the scope (application/substance) of the stream
+   * @param stream the stream identifier
+   * @param value the new value to record
+   * @return the value, converted to equipment units if the prior last-specified value was
+   *     unit-based and the new value is not; otherwise the value unchanged
+   */
+  private EngineNumber convertToSameUnitsAsLastSpecified(SimulationState simulationState,
+      Scope scope, String stream, EngineNumber value) {
+    EngineNumber lastSpecified = simulationState.getLastSpecifiedValue(scope, stream);
+    if (lastSpecified == null || !lastSpecified.hasEquipmentUnits() || value.hasEquipmentUnits()) {
+      return value;
+    }
+    UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(engine, stream);
+    return unitConverter.convert(value, "units");
+  }
+
+  /**
+   * Checks whether the given stream is a sales component stream (domestic or import).
+   *
+   * @param stream the stream identifier
+   * @return true if the stream is domestic or import
+   */
+  private static boolean isSalesSubstream(String stream) {
+    return "domestic".equals(stream) || "import".equals(stream);
   }
 }
