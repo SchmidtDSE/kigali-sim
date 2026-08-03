@@ -386,7 +386,12 @@ public class LimitExecutor {
     if (displaceTarget != null) {
       EngineNumber cappedRaw = engine.getStream(stream);
       BigDecimal changeInKg = getChangeInKgForDisplacement(
-          unitConverter, stream, currentValueInAmountUnits, cappedRaw, amount);
+          unitConverter,
+          stream,
+          currentValueInAmountUnits,
+          cappedRaw,
+          amount
+      );
       displaceExecutor.execute(stream, amount, changeInKg, displaceTarget, displacementType);
     }
   }
@@ -422,8 +427,7 @@ public class LimitExecutor {
   private BigDecimal getChangeInKgForDisplacement(UnitConverter unitConverter, String stream,
       EngineNumber currentValueInAmountUnits, EngineNumber cappedValueRaw, EngineNumber amount) {
     String destinationUnits = amount.getUnits();
-    boolean usesNewEquipmentBasis = EngineSupportUtils.isProductionMetastream(stream)
-        && getIfServicingRequiresAccounting(stream, destinationUnits);
+    boolean usesNewEquipmentBasis = getUsesNewEquipmentBasis(stream, destinationUnits);
 
     if (!usesNewEquipmentBasis) {
       EngineNumber currentInKg = unitConverter.convert(currentValueInAmountUnits, "kg");
@@ -432,8 +436,28 @@ public class LimitExecutor {
     }
 
     EngineNumber unitsChange = new EngineNumber(
-        amount.getValue().subtract(currentValueInAmountUnits.getValue()), destinationUnits);
+        amount.getValue().subtract(currentValueInAmountUnits.getValue()),
+        destinationUnits
+    );
     return unitConverter.convert(unitsChange, "kg").getValue();
+  }
+
+  /**
+   * Returns whether the new-equipment basis must be used to compute the change in kg for a
+   * displacement operation on the given production metastream denominated in the given units.
+   *
+   * @param stream The stream identifier being capped/floored (e.g., "sales", "domestic")
+   * @param destinationUnits The units of the cap/floor amount
+   * @return True if the new-equipment basis must be used, false otherwise
+   */
+  private boolean getUsesNewEquipmentBasis(String stream, String destinationUnits) {
+    if (!EngineSupportUtils.isProductionMetastream(stream)) {
+      return false;
+    } else if (!getIfServicingRequiresAccounting(stream, destinationUnits)) {
+      return false;
+    } else {
+      return true;
+    }
   }
 
   /**
@@ -576,7 +600,12 @@ public class LimitExecutor {
     if (displaceTarget != null) {
       EngineNumber cappedRaw = engine.getStream(stream);
       BigDecimal changeInKg = getChangeInKgForDisplacement(
-          unitConverter, stream, currentValueInAmountUnits, cappedRaw, amount);
+          unitConverter,
+          stream,
+          currentValueInAmountUnits,
+          cappedRaw,
+          amount
+      );
       displaceExecutor.execute(stream, amount, changeInKg, displaceTarget, displacementType);
     }
   }
