@@ -375,7 +375,12 @@ public class DisplaceExecutor {
 
     EngineNumber currentValue = engine.getStream(stream);
     EngineNumber valueToRecord =
-        convertToSameUnitsAsLastSpecified(simulationState, scope, stream, currentValue);
+        convertToSameUnitsAsLastSpecified(
+            simulationState,
+            scope,
+            stream,
+            currentValue
+        );
     simulationState.setLastSpecifiedValue(scope, stream, valueToRecord);
 
     // For "sales" or "virgin" stream, also update lastSpecified for component streams (domestic/import)
@@ -383,15 +388,30 @@ public class DisplaceExecutor {
       EngineNumber domesticValue = engine.getStream("domestic");
       EngineNumber importValue = engine.getStream("import");
       EngineNumber domesticToRecord =
-          convertToSameUnitsAsLastSpecified(simulationState, scope, "domestic", domesticValue);
+          convertToSameUnitsAsLastSpecified(
+              simulationState,
+              scope,
+              "domestic",
+              domesticValue
+          );
       EngineNumber importToRecord =
-          convertToSameUnitsAsLastSpecified(simulationState, scope, "import", importValue);
+          convertToSameUnitsAsLastSpecified(
+              simulationState,
+              scope,
+              "import",
+              importValue
+          );
       simulationState.setLastSpecifiedValue(scope, "domestic", domesticToRecord);
       simulationState.setLastSpecifiedValue(scope, "import", importToRecord);
     } else if (isSalesSubstream(stream)) {
       EngineNumber salesValue = engine.getStream("sales");
       EngineNumber salesToRecord =
-          convertToSameUnitsAsLastSpecified(simulationState, scope, "sales", salesValue);
+          convertToSameUnitsAsLastSpecified(
+              simulationState,
+              scope,
+              "sales",
+              salesValue
+          );
       simulationState.setLastSpecifiedValue(scope, "sales", salesToRecord);
     }
 
