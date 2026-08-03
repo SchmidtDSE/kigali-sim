@@ -372,7 +372,6 @@ public class LimitExecutor {
       return;
     }
 
-    final EngineNumber currentInKg = unitConverter.convert(currentValueRaw, "kg");
     StreamUpdate update = new StreamUpdateBuilder()
         .setName(stream)
         .setValue(amount)
@@ -385,10 +384,56 @@ public class LimitExecutor {
     setCurrentValueAsLastSpecified(scope, stream);
 
     if (displaceTarget != null) {
-      EngineNumber cappedInKg = engine.getStream(stream);
-      BigDecimal changeInKg = cappedInKg.getValue().subtract(currentInKg.getValue());
+      EngineNumber cappedRaw = engine.getStream(stream);
+      BigDecimal changeInKg = getChangeInKgForDisplacement(
+          unitConverter, stream, currentValueInAmountUnits, cappedRaw, amount);
       displaceExecutor.execute(stream, amount, changeInKg, displaceTarget, displacementType);
     }
+  }
+
+  /**
+   * Computes the change in kg used for a displacement operation after a cap or floor has been
+   * applied.
+   *
+   * <p>For most cases, the stream's raw kg total is stable, so the displaced change is simply the
+   * post-limit raw value minus the pre-limit raw value. This is the path taken for volume-denominated
+   * limits and for sales <em>substreams</em> (domestic/import).</p>
+   *
+   * <p>However, when a <em>units</em>-denominated cap/floor targets a production <em>metastream</em>
+   * ({@code sales} or {@code virgin}) that has recharge (of priorEquipment) or precharge (of
+   * newEquipment) riding on top, that servicing kg is not consistently present in the stream's raw
+   * value at the moment the current value is read versus after the limit is applied. Taking the raw
+   * kg difference in that case yields a small or even sign-inverted change (see
+   * {@link #convertWithServicingAccounted} for the same correction applied to the limit check). For
+   * this case the change is instead computed on the service-free new-equipment basis: the pre-limit
+   * new equipment count is subtracted from the capped unit count and the difference is converted
+   * back to kg.</p>
+   *
+   * @param unitConverter The unit converter configured for the stream
+   * @param stream The stream identifier being capped/floored (e.g., "sales", "domestic")
+   * @param currentValueInAmountUnits The stream's pre-limit value already converted into the
+   *     amount's units with servicing kg backed out (see
+   *     {@link #convertWithServicingAccounted})
+   * @param cappedValueRaw The stream's raw value after the limit was applied
+   * @param amount The cap/floor amount, used both for the limit's units and as the post-limit
+   *     new equipment count
+   * @return The change in kg to pass to the displacement executor
+   */
+  private BigDecimal getChangeInKgForDisplacement(UnitConverter unitConverter, String stream,
+      EngineNumber currentValueInAmountUnits, EngineNumber cappedValueRaw, EngineNumber amount) {
+    String destinationUnits = amount.getUnits();
+    boolean usesNewEquipmentBasis = EngineSupportUtils.isProductionMetastream(stream)
+        && getIfServicingRequiresAccounting(stream, destinationUnits);
+
+    if (!usesNewEquipmentBasis) {
+      EngineNumber currentInKg = unitConverter.convert(currentValueInAmountUnits, "kg");
+      EngineNumber cappedInKg = unitConverter.convert(cappedValueRaw, "kg");
+      return cappedInKg.getValue().subtract(currentInKg.getValue());
+    }
+
+    EngineNumber unitsChange = new EngineNumber(
+        amount.getValue().subtract(currentValueInAmountUnits.getValue()), destinationUnits);
+    return unitConverter.convert(unitsChange, "kg").getValue();
   }
 
   /**
@@ -517,7 +562,6 @@ public class LimitExecutor {
       return;
     }
 
-    final EngineNumber currentInKg = unitConverter.convert(currentValueRaw, "kg");
     StreamUpdate update = new StreamUpdateBuilder()
         .setName(stream)
         .setValue(amount)
@@ -530,8 +574,9 @@ public class LimitExecutor {
     setCurrentValueAsLastSpecified(scope, stream);
 
     if (displaceTarget != null) {
-      EngineNumber newInKg = engine.getStream(stream);
-      BigDecimal changeInKg = newInKg.getValue().subtract(currentInKg.getValue());
+      EngineNumber cappedRaw = engine.getStream(stream);
+      BigDecimal changeInKg = getChangeInKgForDisplacement(
+          unitConverter, stream, currentValueInAmountUnits, cappedRaw, amount);
       displaceExecutor.execute(stream, amount, changeInKg, displaceTarget, displacementType);
     }
   }
