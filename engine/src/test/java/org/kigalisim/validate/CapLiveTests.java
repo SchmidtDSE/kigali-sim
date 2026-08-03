@@ -124,6 +124,52 @@ public class CapLiveTests {
   }
 
   /**
+   * Test that a units-denominated "cap sales ... displacing" with recharge advances the
+   * displacement into the target substance rather than decaying and going negative.
+   *
+   * <p>Setup: SubA sells 1000 units in year 1 (with {@code recharge 5% of priorEquipment});
+   * SubB has zero sales. A policy caps SubA's {@code sales} to 900, 800, 700, 600, 500 units across
+   * years 3-7, displacing "SubB". Each year the cap reduces SubA new equipment by 100 units, so
+   * SubB should pick up roughly 100 units/year of new equipment on top of displace existing
+   * Sub B stock.</p>
+   *
+   * <p>Regression test: with recharge riding on top of the sales stream, the displacement change
+   * was previously computed from the raw kg difference, which is sign-inverted once servicing kg
+   * is present in the capped value. That made SubB's new equipment shrink and go negative instead
+   * of accumulating the displaced units.</p>
+   */
+  @Test
+  public void testCapSalesDisplaceWithRechargeAdvancesSubB() throws IOException {
+    String qtaPath = "../examples/cap_sales_displace_with_recharge.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(
+        program, "With Permit", progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    EngineResult year3SubB = LiveTestsUtil.getResult(resultsList.stream(), 3, "Test", "SubB");
+    assertNotNull(year3SubB, "Should have result for Test/SubB in year 3");
+    assertEquals(100.0, year3SubB.getPopulationNew().getValue().doubleValue(), 0.0001,
+        "SubB new equipment should be 100 units in year 3 (full 100-unit displacement)");
+
+    // Year after caps continue: SubB must keep accumulating new equipment (positive), never
+    // decaying negative as it did before the fix.
+    EngineResult year6SubB = LiveTestsUtil.getResult(resultsList.stream(), 6, "Test", "SubB");
+    assertNotNull(year6SubB, "Should have result for Test/SubB in year 6");
+    assertTrue(year6SubB.getPopulationNew().getValue().doubleValue() > 300.0,
+        "SubB new equipment should have accumulated past 300 units by year 6, but was "
+            + year6SubB.getPopulationNew().getValue());
+    assertEquals(400.0, year6SubB.getDomestic().getValue().doubleValue(), 0.0001,
+        "SubB domestic sales should reflect the cumulative 400-unit displacement by year 6");
+
+    EngineResult year7SubB = LiveTestsUtil.getResult(resultsList.stream(), 7, "Test", "SubB");
+    assertNotNull(year7SubB, "Should have result for Test/SubB in year 7");
+    assertTrue(year7SubB.getPopulationNew().getValue().doubleValue() > year6SubB.getPopulationNew().getValue().doubleValue(),
+        "SubB new equipment should keep increasing while SubA sales keep being capped");
+  }
+
+  /**
    * Test cap_displace_unit_conversion.qta produces expected values.
    * This tests unit-to-unit displacement conversion.
    */
