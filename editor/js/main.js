@@ -292,7 +292,7 @@ class MainPresenter {
   _onBuild(run, resetFilters, isAutoRefresh) {
     const self = this;
     self._buttonPanelPresenter.disable();
-    const generationId = self._buildGenerationTracker.startNewGeneration();
+    const generationId = run ? self._buildGenerationTracker.startNewGeneration() : null;
 
     if (resetFilters === undefined) {
       resetFilters = false;
@@ -328,7 +328,7 @@ class MainPresenter {
 
           self._runningIndicatorPresenter.hide();
 
-          if (!self._buildGenerationTracker.isCurrent(generationId)) {
+          if (generationId !== null && !self._buildGenerationTracker.isCurrent(generationId)) {
             // A newer build has since started; discard this stale result.
             return;
           }
@@ -348,7 +348,7 @@ class MainPresenter {
         } catch (e) {
           self._runningIndicatorPresenter.hide();
 
-          if (!self._buildGenerationTracker.isCurrent(generationId)) {
+          if (generationId !== null && !self._buildGenerationTracker.isCurrent(generationId)) {
             // A newer build has since started; discard this stale error.
             return;
           }
@@ -371,7 +371,7 @@ class MainPresenter {
       try {
         await execute();
       } catch (e) {
-        if (self._buildGenerationTracker.isCurrent(generationId)) {
+        if (generationId !== null && self._buildGenerationTracker.isCurrent(generationId)) {
           const message = "Execute error: " + e;
           if (!isAutoRefresh) {
             alertWithHelpOption(message);
@@ -382,7 +382,7 @@ class MainPresenter {
         }
       }
 
-      if (self._buildGenerationTracker.isCurrent(generationId)) {
+      if (generationId !== null && self._buildGenerationTracker.isCurrent(generationId)) {
         self._buttonPanelPresenter.enable();
       }
     };
