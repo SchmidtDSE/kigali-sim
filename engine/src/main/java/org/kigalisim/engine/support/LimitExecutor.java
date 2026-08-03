@@ -429,17 +429,17 @@ public class LimitExecutor {
     String destinationUnits = amount.getUnits();
     boolean usesNewEquipmentBasis = getUsesNewEquipmentBasis(stream, destinationUnits);
 
-    if (!usesNewEquipmentBasis) {
+    if (usesNewEquipmentBasis) {
+      EngineNumber unitsChange = new EngineNumber(
+          amount.getValue().subtract(currentValueInAmountUnits.getValue()),
+          destinationUnits
+      );
+      return unitConverter.convert(unitsChange, "kg").getValue();
+    } else {
       EngineNumber currentInKg = unitConverter.convert(currentValueInAmountUnits, "kg");
       EngineNumber cappedInKg = unitConverter.convert(cappedValueRaw, "kg");
       return cappedInKg.getValue().subtract(currentInKg.getValue());
     }
-
-    EngineNumber unitsChange = new EngineNumber(
-        amount.getValue().subtract(currentValueInAmountUnits.getValue()),
-        destinationUnits
-    );
-    return unitConverter.convert(unitsChange, "kg").getValue();
   }
 
   /**
