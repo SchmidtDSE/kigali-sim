@@ -882,4 +882,61 @@ public class SingleThreadEngineTest {
     // Test passes if no exception is thrown
     assertTrue(true, "Enable method should ignore invalid stream names without error");
   }
+
+  /**
+   * Test that setInitialCharge throws for the newEquipment stream since it is a
+   * derived stream with no meaningful initial charge semantics.
+   */
+  @Test
+  public void testSetInitialChargeNewEquipmentThrows() {
+    SingleThreadEngine engine = new SingleThreadEngine(1, 3);
+
+    engine.setStanza("default");
+    engine.setApplication("test app");
+    engine.setSubstance("test substance");
+
+    RuntimeException exception = assertThrows(RuntimeException.class, () -> engine.setInitialCharge(
+        new EngineNumber(BigDecimal.ONE, "kg / unit"),
+        "newEquipment",
+        null
+    ));
+
+    assertTrue(exception.getMessage().contains("newEquipment"),
+        "Exception message should mention newEquipment");
+  }
+
+  /**
+   * Test that setInitialCharge for other streams remains unaffected by the
+   * newEquipment guard.
+   */
+  @Test
+  public void testSetInitialChargeOtherStreamsStillWork() {
+    SingleThreadEngine engine = new SingleThreadEngine(1, 3);
+
+    engine.setStanza("default");
+    engine.setApplication("test app");
+    engine.setSubstance("test substance");
+    engine.enable("domestic", Optional.empty());
+    engine.enable("import", Optional.empty());
+    engine.enable("export", Optional.empty());
+
+    engine.setInitialCharge(
+        new EngineNumber(BigDecimal.valueOf(5), "kg / unit"),
+        "domestic",
+        null
+    );
+    engine.setInitialCharge(
+        new EngineNumber(BigDecimal.valueOf(6), "kg / unit"),
+        "import",
+        null
+    );
+    engine.setInitialCharge(
+        new EngineNumber(BigDecimal.valueOf(7), "kg / unit"),
+        "export",
+        null
+    );
+
+    // Test passes if no exception is thrown for supported streams
+    assertTrue(true, "setInitialCharge should not throw for domestic/import/export");
+  }
 }

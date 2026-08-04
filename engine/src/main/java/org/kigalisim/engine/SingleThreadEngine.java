@@ -428,6 +428,10 @@ public class SingleThreadEngine implements Engine {
       return;
     }
 
+    if ("newEquipment".equals(stream)) {
+      ExceptionsGenerator.raiseNewEquipmentInitialCharge();
+    }
+
     switch (stream) {
       case "sales", "virgin" -> {
         simulationState.setInitialCharge(scope, "domestic", value);

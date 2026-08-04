@@ -81,6 +81,14 @@ public class ReplaceExecutor {
       ExceptionsGenerator.raiseNoAppOrSubstance("setting stream", " specified");
     }
 
+    // newEquipment is a derived stream with no meaningful replace semantics;
+    // ReplaceExecutor has no case for it (or equipment/priorEquipment) below,
+    // so reject explicitly rather than silently writing to a stream that gets
+    // clobbered by the next population recalc.
+    if ("newEquipment".equals(stream)) {
+      ExceptionsGenerator.raiseNewEquipmentReplace();
+    }
+
     // Validate not replacing with self
     if (currentSubstance.equals(destinationSubstance)) {
       ExceptionsGenerator.raiseSelfReplacement(currentSubstance);

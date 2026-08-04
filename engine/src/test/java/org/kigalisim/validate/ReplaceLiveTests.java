@@ -270,6 +270,42 @@ public class ReplaceLiveTests {
   }
 
   /**
+   * Test that "replace X of newEquipment with ..." throws an explicit error,
+   * since newEquipment is a derived stream with no meaningful replace semantics.
+   */
+  @Test
+  public void testReplaceNewEquipmentThrows() {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/replace_newequipment_throws.qta";
+
+    boolean errorThrown = false;
+    String errorMessage = null;
+
+    try {
+      ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+
+      if (program != null) {
+        Stream<EngineResult> results = KigaliSimFacade.runScenario(program, "Result", progress -> {});
+        List<EngineResult> resultsList = results.collect(Collectors.toList());
+        // If we get here without an exception, replacing newEquipment did not throw
+        assertTrue(false,
+            "Expected an exception when replacing newEquipment, but none was thrown (got "
+            + resultsList.size() + " results)");
+      }
+    } catch (Exception e) {
+      errorThrown = true;
+      errorMessage = e.getMessage();
+    }
+
+    assertTrue(errorThrown,
+        "Replacing newEquipment should throw an error. "
+        + "newEquipment is a derived stream with no meaningful replace semantics.");
+
+    assertTrue(errorMessage != null && errorMessage.contains("newEquipment"),
+        "Error message should mention newEquipment: " + errorMessage);
+  }
+
+  /**
    * Test replace_virgin.qta produces expected values.
    * This tests replacing a percentage of virgin from one substance to another.
    */
