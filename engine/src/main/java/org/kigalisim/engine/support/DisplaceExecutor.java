@@ -30,7 +30,6 @@ import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.state.Scope;
-import org.kigalisim.engine.state.SimulationState;
 import org.kigalisim.lang.operation.DisplacementType;
 
 /**
@@ -364,8 +363,6 @@ public class DisplaceExecutor {
    * @param scope The scope (UseKey) for the displaced stream
    */
   private void updateLastSpecifiedAfterDisplacement(String stream, Scope scope) {
-    SimulationState simulationState = engine.getStreamKeeper();
-
     String originalSubstance = engine.getScope().getSubstance();
     boolean crossSubstanceDisplace = !scope.getSubstance().equals(originalSubstance);
 
@@ -373,139 +370,10 @@ public class DisplaceExecutor {
       engine.setSubstance(scope.getSubstance());
     }
 
-    EngineNumber currentValue = engine.getStream(stream);
-    EngineNumber valueToRecord =
-        convertToSameUnitsAsLastSpecified(
-            simulationState,
-            scope,
-            stream,
-            valueBackingOutRecharge(scope, stream, currentValue)
-        );
-    simulationState.setLastSpecifiedValue(scope, stream, valueToRecord);
-
-    // For "sales" or "virgin" stream, also update lastSpecified for component streams (domestic/import)
-    if (EngineSupportUtils.isProductionMetastream(stream)) {
-      EngineNumber domesticValue = engine.getStream("domestic");
-      EngineNumber importValue = engine.getStream("import");
-      EngineNumber domesticToRecord =
-          convertToSameUnitsAsLastSpecified(
-              simulationState,
-              scope,
-              "domestic",
-              valueBackingOutRecharge(scope, "domestic", domesticValue)
-          );
-      EngineNumber importToRecord =
-          convertToSameUnitsAsLastSpecified(
-              simulationState,
-              scope,
-              "import",
-              valueBackingOutRecharge(scope, "import", importValue)
-          );
-      simulationState.setLastSpecifiedValue(scope, "domestic", domesticToRecord);
-      simulationState.setLastSpecifiedValue(scope, "import", importToRecord);
-    } else if (isSalesSubstream(stream)) {
-      EngineNumber salesValue = engine.getStream("sales");
-      EngineNumber salesToRecord =
-          convertToSameUnitsAsLastSpecified(
-              simulationState,
-              scope,
-              "sales",
-              valueBackingOutRecharge(scope, "sales", salesValue)
-          );
-      simulationState.setLastSpecifiedValue(scope, "sales", salesToRecord);
-    }
+    EngineSupportUtils.recordLastSpecifiedKeepingUnits(engine, scope, stream);
 
     if (crossSubstanceDisplace) {
       engine.setSubstance(originalSubstance);
     }
-  }
-
-  /**
-   * Backs recharge out of a sales-related stream's current value when tracking in units.
-   *
-   * <p>When sales-related streams (sales, virgin, domestic, import) are displacement-updated and
-   * tracked in equipment units, the recharge of priorEquipment rides on top of the stream's raw
-   * value (added back by the recharge / stream-update machinery). Recording that inflated value as
-   * lastSpecified would fold recharge in and compound it year over year, so it must be backed out
-   * before the value is converted to units and recorded.</p>
-   *
-   * <p>The recharge volume is computed explicitly (via {@link RechargeVolumeCalculator}) rather
-   * than from the implicitRecharge/implicitPrecharge streams, since displacement occurs during
-   * policy processing before those implicit streams are populated; only the stream's distributed
-   * share is backed out. The backout applies only when the value being overwritten was tracked in
-   * equipment units (where recharge rides on top); non-sales-related and volume-tracked streams
-   * are returned unchanged.</p>
-   *
-   * @param scope the scope (application/substance) of the displaced stream
-   * @param stream the stream identifier
-   * @param value the stream's current raw value
-   * @return the value with servicing kg backed out when applicable, otherwise the value unchanged
-   */
-  private EngineNumber valueBackingOutRecharge(Scope scope, String stream,
-      EngineNumber value) {
-    boolean isSalesRelated = EngineSupportUtils.isProductionMetastream(stream)
-        || EngineSupportUtils.isSalesSubstream(stream);
-    if (!isSalesRelated) {
-      return value;
-    }
-
-    SimulationState simulationState = engine.getStreamKeeper();
-    EngineNumber lastSpecified = simulationState.getLastSpecifiedValue(scope, stream);
-    boolean isUnitBased = lastSpecified != null && lastSpecified.hasEquipmentUnits();
-    if (!isUnitBased) {
-      return value;
-    }
-
-    EngineNumber rechargeVolume = RechargeVolumeCalculator.calculateRechargeVolume(
-        scope, engine.getStateGetter(), simulationState, engine);
-    BigDecimal distributedRecharge = EngineSupportUtils.getDistributedRecharge(
-        stream, rechargeVolume, scope, simulationState);
-    if (distributedRecharge.compareTo(BigDecimal.ZERO) == 0) {
-      return value;
-    }
-
-    UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(engine, stream);
-    EngineNumber valueKg = unitConverter.convert(value, "kg");
-    BigDecimal cleanKg = valueKg.getValue().subtract(distributedRecharge);
-    if (cleanKg.compareTo(BigDecimal.ZERO) < 0) {
-      cleanKg = BigDecimal.ZERO;
-    }
-    return new EngineNumber(cleanKg, "kg");
-  }
-
-  /**
-   * Converts a value to the units of the last-specified value it is overwriting.
-   *
-   * <p>Displacement operates in volume (kg) but the value being overwritten may have been
-   * recorded in different units (e.g. equipment units). Recording the displaced value without
-   * conversion would silently change the tracking mode and break unit-based carry-over /
-   * percentage-change semantics. When a prior last-specified value exists, convert the new value
-   * to the prior value's units before recording it.</p>
-   *
-   * @param simulationState the simulation state holding the last-specified value
-   * @param scope the scope (application/substance) of the stream
-   * @param stream the stream identifier
-   * @param value the new value to record
-   * @return the value converted to the prior last-specified value's units, or the value unchanged
-   *     if there is no prior last-specified value
-   */
-  private EngineNumber convertToSameUnitsAsLastSpecified(SimulationState simulationState,
-      Scope scope, String stream, EngineNumber value) {
-    EngineNumber lastSpecified = simulationState.getLastSpecifiedValue(scope, stream);
-    if (lastSpecified == null) {
-      return value;
-    }
-    UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(engine, stream);
-    return unitConverter.convert(value, lastSpecified.getUnits());
-  }
-
-  /**
-   * Checks whether the given stream is a sales component stream (domestic or import).
-   *
-   * @param stream the stream identifier
-   * @return true if the stream is domestic or import
-   */
-  private static boolean isSalesSubstream(String stream) {
-    return "domestic".equals(stream) || "import".equals(stream);
   }
 }
