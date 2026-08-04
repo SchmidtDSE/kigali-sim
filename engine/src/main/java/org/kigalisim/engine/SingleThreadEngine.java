@@ -763,6 +763,7 @@ public class SingleThreadEngine implements Engine {
     // Handle equipment stream with special logic
     switch (stream) {
       case "equipment" -> equipmentChangeUtil.handleCap(amount, displaceTarget);
+      case "newEquipment" -> newEquipmentChangeUtil.handleCap(amount, displaceTarget, displacementType);
       default -> limitExecutor.executeCap(stream, amount, yearMatcher, displaceTarget, displacementType);
     }
   }

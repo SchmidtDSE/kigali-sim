@@ -212,4 +212,165 @@ class NewEquipmentChangeUtilTest {
     assertEquals(0, BigDecimal.ZERO.compareTo(salesResult.getValue()),
         "Expected sales to be 0 (clamped) but got " + salesResult.getValue());
   }
+
+  @Test
+  void testHandleCapAbsoluteUnitsBelowCurrentReducesSales() {
+    // Arrange
+    setStreamValue("domestic", new BigDecimal("100"), "kg");
+    setStreamValue("newEquipment", new BigDecimal("100"), "units");
+
+    // Act - cap below the current 100-unit value should apply the excess as a sales reduction.
+    newEquipmentChangeUtil.handleCap(new EngineNumber(new BigDecimal("60"), "units"), null, null);
+
+    // Assert - excess is 40 units, so sales drops from 100 to 60.
+    EngineNumber salesResult = engine.getStream("sales");
+    assertEquals(0, new BigDecimal("60").compareTo(salesResult.getValue()),
+        "Expected sales to be 60 (100 - 40 excess) but got " + salesResult.getValue());
+  }
+
+  @Test
+  void testHandleCapAbsoluteUnitsAboveCurrentIsNoOp() {
+    // Arrange
+    setStreamValue("domestic", new BigDecimal("100"), "kg");
+    setStreamValue("newEquipment", new BigDecimal("100"), "units");
+
+    // Act - cap above the current 100-unit value is already satisfied, so it should no-op.
+    newEquipmentChangeUtil.handleCap(new EngineNumber(new BigDecimal("150"), "units"), null, null);
+
+    // Assert - sales is untouched.
+    EngineNumber salesResult = engine.getStream("sales");
+    assertEquals(0, new BigDecimal("100").compareTo(salesResult.getValue()),
+        "Expected sales to remain 100 (cap already satisfied) but got " + salesResult.getValue());
+  }
+
+  @Test
+  void testHandleCapAbsoluteUnitsEqualToCurrentIsNoOp() {
+    // Arrange
+    setStreamValue("domestic", new BigDecimal("100"), "kg");
+    setStreamValue("newEquipment", new BigDecimal("100"), "units");
+
+    // Act - cap exactly equal to the current value should also no-op (not raise excess to 0).
+    newEquipmentChangeUtil.handleCap(new EngineNumber(new BigDecimal("100"), "units"), null, null);
+
+    // Assert
+    EngineNumber salesResult = engine.getStream("sales");
+    assertEquals(0, new BigDecimal("100").compareTo(salesResult.getValue()),
+        "Expected sales to remain 100 (cap already satisfied) but got " + salesResult.getValue());
+  }
+
+  @Test
+  void testHandleCapAbsoluteKgBelowCurrentReducesSales() {
+    // Arrange - 1 kg/unit initial charge (fixture default), so a 50 kg cap is a 50-unit target.
+    setStreamValue("domestic", new BigDecimal("100"), "kg");
+    setStreamValue("newEquipment", new BigDecimal("100"), "units");
+
+    // Act
+    newEquipmentChangeUtil.handleCap(new EngineNumber(new BigDecimal("50"), "kg"), null, null);
+
+    // Assert - excess is 50 units (100 - 50), so sales drops from 100 to 50.
+    EngineNumber salesResult = engine.getStream("sales");
+    assertEquals(0, new BigDecimal("50").compareTo(salesResult.getValue()),
+        "Expected sales to be 50 (100 - 50 excess) but got " + salesResult.getValue());
+  }
+
+  @Test
+  void testHandleCapBarePercentUsesPriorYearBasis() {
+    // Arrange - year 1: newEquipment is 1000 units.
+    setStreamValue("domestic", new BigDecimal("1000"), "kg");
+    setStreamValue("newEquipment", new BigDecimal("1000"), "units");
+
+    engine.incrementYear();
+
+    // Year 2: current newEquipment is set to a different value (1200) than year 1's raw
+    // snapshot (1000), so a prior-year-basis cap and a current-year-basis cap produce
+    // distinguishable results.
+    setStreamValue("domestic", new BigDecimal("1200"), "kg");
+    setStreamValue("newEquipment", new BigDecimal("1200"), "units");
+
+    // Act - bare "%" cap should resolve against year 1's raw 1000, not year 2's current 1200.
+    newEquipmentChangeUtil.handleCap(new EngineNumber(new BigDecimal("90"), "%"), null, null);
+
+    // Assert - target is 900 (90% of prior year's 1000); current is 1200, so excess is 300 and
+    // sales drops from 1200 to 900.
+    EngineNumber salesResult = engine.getStream("sales");
+    assertEquals(0, new BigDecimal("900").compareTo(salesResult.getValue()),
+        "Expected sales to be 900 (90% of prior year's 1000) but got " + salesResult.getValue());
+  }
+
+  @Test
+  void testHandleCapPercentPriorYearMatchesBarePercent() {
+    // Arrange - identical setup to testHandleCapBarePercentUsesPriorYearBasis.
+    setStreamValue("domestic", new BigDecimal("1000"), "kg");
+    setStreamValue("newEquipment", new BigDecimal("1000"), "units");
+
+    engine.incrementYear();
+
+    setStreamValue("domestic", new BigDecimal("1200"), "kg");
+    setStreamValue("newEquipment", new BigDecimal("1200"), "units");
+
+    // Act - explicit "% prior year" should be identical to bare "%" for cap.
+    newEquipmentChangeUtil.handleCap(new EngineNumber(new BigDecimal("90"), "%prioryear"), null, null);
+
+    // Assert - same result as the bare-percent test: 900.
+    EngineNumber salesResult = engine.getStream("sales");
+    assertEquals(0, new BigDecimal("900").compareTo(salesResult.getValue()),
+        "Expected sales to be 900 (identical to bare %) but got " + salesResult.getValue());
+  }
+
+  @Test
+  void testHandleCapPercentCurrentYearDiffersFromBarePercent() {
+    // Arrange - identical setup to the prior-year tests above.
+    setStreamValue("domestic", new BigDecimal("1000"), "kg");
+    setStreamValue("newEquipment", new BigDecimal("1000"), "units");
+
+    engine.incrementYear();
+
+    setStreamValue("domestic", new BigDecimal("1200"), "kg");
+    setStreamValue("newEquipment", new BigDecimal("1200"), "units");
+
+    // Act - "% current year" should resolve against year 2's current 1200, not year 1's 1000.
+    newEquipmentChangeUtil.handleCap(new EngineNumber(new BigDecimal("90"), "%currentyear"), null, null);
+
+    // Assert - target is 1080 (90% of current year's 1200); current is 1200, so excess is 120
+    // and sales drops from 1200 to 1080 -- measurably different from the prior-year basis's 900.
+    EngineNumber salesResult = engine.getStream("sales");
+    assertEquals(0, new BigDecimal("1080").compareTo(salesResult.getValue()),
+        "Expected sales to be 1080 (90% of current year's 1200) but got " + salesResult.getValue());
+  }
+
+  @Test
+  void testHandleCapPercentCurrentMatchesPercentCurrentYear() {
+    // Arrange - identical setup to testHandleCapPercentCurrentYearDiffersFromBarePercent.
+    setStreamValue("domestic", new BigDecimal("1000"), "kg");
+    setStreamValue("newEquipment", new BigDecimal("1000"), "units");
+
+    engine.incrementYear();
+
+    setStreamValue("domestic", new BigDecimal("1200"), "kg");
+    setStreamValue("newEquipment", new BigDecimal("1200"), "units");
+
+    // Act - "% current" should be identical to "% current year" for cap.
+    newEquipmentChangeUtil.handleCap(new EngineNumber(new BigDecimal("90"), "%current"), null, null);
+
+    // Assert - same result as the current-year test: 1080.
+    EngineNumber salesResult = engine.getStream("sales");
+    assertEquals(0, new BigDecimal("1080").compareTo(salesResult.getValue()),
+        "Expected sales to be 1080 (identical to % current year) but got " + salesResult.getValue());
+  }
+
+  @Test
+  void testHandleCapNegativeAbsoluteTargetClampsAtZero() {
+    // Arrange
+    setStreamValue("domestic", new BigDecimal("100"), "kg");
+    setStreamValue("newEquipment", new BigDecimal("100"), "units");
+
+    // Act - a negative absolute cap target should clamp to a zero target (decision 1), not go
+    // negative; this drives newEquipment all the way down to 0, not below.
+    newEquipmentChangeUtil.handleCap(new EngineNumber(new BigDecimal("-50"), "units"), null, null);
+
+    // Assert - all 100 units of excess are removed from sales, landing at 0, not -50.
+    EngineNumber salesResult = engine.getStream("sales");
+    assertEquals(0, BigDecimal.ZERO.compareTo(salesResult.getValue()),
+        "Expected sales to be 0 (clamped target) but got " + salesResult.getValue());
+  }
 }
