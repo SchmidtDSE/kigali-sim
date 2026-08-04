@@ -114,13 +114,71 @@ public class CapLiveTests {
     EngineResult recordSubB = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "sub_b");
     assertNotNull(recordSubB, "Should have result for test/sub_b in year 1");
 
-    // With unit-based displacement: 36.67 kg reduction in sub_a = 36.67 kg / 10 kg/unit = 3.67 units
-    // 3.67 units displaced to sub_b = 3.67 units * 20 kg/unit = 73.33 kg
-    // Original sub_b: 200 kg, Final sub_b: 200 kg + 73.33 kg = 273.33 kg
-    assertEquals(273.3333333333333, recordSubB.getDomestic().getValue().doubleValue(), 0.0001,
-        "Domestic for sub_b should be 273.33 kg after displacement");
+    // With unit-based displacement (new-equipment basis): sub_a domestic was 100 kg / 10 kg per
+    // unit = 10 units (clean; recharge has not yet been added at this reading), capped to
+    // 5 units -- a true 5-unit reduction. 5 units displaced to sub_b at sub_b's 20 kg/unit
+    // charge = 100 kg.
+    // Original sub_b: 200 kg, Final sub_b: 200 kg + 100 kg = 300 kg
+    assertEquals(300.0, recordSubB.getDomestic().getValue().doubleValue(), 0.0001,
+        "Domestic for sub_b should be 300 kg after displacement");
     assertEquals("kg", recordSubB.getDomestic().getUnits(),
         "Domestic units for sub_b should be kg");
+  }
+
+  /**
+   * Test that a units-denominated "cap sales ... displacing" with recharge advances the
+   * displacement into the target substance rather than decaying and going negative.
+   *
+   * <p>Setup: SubA sells 1000 units in year 1 (with {@code recharge 5% of priorEquipment}) and
+   * has no further growth command, so its uncapped baseline stays flat at 1000 units/year. SubB
+   * has zero sales. A policy caps SubA's {@code sales} to 900, 800, 700, 600, 500 units across
+   * years 3-7, displacing "SubB". Since SubA's baseline never moves, each year's cap displaces
+   * {@code 1000 - capValue} new-equipment units to SubB -- a ramp of 100, 200, 300, 400 units in
+   * years 3-6, not a constant 100 units/year.</p>
+   *
+   * <p>Regression test: with recharge riding on top of the sales stream, the displacement change
+   * was previously computed from the raw kg difference, which is sign-inverted once servicing kg
+   * is present in the capped value. That made SubB's new equipment shrink and go negative instead
+   * of accumulating the displaced units.</p>
+   */
+  @Test
+  public void testCapSalesDisplaceWithRechargeAdvancesSubB() throws IOException {
+    String qtaPath = "../examples/cap_sales_displace_with_recharge.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(
+        program, "With Permit", progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    EngineResult year3SubB = LiveTestsUtil.getResult(resultsList.stream(), 3, "Test", "SubB");
+    assertNotNull(year3SubB, "Should have result for Test/SubB in year 3");
+    assertEquals(100.0, year3SubB.getPopulationNew().getValue().doubleValue(), 0.0001,
+        "SubB new equipment should be 100 units in year 3 (full 100-unit displacement)");
+
+    // Year after caps continue: SubB must keep accumulating new equipment (positive), never
+    // decaying negative as it did before the fix.
+    EngineResult year6SubB = LiveTestsUtil.getResult(resultsList.stream(), 6, "Test", "SubB");
+    assertNotNull(year6SubB, "Should have result for Test/SubB in year 6");
+    // New equipment displaced into SubB is tracked cleanly (recharge excluded). SubA's cap
+    // reduces it from a flat 1000-unit baseline (900, 800, 700, 600 in years 3-6), so the
+    // displaced amount ramps 100, 200, 300, 400 -- landing on 400 by year 6 (not a running sum
+    // of a constant 100 units/year).
+    assertEquals(400.0, year6SubB.getPopulationNew().getValue().doubleValue(), 0.0001,
+        "SubB new equipment should be exactly 400 units by year 6 (the cumulative displaced "
+            + "amount)");
+    // SubB's reported domestic (kg) legitimately includes its own recharge riding on top of
+    // that clean new-equipment baseline, exactly like SubA's own domestic does despite being
+    // capped to a clean 600 units in this same year (SubA's domestic is likewise inflated by
+    // its own recharge): 400 units * 1 kg/unit + 23.43 kg of SubB's own recharge (5% of its
+    // ~951-unit population at 0.85 kg/unit) = 423.43 kg.
+    assertEquals(423.42759375, year6SubB.getDomestic().getValue().doubleValue(), 0.0001,
+        "SubB domestic sales should reflect the 400-unit displacement plus SubB's own recharge");
+
+    EngineResult year7SubB = LiveTestsUtil.getResult(resultsList.stream(), 7, "Test", "SubB");
+    assertNotNull(year7SubB, "Should have result for Test/SubB in year 7");
+    assertTrue(year7SubB.getPopulationNew().getValue().doubleValue() > year6SubB.getPopulationNew().getValue().doubleValue(),
+        "SubB new equipment should keep increasing while SubA sales keep being capped");
   }
 
   /**
@@ -156,13 +214,13 @@ public class CapLiveTests {
     EngineResult recordSubB = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "sub_b");
     assertNotNull(recordSubB, "Should have result for test/sub_b in year 1");
 
-    // With unit-based displacement:
-    // 230 kg reduction in sub_a = 230 kg / 10 kg/unit = 23 units
-    // 23 units displaced to sub_b = 23 units * 20 kg/unit = 460 kg
+    // With unit-based displacement (new-equipment basis), matching this QTA's own comment
+    // above: sub_a is capped from 30 units to 5 units -- a true 25-unit reduction.
+    // 25 units displaced to sub_b at sub_b's 20 kg/unit charge = 500 kg
     // Original sub_b: 10 units * 20 kg/unit = 200 kg
-    // Final sub_b: 200 kg + 460 kg = 660 kg
-    assertEquals(660.0, recordSubB.getDomestic().getValue().doubleValue(), 0.0001,
-        "Domestic for sub_b should be 660 kg after displacement");
+    // Final sub_b: 200 kg + 500 kg = 700 kg
+    assertEquals(700.0, recordSubB.getDomestic().getValue().doubleValue(), 0.0001,
+        "Domestic for sub_b should be 700 kg after displacement");
     assertEquals("kg", recordSubB.getDomestic().getUnits(),
         "Domestic units for sub_b should be kg");
   }
@@ -946,5 +1004,357 @@ public class CapLiveTests {
     assertTrue(limitRecycleVirginYear2 > bauVirginYear2,
         "Virgin should be higher when recycling is limited (was "
         + limitRecycleVirginYear2 + " vs BAU " + bauVirginYear2 + ")");
+  }
+
+  /**
+   * Test a cap-and-displace scenario with recharge where the displaced substance starts with
+   * zero sales. SubA is capped (displacing to SubB) during years 3 to 4.
+   *
+   * <p>Displacement writes the displaced volume onto SubB's sales last-specified value (in the
+   * same units as the value it overwrites), so SubB's sales carry over after the cap window ends
+   * rather than collapsing back to zero in year 5.</p>
+   */
+  @Test
+  public void testSubConsumptionCarriesOverAfterCapWindow() throws IOException {
+    String qtaPath = "../examples/cap_displace_sales_drop_year5.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    String scenarioName = "With Permit";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // QTA names: application "Test", substances "SubA" and "SubB".
+    EngineResult subA3 = LiveTestsUtil.getResult(resultsList.stream(), 3, "Test", "SubA");
+    EngineResult subB3 = LiveTestsUtil.getResult(resultsList.stream(), 3, "Test", "SubB");
+    EngineResult subB4 = LiveTestsUtil.getResult(resultsList.stream(), 4, "Test", "SubB");
+
+    assertNotNull(subA3, "Should have result for Test/SubA in year 3");
+    assertNotNull(subB3, "Should have result for Test/SubB in year 3");
+    assertNotNull(subB4, "Should have result for Test/SubB in year 4");
+
+    // During the cap window (years 3-4) SubB receives displaced sales from SubA,
+    // so its consumption is substantial.
+    double subB3cons = subB3.getDomestic().getValue().doubleValue();
+    double subB4cons = subB4.getDomestic().getValue().doubleValue();
+    assertTrue(subB3cons > 0, "SubB consumption should be > 0 in year 3 (displacement active)");
+    assertTrue(subB4cons > 0, "SubB consumption should be > 0 in year 4 (displacement active)");
+
+    // Once the cap window ends (year 5), SubB must carry over the displaced sales
+    // rather than collapsing to only its own recharge: it continues selling new
+    // equipment and its consumption stays around (or above) the displaced level.
+    EngineResult subB5 = LiveTestsUtil.getResult(resultsList.stream(), 5, "Test", "SubB");
+    EngineResult subB6 = LiveTestsUtil.getResult(resultsList.stream(), 6, "Test", "SubB");
+    assertNotNull(subB5, "Should have result for Test/SubB in year 5");
+    assertNotNull(subB6, "Should have result for Test/SubB in year 6");
+
+    double subB5cons = subB5.getDomestic().getValue().doubleValue();
+    double subB6cons = subB6.getDomestic().getValue().doubleValue();
+    double subB5popNew = subB5.getPopulationNew().getValue().doubleValue();
+    assertTrue(subB5popNew > 0,
+        "SubB should keep adding new equipment in year 5 (displaced sales carry over)");
+    assertTrue(subB5cons >= subB4cons,
+        "SubB consumption should not drop in year 5 after the cap window ends; displaced "
+            + "sales carry over (year 4: " + subB4cons + ", year 5: " + subB5cons + ")");
+    assertTrue(subB6cons >= subB4cons,
+        "SubB consumption should remain at the carried-over displaced level in year 6 "
+            + "(year 6: " + subB6cons + ")");
+  }
+
+  /**
+   * Test that a progressive cap-on-cap displacement supplies the displaced substance at the
+   * expected level even when SubB recharge is active.
+   *
+   * <p>With the cap reducing SubA by 100 units each year (displacing to SubB), SubB's new
+   * equipment in year 9 should be the displaced ~500 units. When SubB recharge is active, the
+   * displaced amount must not be over-counted by folding recharge into the carried lastSpecified
+   * value.</p>
+   */
+  @Test
+  public void testCapDisplaceRechargeNotOvercounted() throws IOException {
+    String qtaPath = "../examples/cap_displace_subb_overcount.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    String scenarioName = "With Permit";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    EngineResult subB9 = LiveTestsUtil.getResult(resultsList.stream(), 9, "Test", "SubB");
+    assertNotNull(subB9, "Should have result for Test/SubB in year 9");
+
+    double subB9popNew = subB9.getPopulationNew().getValue().doubleValue();
+    assertEquals(500.0, subB9popNew, 1.0,
+        "SubB new equipment in year 9 should be ~500 units (the displaced amount), not "
+            + "over-counted when recharge is active (was " + subB9popNew + ")");
+  }
+
+  /**
+   * Test that in year 10, a permit capping SubA domestic to 90 % (with displacement to SubB)
+   * results in lower SubA consumption than BAU.
+   *
+   * @throws IOException If the QTA file cannot be read.
+   */
+  @Test
+  public void testCapPercentDisplaceSubstanceLowerThanBauPercent() throws IOException {
+    String qtaPath = "../examples/cap_percent_displace_substance.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, "BAU", progress -> {});
+    List<EngineResult> bauResultsList = bauResults.collect(Collectors.toList());
+
+    Stream<EngineResult> permitResults =
+        KigaliSimFacade.runScenario(program, "With Permit Percent", progress -> {});
+    List<EngineResult> permitResultsList = permitResults.collect(Collectors.toList());
+
+    EngineResult bauSubA = LiveTestsUtil.getResult(bauResultsList.stream(), 10, "Test", "SubA");
+    EngineResult permitSubA =
+        LiveTestsUtil.getResult(permitResultsList.stream(), 10, "Test", "SubA");
+
+    assertNotNull(bauSubA, "Should have BAU result for Test/SubA in year 10");
+    assertNotNull(permitSubA, "Should have permit result for Test/SubA in year 10");
+
+    double bauConsumption = bauSubA.getConsumption().getValue().doubleValue();
+    double permitConsumption = permitSubA.getConsumption().getValue().doubleValue();
+
+    assertTrue(permitConsumption < bauConsumption,
+        "Cap with % should give lower SubA consumption than BAU in year 10 (was "
+        + permitConsumption + " vs BAU " + bauConsumption + ")");
+  }
+
+  /**
+   * Test that in year 10, a permit capping SubA domestic to 90 % prior year (with displacement to
+   * SubB) results in lower SubA consumption than BAU.
+   *
+   * @throws IOException If the QTA file cannot be read.
+   */
+  @Test
+  public void testCapPercentDisplaceSubstanceLowerThanBauPriorYear() throws IOException {
+    String qtaPath = "../examples/cap_percent_displace_substance.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, "BAU", progress -> {});
+    List<EngineResult> bauResultsList = bauResults.collect(Collectors.toList());
+
+    Stream<EngineResult> permitResults =
+        KigaliSimFacade.runScenario(program, "With Permit Prior Year", progress -> {});
+    List<EngineResult> permitResultsList = permitResults.collect(Collectors.toList());
+
+    EngineResult bauSubA = LiveTestsUtil.getResult(bauResultsList.stream(), 10, "Test", "SubA");
+    EngineResult permitSubA =
+        LiveTestsUtil.getResult(permitResultsList.stream(), 10, "Test", "SubA");
+
+    assertNotNull(bauSubA, "Should have BAU result for Test/SubA in year 10");
+    assertNotNull(permitSubA, "Should have permit result for Test/SubA in year 10");
+
+    double bauConsumption = bauSubA.getConsumption().getValue().doubleValue();
+    double permitConsumption = permitSubA.getConsumption().getValue().doubleValue();
+
+    assertTrue(permitConsumption < bauConsumption,
+        "Cap with % prior year should give lower SubA consumption than BAU in year 10 (was "
+        + permitConsumption + " vs BAU " + bauConsumption + ")");
+  }
+
+  /**
+   * Test that in year 10, a permit capping SubA domestic to 90 % current (with displacement to
+   * SubB) results in lower SubA consumption than BAU.
+   *
+   * @throws IOException If the QTA file cannot be read.
+   */
+  @Test
+  public void testCapPercentDisplaceSubstanceLowerThanBauCurrent() throws IOException {
+    String qtaPath = "../examples/cap_percent_displace_substance.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, "BAU", progress -> {});
+    List<EngineResult> bauResultsList = bauResults.collect(Collectors.toList());
+
+    Stream<EngineResult> permitResults =
+        KigaliSimFacade.runScenario(program, "With Permit Current", progress -> {});
+    List<EngineResult> permitResultsList = permitResults.collect(Collectors.toList());
+
+    EngineResult bauSubA = LiveTestsUtil.getResult(bauResultsList.stream(), 10, "Test", "SubA");
+    EngineResult permitSubA =
+        LiveTestsUtil.getResult(permitResultsList.stream(), 10, "Test", "SubA");
+
+    assertNotNull(bauSubA, "Should have BAU result for Test/SubA in year 10");
+    assertNotNull(permitSubA, "Should have permit result for Test/SubA in year 10");
+
+    double bauConsumption = bauSubA.getConsumption().getValue().doubleValue();
+    double permitConsumption = permitSubA.getConsumption().getValue().doubleValue();
+
+    assertTrue(permitConsumption < bauConsumption,
+        "Cap with % current should give lower SubA consumption than BAU in year 10 (was "
+        + permitConsumption + " vs BAU " + bauConsumption + ")");
+  }
+
+  /**
+   * Acceptance test for capping the newEquipment stream.
+   *
+   * <p>Setup: SubA sells 1000 units in year 1 (no further growth statement), so its uncapped
+   * newEquipment stays flat at ~1000 units/year (recharge/precharge ride on top of the 1000-unit
+   * sales basis and cancel out of the marginal newEquipment computation). A policy caps SubA's
+   * {@code newEquipment} to "90% prior year" starting in year 3, displacing "SubB". Because the
+   * percent basis is resolved directly against newEquipment's own raw stream history (decision 2)
+   * rather than sales's lastSpecifiedValue, year 3's target lands at exactly 90% of year 2's raw
+   * ~1000 -- a true 100-unit excess -- giving SubA exactly 900 and (since both substances share a
+   * 1 kg/unit domestic initial charge) SubB exactly 100. This is the exact-target precision that
+   * "cap sales to 90% prior year" cannot achieve once recharge/precharge are in play (see
+   * {@code cap_percent_displace_substance.qta}'s "lower than BAU"-only assertions).</p>
+   *
+   * <p>Year 4+ compounding (empirically confirmed, not hand-derived): the cap's reduction is
+   * applied via {@code changeStream("sales", delta)}, which permanently rebases SubA's sales at
+   * the new, lower level (matching how a one-time "set ... during year 1" statement establishes a
+   * flat baseline). Since nothing else changes SubA's sales afterward, each subsequent year's
+   * "prior year" newEquipment lookup reads the previous year's already-capped raw value, not the
+   * original ~1000 -- so the cap compounds geometrically at 90%/year from year 3 onward (900,
+   * 810, 729, 656.1, ... i.e. {@code 1000 * 0.9^(year - 2)}), and SubB's cumulative displaced
+   * total telescopes to exactly {@code 1000 - SubA_current} every year.</p>
+   */
+  @Test
+  public void testCapNewEquipmentDisplace() throws IOException {
+    String qtaPath = "../examples/cap_newequipment_displace.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(
+        program, "With Permit", progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    EngineResult year3SubA = LiveTestsUtil.getResult(resultsList.stream(), 3, "Test", "SubA");
+    assertNotNull(year3SubA, "Should have result for Test/SubA in year 3");
+    assertEquals(900.0, year3SubA.getPopulationNew().getValue().doubleValue(), 0.0001,
+        "SubA new equipment should be exactly 900 units in year 3 (90% of prior year's 1000)");
+
+    EngineResult year3SubB = LiveTestsUtil.getResult(resultsList.stream(), 3, "Test", "SubB");
+    assertNotNull(year3SubB, "Should have result for Test/SubB in year 3");
+    assertEquals(100.0, year3SubB.getPopulationNew().getValue().doubleValue(), 0.0001,
+        "SubB new equipment should be exactly 100 units in year 3 (the full displaced excess)");
+
+    // Year 10 compounding check: 1000 * 0.9^8 = 430.46721 exactly (see class-level comment on
+    // the geometric compounding pattern), and SubB telescopes to exactly 1000 - SubA.
+    EngineResult year10SubA = LiveTestsUtil.getResult(resultsList.stream(), 10, "Test", "SubA");
+    assertNotNull(year10SubA, "Should have result for Test/SubA in year 10");
+    assertEquals(430.46721, year10SubA.getPopulationNew().getValue().doubleValue(), 0.0001,
+        "SubA new equipment should be exactly 1000 * 0.9^8 = 430.46721 units by year 10");
+
+    EngineResult year10SubB = LiveTestsUtil.getResult(resultsList.stream(), 10, "Test", "SubB");
+    assertNotNull(year10SubB, "Should have result for Test/SubB in year 10");
+    assertEquals(569.53279, year10SubB.getPopulationNew().getValue().doubleValue(), 0.0001,
+        "SubB new equipment should be exactly 1000 - 430.46721 = 569.53279 units by year 10");
+  }
+
+  /**
+   * Test cap_newequipment_absolute.qta: an absolute-units cap on newEquipment lands exactly at
+   * the target when it would otherwise be exceeded, and is a no-op when it wouldn't.
+   */
+  @Test
+  public void testCapNewEquipmentAbsolute() throws IOException {
+    String qtaPath = "../examples/cap_newequipment_absolute.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, "Result", progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    EngineResult aboveCap = LiveTestsUtil.getResult(resultsList.stream(), 1, "Test", "AboveCap");
+    assertNotNull(aboveCap, "Should have result for Test/AboveCap in year 1");
+    assertEquals(500.0, aboveCap.getPopulationNew().getValue().doubleValue(), 0.0001,
+        "AboveCap new equipment should be capped down to exactly 500 units (from 1000)");
+
+    EngineResult belowCap = LiveTestsUtil.getResult(resultsList.stream(), 1, "Test", "BelowCap");
+    assertNotNull(belowCap, "Should have result for Test/BelowCap in year 1");
+    assertEquals(300.0, belowCap.getPopulationNew().getValue().doubleValue(), 0.0001,
+        "BelowCap new equipment should remain unchanged at 300 units (cap already satisfied)");
+  }
+
+  /**
+   * Test cap_newequipment_zero.qta: "cap newEquipment to 0 units" -- a common real policy shape
+   * ("no more new equipment") -- clamps populationNew to exactly 0 (decision 1) and reduces
+   * domestic sales by exactly the pre-cap newEquipment amount, not more (domestic lands at
+   * exactly 0 here since recharge from priorEquipment is also 0 in year 1, the first year, and
+   * stays 0 in every subsequent year since population itself never grows above 0).
+   */
+  @Test
+  public void testCapNewEquipmentZero() throws IOException {
+    String qtaPath = "../examples/cap_newequipment_zero.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, "Result", progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    for (int year = 1; year <= 5; year++) {
+      EngineResult result = LiveTestsUtil.getResult(resultsList.stream(), year, "Test", "Sub");
+      assertNotNull(result, "Should have result for Test/Sub in year " + year);
+      assertEquals(0.0, result.getPopulationNew().getValue().doubleValue(), 0.0001,
+          "New equipment should be exactly 0 units in year " + year);
+      assertEquals(0.0, result.getDomestic().getValue().doubleValue(), 0.0001,
+          "Domestic should be exactly 0 kg in year " + year);
+    }
+  }
+
+  /**
+   * Test cap_newequipment_precharge_composition.qta produces expected, self-consistent values.
+   *
+   * <p>Combines a precharge configuration ("recharge X% of newEquipment with Y kg/unit") with a
+   * "cap newEquipment" on the same substance. Per this design's delta-based math (Background's
+   * "Key mechanical insight"), a cap's excess-to-reduce is computed purely as a units delta with
+   * no explicit recharge/precharge adjustment, so precharge should not be double-counted -- but
+   * this is confirmed empirically here (mirroring {@code SetLiveTests
+   * .testSetNewEquipmentPrechargeComposition}'s caution about self-referential precharge), not
+   * hand-derived. Year 1: newEquipment is set to 100 units directly, with precharge riding on top
+   * (10% of newEquipment's own 100 units == 10 kg), giving domestic = 110 kg. Year 2: the cap to
+   * 50 units lands populationNew at exactly 50 (confirming the cap is not fighting the precharge
+   * machinery), with domestic = 55 kg (50 + 10% precharge of the now-50-unit newEquipment == 5
+   * kg) -- exactly half of year 1's values, showing no double-counting crept in.</p>
+   */
+  @Test
+  public void testCapNewEquipmentPrechargeComposition() throws IOException {
+    String qtaPath = "../examples/cap_newequipment_precharge_composition.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    String scenarioName = "business as usual";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    EngineResult year2Result = LiveTestsUtil.getResult(resultsList.stream(), 2, "test", "test");
+    assertNotNull(year2Result, "Should have result for test/test in year 2");
+    assertEquals(50.0, year2Result.getPopulationNew().getValue().doubleValue(), 0.0001,
+        "Year 2 populationNew should be capped at exactly 50 units, not double-counting precharge");
+    assertEquals(55.0, year2Result.getDomestic().getValue().doubleValue(), 0.0001,
+        "Year 2 domestic should be 55 kg (50 target + 5 precharge, i.e. 10% of the 50-unit cap)");
+  }
+
+  /**
+   * Test cap_newequipment_self_displace.qta: "cap newEquipment to X displacing sales" (bare,
+   * unquoted) is a genuine self-referential contradiction (reduce sales, then re-add it to
+   * sales), since a "cap newEquipment" reduction is applied as a sales change internally (see
+   * decision 4 / the "Displacement invocation" design note). This mirrors
+   * {@link #testCapDisplaceImportToImport}, confirming {@code ExceptionsGenerator
+   * .raiseSelfDisplacement} fires for {@code newEquipment}'s displacement path exactly as it does
+   * for every other stream's.
+   */
+  @Test
+  public void testCapNewEquipmentSelfDisplaceThrows() throws IOException {
+    String qtaPath = "../examples/cap_newequipment_self_displace.qta";
+
+    try {
+      ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+      Stream<EngineResult> results = KigaliSimFacade.runScenario(program, "Result", progress -> {});
+      List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+      assertTrue(false,
+          "Expected an exception when capping newEquipment displacing its own sales stream, "
+          + "but none was thrown (got " + resultsList.size() + " results)");
+    } catch (Exception e) {
+      assertTrue(true,
+          "Exception correctly thrown for newEquipment-displacing-sales self-displacement: "
+          + e.getMessage());
+    }
   }
 }

@@ -29,6 +29,20 @@ public class ExceptionsGenerator {
   private static final String SELF_DISPLACEMENT_MESSAGE =
       "Cannot displace stream \"%s\" to itself. Please specify a different target stream for displacement.";
 
+  private static final String NEW_EQUIPMENT_INITIAL_CHARGE_MESSAGE =
+      "Cannot set initial charge for newEquipment because newEquipment is a "
+      + "derived stream that Kigali Sim recalculates automatically each year "
+      + "from sales, recharge, and precharge: initial charge has no effect "
+      + "on it. To control how many new units are added, use set, change, "
+      + "cap, or floor on newEquipment instead.";
+
+  private static final String NEW_EQUIPMENT_REPLACE_MESSAGE =
+      "Cannot replace newEquipment because newEquipment is a derived stream "
+      + "that Kigali Sim recalculates automatically each year from sales, "
+      + "recharge, and precharge: replace is not supported on it. To "
+      + "control how many new units are added, use set, change, cap, or "
+      + "floor on newEquipment instead.";
+
   /**
    * Raise an exception for missing application or substance.
    *
@@ -58,5 +72,23 @@ public class ExceptionsGenerator {
    */
   public static void raiseSelfDisplacement(String streamName) {
     throw new RuntimeException(String.format(SELF_DISPLACEMENT_MESSAGE, streamName));
+  }
+
+  /**
+   * Raise an exception for attempted initial charge on newEquipment.
+   *
+   * @throws RuntimeException Always throws with formatted message
+   */
+  public static void raiseNewEquipmentInitialCharge() {
+    throw new RuntimeException(NEW_EQUIPMENT_INITIAL_CHARGE_MESSAGE);
+  }
+
+  /**
+   * Raise an exception for attempted replace on newEquipment.
+   *
+   * @throws RuntimeException Always throws with formatted message
+   */
+  public static void raiseNewEquipmentReplace() {
+    throw new RuntimeException(NEW_EQUIPMENT_REPLACE_MESSAGE);
   }
 }

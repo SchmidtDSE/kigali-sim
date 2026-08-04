@@ -43,6 +43,7 @@ public final class EngineSupportUtils {
   static {
     STREAM_NAMES.add("priorEquipment");
     STREAM_NAMES.add("equipment");
+    STREAM_NAMES.add("newEquipment");
     STREAM_NAMES.add("export");
     STREAM_NAMES.add("import");
     STREAM_NAMES.add("domestic");
@@ -74,6 +75,37 @@ public final class EngineSupportUtils {
    */
   public static boolean getIsInRange(Optional<YearMatcher> yearMatcher, int currentYear) {
     return getIsInRange(yearMatcher.orElse(null), currentYear);
+  }
+
+  /**
+   * Check whether a unit string is one of the four percent-basis forms used by cap/floor
+   * (on any stream, including newEquipment): {@code "%"}, {@code "%prioryear"},
+   * {@code "%currentyear"}, or {@code "%current"}.
+   *
+   * @param units The units string to check
+   * @return True if units is one of the four percent-basis forms
+   */
+  public static boolean isPercentBasisUnits(String units) {
+    return switch (units) {
+      case "%", "%prioryear", "%currentyear", "%current" -> true;
+      default -> false;
+    };
+  }
+
+  /**
+   * Check whether a cap/floor percent unit string resolves against the prior-year basis.
+   *
+   * <p>Per the cap/floor convention (distinct from change/set, where bare {@code "%"} means
+   * current year), bare {@code "%"} aliases to the prior-year basis; {@code "% current year"}
+   * and {@code "% current"} both resolve against the current-year basis instead. This is
+   * narrower than {@code UnitConverter}'s own prior-percent check, which does not treat bare
+   * {@code "%"} as prior-year, so the two are kept separate rather than shared.</p>
+   *
+   * @param units The units string to check
+   * @return True for "%" or "%prioryear", false for "%currentyear" or "%current"
+   */
+  public static boolean isCapFloorPriorYearBasis(String units) {
+    return "%".equals(units) || "%prioryear".equals(units);
   }
 
   /**
@@ -250,5 +282,127 @@ public final class EngineSupportUtils {
 
     // Export and other streams get no recharge
     return BigDecimal.ZERO;
+  }
+
+  /**
+   * Records a sales-related stream's current value as lastSpecified, preserving unit-tracking
+   * mode and excluding recharge/precharge kg riding on top.
+   *
+   * <p>Both cap/floor operations (see {@code LimitExecutor}) and displacement (see
+   * {@code DisplaceExecutor}) need to record a freshly computed stream value as lastSpecified so
+   * that future percentage-based operations and year-over-year growth use it as their basis.
+   * Recording the raw stream value directly is unsafe for two reasons:</p>
+   * <ul>
+   *   <li>The raw value is always kg-denominated, so recording it verbatim would silently switch
+   *       a unit-tracked stream (e.g. one set via "set sales to 1000 units") into kg-tracking
+   *       mode, breaking subsequent unit-based carry-over.</li>
+   *   <li>When tracked in equipment units, recharge (of priorEquipment) and precharge (of
+   *       newEquipment) ride on top of the stream's raw kg value rather than being absorbed
+   *       within it. Recording that inflated value would fold recharge into the baseline, which
+   *       then compounds (recharge-on-recharge) in subsequent years.</li>
+   * </ul>
+   *
+   * <p>This method backs out any such servicing kg (only when the existing lastSpecified value
+   * is unit-tracked) and converts the result to the existing lastSpecified's units before
+   * recording. For production metastreams ("sales"/"virgin"), the component streams
+   * (domestic/import) are recorded the same way; for sales substreams (domestic/import), "sales"
+   * is recorded the same way.</p>
+   *
+   * @param engine The engine to read/write stream state on
+   * @param scope The scope (application/substance) of the stream
+   * @param stream The stream identifier whose current value should be recorded as lastSpecified
+   */
+  public static void recordLastSpecifiedKeepingUnits(Engine engine, Scope scope, String stream) {
+    SimulationState simulationState = engine.getStreamKeeper();
+    EngineNumber valueToRecord = adjustRechargeForLastSpecified(
+        engine, scope, stream, engine.getStream(stream));
+    simulationState.setLastSpecifiedValue(scope, stream, valueToRecord);
+
+    if (isProductionMetastream(stream)) {
+      EngineNumber domesticToRecord = adjustRechargeForLastSpecified(
+          engine, scope, "domestic", engine.getStream("domestic"));
+      simulationState.setLastSpecifiedValue(scope, "domestic", domesticToRecord);
+
+      EngineNumber importToRecord = adjustRechargeForLastSpecified(
+          engine, scope, "import", engine.getStream("import"));
+      simulationState.setLastSpecifiedValue(scope, "import", importToRecord);
+    } else if (isSalesSubstream(stream)) {
+      EngineNumber salesToRecord = adjustRechargeForLastSpecified(
+          engine, scope, "sales", engine.getStream("sales"));
+      simulationState.setLastSpecifiedValue(scope, "sales", salesToRecord);
+    }
+  }
+
+  /**
+   * Adjusts a single stream value for recording as lastSpecified.
+   *
+   * <p>See {@link #recordLastSpecifiedKeepingUnits} for the rationale. This removes any implied
+   * recharge/precharge kg from {@code rawValue} (only when sales-related and the existing
+   * lastSpecified is unit-tracked) and converts the result to the existing lastSpecified's units
+   * (if any exist).</p>
+   *
+   * @param engine The engine to read stream/recharge state from
+   * @param scope The scope (application/substance) of the stream
+   * @param stream The stream identifier
+   * @param rawValue The stream's current raw value
+   * @return The value to record as lastSpecified
+   */
+  private static EngineNumber adjustRechargeForLastSpecified(Engine engine, Scope scope,
+      String stream, EngineNumber rawValue) {
+    SimulationState simulationState = engine.getStreamKeeper();
+    EngineNumber priorLastSpecified = simulationState.getLastSpecifiedValue(scope, stream);
+    EngineNumber withoutImpliedRecharge = removeImpliedRecharge(
+        engine, scope, stream, rawValue, priorLastSpecified);
+
+    if (priorLastSpecified == null) {
+      return withoutImpliedRecharge;
+    }
+    UnitConverter unitConverter = createUnitConverterWithTotal(engine, stream);
+    return unitConverter.convert(withoutImpliedRecharge, priorLastSpecified.getUnits());
+  }
+
+  /**
+   * Removes recharge/precharge kg implied by a sales-related stream's value when it is
+   * unit-tracked.
+   *
+   * @param engine The engine to read recharge state from
+   * @param scope The scope (application/substance) of the stream
+   * @param stream The stream identifier
+   * @param value The stream's current value
+   * @param priorLastSpecified The existing lastSpecified value being overwritten, or null
+   * @return The value with implied servicing kg removed, or the value unchanged if not applicable
+   */
+  private static EngineNumber removeImpliedRecharge(Engine engine, Scope scope, String stream,
+      EngineNumber value, EngineNumber priorLastSpecified) {
+    boolean isSalesRelated = isProductionMetastream(stream) || isSalesSubstream(stream);
+    boolean isUnitBased = priorLastSpecified != null && priorLastSpecified.hasEquipmentUnits();
+    if (!isSalesRelated || !isUnitBased) {
+      return value;
+    }
+
+    SimulationState simulationState = engine.getStreamKeeper();
+    EngineNumber rechargeVolume = RechargeVolumeCalculator.calculateRechargeVolume(
+        scope,
+        engine.getStateGetter(),
+        simulationState,
+        engine
+    );
+    BigDecimal distributedRecharge = getDistributedRecharge(
+        stream,
+        rechargeVolume,
+        scope,
+        simulationState
+    );
+    if (distributedRecharge.compareTo(BigDecimal.ZERO) == 0) {
+      return value;
+    }
+
+    UnitConverter unitConverter = createUnitConverterWithTotal(engine, stream);
+    EngineNumber valueKg = unitConverter.convert(value, "kg");
+    BigDecimal netKg = valueKg.getValue().subtract(distributedRecharge);
+    if (netKg.compareTo(BigDecimal.ZERO) < 0) {
+      netKg = BigDecimal.ZERO;
+    }
+    return new EngineNumber(netKg, "kg");
   }
 }

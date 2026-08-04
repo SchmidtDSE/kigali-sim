@@ -17,7 +17,7 @@ import org.kigalisim.lang.operation.DisplacementType;
  * Unit tests for DisplaceExecutor class.
  *
  * <p>Tests displacement logic for stream-based and substance-based displacement,
- * equipment-unit vs volume-based modes, and automatic recycling handling.</p>
+ * equipment-unit vs volume-based modes.</p>
  */
 class DisplaceExecutorTest {
   private SingleThreadEngine engine;
@@ -167,5 +167,34 @@ class DisplaceExecutorTest {
     // Verify scope was restored
     engine.setSubstance(originalSubstance);
     assertEquals(originalSubstance, engine.getScope().getSubstance());
+  }
+
+  @Test
+  void testExecuteDoesNotApplySpuriousReductionForSalesStreamDisplacement() {
+    // Regression test: before this fix, displacing a "sales" cap/floor into a
+    // same-substance stream applied a spurious extra reduction to "sales"
+    // (orphaned logic from a since-removed recover-displacement feature; see
+    // DisplaceExecutor's class Javadoc history note). This reproduces the
+    // bug's exact trigger shape -- stream is "sales" and displaceTarget is a
+    // same-substance stream (isStreamDisplacement = true) -- and confirms
+    // "sales" reflects only the displacement's own addition, not a second,
+    // unrelated reduction.
+    setStreamValue("domestic", new BigDecimal("100"), "kg");
+    setStreamValue("import", new BigDecimal("50"), "kg");
+    EngineNumber salesBefore = engine.getStream("sales"); // 150 kg
+
+    EngineNumber amount = new EngineNumber(new BigDecimal("10"), "kg");
+    BigDecimal changeAmount = new BigDecimal("-20");
+
+    displaceExecutor.execute("sales", amount, changeAmount, "import",
+        DisplacementType.EQUIVALENT);
+
+    // "sales" must reflect only the displacement's own +20 into "import" (a
+    // sales substream), never a spurious extra reduction.
+    EngineNumber salesAfter = engine.getStream("sales");
+    assertEquals(0, salesBefore.getValue().add(new BigDecimal("20"))
+        .compareTo(salesAfter.getValue()),
+        "sales should only reflect the +20 flowing into import from displacement, "
+        + "with no spurious extra reduction (regression test for the fixed bug)");
   }
 }

@@ -1,0 +1,45 @@
+start default
+  define application "Test"
+    uses substance "BelowFloor"
+      enable domestic
+      initial charge with 1 kg / unit for domestic
+      initial charge with 0 kg / unit for import
+      initial charge with 0 kg / unit for export
+      equals 1 kgCO2e / kg
+      equals 1 kwh / unit
+      set domestic to 300 units during year 1
+      retire 5 % / year
+      recharge 5 % of priorEquipment with 0.85 kg / unit
+    end substance
+
+    uses substance "AboveFloor"
+      enable domestic
+      initial charge with 1 kg / unit for domestic
+      initial charge with 0 kg / unit for import
+      initial charge with 0 kg / unit for export
+      equals 1 kgCO2e / kg
+      equals 1 kwh / unit
+      set domestic to 1000 units during year 1
+      retire 5 % / year
+      recharge 5 % of priorEquipment with 0.85 kg / unit
+    end substance
+  end application
+end default
+
+start policy "Floor"
+  modify application "Test"
+    modify substance "BelowFloor"
+      floor newEquipment to 500 units during years 1 to 5
+    end substance
+
+    modify substance "AboveFloor"
+      floor newEquipment to 500 units during years 1 to 5
+    end substance
+  end application
+end policy
+
+start simulations
+  simulate "Result"
+    using "Floor"
+  from years 1 to 5
+end simulations

@@ -984,6 +984,39 @@ public class BasicLiveTests {
   }
 
   /**
+   * Test that "initial charge with X for newEquipment" throws an explicit error,
+   * since newEquipment is a derived stream recalculated each year and initial
+   * charge has no meaningful effect on it.
+   *
+   * <p>Unlike {@link #testInitialChargeRequiresUnits}, this error fires at
+   * {@code runScenario} time (during simulation execution when the
+   * InitialChargeOperation is executed each year), not at parse time.</p>
+   */
+  @Test
+  public void testInitialChargeNewEquipmentThrows() {
+    String qtaPath = "../examples/initial_charge_newequipment_throws.qta";
+
+    boolean errorThrown = false;
+    String errorMessage = null;
+
+    try {
+      ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+      Stream<EngineResult> results = KigaliSimFacade.runScenario(program, "Result", progress -> {});
+      results.collect(Collectors.toList());
+    } catch (Exception e) {
+      errorThrown = true;
+      errorMessage = e.getMessage();
+    }
+
+    assertTrue(errorThrown,
+        "Setting initial charge for newEquipment should throw an error.");
+    assertTrue(errorMessage != null && errorMessage.contains("newEquipment"),
+        "Error message should mention newEquipment: " + errorMessage);
+    assertTrue(errorMessage != null && errorMessage.contains("initial charge"),
+        "Error message should mention initial charge: " + errorMessage);
+  }
+
+  /**
    * Test retire with replacement maintains equipment population.
    *
    * <p>With "retire 5% / year with replacement" and "set import to 100 units during year 1",

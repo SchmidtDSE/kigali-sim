@@ -140,6 +140,15 @@
           <dt>Multilateral Fund</dt>
           <dd>Financial mechanism established under the Montreal Protocol to help developing countries meet their treaty obligations, including funding for Kigali HFC Implementation Plans.</dd>
 
+          <dt>New Equipment</dt>
+          <dd>Equipment added to the population during the current year, tracked by
+the <code>newEquipment</code> stream. Derived from sales, recharge, and
+precharge each year, but writable via <code>set</code>, <code>change</code>,
+<code>cap</code>, and <code>floor</code> — writes are applied as an
+equivalent change to <code>sales</code> under the hood. See
+<code>get newEquipment</code> for read access, e.g. for fixed-age
+retirement schedules.</dd>
+
           <dt>Policy</dt>
           <dd>Interventions modifying the baseline scenario, such as import restrictions, manufacturing caps, substance replacements, or recycling requirements. Uses <code>modify</code> rather than <code>define</code> to change existing applications and substances.</dd>
 
@@ -198,7 +207,7 @@
           <dd>A modeling approach used in system design / analysis that tracks both stocks (accumulated quantities like equipment population or substance banks) and flows (rates of change like sales, emissions, or retirement) over time.</dd>
 
           <dt>Stream</dt>
-          <dd>A time series of values in the simulation representing different types of flows or stocks. Available streams include domestic, import, export, sales, virgin, equipment, priorEquipment, bank, and age.</dd>
+          <dd>A time series of values in the simulation representing different types of flows or stocks. Available streams include domestic, import, export, sales, virgin, equipment, priorEquipment, newEquipment, bank, and age.</dd>
 
           <dt>Substance</dt>
           <dd>A chemical refrigerant or other controlled substance used in applications, such as HFC-134a, R-410A, R-600a, or HFC-32. Defined using <code>uses substance "name"</code> within applications.</dd>

@@ -239,7 +239,15 @@ public class StreamUpdateShortcuts {
     if (EngineSupportUtils.getIsSalesStream(stream, false)) {
       UseKey destKey = new SimpleUseKey(destinationScope.getApplication(),
                                         destinationScope.getSubstance());
-      engine.getStreamKeeper().setLastSpecifiedValue(destKey, stream, value);
+      // Preserve the units of the last-specified value this is overwriting, so unit-based
+      // carry-over / percentage-change semantics are not silently changed by displacement.
+      EngineNumber prior = engine.getStreamKeeper().getLastSpecifiedValue(destKey, stream);
+      EngineNumber valueToRecord = value;
+      if (prior != null) {
+        UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(engine, stream);
+        valueToRecord = unitConverter.convert(value, prior.getUnits());
+      }
+      engine.getStreamKeeper().setLastSpecifiedValue(destKey, stream, valueToRecord);
     }
   }
 

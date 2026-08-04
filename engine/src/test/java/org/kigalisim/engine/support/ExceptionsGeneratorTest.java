@@ -8,6 +8,7 @@ package org.kigalisim.engine.support;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
@@ -45,5 +46,27 @@ public class ExceptionsGeneratorTest {
     assertEquals(
         "Error recalculating consumption because application and / or substance not specified",
         exception.getMessage());
+  }
+
+  @Test
+  public void testRaiseNewEquipmentInitialCharge() {
+    RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+      ExceptionsGenerator.raiseNewEquipmentInitialCharge();
+    });
+
+    assertTrue(exception.getMessage().contains("initial charge"));
+    assertTrue(exception.getMessage().contains("newEquipment"));
+    assertTrue(exception.getMessage().contains("set, change, cap, or floor"));
+  }
+
+  @Test
+  public void testRaiseNewEquipmentReplace() {
+    RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+      ExceptionsGenerator.raiseNewEquipmentReplace();
+    });
+
+    assertTrue(exception.getMessage().contains("replace"));
+    assertTrue(exception.getMessage().contains("newEquipment"));
+    assertTrue(exception.getMessage().contains("set, change, cap, or floor"));
   }
 }

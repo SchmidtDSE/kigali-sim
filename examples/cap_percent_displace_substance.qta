@@ -1,0 +1,94 @@
+start default
+
+  define application "Test"
+
+    uses substance "SubA"
+      enable domestic
+      initial charge with 1 kg / unit for domestic
+      initial charge with 0 kg / unit for import
+      initial charge with 0 kg / unit for export
+      equals 1 kgCO2e / kg
+      equals 1 kwh / unit
+      set domestic to 1000 units during year 1
+      retire 5 % / year
+      recharge 5 % of priorEquipment with 0.85 kg / unit
+    end substance
+
+
+    uses substance "SubB"
+      enable domestic
+      initial charge with 1 kg / unit for domestic
+      initial charge with 0 kg / unit for import
+      initial charge with 0 kg / unit for export
+      equals 1 kgCO2e / kg
+      equals 1 kwh / unit
+      set sales to 0 units during year 1
+      retire 5 % / year
+      recharge 5 % of priorEquipment with 0.85 kg / unit
+    end substance
+
+  end application
+
+end default
+
+
+start policy "Permit Percent"
+
+  modify application "Test"
+
+    modify substance "SubA"
+      cap domestic to 90% displacing "SubB" during years 3 to 10
+    end substance
+
+  end application
+
+end policy
+
+
+start policy "Permit Prior Year"
+
+  modify application "Test"
+
+    modify substance "SubA"
+      cap domestic to 90% prior year displacing "SubB" during years 3 to 10
+    end substance
+
+  end application
+
+end policy
+
+
+start policy "Permit Current"
+
+  modify application "Test"
+
+    modify substance "SubA"
+      cap domestic to 90% current displacing "SubB" during years 3 to 10
+    end substance
+
+  end application
+
+end policy
+
+
+start simulations
+
+  simulate "BAU"
+  from years 1 to 10
+
+
+  simulate "With Permit Percent"
+    using "Permit Percent"
+  from years 1 to 10
+
+
+  simulate "With Permit Prior Year"
+    using "Permit Prior Year"
+  from years 1 to 10
+
+
+  simulate "With Permit Current"
+    using "Permit Current"
+  from years 1 to 10
+
+end simulations

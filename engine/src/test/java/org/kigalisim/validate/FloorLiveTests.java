@@ -8,6 +8,7 @@ package org.kigalisim.validate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.List;
@@ -212,5 +213,157 @@ public class FloorLiveTests {
     // New equipment should be 80 units (original 50 + 30 added)
     assertEquals(80.0, result.getPopulationNew().getValue().doubleValue(), 0.0001,
         "New equipment should be 80 units (50 original + 30 from floor increase)");
+  }
+
+  /**
+   * Test floor_newequipment_absolute.qta: an absolute-units floor on newEquipment raises
+   * newEquipment up to the target when it would otherwise fall short, and is a no-op when it's
+   * already above the floor.
+   */
+  @Test
+  public void testFloorNewEquipmentAbsolute() throws IOException {
+    String qtaPath = "../examples/floor_newequipment_absolute.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, "Result", progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    EngineResult belowFloor = LiveTestsUtil.getResult(resultsList.stream(), 1, "Test",
+        "BelowFloor");
+    assertNotNull(belowFloor, "Should have result for Test/BelowFloor in year 1");
+    assertEquals(500.0, belowFloor.getPopulationNew().getValue().doubleValue(), 0.0001,
+        "BelowFloor new equipment should be raised up to exactly 500 units (from 300)");
+
+    EngineResult aboveFloor = LiveTestsUtil.getResult(resultsList.stream(), 1, "Test",
+        "AboveFloor");
+    assertNotNull(aboveFloor, "Should have result for Test/AboveFloor in year 1");
+    assertEquals(1000.0, aboveFloor.getPopulationNew().getValue().doubleValue(), 0.0001,
+        "AboveFloor new equipment should remain unchanged at 1000 units (floor already "
+            + "satisfied)");
+  }
+
+  /**
+   * Test floor_newequipment_precharge_composition.qta produces expected, self-consistent values.
+   *
+   * <p>Combines a precharge configuration ("recharge X% of newEquipment with Y kg/unit") with a
+   * "floor newEquipment" on the same substance -- the mirror image of {@code CapLiveTests
+   * .testCapNewEquipmentPrechargeComposition}. Per this design's delta-based math (Background's
+   * "Key mechanical insight"), a floor's deficit-to-raise is computed purely as a units delta with
+   * no explicit recharge/precharge adjustment, so precharge should not be double-counted -- but
+   * this is confirmed empirically here (mirroring {@code SetLiveTests
+   * .testSetNewEquipmentPrechargeComposition}'s caution about self-referential precharge), not
+   * hand-derived. Year 1: domestic is set to 20 units directly (a low starting point,
+   * deliberately below where year 2's floor will land), with precharge riding on top (10% of
+   * newEquipment's own 20 units == 2 kg), giving domestic = 22 kg. Year 2: the floor to 50 units
+   * lands populationNew at exactly 50 (confirming the floor is not fighting the precharge
+   * machinery), with domestic = 55 kg (50 + 10% precharge of the now-50-unit newEquipment == 5
+   * kg) -- landing on the same 55 kg / 50-unit result as the cap version once flipped, a nice
+   * confirmation that this is a true mirror image.</p>
+   */
+  @Test
+  public void testFloorNewEquipmentPrechargeComposition() throws IOException {
+    String qtaPath = "../examples/floor_newequipment_precharge_composition.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    String scenarioName = "business as usual";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    EngineResult year2Result = LiveTestsUtil.getResult(resultsList.stream(), 2, "test", "test");
+    assertNotNull(year2Result, "Should have result for test/test in year 2");
+    assertEquals(50.0, year2Result.getPopulationNew().getValue().doubleValue(), 0.0001,
+        "Year 2 populationNew should be floored at exactly 50 units, not double-counting "
+            + "precharge");
+    assertEquals(55.0, year2Result.getDomestic().getValue().doubleValue(), 0.0001,
+        "Year 2 domestic should be 55 kg (50 target + 5 precharge, i.e. 10% of the 50-unit "
+            + "floor)");
+  }
+
+  /**
+   * Test floor_newequipment_self_displace.qta: "floor newEquipment to X displacing sales" (bare,
+   * unquoted) is a genuine self-referential contradiction (raise sales, then re-remove it from
+   * sales), since a "floor newEquipment" raise is applied as a sales change internally (see
+   * decision 4 / the "Displacement invocation" design note). This mirrors {@link
+   * CapLiveTests#testCapNewEquipmentSelfDisplaceThrows}, confirming {@code ExceptionsGenerator
+   * .raiseSelfDisplacement} fires for {@code newEquipment}'s displacement path exactly as it does
+   * on {@code handleCap}'s.
+   */
+  @Test
+  public void testFloorNewEquipmentSelfDisplaceThrows() throws IOException {
+    String qtaPath = "../examples/floor_newequipment_self_displace.qta";
+
+    try {
+      ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+      Stream<EngineResult> results = KigaliSimFacade.runScenario(program, "Result", progress -> {});
+      List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+      assertTrue(false,
+          "Expected an exception when flooring newEquipment displacing its own sales stream, "
+          + "but none was thrown (got " + resultsList.size() + " results)");
+    } catch (Exception e) {
+      assertTrue(true,
+          "Exception correctly thrown for newEquipment-displacing-sales self-displacement: "
+          + e.getMessage());
+    }
+  }
+
+  /**
+   * Test floor_newequipment_displace.qta: displacement/compounding coverage for
+   * "floor newEquipment ... displacing", the mirror image of {@code CapLiveTests
+   * .testCapNewEquipmentDisplace}.
+   *
+   * <p>Setup: SubA sells 500 units in year 1 and SubB sells 1000 units in year 1 (no further
+   * growth statement on either), so SubA's uncapped newEquipment stays flat at ~500 units/year
+   * (recharge/precharge ride on top of the 500-unit sales basis and cancel out of the marginal
+   * newEquipment computation). A policy floors SubA's {@code newEquipment} to "110% prior year"
+   * starting in year 3, displacing "SubB". Because the percent basis is resolved directly against
+   * newEquipment's own raw stream history (decision 2) rather than sales's lastSpecifiedValue,
+   * year 3's target lands at exactly 110% of year 2's raw ~500 -- a true 50-unit deficit -- giving
+   * SubA exactly 550 and (since both substances share a 1 kg/unit domestic initial charge) SubB
+   * exactly 950 (1000 - 50).</p>
+   *
+   * <p>Year 4+ compounding (empirically confirmed, not hand-derived, exactly matching the
+   * hand-derived prediction): the floor's raise is applied via {@code changeStream("sales",
+   * delta)}, which permanently rebases SubA's sales at the new, higher level (matching how a
+   * one-time "set ... during year 1" statement establishes a flat baseline). Since nothing else
+   * changes SubA's sales afterward, each subsequent year's "prior year" newEquipment lookup reads
+   * the previous year's already-floored raw value, not the original ~500 -- so the floor compounds
+   * geometrically at 110%/year from year 3 onward ({@code 500 * 1.1^(year - 2)}), and SubB's
+   * cumulative displaced-away total telescopes to exactly {@code 1500 - SubA_current} every year
+   * (the starting combined total of 500 + 1000).</p>
+   */
+  @Test
+  public void testFloorNewEquipmentDisplace() throws IOException {
+    String qtaPath = "../examples/floor_newequipment_displace.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(
+        program, "With Permit", progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    EngineResult year3SubA = LiveTestsUtil.getResult(resultsList.stream(), 3, "Test", "SubA");
+    assertNotNull(year3SubA, "Should have result for Test/SubA in year 3");
+    assertEquals(550.0, year3SubA.getPopulationNew().getValue().doubleValue(), 0.0001,
+        "SubA new equipment should be exactly 550 units in year 3 (110% of prior year's 500)");
+
+    EngineResult year3SubB = LiveTestsUtil.getResult(resultsList.stream(), 3, "Test", "SubB");
+    assertNotNull(year3SubB, "Should have result for Test/SubB in year 3");
+    assertEquals(950.0, year3SubB.getPopulationNew().getValue().doubleValue(), 0.0001,
+        "SubB new equipment should be exactly 950 units in year 3 (1000 - 50 displaced deficit)");
+
+    // Year 10 compounding check: 500 * 1.1^8 = 1071.794405 exactly (see class-level comment on
+    // the geometric compounding pattern), and SubB telescopes to exactly 1500 - SubA.
+    EngineResult year10SubA = LiveTestsUtil.getResult(resultsList.stream(), 10, "Test", "SubA");
+    assertNotNull(year10SubA, "Should have result for Test/SubA in year 10");
+    assertEquals(1071.794405, year10SubA.getPopulationNew().getValue().doubleValue(), 0.0001,
+        "SubA new equipment should be exactly 500 * 1.1^8 = 1071.794405 units by year 10");
+
+    EngineResult year10SubB = LiveTestsUtil.getResult(resultsList.stream(), 10, "Test", "SubB");
+    assertNotNull(year10SubB, "Should have result for Test/SubB in year 10");
+    assertEquals(428.205595, year10SubB.getPopulationNew().getValue().doubleValue(), 0.0001,
+        "SubB new equipment should be exactly 1500 - 1071.794405 = 428.205595 units by year 10");
   }
 }

@@ -47,6 +47,7 @@ import org.kigalisim.engine.support.EngineSupportUtils;
 import org.kigalisim.engine.support.EquipmentChangeUtil;
 import org.kigalisim.engine.support.ExceptionsGenerator;
 import org.kigalisim.engine.support.LimitExecutor;
+import org.kigalisim.engine.support.NewEquipmentToSalesInterpreter;
 import org.kigalisim.engine.support.ReplaceExecutor;
 import org.kigalisim.engine.support.SetExecutor;
 import org.kigalisim.engine.support.StreamUpdateExecutor;
@@ -78,6 +79,7 @@ public class SingleThreadEngine implements Engine {
   private final SimulationState simulationState;
   private final ChangeExecutor changeExecutor;
   private final EquipmentChangeUtil equipmentChangeUtil;
+  private final NewEquipmentToSalesInterpreter newEquipmentToSalesInterpreter;
   private final StreamUpdateExecutor streamUpdateExecutor;
   private final StreamUpdateShortcuts streamUpdateShortcuts;
   private final ReplaceExecutor replaceExecutor;
@@ -110,6 +112,7 @@ public class SingleThreadEngine implements Engine {
     simulationState.setCurrentYear(startYear);
     changeExecutor = new ChangeExecutor(this);
     equipmentChangeUtil = new EquipmentChangeUtil(this);
+    newEquipmentToSalesInterpreter = new NewEquipmentToSalesInterpreter(this);
     streamUpdateExecutor = new StreamUpdateExecutor(this);
     streamUpdateShortcuts = new StreamUpdateShortcuts(this);
     replaceExecutor = new ReplaceExecutor(this);
@@ -261,6 +264,7 @@ public class SingleThreadEngine implements Engine {
 
     switch (name) {
       case "equipment" -> equipmentChangeUtil.handleSet(value);
+      case "newEquipment" -> newEquipmentToSalesInterpreter.handleSet(value);
       case "sales" -> {
         simulationState.clearLastSpecifiedValue(scope, name);
         SetExecutor setExecutor = new SetExecutor(this);
@@ -422,6 +426,10 @@ public class SingleThreadEngine implements Engine {
   public void setInitialCharge(EngineNumber value, String stream, YearMatcher yearMatcher) {
     if (!getIsInRange(yearMatcher)) {
       return;
+    }
+
+    if ("newEquipment".equals(stream)) {
+      ExceptionsGenerator.raiseNewEquipmentInitialCharge();
     }
 
     switch (stream) {
@@ -706,6 +714,7 @@ public class SingleThreadEngine implements Engine {
       UseKey useKey) {
     switch (stream) {
       case "equipment" -> handleEquipmentChange(amount, yearMatcher);
+      case "newEquipment" -> handleNewEquipmentChange(amount, yearMatcher);
       default -> {
         UseKey useKeyEffective = useKey == null ? scope : useKey;
         changeExecutor.executeChange(stream, amount, yearMatcher, useKeyEffective);
@@ -730,6 +739,23 @@ public class SingleThreadEngine implements Engine {
     equipmentChangeUtil.handleChange(amount);
   }
 
+  /**
+   * Handle newEquipment change with year range checking.
+   *
+   * <p>This method checks if the current year is within the specified range
+   * before delegating to the newEquipment change utility. This ensures consistent year checking
+   * behavior across all newEquipment operations.</p>
+   *
+   * @param amount The amount to change newEquipment by
+   * @param yearMatcher The year matcher to check range against
+   */
+  private void handleNewEquipmentChange(EngineNumber amount, YearMatcher yearMatcher) {
+    if (!getIsInRange(yearMatcher)) {
+      return;
+    }
+    newEquipmentToSalesInterpreter.handleChange(amount);
+  }
+
   @Override
   public void cap(String stream, EngineNumber amount, YearMatcher yearMatcher,
       String displaceTarget,
@@ -741,6 +767,7 @@ public class SingleThreadEngine implements Engine {
     // Handle equipment stream with special logic
     switch (stream) {
       case "equipment" -> equipmentChangeUtil.handleCap(amount, displaceTarget);
+      case "newEquipment" -> newEquipmentToSalesInterpreter.handleCap(amount, displaceTarget, displacementType);
       default -> limitExecutor.executeCap(stream, amount, yearMatcher, displaceTarget, displacementType);
     }
   }
@@ -756,6 +783,7 @@ public class SingleThreadEngine implements Engine {
     // Handle equipment stream with special logic
     switch (stream) {
       case "equipment" -> equipmentChangeUtil.handleFloor(amount, displaceTarget);
+      case "newEquipment" -> newEquipmentToSalesInterpreter.handleFloor(amount, displaceTarget, displacementType);
       default -> limitExecutor.executeFloor(stream, amount, yearMatcher, displaceTarget, displacementType);
     }
   }

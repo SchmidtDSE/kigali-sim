@@ -865,4 +865,104 @@ public class ChangeLiveTests {
     assertEquals(0.0, year3Result.getDomestic().getValue().doubleValue(), 0.0001,
         "Year 3 domestic should remain at 0 kg");
   }
+
+  /**
+   * Test change_newequipment_add_units.qta produces expected values.
+   * Verifies that "change newEquipment by X units" adds X units of newEquipment via sales,
+   * which is confirmed both by populationNew and by the resulting domestic (sales) volume.
+   */
+  @Test
+  public void testChangeNewEquipmentAddUnits() throws IOException {
+    String qtaPath = "../examples/change_newequipment_add_units.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    String scenarioName = "business as usual";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // Year 1: 100 units set via domestic, no recharge yet (priorEquipment is 0), so newEquipment = 100
+    EngineResult year1Result = LiveTestsUtil.getResult(resultsList.stream(), 1, "test", "test");
+    assertNotNull(year1Result, "Should have result for test/test in year 1");
+    assertEquals(100.0, year1Result.getPopulationNew().getValue().doubleValue(), 0.0001,
+        "Year 1 populationNew should be 100 units");
+
+    // Year 2: baseline newEquipment carries over at 100 units (unchanged sales), plus the +100
+    // units change, landing at 200 units, reflected in domestic (sales) as 200 kg (1 kg/unit).
+    EngineResult year2Result = LiveTestsUtil.getResult(resultsList.stream(), 2, "test", "test");
+    assertNotNull(year2Result, "Should have result for test/test in year 2");
+    assertEquals(200.0, year2Result.getPopulationNew().getValue().doubleValue(), 0.0001,
+        "Year 2 populationNew should be 200 units (100 baseline + 100 change)");
+    assertEquals(200.0, year2Result.getDomestic().getValue().doubleValue(), 0.0001,
+        "Year 2 domestic should be 200 kg (200 units * 1 kg/unit)");
+  }
+
+  /**
+   * Test change_newequipment_add_kg.qta produces expected values.
+   * Confirms that a change expressed in kg maps to the same delta in newEquipment/sales as the
+   * equivalent units-based change (regardless-of-units mapping described in the design).
+   */
+  @Test
+  public void testChangeNewEquipmentAddKg() throws IOException {
+    String qtaPath = "../examples/change_newequipment_add_kg.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    String scenarioName = "business as usual";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    EngineResult year2Result = LiveTestsUtil.getResult(resultsList.stream(), 2, "test", "test");
+    assertNotNull(year2Result, "Should have result for test/test in year 2");
+    assertEquals(200.0, year2Result.getPopulationNew().getValue().doubleValue(), 0.0001,
+        "Year 2 populationNew should be 200 units (100 baseline + 100 kg = 100 units at 1 kg/unit)");
+    assertEquals(200.0, year2Result.getDomestic().getValue().doubleValue(), 0.0001,
+        "Year 2 domestic should be 200 kg");
+  }
+
+  /**
+   * Test change_newequipment_percent.qta produces expected values.
+   * Confirms the percent-of-current-value basis (decision 3, mirrored from
+   * EquipmentChangeUtil.handleChange) for "change newEquipment by X %".
+   */
+  @Test
+  public void testChangeNewEquipmentPercent() throws IOException {
+    String qtaPath = "../examples/change_newequipment_percent.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    String scenarioName = "business as usual";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    EngineResult year2Result = LiveTestsUtil.getResult(resultsList.stream(), 2, "test", "test");
+    assertNotNull(year2Result, "Should have result for test/test in year 2");
+    assertEquals(110.0, year2Result.getPopulationNew().getValue().doubleValue(), 0.0001,
+        "Year 2 populationNew should be 110 units (100 baseline + 10%)");
+    assertEquals(110.0, year2Result.getDomestic().getValue().doubleValue(), 0.0001,
+        "Year 2 domestic should be 110 kg");
+  }
+
+  /**
+   * Test change_newequipment_clamp_zero.qta produces expected values.
+   * Confirms the decision-1 zero clamp holds: a large negative change on newEquipment lands
+   * exactly at 0 (not negative) and does not throw.
+   */
+  @Test
+  public void testChangeNewEquipmentClampZero() throws IOException {
+    String qtaPath = "../examples/change_newequipment_clamp_zero.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    String scenarioName = "business as usual";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    EngineResult year2Result = LiveTestsUtil.getResult(resultsList.stream(), 2, "test", "test");
+    assertNotNull(year2Result, "Should have result for test/test in year 2");
+    assertEquals(0.0, year2Result.getPopulationNew().getValue().doubleValue(), 0.0001,
+        "Year 2 populationNew should be clamped to exactly 0, not negative");
+    assertEquals(0.0, year2Result.getDomestic().getValue().doubleValue(), 0.0001,
+        "Year 2 domestic should be clamped to exactly 0 kg");
+  }
 }

@@ -265,6 +265,65 @@ function buildUiTranslatorTests() {
       },
     ]);
 
+    buildTest("converts newEquipment writable operations", "/examples/ui/newequipment_writable.qta", [
+      (result, assert) => {
+        assert.ok(result.getIsCompatible(), "Program should remain UI-compatible");
+      },
+      (result, assert) => {
+        const applications = result.getApplications();
+        const application = applications[0];
+        const substances = application.getSubstances();
+        const substance = substances[0];
+
+        const setVals = substance.getSetVals();
+        const newEquipmentSet = setVals.find((x) => x.getTarget() === "newEquipment");
+        assert.ok(newEquipmentSet !== undefined, "Should have a set command targeting newEquipment");
+
+        const changes = substance.getChanges();
+        const newEquipmentChange = changes.find((x) => x.getTarget() === "newEquipment");
+        assert.ok(newEquipmentChange !== undefined, "Should have a change command targeting newEquipment");
+
+        const limits = substance.getLimits();
+        const newEquipmentCap = limits.find(
+          (x) => x.getTarget() === "newEquipment" && x.getTypeName() === "cap",
+        );
+        assert.ok(newEquipmentCap !== undefined, "Should have a cap command targeting newEquipment");
+
+        const newEquipmentFloor = limits.find(
+          (x) => x.getTarget() === "newEquipment" && x.getTypeName() === "floor",
+        );
+        assert.ok(newEquipmentFloor !== undefined, "Should have a floor command targeting newEquipment");
+      },
+      (result, assert) => {
+        const applications = result.getApplications();
+        const application = applications[0];
+        const substances = application.getSubstances();
+        const substance = substances[0];
+
+        const code = substance.toCode(0);
+        assert.notEqual(
+          code.indexOf("set newEquipment to 50 units during year 1"),
+          -1,
+          "Round-tripped code should reproduce the newEquipment set target",
+        );
+        assert.notEqual(
+          code.indexOf("change newEquipment by +10 % during years 2 to 3"),
+          -1,
+          "Round-tripped code should reproduce the newEquipment change target",
+        );
+        assert.notEqual(
+          code.indexOf("cap newEquipment to 200 units during years 4 to 5"),
+          -1,
+          "Round-tripped code should reproduce the newEquipment cap target",
+        );
+        assert.notEqual(
+          code.indexOf("floor newEquipment to 10 units during years 4 to 5"),
+          -1,
+          "Round-tripped code should reproduce the newEquipment floor target",
+        );
+      },
+    ]);
+
     buildTest("includes only business as usual", "/examples/ui/bau_single.qta", [
       (result, assert) => {
         assert.ok(result.getIsCompatible());

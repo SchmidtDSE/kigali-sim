@@ -496,6 +496,32 @@ function buildUiTranslatorReverseTests() {
       }
     });
 
+    QUnit.test("allows newEquipment in set/change/limit statements", function (assert) {
+      const commands = [
+        new Command("setVal", "newEquipment", new EngineNumber("50", "units"), null),
+        new Command("change", "newEquipment", new EngineNumber("+10", "%"), null),
+        new LimitCommand(
+          "cap", "newEquipment", new EngineNumber(200, "units"), null, null, "",
+        ),
+        new LimitCommand(
+          "floor", "newEquipment", new EngineNumber(10, "units"), null, null, "",
+        ),
+      ];
+      const substance = createWithCommands("test", false, commands);
+      assert.ok(
+        substance.getIsCompatible(),
+        "Substance using newEquipment should stay UI-compatible",
+      );
+
+      if (substance.getIsCompatible()) {
+        const code = substance.toCode(0);
+        assert.notEqual(code.indexOf("set newEquipment to 50 units"), -1);
+        assert.notEqual(code.indexOf("change newEquipment by +10 %"), -1);
+        assert.notEqual(code.indexOf("cap newEquipment to 200 units"), -1);
+        assert.notEqual(code.indexOf("floor newEquipment to 10 units"), -1);
+      }
+    });
+
     QUnit.test("allows multiple initial charge statements", function (assert) {
       const commands = [
         new Command("initial charge", "domestic", new EngineNumber(1, "kg / unit"), null),
