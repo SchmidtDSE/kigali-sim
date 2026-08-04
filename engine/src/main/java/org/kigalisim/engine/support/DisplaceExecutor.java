@@ -379,7 +379,7 @@ public class DisplaceExecutor {
             simulationState,
             scope,
             stream,
-            currentValue
+            valueBackingOutRecharge(scope, stream, currentValue)
         );
     simulationState.setLastSpecifiedValue(scope, stream, valueToRecord);
 
@@ -392,14 +392,14 @@ public class DisplaceExecutor {
               simulationState,
               scope,
               "domestic",
-              domesticValue
+              valueBackingOutRecharge(scope, "domestic", domesticValue)
           );
       EngineNumber importToRecord =
           convertToSameUnitsAsLastSpecified(
               simulationState,
               scope,
               "import",
-              importValue
+              valueBackingOutRecharge(scope, "import", importValue)
           );
       simulationState.setLastSpecifiedValue(scope, "domestic", domesticToRecord);
       simulationState.setLastSpecifiedValue(scope, "import", importToRecord);
@@ -410,7 +410,7 @@ public class DisplaceExecutor {
               simulationState,
               scope,
               "sales",
-              salesValue
+              valueBackingOutRecharge(scope, "sales", salesValue)
           );
       simulationState.setLastSpecifiedValue(scope, "sales", salesToRecord);
     }
@@ -418,6 +418,59 @@ public class DisplaceExecutor {
     if (crossSubstanceDisplace) {
       engine.setSubstance(originalSubstance);
     }
+  }
+
+  /**
+   * Backs recharge out of a sales-related stream's current value when tracking in units.
+   *
+   * <p>When sales-related streams (sales, virgin, domestic, import) are displacement-updated and
+   * tracked in equipment units, the recharge of priorEquipment rides on top of the stream's raw
+   * value (added back by the recharge / stream-update machinery). Recording that inflated value as
+   * lastSpecified would fold recharge in and compound it year over year, so it must be backed out
+   * before the value is converted to units and recorded.</p>
+   *
+   * <p>The recharge volume is computed explicitly (via {@link RechargeVolumeCalculator}) rather
+   * than from the implicitRecharge/implicitPrecharge streams, since displacement occurs during
+   * policy processing before those implicit streams are populated; only the stream's distributed
+   * share is backed out. The backout applies only when the value being overwritten was tracked in
+   * equipment units (where recharge rides on top); non-sales-related and volume-tracked streams
+   * are returned unchanged.</p>
+   *
+   * @param scope the scope (application/substance) of the displaced stream
+   * @param stream the stream identifier
+   * @param value the stream's current raw value
+   * @return the value with servicing kg backed out when applicable, otherwise the value unchanged
+   */
+  private EngineNumber valueBackingOutRecharge(Scope scope, String stream,
+      EngineNumber value) {
+    boolean isSalesRelated = EngineSupportUtils.isProductionMetastream(stream)
+        || EngineSupportUtils.isSalesSubstream(stream);
+    if (!isSalesRelated) {
+      return value;
+    }
+
+    SimulationState simulationState = engine.getStreamKeeper();
+    EngineNumber lastSpecified = simulationState.getLastSpecifiedValue(scope, stream);
+    boolean isUnitBased = lastSpecified != null && lastSpecified.hasEquipmentUnits();
+    if (!isUnitBased) {
+      return value;
+    }
+
+    EngineNumber rechargeVolume = RechargeVolumeCalculator.calculateRechargeVolume(
+        scope, engine.getStateGetter(), simulationState, engine);
+    BigDecimal distributedRecharge = EngineSupportUtils.getDistributedRecharge(
+        stream, rechargeVolume, scope, simulationState);
+    if (distributedRecharge.compareTo(BigDecimal.ZERO) == 0) {
+      return value;
+    }
+
+    UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(engine, stream);
+    EngineNumber valueKg = unitConverter.convert(value, "kg");
+    BigDecimal cleanKg = valueKg.getValue().subtract(distributedRecharge);
+    if (cleanKg.compareTo(BigDecimal.ZERO) < 0) {
+      cleanKg = BigDecimal.ZERO;
+    }
+    return new EngineNumber(cleanKg, "kg");
   }
 
   /**

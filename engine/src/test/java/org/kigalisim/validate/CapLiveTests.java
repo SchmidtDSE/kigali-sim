@@ -1002,4 +1002,32 @@ public class CapLiveTests {
         "SubB consumption should remain at the carried-over displaced level in year 6 "
             + "(year 6: " + subB6cons + ")");
   }
+
+  /**
+   * Test that a progressive cap-on-cap displacement supplies the displaced substance at the
+   * expected level even when SubB recharge is active.
+   *
+   * <p>With the cap reducing SubA by 100 units each year (displacing to SubB), SubB's new
+   * equipment in year 9 should be the displaced ~500 units. When SubB recharge is active, the
+   * displaced amount must not be over-counted by folding recharge into the carried lastSpecified
+   * value.</p>
+   */
+  @Test
+  public void testCapDisplaceRechargeNotOvercounted() throws IOException {
+    String qtaPath = "../examples/cap_displace_subb_overcount.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    String scenarioName = "With Permit";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    EngineResult subB9 = LiveTestsUtil.getResult(resultsList.stream(), 9, "Test", "SubB");
+    assertNotNull(subB9, "Should have result for Test/SubB in year 9");
+
+    double subB9popNew = subB9.getPopulationNew().getValue().doubleValue();
+    assertEquals(500.0, subB9popNew, 1.0,
+        "SubB new equipment in year 9 should be ~500 units (the displaced amount), not "
+            + "over-counted when recharge is active (was " + subB9popNew + ")");
+  }
 }
