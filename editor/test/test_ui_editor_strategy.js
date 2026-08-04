@@ -6,12 +6,16 @@
 import {
   validateInductionInput,
   readDurationUi,
+  initSetCommandUi,
+  readSetCommandUi,
   initChangeCommandUi,
   readChangeCommandUi,
+  initLimitCommandUi,
+  readLimitCommandUi,
 } from "ui_editor_strategy";
 import {EngineNumber} from "engine_number";
 import {ParsedYear} from "duration";
-import {Command} from "ui_translator_components";
+import {Command, LimitCommand} from "ui_translator_components";
 
 function buildUiEditorStrategyTests() {
   QUnit.module("ui_editor_strategy", function (hooks) {
@@ -301,6 +305,154 @@ function buildUiEditorStrategyTests() {
           "Re-reading the UI should preserve the negative sign",
         );
       });
+
+      QUnit.test("round trips a newEquipment target through init and read", function (assert) {
+        const root = buildChangeCommandRoot();
+        const command = new Command("change", "newEquipment", new EngineNumber(10, "%"), null);
+
+        initChangeCommandUi(command, root, null, "consumption", noopStreamUpdater);
+
+        assert.equal(
+          root.querySelector(".change-target-input").value,
+          "newEquipment",
+          "Target select should match the newEquipment option, not fall back to empty",
+        );
+
+        const reread = readChangeCommandUi(root);
+        assert.equal(
+          reread.getTarget(),
+          "newEquipment",
+          "Re-reading the UI should preserve the newEquipment target",
+        );
+      });
+    });
+
+    QUnit.module("initSetCommandUi", function () {
+      const noopStreamUpdater = {
+        getEnabledStreamsForCurrentContext: () => [],
+        updateStreamOptionStates: () => {},
+      };
+
+      function buildSetCommandRoot() {
+        const template = document.getElementById("set-command-fixture");
+        const root = document.createElement("div");
+        root.appendChild(template.content.cloneNode(true));
+        return root;
+      }
+
+      QUnit.test("round trips a newEquipment target through init and read", function (assert) {
+        const root = buildSetCommandRoot();
+        const command = new Command("setVal", "newEquipment", new EngineNumber(50, "units"), null);
+
+        initSetCommandUi(command, root, null, "consumption", noopStreamUpdater);
+
+        assert.equal(
+          root.querySelector(".set-target-input").value,
+          "newEquipment",
+          "Target select should match the newEquipment option, not fall back to empty",
+        );
+
+        const reread = readSetCommandUi(root);
+        assert.equal(
+          reread.getTarget(),
+          "newEquipment",
+          "Re-reading the UI should preserve the newEquipment target",
+        );
+      });
+    });
+
+    QUnit.module("initLimitCommandUi", function () {
+      const noopStreamUpdater = {
+        getEnabledStreamsForCurrentContext: () => [],
+        updateStreamOptionStates: () => {},
+      };
+      const noopCodeObj = {getSubstances: () => []};
+
+      function buildLimitCommandRoot() {
+        const template = document.getElementById("limit-command-fixture");
+        const root = document.createElement("div");
+        root.appendChild(template.content.cloneNode(true));
+        return root;
+      }
+
+      QUnit.test("round trips a newEquipment target through init and read", function (assert) {
+        const root = buildLimitCommandRoot();
+        const command = new LimitCommand(
+          "cap", "newEquipment", new EngineNumber(200, "units"), null, null, "",
+        );
+
+        initLimitCommandUi(command, root, noopCodeObj, "consumption", noopStreamUpdater);
+
+        assert.equal(
+          root.querySelector(".limit-target-input").value,
+          "newEquipment",
+          "Target select should match the newEquipment option, not fall back to empty",
+        );
+
+        const reread = readLimitCommandUi(root);
+        assert.equal(
+          reread.getTarget(),
+          "newEquipment",
+          "Re-reading the UI should preserve the newEquipment target",
+        );
+      });
+
+      QUnit.test(
+        "round trips a newEquipment displacing target through init and read",
+        function (assert) {
+          const root = buildLimitCommandRoot();
+          const command = new LimitCommand(
+            "cap", "sales", new EngineNumber(200, "units"), null, "newEquipment", "",
+          );
+
+          initLimitCommandUi(command, root, noopCodeObj, "consumption", noopStreamUpdater);
+
+          assert.equal(
+            root.querySelector(".displacing-target-input").value,
+            "newEquipment",
+            "Displacing target select should match the newEquipment option, not fall back to empty",
+          );
+
+          const reread = readLimitCommandUi(root);
+          assert.equal(
+            reread.getDisplacing(),
+            "newEquipment",
+            "Re-reading the UI should preserve the newEquipment displacing target",
+          );
+        },
+      );
+    });
+
+    QUnit.module("index.html target dropdown exclusions", function () {
+      QUnit.test(
+        "replace-command-template's replace-target-input has no newEquipment option",
+        function (assert) {
+          const done = assert.async();
+          fetch("/index.html")
+            .then((response) => response.text())
+            .then((content) => {
+              const templateMatch = content.match(
+                /<script type="text\/template" id="replace-command-template">([\s\S]*?)<\/script>/,
+              );
+              assert.ok(templateMatch !== null, "replace-command-template should exist");
+
+              const templateHtml = templateMatch[1];
+              const targetSelectMatch = templateHtml.match(
+                /<select class="replace-target-input"[\s\S]*?<\/select>/,
+              );
+              assert.ok(targetSelectMatch !== null, "replace-target-input select should exist");
+
+              assert.equal(
+                targetSelectMatch[0].indexOf("newEquipment"),
+                -1,
+                "replace-target-input should NOT offer newEquipment (replace is not " +
+                  "implemented for newEquipment; see Component 7)",
+              );
+
+              done();
+            });
+        },
+      );
     });
   });
 }

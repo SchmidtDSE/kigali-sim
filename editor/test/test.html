@@ -11,6 +11,9 @@
     <template id="change-command-fixture">
       <select class="change-target-input">
         <option value="sales">sales</option>
+        <option value="equipment">equipment</option>
+        <option value="priorEquipment">priorEquipment</option>
+        <option value="newEquipment">newEquipment</option>
       </select>
       <select class="change-sign-input">
         <option value="+">+</option>
@@ -19,6 +22,72 @@
       <input class="change-amount-input" />
       <select class="change-units-input">
         <option value="% / year">% / year</option>
+      </select>
+      <span class="duration-subcomponent">
+        <select class="duration-type-input">
+          <option value="during all years">during all years</option>
+        </select>
+        <input class="duration-start" />
+        <span class="duration-to">to</span>
+        <input class="duration-end" />
+      </span>
+    </template>
+
+    <template id="set-command-fixture">
+      <select class="set-target-input">
+        <option value="sales">sales</option>
+        <option value="equipment">equipment</option>
+        <option value="priorEquipment">priorEquipment</option>
+        <option value="newEquipment">newEquipment</option>
+      </select>
+      <input class="set-amount-input" />
+      <select class="set-units-input">
+        <option value="units">units</option>
+        <option value="mt">mt</option>
+      </select>
+      <span class="duration-subcomponent">
+        <select class="duration-type-input">
+          <option value="during all years">during all years</option>
+        </select>
+        <input class="duration-start" />
+        <span class="duration-to">to</span>
+        <input class="duration-end" />
+      </span>
+    </template>
+
+    <template id="limit-command-fixture">
+      <select class="limit-type-input">
+        <option value="cap">cap</option>
+        <option value="floor">floor</option>
+      </select>
+      <select class="limit-target-input">
+        <option value="sales">sales</option>
+        <option value="equipment">equipment</option>
+        <option value="priorEquipment">priorEquipment</option>
+        <option value="newEquipment">newEquipment</option>
+      </select>
+      <input class="limit-amount-input" />
+      <select class="limit-units-input">
+        <option value="units">units</option>
+        <option value="mt">mt</option>
+      </select>
+      <select class="displacing-type-input">
+        <option value="">displacing</option>
+        <option value="by volume">displacing by volume</option>
+        <option value="by units">displacing by units</option>
+      </select>
+      <select class="displacing-target-input">
+        <optgroup label="None">
+          <option value="">nothing</option>
+        </optgroup>
+        <optgroup label="Streams">
+          <option value="sales">sales</option>
+          <option value="equipment">equipment</option>
+          <option value="priorEquipment">priorEquipment</option>
+          <option value="newEquipment">newEquipment</option>
+        </optgroup>
+        <optgroup class="substances-select" label="Substances">
+        </optgroup>
       </select>
       <span class="duration-subcomponent">
         <select class="duration-type-input">
