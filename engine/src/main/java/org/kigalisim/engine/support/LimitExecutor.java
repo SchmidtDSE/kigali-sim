@@ -461,7 +461,13 @@ public class LimitExecutor {
   private boolean getUsesNewEquipmentBasis(String stream, String destinationUnits) {
     boolean isSalesRelated = EngineSupportUtils.isProductionMetastream(stream)
         || EngineSupportUtils.isSalesSubstream(stream);
-    return isSalesRelated && getIfServicingRequiresAccounting(stream, destinationUnits);
+    if (!isSalesRelated) {
+      return false;
+    } else if (!getIfServicingRequiresAccounting(stream, destinationUnits)) {
+      return false;
+    } else {
+      return true;
+    }
   }
 
   /**
@@ -629,7 +635,7 @@ public class LimitExecutor {
    * @param stream The stream identifier whose value should be recorded as lastSpecified
    */
   private void setCurrentValueAsLastSpecified(Scope scope, String stream) {
-    EngineSupportUtils.recordCleanLastSpecified(engine, scope, stream);
+    EngineSupportUtils.recordLastSpecifiedKeepingUnits(engine, scope, stream);
   }
 
 }

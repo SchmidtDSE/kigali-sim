@@ -370,7 +370,7 @@ public class DisplaceExecutor {
       engine.setSubstance(scope.getSubstance());
     }
 
-    EngineSupportUtils.recordCleanLastSpecified(engine, scope, stream);
+    EngineSupportUtils.recordLastSpecifiedKeepingUnits(engine, scope, stream);
 
     if (crossSubstanceDisplace) {
       engine.setSubstance(originalSubstance);

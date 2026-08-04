@@ -280,28 +280,34 @@ public final class EngineSupportUtils {
    * @param scope The scope (application/substance) of the stream
    * @param stream The stream identifier whose current value should be recorded as lastSpecified
    */
-  public static void recordCleanLastSpecified(Engine engine, Scope scope, String stream) {
+  public static void recordLastSpecifiedKeepingUnits(Engine engine, Scope scope, String stream) {
     SimulationState simulationState = engine.getStreamKeeper();
-    simulationState.setLastSpecifiedValue(
-        scope, stream, cleanValueForLastSpecified(engine, scope, stream, engine.getStream(stream)));
+    EngineNumber valueToRecord = adjustRechargeForLastSpecified(
+        engine, scope, stream, engine.getStream(stream));
+    simulationState.setLastSpecifiedValue(scope, stream, valueToRecord);
 
     if (isProductionMetastream(stream)) {
-      simulationState.setLastSpecifiedValue(scope, "domestic",
-          cleanValueForLastSpecified(engine, scope, "domestic", engine.getStream("domestic")));
-      simulationState.setLastSpecifiedValue(scope, "import",
-          cleanValueForLastSpecified(engine, scope, "import", engine.getStream("import")));
+      EngineNumber domesticToRecord = adjustRechargeForLastSpecified(
+          engine, scope, "domestic", engine.getStream("domestic"));
+      simulationState.setLastSpecifiedValue(scope, "domestic", domesticToRecord);
+
+      EngineNumber importToRecord = adjustRechargeForLastSpecified(
+          engine, scope, "import", engine.getStream("import"));
+      simulationState.setLastSpecifiedValue(scope, "import", importToRecord);
     } else if (isSalesSubstream(stream)) {
-      simulationState.setLastSpecifiedValue(scope, "sales",
-          cleanValueForLastSpecified(engine, scope, "sales", engine.getStream("sales")));
+      EngineNumber salesToRecord = adjustRechargeForLastSpecified(
+          engine, scope, "sales", engine.getStream("sales"));
+      simulationState.setLastSpecifiedValue(scope, "sales", salesToRecord);
     }
   }
 
   /**
-   * Cleans a single stream value for recording as lastSpecified.
+   * Adjusts a single stream value for recording as lastSpecified.
    *
-   * <p>See {@link #recordCleanLastSpecified} for the rationale. This backs recharge/precharge kg
-   * out of {@code rawValue} (only when sales-related and the existing lastSpecified is
-   * unit-tracked) and converts the result to the existing lastSpecified's units (if any exist).</p>
+   * <p>See {@link #recordLastSpecifiedKeepingUnits} for the rationale. This removes any implied
+   * recharge/precharge kg from {@code rawValue} (only when sales-related and the existing
+   * lastSpecified is unit-tracked) and converts the result to the existing lastSpecified's units
+   * (if any exist).</p>
    *
    * @param engine The engine to read stream/recharge state from
    * @param scope The scope (application/substance) of the stream
@@ -309,30 +315,32 @@ public final class EngineSupportUtils {
    * @param rawValue The stream's current raw value
    * @return The value to record as lastSpecified
    */
-  private static EngineNumber cleanValueForLastSpecified(Engine engine, Scope scope,
+  private static EngineNumber adjustRechargeForLastSpecified(Engine engine, Scope scope,
       String stream, EngineNumber rawValue) {
     SimulationState simulationState = engine.getStreamKeeper();
     EngineNumber priorLastSpecified = simulationState.getLastSpecifiedValue(scope, stream);
-    EngineNumber backedOut = backOutRecharge(engine, scope, stream, rawValue, priorLastSpecified);
+    EngineNumber withoutImpliedRecharge = removeImpliedRecharge(
+        engine, scope, stream, rawValue, priorLastSpecified);
 
     if (priorLastSpecified == null) {
-      return backedOut;
+      return withoutImpliedRecharge;
     }
     UnitConverter unitConverter = createUnitConverterWithTotal(engine, stream);
-    return unitConverter.convert(backedOut, priorLastSpecified.getUnits());
+    return unitConverter.convert(withoutImpliedRecharge, priorLastSpecified.getUnits());
   }
 
   /**
-   * Backs recharge/precharge kg out of a sales-related stream's value when it is unit-tracked.
+   * Removes recharge/precharge kg implied by a sales-related stream's value when it is
+   * unit-tracked.
    *
    * @param engine The engine to read recharge state from
    * @param scope The scope (application/substance) of the stream
    * @param stream The stream identifier
    * @param value The stream's current value
    * @param priorLastSpecified The existing lastSpecified value being overwritten, or null
-   * @return The value with servicing kg backed out, or the value unchanged if not applicable
+   * @return The value with implied servicing kg removed, or the value unchanged if not applicable
    */
-  private static EngineNumber backOutRecharge(Engine engine, Scope scope, String stream,
+  private static EngineNumber removeImpliedRecharge(Engine engine, Scope scope, String stream,
       EngineNumber value, EngineNumber priorLastSpecified) {
     boolean isSalesRelated = isProductionMetastream(stream) || isSalesSubstream(stream);
     boolean isUnitBased = priorLastSpecified != null && priorLastSpecified.hasEquipmentUnits();
@@ -342,19 +350,27 @@ public final class EngineSupportUtils {
 
     SimulationState simulationState = engine.getStreamKeeper();
     EngineNumber rechargeVolume = RechargeVolumeCalculator.calculateRechargeVolume(
-        scope, engine.getStateGetter(), simulationState, engine);
+        scope,
+        engine.getStateGetter(),
+        simulationState,
+        engine
+    );
     BigDecimal distributedRecharge = getDistributedRecharge(
-        stream, rechargeVolume, scope, simulationState);
+        stream,
+        rechargeVolume,
+        scope,
+        simulationState
+    );
     if (distributedRecharge.compareTo(BigDecimal.ZERO) == 0) {
       return value;
     }
 
     UnitConverter unitConverter = createUnitConverterWithTotal(engine, stream);
     EngineNumber valueKg = unitConverter.convert(value, "kg");
-    BigDecimal cleanKg = valueKg.getValue().subtract(distributedRecharge);
-    if (cleanKg.compareTo(BigDecimal.ZERO) < 0) {
-      cleanKg = BigDecimal.ZERO;
+    BigDecimal netKg = valueKg.getValue().subtract(distributedRecharge);
+    if (netKg.compareTo(BigDecimal.ZERO) < 0) {
+      netKg = BigDecimal.ZERO;
     }
-    return new EngineNumber(cleanKg, "kg");
+    return new EngineNumber(netKg, "kg");
   }
 }
