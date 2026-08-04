@@ -1,0 +1,16 @@
+start default
+  define application "test"
+    uses substance "test"
+      enable domestic
+      initial charge with 1 kg / unit for domestic
+      set domestic to 20 units during year 1
+      recharge 10 % of newEquipment with 1 kg / unit
+      floor newEquipment to 50 units during years 2 to onwards
+      equals 5 tCO2e / kg
+    end substance
+  end application
+end default
+
+start simulations
+  simulate "business as usual" from years 1 to 2
+end simulations

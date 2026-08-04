@@ -184,8 +184,69 @@ public class NewEquipmentChangeUtil {
   }
 
   /**
+   * Handle flooring newEquipment to a minimum value (absolute or percent-of-own-history).
+   *
+   * <p>Caller is responsible for checking year range before calling this method
+   * (SingleThreadEngine.floor already checks getIsInRange before dispatching, same as it does for
+   * the "equipment" case).</p>
+   *
+   * <p>Per decision 2, all four percent forms ({@code "%"}, {@code "% prior year"},
+   * {@code "% current year"}, {@code "% current"}) resolve against newEquipment's own raw
+   * stream history (prior-year or current-year), never against sales's lastSpecifiedValue or
+   * UnitConverter's percent machinery -- see {@link #resolveLimitTargetUnits}, shared unchanged
+   * with {@link #handleCap}. Absolute values are converted to a units delta and applied via
+   * {@code changeStream("sales", ...)}; no explicit recharge/precharge adjustment is needed since
+   * a marginal newEquipment delta always equals the same marginal sales delta (recharge/precharge
+   * are computed from priorEquipment, fixed for the year, and cancel out of any delta-based
+   * comparison).</p>
+   *
+   * <p>Displacement reuses {@link DisplaceExecutor} with {@code "sales"} as the displaced-stream
+   * identifier (not {@code "newEquipment"}), exactly as {@link #handleCap} does, and for the same
+   * reason: the raise was just applied as a sales change, and passing the derived stream name
+   * would be silently clobbered by the destination substance's next population recalc. Because
+   * {@code DisplaceExecutor.execute} negates {@code changeAmount} before applying it to the
+   * displacement target, a positive (raising) deltaUnits here correctly *reduces* the displacement
+   * target -- e.g. "floor newEquipment to X displacing SubB" raises this substance and reduces
+   * SubB by the same amount, the mirror image of cap's displacement direction.</p>
+   *
+   * @param floorValue The minimum newEquipment level: absolute in units/kg/mt/tCO2e, or one of the
+   *     four percent forms ("%", "% prior year", "% current year", "% current")
+   * @param displaceTarget Optional substance/stream to displace the deficit from (null for no
+   *     displacement)
+   * @param displacementType The displacement mode (EQUIVALENT, BY_VOLUME, or BY_UNITS)
+   */
+  public void handleFloor(EngineNumber floorValue, String displaceTarget,
+      DisplacementType displacementType) {
+    EngineNumber currentNewEquipment = engine.getStream("newEquipment");
+    UnitConverter unitConverter = createNewEquipmentUnitConverter();
+
+    EngineNumber floorUnits = resolveLimitTargetUnits(floorValue, currentNewEquipment,
+        unitConverter);
+
+    BigDecimal deficitUnits = floorUnits.getValue().subtract(currentNewEquipment.getValue());
+    if (deficitUnits.compareTo(BigDecimal.ZERO) <= 0) {
+      return; // Floor already satisfied - no action, matching every other floor's no-op behavior.
+    }
+
+    BigDecimal deltaUnits = clampDeltaAtZero(currentNewEquipment.getValue(), deficitUnits);
+    if (deltaUnits.compareTo(BigDecimal.ZERO) == 0) {
+      return;
+    }
+
+    EngineNumber deltaUnitsNumber = new EngineNumber(deltaUnits, "units");
+    engine.changeStream("sales", deltaUnitsNumber, null);
+
+    if (displaceTarget != null) {
+      BigDecimal changeInKg = unitConverter.convert(deltaUnitsNumber, "kg").getValue();
+      DisplaceExecutor displaceExecutor = new DisplaceExecutor(engine);
+      displaceExecutor.execute("sales", deltaUnitsNumber, changeInKg, displaceTarget,
+          displacementType);
+    }
+  }
+
+  /**
    * Resolve a cap/floor amount (percent or absolute) into an absolute newEquipment target in
-   * "units", per decision 2. Shared with Component 4's handleFloor (identical resolution logic,
+   * "units", per decision 2. Shared with {@link #handleFloor} (identical resolution logic,
    * only the excess/deficit direction differs).
    *
    * @param limitValue The cap/floor amount (percent or absolute in units/kg/mt/tCO2e)

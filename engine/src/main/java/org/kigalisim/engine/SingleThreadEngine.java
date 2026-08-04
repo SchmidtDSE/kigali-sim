@@ -779,6 +779,7 @@ public class SingleThreadEngine implements Engine {
     // Handle equipment stream with special logic
     switch (stream) {
       case "equipment" -> equipmentChangeUtil.handleFloor(amount, displaceTarget);
+      case "newEquipment" -> newEquipmentChangeUtil.handleFloor(amount, displaceTarget, displacementType);
       default -> limitExecutor.executeFloor(stream, amount, yearMatcher, displaceTarget, displacementType);
     }
   }

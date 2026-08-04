@@ -373,4 +373,182 @@ class NewEquipmentChangeUtilTest {
     assertEquals(0, BigDecimal.ZERO.compareTo(salesResult.getValue()),
         "Expected sales to be 0 (clamped target) but got " + salesResult.getValue());
   }
+
+  @Test
+  void testHandleFloorAbsoluteUnitsBelowCurrentIsNoOp() {
+    // Arrange
+    setStreamValue("domestic", new BigDecimal("100"), "kg");
+    setStreamValue("newEquipment", new BigDecimal("100"), "units");
+
+    // Act - floor below the current 100-unit value is already satisfied, so it should no-op.
+    newEquipmentChangeUtil.handleFloor(new EngineNumber(new BigDecimal("60"), "units"), null,
+        null);
+
+    // Assert - sales is untouched.
+    EngineNumber salesResult = engine.getStream("sales");
+    assertEquals(0, new BigDecimal("100").compareTo(salesResult.getValue()),
+        "Expected sales to remain 100 (floor already satisfied) but got "
+            + salesResult.getValue());
+  }
+
+  @Test
+  void testHandleFloorAbsoluteUnitsAboveCurrentRaisesSales() {
+    // Arrange
+    setStreamValue("domestic", new BigDecimal("100"), "kg");
+    setStreamValue("newEquipment", new BigDecimal("100"), "units");
+
+    // Act - floor above the current 100-unit value should apply the deficit as a sales raise.
+    newEquipmentChangeUtil.handleFloor(new EngineNumber(new BigDecimal("150"), "units"), null,
+        null);
+
+    // Assert - deficit is 50 units, so sales rises from 100 to 150.
+    EngineNumber salesResult = engine.getStream("sales");
+    assertEquals(0, new BigDecimal("150").compareTo(salesResult.getValue()),
+        "Expected sales to be 150 (100 + 50 deficit) but got " + salesResult.getValue());
+  }
+
+  @Test
+  void testHandleFloorAbsoluteUnitsEqualToCurrentIsNoOp() {
+    // Arrange
+    setStreamValue("domestic", new BigDecimal("100"), "kg");
+    setStreamValue("newEquipment", new BigDecimal("100"), "units");
+
+    // Act - floor exactly equal to the current value should also no-op (not raise deficit to 0).
+    newEquipmentChangeUtil.handleFloor(new EngineNumber(new BigDecimal("100"), "units"), null,
+        null);
+
+    // Assert
+    EngineNumber salesResult = engine.getStream("sales");
+    assertEquals(0, new BigDecimal("100").compareTo(salesResult.getValue()),
+        "Expected sales to remain 100 (floor already satisfied) but got "
+            + salesResult.getValue());
+  }
+
+  @Test
+  void testHandleFloorAbsoluteKgAboveCurrentRaisesSales() {
+    // Arrange - 1 kg/unit initial charge (fixture default), so a 150 kg floor is a 150-unit
+    // target.
+    setStreamValue("domestic", new BigDecimal("100"), "kg");
+    setStreamValue("newEquipment", new BigDecimal("100"), "units");
+
+    // Act
+    newEquipmentChangeUtil.handleFloor(new EngineNumber(new BigDecimal("150"), "kg"), null, null);
+
+    // Assert - deficit is 50 units (150 - 100), so sales rises from 100 to 150.
+    EngineNumber salesResult = engine.getStream("sales");
+    assertEquals(0, new BigDecimal("150").compareTo(salesResult.getValue()),
+        "Expected sales to be 150 (100 + 50 deficit) but got " + salesResult.getValue());
+  }
+
+  @Test
+  void testHandleFloorBarePercentUsesPriorYearBasis() {
+    // Arrange - year 1: newEquipment is 1000 units.
+    setStreamValue("domestic", new BigDecimal("1000"), "kg");
+    setStreamValue("newEquipment", new BigDecimal("1000"), "units");
+
+    engine.incrementYear();
+
+    // Year 2: current newEquipment is set to a lower value (800) than year 1's raw snapshot
+    // (1000), so a prior-year-basis floor and a current-year-basis floor produce distinguishable
+    // results, and the floor actually triggers (year 2 starts below the target).
+    setStreamValue("domestic", new BigDecimal("800"), "kg");
+    setStreamValue("newEquipment", new BigDecimal("800"), "units");
+
+    // Act - bare "%" floor should resolve against year 1's raw 1000, not year 2's current 800.
+    newEquipmentChangeUtil.handleFloor(new EngineNumber(new BigDecimal("110"), "%"), null, null);
+
+    // Assert - target is 1100 (110% of prior year's 1000); current is 800, so deficit is 300 and
+    // sales rises from 800 to 1100.
+    EngineNumber salesResult = engine.getStream("sales");
+    assertEquals(0, new BigDecimal("1100").compareTo(salesResult.getValue()),
+        "Expected sales to be 1100 (110% of prior year's 1000) but got "
+            + salesResult.getValue());
+  }
+
+  @Test
+  void testHandleFloorPercentPriorYearMatchesBarePercent() {
+    // Arrange - identical setup to testHandleFloorBarePercentUsesPriorYearBasis.
+    setStreamValue("domestic", new BigDecimal("1000"), "kg");
+    setStreamValue("newEquipment", new BigDecimal("1000"), "units");
+
+    engine.incrementYear();
+
+    setStreamValue("domestic", new BigDecimal("800"), "kg");
+    setStreamValue("newEquipment", new BigDecimal("800"), "units");
+
+    // Act - explicit "% prior year" should be identical to bare "%" for floor.
+    newEquipmentChangeUtil.handleFloor(new EngineNumber(new BigDecimal("110"), "%prioryear"),
+        null, null);
+
+    // Assert - same result as the bare-percent test: 1100.
+    EngineNumber salesResult = engine.getStream("sales");
+    assertEquals(0, new BigDecimal("1100").compareTo(salesResult.getValue()),
+        "Expected sales to be 1100 (identical to bare %) but got " + salesResult.getValue());
+  }
+
+  @Test
+  void testHandleFloorPercentCurrentYearDiffersFromBarePercent() {
+    // Arrange - identical setup to the prior-year tests above.
+    setStreamValue("domestic", new BigDecimal("1000"), "kg");
+    setStreamValue("newEquipment", new BigDecimal("1000"), "units");
+
+    engine.incrementYear();
+
+    setStreamValue("domestic", new BigDecimal("800"), "kg");
+    setStreamValue("newEquipment", new BigDecimal("800"), "units");
+
+    // Act - "% current year" should resolve against year 2's current 800, not year 1's 1000.
+    newEquipmentChangeUtil.handleFloor(new EngineNumber(new BigDecimal("110"), "%currentyear"),
+        null, null);
+
+    // Assert - target is 880 (110% of current year's 800); current is 800, so deficit is 80
+    // and sales rises from 800 to 880 -- measurably different from the prior-year basis's 1100.
+    EngineNumber salesResult = engine.getStream("sales");
+    assertEquals(0, new BigDecimal("880").compareTo(salesResult.getValue()),
+        "Expected sales to be 880 (110% of current year's 800) but got "
+            + salesResult.getValue());
+  }
+
+  @Test
+  void testHandleFloorPercentCurrentMatchesPercentCurrentYear() {
+    // Arrange - identical setup to testHandleFloorPercentCurrentYearDiffersFromBarePercent.
+    setStreamValue("domestic", new BigDecimal("1000"), "kg");
+    setStreamValue("newEquipment", new BigDecimal("1000"), "units");
+
+    engine.incrementYear();
+
+    setStreamValue("domestic", new BigDecimal("800"), "kg");
+    setStreamValue("newEquipment", new BigDecimal("800"), "units");
+
+    // Act - "% current" should be identical to "% current year" for floor.
+    newEquipmentChangeUtil.handleFloor(new EngineNumber(new BigDecimal("110"), "%current"), null,
+        null);
+
+    // Assert - same result as the current-year test: 880.
+    EngineNumber salesResult = engine.getStream("sales");
+    assertEquals(0, new BigDecimal("880").compareTo(salesResult.getValue()),
+        "Expected sales to be 880 (identical to % current year) but got "
+            + salesResult.getValue());
+  }
+
+  @Test
+  void testHandleFloorNegativeAbsoluteTargetIsNoOp() {
+    // Arrange
+    setStreamValue("domestic", new BigDecimal("100"), "kg");
+    setStreamValue("newEquipment", new BigDecimal("100"), "units");
+
+    // Act - a negative absolute floor target clamps to a zero target (decision 1). Since current
+    // newEquipment (100) is virtually always >= 0, a zero-clamped floor target can essentially
+    // never trigger a raise -- this test confirms the no-op path, not a clamped raise (unlike
+    // cap's negative-target test, which does trigger a clamped reduction to zero). The deficit
+    // here is 0 - 100 = -100, correctly <= 0.
+    newEquipmentChangeUtil.handleFloor(new EngineNumber(new BigDecimal("-50"), "units"), null,
+        null);
+
+    // Assert - sales is untouched.
+    EngineNumber salesResult = engine.getStream("sales");
+    assertEquals(0, new BigDecimal("100").compareTo(salesResult.getValue()),
+        "Expected sales to remain 100 (floor target clamped to 0, already satisfied) but got "
+            + salesResult.getValue());
+  }
 }
