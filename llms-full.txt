@@ -1,5 +1,5 @@
 # Kigali Sim - Montreal Protocol Policy Simulation Tool
-v=20260731
+v=20260804
 
 Kigali Sim is an open source web-based simulation engine for modeling substances, applications, and policies related to the Montreal Protocol and Kigali Amendment. See [llms.txt](llms.txt) (http://kigalisim.org/llms.txt) for an index of additional documentation and tutorials. It can model high global warming potential greenhouse gases such as HFCs and supports business-as-usual scenarios as well as policy interventions.
 
@@ -100,6 +100,30 @@ The `assume` command is particularly useful for bank (equipment) tracking scenar
 
 **Recharge**: When using units (of equipment) in cap, floor, and set commands, those limits apply after recharge calculations. So a cap of 100 units means 100 units on top of recharge for prior equipment.
 
+**New Equipment**: `newEquipment` (equipment added in the current year) is
+writable via `set`, `change`, `cap`, and `floor`, in addition to `get`. It
+is a derived stream — recomputed each year from sales, recharge, and
+precharge — so writes are converted into an equivalent `sales` operation
+under the hood rather than stored directly:
+- `change` applies the same marginal delta to `sales` in any unit;
+  recharge/precharge are fixed for the year and independent of the
+  current year's sales amount, so no adjustment is needed.
+- `set` to a mass unit (`kg`/`mt`/`tCO2e`) adds this year's recharge and
+  precharge volume on top of the target before setting `sales`; `set` to
+  `unit`/`units` relies on the same implicit-recharge machinery described
+  above. A bare `%` target resolves against this year's already-computed
+  `newEquipment` value.
+- `cap`/`floor` percentage forms (bare `%`, `% prior year`, `% current
+  year`) resolve against `newEquipment`'s own raw prior-/current-year
+  stream value — not `sales`'s — and support `displacing`/`by volume`/
+  `by units` the same as any other stream.
+- Any resulting negative value is silently clamped to 0 (no error).
+
+```qubectalk
+set newEquipment to 900 units during year 3
+cap newEquipment to 90 % prior year displacing "SubB" during years 3 to onwards
+```
+
 **Units Tracking**: Percentage-based cap/floor operations preserve the last specified tracking mode (units vs kg) when triggered, enabling continued recharge calculations. Change and displacement operations always preserve current tracking mode.
 
 **Conventions**: A cap of 0 (units or volume) typically implies the user wants it applied from the start year onwards. Confirm the intended time range if a different duration was specified.
@@ -140,7 +164,7 @@ Keywords `at` and `eol` are available for recycling commands. Use `at recharge` 
 No duration means runs each year. Use `during year beginning` for first year only.
 
 ### Streams
-Streams may be `domestic|import|export|sales|virgin|equipment|priorEquipment|bank|age`
+Streams may be `domestic|import|export|sales|virgin|equipment|priorEquipment|newEquipment|bank|age`
 
 - `domestic`: domestically produced and consumed
 - `import`: imported either in vessel or initial charge
@@ -148,6 +172,9 @@ Streams may be `domestic|import|export|sales|virgin|equipment|priorEquipment|ban
 - `virgin`: domestic and import only (excludes recycling and exports)
 - `priorEquipment`: equipment active coming into current year
 - `equipment`: equipment active, either from prior or new
+- `newEquipment`: equipment added in the current year; derived from sales,
+  recharge, and precharge each year, but writable via `set`/`change`/`cap`/
+  `floor` — see the New Equipment note under Policy Interventions
 - `age`: weighted average equipment age (read-only)
 
 ```qubectalk
