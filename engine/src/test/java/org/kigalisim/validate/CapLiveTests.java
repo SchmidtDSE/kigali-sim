@@ -129,11 +129,12 @@ public class CapLiveTests {
    * Test that a units-denominated "cap sales ... displacing" with recharge advances the
    * displacement into the target substance rather than decaying and going negative.
    *
-   * <p>Setup: SubA sells 1000 units in year 1 (with {@code recharge 5% of priorEquipment});
-   * SubB has zero sales. A policy caps SubA's {@code sales} to 900, 800, 700, 600, 500 units across
-   * years 3-7, displacing "SubB". Each year the cap reduces SubA new equipment by 100 units, so
-   * SubB should pick up roughly 100 units/year of new equipment on top of displace existing
-   * Sub B stock.</p>
+   * <p>Setup: SubA sells 1000 units in year 1 (with {@code recharge 5% of priorEquipment}) and
+   * has no further growth command, so its uncapped baseline stays flat at 1000 units/year. SubB
+   * has zero sales. A policy caps SubA's {@code sales} to 900, 800, 700, 600, 500 units across
+   * years 3-7, displacing "SubB". Since SubA's baseline never moves, each year's cap displaces
+   * {@code 1000 - capValue} new-equipment units to SubB -- a ramp of 100, 200, 300, 400 units in
+   * years 3-6, not a constant 100 units/year.</p>
    *
    * <p>Regression test: with recharge riding on top of the sales stream, the displacement change
    * was previously computed from the raw kg difference, which is sign-inverted once servicing kg
@@ -159,8 +160,10 @@ public class CapLiveTests {
     // decaying negative as it did before the fix.
     EngineResult year6SubB = LiveTestsUtil.getResult(resultsList.stream(), 6, "Test", "SubB");
     assertNotNull(year6SubB, "Should have result for Test/SubB in year 6");
-    // New equipment displaced into SubB is tracked cleanly (recharge excluded), so this is
-    // exactly the cumulative 100 units/year x 4 years (years 3-6) displaced from SubA.
+    // New equipment displaced into SubB is tracked cleanly (recharge excluded). SubA's cap
+    // reduces it from a flat 1000-unit baseline (900, 800, 700, 600 in years 3-6), so the
+    // displaced amount ramps 100, 200, 300, 400 -- landing on 400 by year 6 (not a running sum
+    // of a constant 100 units/year).
     assertEquals(400.0, year6SubB.getPopulationNew().getValue().doubleValue(), 0.0001,
         "SubB new equipment should be exactly 400 units by year 6 (the cumulative displaced "
             + "amount)");
