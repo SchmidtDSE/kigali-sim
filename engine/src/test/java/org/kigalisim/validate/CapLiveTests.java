@@ -124,6 +124,52 @@ public class CapLiveTests {
   }
 
   /**
+   * Test that a units-denominated "cap sales ... displacing" with recharge advances the
+   * displacement into the target substance rather than decaying and going negative.
+   *
+   * <p>Setup: SubA sells 1000 units in year 1 (with {@code recharge 5% of priorEquipment});
+   * SubB has zero sales. A policy caps SubA's {@code sales} to 900, 800, 700, 600, 500 units across
+   * years 3-7, displacing "SubB". Each year the cap reduces SubA new equipment by 100 units, so
+   * SubB should pick up roughly 100 units/year of new equipment on top of displace existing
+   * Sub B stock.</p>
+   *
+   * <p>Regression test: with recharge riding on top of the sales stream, the displacement change
+   * was previously computed from the raw kg difference, which is sign-inverted once servicing kg
+   * is present in the capped value. That made SubB's new equipment shrink and go negative instead
+   * of accumulating the displaced units.</p>
+   */
+  @Test
+  public void testCapSalesDisplaceWithRechargeAdvancesSubB() throws IOException {
+    String qtaPath = "../examples/cap_sales_displace_with_recharge.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(
+        program, "With Permit", progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    EngineResult year3SubB = LiveTestsUtil.getResult(resultsList.stream(), 3, "Test", "SubB");
+    assertNotNull(year3SubB, "Should have result for Test/SubB in year 3");
+    assertEquals(100.0, year3SubB.getPopulationNew().getValue().doubleValue(), 0.0001,
+        "SubB new equipment should be 100 units in year 3 (full 100-unit displacement)");
+
+    // Year after caps continue: SubB must keep accumulating new equipment (positive), never
+    // decaying negative as it did before the fix.
+    EngineResult year6SubB = LiveTestsUtil.getResult(resultsList.stream(), 6, "Test", "SubB");
+    assertNotNull(year6SubB, "Should have result for Test/SubB in year 6");
+    assertTrue(year6SubB.getPopulationNew().getValue().doubleValue() > 300.0,
+        "SubB new equipment should have accumulated past 300 units by year 6, but was "
+            + year6SubB.getPopulationNew().getValue());
+    assertEquals(400.0, year6SubB.getDomestic().getValue().doubleValue(), 0.0001,
+        "SubB domestic sales should reflect the cumulative 400-unit displacement by year 6");
+
+    EngineResult year7SubB = LiveTestsUtil.getResult(resultsList.stream(), 7, "Test", "SubB");
+    assertNotNull(year7SubB, "Should have result for Test/SubB in year 7");
+    assertTrue(year7SubB.getPopulationNew().getValue().doubleValue() > year6SubB.getPopulationNew().getValue().doubleValue(),
+        "SubB new equipment should keep increasing while SubA sales keep being capped");
+  }
+
+  /**
    * Test cap_displace_unit_conversion.qta produces expected values.
    * This tests unit-to-unit displacement conversion.
    */
@@ -1029,5 +1075,107 @@ public class CapLiveTests {
     assertEquals(500.0, subB9popNew, 1.0,
         "SubB new equipment in year 9 should be ~500 units (the displaced amount), not "
             + "over-counted when recharge is active (was " + subB9popNew + ")");
+  }
+
+  /**
+   * Test that in year 10, a permit capping SubA domestic to 90 % (with displacement to SubB)
+   * results in lower SubA consumption than BAU.
+   *
+   * @throws IOException If the QTA file cannot be read.
+   */
+  @Test
+  public void testCapPercentDisplaceSubstanceLowerThanBauPercent() throws IOException {
+    String qtaPath = "../examples/cap_percent_displace_substance.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, "BAU", progress -> {});
+    List<EngineResult> bauResultsList = bauResults.collect(Collectors.toList());
+
+    Stream<EngineResult> permitResults =
+        KigaliSimFacade.runScenario(program, "With Permit Percent", progress -> {});
+    List<EngineResult> permitResultsList = permitResults.collect(Collectors.toList());
+
+    EngineResult bauSubA = LiveTestsUtil.getResult(bauResultsList.stream(), 10, "Test", "SubA");
+    EngineResult permitSubA =
+        LiveTestsUtil.getResult(permitResultsList.stream(), 10, "Test", "SubA");
+
+    assertNotNull(bauSubA, "Should have BAU result for Test/SubA in year 10");
+    assertNotNull(permitSubA, "Should have permit result for Test/SubA in year 10");
+
+    double bauConsumption = bauSubA.getConsumption().getValue().doubleValue();
+    double permitConsumption = permitSubA.getConsumption().getValue().doubleValue();
+
+    assertTrue(permitConsumption < bauConsumption,
+        "Cap with % should give lower SubA consumption than BAU in year 10 (was "
+        + permitConsumption + " vs BAU " + bauConsumption + ")");
+  }
+
+  /**
+   * Test that in year 10, a permit capping SubA domestic to 90 % prior year (with displacement to
+   * SubB) results in lower SubA consumption than BAU.
+   *
+   * @throws IOException If the QTA file cannot be read.
+   */
+  @Test
+  public void testCapPercentDisplaceSubstanceLowerThanBauPriorYear() throws IOException {
+    String qtaPath = "../examples/cap_percent_displace_substance.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, "BAU", progress -> {});
+    List<EngineResult> bauResultsList = bauResults.collect(Collectors.toList());
+
+    Stream<EngineResult> permitResults =
+        KigaliSimFacade.runScenario(program, "With Permit Prior Year", progress -> {});
+    List<EngineResult> permitResultsList = permitResults.collect(Collectors.toList());
+
+    EngineResult bauSubA = LiveTestsUtil.getResult(bauResultsList.stream(), 10, "Test", "SubA");
+    EngineResult permitSubA =
+        LiveTestsUtil.getResult(permitResultsList.stream(), 10, "Test", "SubA");
+
+    assertNotNull(bauSubA, "Should have BAU result for Test/SubA in year 10");
+    assertNotNull(permitSubA, "Should have permit result for Test/SubA in year 10");
+
+    double bauConsumption = bauSubA.getConsumption().getValue().doubleValue();
+    double permitConsumption = permitSubA.getConsumption().getValue().doubleValue();
+
+    assertTrue(permitConsumption < bauConsumption,
+        "Cap with % prior year should give lower SubA consumption than BAU in year 10 (was "
+        + permitConsumption + " vs BAU " + bauConsumption + ")");
+  }
+
+  /**
+   * Test that in year 10, a permit capping SubA domestic to 90 % current (with displacement to
+   * SubB) results in lower SubA consumption than BAU.
+   *
+   * @throws IOException If the QTA file cannot be read.
+   */
+  @Test
+  public void testCapPercentDisplaceSubstanceLowerThanBauCurrent() throws IOException {
+    String qtaPath = "../examples/cap_percent_displace_substance.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, "BAU", progress -> {});
+    List<EngineResult> bauResultsList = bauResults.collect(Collectors.toList());
+
+    Stream<EngineResult> permitResults =
+        KigaliSimFacade.runScenario(program, "With Permit Current", progress -> {});
+    List<EngineResult> permitResultsList = permitResults.collect(Collectors.toList());
+
+    EngineResult bauSubA = LiveTestsUtil.getResult(bauResultsList.stream(), 10, "Test", "SubA");
+    EngineResult permitSubA =
+        LiveTestsUtil.getResult(permitResultsList.stream(), 10, "Test", "SubA");
+
+    assertNotNull(bauSubA, "Should have BAU result for Test/SubA in year 10");
+    assertNotNull(permitSubA, "Should have permit result for Test/SubA in year 10");
+
+    double bauConsumption = bauSubA.getConsumption().getValue().doubleValue();
+    double permitConsumption = permitSubA.getConsumption().getValue().doubleValue();
+
+    assertTrue(permitConsumption < bauConsumption,
+        "Cap with % current should give lower SubA consumption than BAU in year 10 (was "
+        + permitConsumption + " vs BAU " + bauConsumption + ")");
   }
 }
