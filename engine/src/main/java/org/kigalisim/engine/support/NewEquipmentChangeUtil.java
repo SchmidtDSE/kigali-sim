@@ -13,9 +13,12 @@ package org.kigalisim.engine.support;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
+import java.util.Optional;
 import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
+import org.kigalisim.engine.state.SimulationState;
+import org.kigalisim.engine.state.UseKey;
 
 /**
  * Handles newEquipment stream operations by converting them into sales operations.
@@ -61,6 +64,100 @@ public class NewEquipmentChangeUtil {
     }
 
     engine.changeStream("sales", new EngineNumber(clampedDeltaUnits, "units"), null);
+  }
+
+  /**
+   * Handle setting newEquipment to a target value (absolute in units/kg/mt/tCO2e,
+   * or bare percent).
+   *
+   * <p>Caller is responsible for checking year range before calling this method.</p>
+   *
+   * <p>Unit-based targets ("unit"/"units") are set directly as an absolute sales
+   * value in units: the existing implicit-recharge machinery for unit-tracked sales
+   * automatically adds recharge and precharge volume on top, so no extra accounting
+   * is needed here.</p>
+   *
+   * <p>Mass-based targets (kg/mt/tCO2e) represent only the equipment-forming portion
+   * of sales (matching how newEquipment itself is defined as
+   * {@code (salesKg - rechargeKg - prechargeKg) / initialCharge}). To land sales at a
+   * value that reproduces exactly this target after the next population recalc
+   * subtracts recharge/precharge again, this method explicitly adds the current
+   * recharge and precharge volume (in kg) on top before setting sales in kg.</p>
+   *
+   * <p>Bare percent (decision 3) resolves against this year's already-computed
+   * newEquipment value (pre-adjustment), mirroring how
+   * {@link EquipmentChangeUtil#handleChange} resolves percent against
+   * currentEquipment for the equipment stream.</p>
+   *
+   * @param targetNewEquipment The target value: bare "%" or absolute in units/kg/mt/tCO2e
+   */
+  public void handleSet(EngineNumber targetNewEquipment) {
+    EngineNumber currentNewEquipment = engine.getStream("newEquipment");
+    UnitConverter unitConverter = createNewEquipmentUnitConverter();
+
+    EngineNumber targetAbsolute;
+    if ("%".equals(targetNewEquipment.getUnits())) {
+      BigDecimal targetValue = calculatePercentageChange(currentNewEquipment, targetNewEquipment);
+      targetAbsolute = new EngineNumber(targetValue, currentNewEquipment.getUnits());
+    } else {
+      targetAbsolute = targetNewEquipment;
+    }
+
+    String targetUnitsString = targetAbsolute.getUnits();
+    boolean isUnitBased = "unit".equals(targetUnitsString) || "units".equals(targetUnitsString);
+
+    if (isUnitBased) {
+      EngineNumber targetUnits = unitConverter.convert(targetAbsolute, "units");
+      BigDecimal clampedUnits = clampAtZero(targetUnits.getValue());
+      setSalesAbsolute(new EngineNumber(clampedUnits, "units"));
+    } else {
+      EngineNumber targetKg = unitConverter.convert(targetAbsolute, "kg");
+      BigDecimal clampedTargetKg = clampAtZero(targetKg.getValue());
+
+      EngineNumber rechargeVolume = RechargeVolumeCalculator.calculateRechargeVolume(
+          engine.getScope(), engine.getStateGetter(), engine.getStreamKeeper(), engine);
+      EngineNumber prechargeVolume = PrechargeVolumeCalculator.calculatePrechargeVolume(
+          engine.getScope(), engine.getStateGetter(), engine.getStreamKeeper(), engine);
+
+      BigDecimal salesKg = clampedTargetKg
+          .add(rechargeVolume.getValue())
+          .add(prechargeVolume.getValue());
+
+      engine.setStream("sales", new EngineNumber(salesKg, "kg"), Optional.empty());
+    }
+  }
+
+  /**
+   * Set sales to an absolute value in units (used by handleSet's unit-based path).
+   *
+   * <p>Mirrors {@link EquipmentChangeUtil}'s private {@code setSales} helper:
+   * marking lastSpecifiedValue as unit-tracked before delegating to
+   * {@link SetExecutor#handleSalesSet} ensures sales is recorded as unit-tracked, so
+   * the existing implicit-recharge machinery adds recharge/precharge on top
+   * automatically on future recalcs.</p>
+   *
+   * @param salesUnits The absolute sales value to set, in "units"
+   */
+  private void setSalesAbsolute(EngineNumber salesUnits) {
+    UseKey scope = engine.getScope();
+    SimulationState simulationState = engine.getStreamKeeper();
+    simulationState.setLastSpecifiedValue(scope, "sales", salesUnits);
+
+    SetExecutor setExecutor = new SetExecutor(engine);
+    setExecutor.handleSalesSet(scope, "sales", salesUnits, Optional.empty());
+  }
+
+  /**
+   * Clamp an absolute value at zero (decision 1: silent clamp, no error).
+   *
+   * <p>Delegates to {@link #clampDeltaAtZero} with a zero base value, which already
+   * implements exactly this "never go below zero" logic when called that way.</p>
+   *
+   * @param value The value to clamp
+   * @return The value if non-negative, otherwise zero
+   */
+  private BigDecimal clampAtZero(BigDecimal value) {
+    return clampDeltaAtZero(BigDecimal.ZERO, value);
   }
 
   /**

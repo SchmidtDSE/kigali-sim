@@ -264,6 +264,7 @@ public class SingleThreadEngine implements Engine {
 
     switch (name) {
       case "equipment" -> equipmentChangeUtil.handleSet(value);
+      case "newEquipment" -> newEquipmentChangeUtil.handleSet(value);
       case "sales" -> {
         simulationState.clearLastSpecifiedValue(scope, name);
         SetExecutor setExecutor = new SetExecutor(this);
