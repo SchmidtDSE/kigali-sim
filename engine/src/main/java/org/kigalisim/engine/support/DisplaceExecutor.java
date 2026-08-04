@@ -30,7 +30,6 @@ import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.state.Scope;
-import org.kigalisim.engine.state.SimulationState;
 import org.kigalisim.lang.operation.DisplacementType;
 
 /**
@@ -364,8 +363,6 @@ public class DisplaceExecutor {
    * @param scope The scope (UseKey) for the displaced stream
    */
   private void updateLastSpecifiedAfterDisplacement(String stream, Scope scope) {
-    SimulationState simulationState = engine.getStreamKeeper();
-
     String originalSubstance = engine.getScope().getSubstance();
     boolean crossSubstanceDisplace = !scope.getSubstance().equals(originalSubstance);
 
@@ -373,16 +370,7 @@ public class DisplaceExecutor {
       engine.setSubstance(scope.getSubstance());
     }
 
-    EngineNumber currentValue = engine.getStream(stream);
-    simulationState.setLastSpecifiedValue(scope, stream, currentValue);
-
-    // For "sales" or "virgin" stream, also update lastSpecified for component streams (domestic/import)
-    if (EngineSupportUtils.isProductionMetastream(stream)) {
-      EngineNumber domesticValue = engine.getStream("domestic");
-      EngineNumber importValue = engine.getStream("import");
-      simulationState.setLastSpecifiedValue(scope, "domestic", domesticValue);
-      simulationState.setLastSpecifiedValue(scope, "import", importValue);
-    }
+    EngineSupportUtils.recordLastSpecifiedKeepingUnits(engine, scope, stream);
 
     if (crossSubstanceDisplace) {
       engine.setSubstance(originalSubstance);
