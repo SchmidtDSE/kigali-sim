@@ -62,11 +62,9 @@ public class DisplaceExecutor {
    *   <li>Crediting recycled material recovery against virgin material consumption</li>
    * </ul>
    *
-   * <p>The method handles three distinct cases:</p>
+   * <p>The method handles two distinct cases:</p>
    * <ol>
-   *   <li><strong>Automatic recycling displacement</strong>: When recovering material to the
-   * sales stream, automatically adds the recycled volume to sales before applying targeted
-   * displacement. This maintains material balance in the system.</li> <li><strong>Equipment-unit
+   *   <li><strong>Equipment-unit
    * displacement</strong>: When the operation uses equipment units, converts the volume change back
    * to units in the source substance, then applies the same number of units to the destination (with
    * destination-specific initial charge for substance displacement).</li> <li><strong>Volume
@@ -95,9 +93,6 @@ public class DisplaceExecutor {
 
     // Determine if this is stream-based or substance-based displacement
     boolean isStreamDisplacement = EngineSupportUtils.STREAM_NAMES.contains(displaceTarget);
-
-    // Handle automatic recycling addition before targeted displacement
-    applyRecyclingBeforeDisplacement(stream, changeAmount, isStreamDisplacement);
 
     // Determine displacement mode based on displacement type
     boolean shouldUseUnitsDisplacement = determineDisplacementMode(
@@ -137,43 +132,6 @@ public class DisplaceExecutor {
       case BY_VOLUME -> false;
       case BY_UNITS -> true;
     };
-  }
-
-  /**
-   * Applies automatic recycling addition when recovering material to the sales stream.
-   *
-   * <p>When a recovery operation creates recycled material from the sales stream and
-   * specifies stream-based displacement, the recycled material is automatically added back to the
-   * sales stream before applying the targeted displacement. This ensures that the total material
-   * balance is maintained in the system.</p>
-   *
-   * <p>This automatic recycling addition only occurs when:</p>
-   * <ul>
-   *   <li>The displacement target is a stream (not a substance)</li>
-   *   <li>The source stream is the recycle recovery stream (typically "sales")</li>
-   * </ul>
-   *
-   * <p>Without this step, recovered material would be double-counted as both a reduction
-   * in virgin material consumption and as recycled material, leading to incorrect totals.</p>
-   *
-   * @param stream The stream identifier being modified
-   * @param changeAmount The change amount in kg
-   * @param isStreamDisplacement True if displacement target is a stream, false if substance
-   */
-  private void applyRecyclingBeforeDisplacement(String stream, BigDecimal changeAmount,
-      boolean isStreamDisplacement) {
-    boolean displacementAutomatic = isStreamDisplacement
-        && EngineSupportUtils.RECYCLE_RECOVER_STREAM.equals(stream);
-
-    if (displacementAutomatic) {
-      EngineNumber recycledAddition = new EngineNumber(changeAmount, "kg");
-      shortcuts.changeStreamWithoutReportingUnits(
-          EngineSupportUtils.RECYCLE_RECOVER_STREAM,
-          recycledAddition,
-          Optional.empty(),
-          Optional.empty()
-      );
-    }
   }
 
   /**

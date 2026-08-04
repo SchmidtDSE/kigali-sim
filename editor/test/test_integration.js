@@ -818,11 +818,12 @@ function buildIntegrationTests() {
         const recordSubB = getResult(result, "result", 1, 0, "test", "sub_b");
         const domesticSubB = recordSubB.getDomestic();
 
-        // With unit-based displacement: 36.67 kg reduction in sub_a =
-        // 36.67 kg / 10 kg/unit = 3.67 units
-        // 3.67 units displaced to sub_b = 3.67 units * 20 kg/unit = 73.33 kg
-        // Original sub_b: 200 kg, Final sub_b: 200 kg + 73.33 kg = 273.33 kg
-        assert.closeTo(domesticSubB.getValue(), 273.3333333333333, 0.0001);
+        // With unit-based displacement (new-equipment basis): sub_a domestic was 100 kg / 10
+        // kg per unit = 10 units (clean; recharge has not yet been added at this reading),
+        // capped to 5 units -- a true 5-unit reduction. 5 units displaced to sub_b at sub_b's
+        // 20 kg/unit charge = 100 kg.
+        // Original sub_b: 200 kg, Final sub_b: 200 kg + 100 kg = 300 kg
+        assert.closeTo(domesticSubB.getValue(), 300.0, 0.0001);
         assert.deepEqual(domesticSubB.getUnits(), "kg");
       },
     ]);
@@ -847,12 +848,12 @@ function buildIntegrationTests() {
           const recordSubB = getResult(result, "result", 1, 0, "test", "sub_b");
           const domesticSubB = recordSubB.getDomestic();
 
-          // With the fix, displacement should be unit-based:
-          // 230 kg reduction in sub_a = 230 kg / 10 kg/unit = 23 units
-          // 23 units displaced to sub_b = 23 units * 20 kg/unit = 460 kg
+          // With unit-based displacement (new-equipment basis): sub_a is capped from 30 units
+          // to 5 units -- a true 25-unit reduction.
+          // 25 units displaced to sub_b at sub_b's 20 kg/unit charge = 500 kg
           // Original sub_b: 10 units * 20 kg/unit = 200 kg
-          // Final sub_b: 200 kg + 460 kg = 660 kg
-          assert.closeTo(domesticSubB.getValue(), 660, 0.0001);
+          // Final sub_b: 200 kg + 500 kg = 700 kg
+          assert.closeTo(domesticSubB.getValue(), 700.0, 0.0001);
           assert.deepEqual(domesticSubB.getUnits(), "kg");
         },
       ]);

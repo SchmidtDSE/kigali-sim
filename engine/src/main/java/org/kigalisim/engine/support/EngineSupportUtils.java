@@ -43,6 +43,7 @@ public final class EngineSupportUtils {
   static {
     STREAM_NAMES.add("priorEquipment");
     STREAM_NAMES.add("equipment");
+    STREAM_NAMES.add("newEquipment");
     STREAM_NAMES.add("export");
     STREAM_NAMES.add("import");
     STREAM_NAMES.add("domestic");
@@ -74,6 +75,37 @@ public final class EngineSupportUtils {
    */
   public static boolean getIsInRange(Optional<YearMatcher> yearMatcher, int currentYear) {
     return getIsInRange(yearMatcher.orElse(null), currentYear);
+  }
+
+  /**
+   * Check whether a unit string is one of the four percent-basis forms used by cap/floor
+   * (on any stream, including newEquipment): {@code "%"}, {@code "%prioryear"},
+   * {@code "%currentyear"}, or {@code "%current"}.
+   *
+   * @param units The units string to check
+   * @return True if units is one of the four percent-basis forms
+   */
+  public static boolean isPercentBasisUnits(String units) {
+    return switch (units) {
+      case "%", "%prioryear", "%currentyear", "%current" -> true;
+      default -> false;
+    };
+  }
+
+  /**
+   * Check whether a cap/floor percent unit string resolves against the prior-year basis.
+   *
+   * <p>Per the cap/floor convention (distinct from change/set, where bare {@code "%"} means
+   * current year), bare {@code "%"} aliases to the prior-year basis; {@code "% current year"}
+   * and {@code "% current"} both resolve against the current-year basis instead. This is
+   * narrower than {@code UnitConverter}'s own prior-percent check, which does not treat bare
+   * {@code "%"} as prior-year, so the two are kept separate rather than shared.</p>
+   *
+   * @param units The units string to check
+   * @return True for "%" or "%prioryear", false for "%currentyear" or "%current"
+   */
+  public static boolean isCapFloorPriorYearBasis(String units) {
+    return "%".equals(units) || "%prioryear".equals(units);
   }
 
   /**

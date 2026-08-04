@@ -74,7 +74,8 @@ cap streamName to amount displacing by units "substanceName"|stream during years
         <p><strong>Examples:</strong></p>
         <pre><code class="language-qubectalk">cap sales to 80% during years 2027 to 2030
 cap domestic to 0 mt displacing "R-600a" during years 2031 to onwards
-cap import to 50% during years 2028 to 2032</code></pre>
+cap import to 50% during years 2028 to 2032
+cap newEquipment to 90% prior year displacing "SubB" during years 3 to onwards</code></pre>
 
         <section>
           <h3 class="compact">Displacement Types</h3>
@@ -102,6 +103,14 @@ cap sales to 100 kg displacing by units "R-600a" during years 2027 to 2030
           <p><strong>Note:</strong> When using <code>displacing by volume</code>, total substance mass is preserved but equipment counts may change. When using <code>displacing by units</code>, equipment population is preserved but substance mass may change. Use <code>displacing by units</code> when equipment tracking is critical (e.g., equipment bank management). Use <code>displacing by volume</code> when substance consumption limits are the primary concern.</p>
 
           <p><strong>Units Tracking Behavior:</strong> When a percentage-based cap triggers (reduces the stream value), it preserves units tracking from the last specified value if that value was in equipment units. For example, if you "set domestic to 10 units" and then "cap domestic to 0%", the cap result will be in units (0 units), which allows recharge calculations to add equipment. If the cap does not trigger (current value is already below the cap), tracking mode remains unchanged.</p>
+
+          <p><strong>New Equipment Note:</strong> <code>newEquipment</code> (equipment
+added in the current year) is a derived stream; capping it converts the
+excess into an equivalent reduction to <code>sales</code> under the hood.
+All percentage forms (bare <code>%</code>, <code>% prior year</code>,
+<code>% current year</code>) resolve against <code>newEquipment</code>'s
+own prior-/current-year value, not against <code>sales</code>'s. Any
+resulting negative value is silently clamped to 0.</p>
         </section>
       </section>
 
@@ -115,11 +124,19 @@ cap sales to 100 kg displacing by units "R-600a" during years 2027 to 2030
         <p><strong>Examples:</strong></p>
         <pre><code class="language-qubectalk">change sales by 6% / year during years 2025 to 2030
 change domestic by -3% / year during years 2031 to 2035
-change import by 5% / year during years 2025 to onwards</code></pre>
+change import by 5% / year during years 2025 to onwards
+change newEquipment by +10% / year during years 3 to 8</code></pre>
 
         <p><strong>Non-Negative Clamping:</strong> Change operations prevent streams from going negative. When a change would result in a negative value (e.g., reducing a 5 kg stream by 10 kg), the stream is clamped to exactly 0. The actual amount removed (not the requested amount) is used for downstream calculations.</p>
 
         <p><strong>Units Tracking Behavior:</strong> Change operations preserve the current tracking mode of the stream. If the stream is currently in units (equipment-based), the change will be applied in units. If the stream is in kg or mt (volume-based), the change will be applied in volume units. Change operations do not force a conversion between tracking modes.</p>
+
+        <p><strong>New Equipment Note:</strong> Because recharge and precharge are
+computed from prior-year equipment independent of this year's sales, a
+marginal <code>change</code> to <code>newEquipment</code> always maps to
+an equal delta in <code>sales</code>, in any unit — unlike <code>set</code>,
+no recharge/precharge adjustment is needed. Negative results are silently
+clamped to 0.</p>
       </section>
 
       <section class="major" id="define">
@@ -182,11 +199,12 @@ floor streamName to amount displacing by units "substanceName"|stream during yea
         <p><strong>Examples:</strong></p>
         <pre><code class="language-qubectalk">floor sales to 10% during years 2030 to onwards
 floor domestic to 5 mt during years 2025 to 2035
-floor import to 100 units displacing by units "R-600a" during years 2028 to 2032</code></pre>
+floor import to 100 units displacing by units "R-600a" during years 2028 to 2032
+floor newEquipment to 550 units displacing "SubB" during years 3 to onwards</code></pre>
 
         <p>Floor supports the same displacement types as Cap. See <a href="#cap">Cap</a> for detailed explanation of displacement behavior.</p>
 
-        <p><strong>Units Tracking Behavior:</strong> Floor commands follow the same units tracking behavior as cap commands. When a percentage-based floor triggers (increases the stream value), it preserves units tracking from the last specified value if that value was in equipment units. If the floor does not trigger, tracking mode remains unchanged.</p>
+        <p><strong>Units Tracking Behavior:</strong> Floor commands follow the same units tracking behavior as cap commands. When a percentage-based floor triggers (increases the stream value), it preserves units tracking from the last specified value if that value was in equipment units. If the floor does not trigger, tracking mode remains unchanged. For <code>newEquipment</code> specifically, a triggered floor adds the deficit to <code>sales</code> rather than removing an excess.</p>
       </section>
 
       <section class="major" id="get">
@@ -207,7 +225,7 @@ get streamName N years ago of "substanceName" as units</code></pre>
         <p><strong>Available Streams:</strong></p>
         <ul>
           <li><code>sales</code>, <code>virgin</code>, <code>domestic</code>, <code>import</code>, <code>export</code> - Sales and trade volumes</li>
-          <li><code>equipment</code>, <code>priorEquipment</code>, <code>bank</code> - Equipment population</li>
+          <li><code>equipment</code>, <code>priorEquipment</code>, <code>newEquipment</code>, <code>bank</code> - Equipment population</li>
           <li><code>age</code> - Weighted average equipment age (read-only, Advanced Editor only)</li>
         </ul>
 
@@ -347,7 +365,18 @@ retire 10% each year</code></pre>
         <p><strong>Examples:</strong></p>
         <pre><code class="language-qubectalk">set domestic to 25 mt during year 2025
 set import to 15000 units during year 2025
-set priorEquipment to 1000000 units during year 2025</code></pre>
+set priorEquipment to 1000000 units during year 2025
+set newEquipment to 900 units during year 2025</code></pre>
+
+        <p><strong>New Equipment Note:</strong> <code>newEquipment</code> (equipment
+added in the current year) is writable directly. Setting it in
+<code>unit</code>/<code>units</code> relies on the implicit-recharge
+behavior described under Recharge above; setting it in a mass unit
+(<code>kg</code>, <code>mt</code>, or <code>tCO2e</code>) adds this year's
+recharge and precharge volume on top of the target amount before applying
+it. A bare <code>%</code> target resolves against this year's
+already-computed <code>newEquipment</code> value. Any resulting negative
+value is silently clamped to 0.</p>
       </section>
 
       <section class="major" id="navigation">

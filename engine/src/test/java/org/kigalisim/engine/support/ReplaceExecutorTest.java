@@ -119,6 +119,19 @@ class ReplaceExecutorTest {
   }
 
   @Test
+  void testExecuteNewEquipmentThrowsException() {
+    // Arrange
+    YearMatcher matcher = new YearMatcher(2020, 2025);
+    EngineNumber amount = new EngineNumber(new BigDecimal("10"), "kg");
+
+    // Act & Assert - attempting to replace the newEquipment stream
+    RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+      replaceExecutor.execute(amount, "newEquipment", "R-600a", matcher);
+    });
+    assertTrue(exception.getMessage().contains("newEquipment"));
+  }
+
+  @Test
   void testExecuteSalesStreamUpdatesLastSpecifiedForBothSubstances() {
     // Arrange
     setStreamValue("sales", new BigDecimal("100"), "kg");

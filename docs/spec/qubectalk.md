@@ -196,7 +196,12 @@ set priorEquipment to (get equipment as units * 7) units during year 1
 
 These approaches can be mixed but, generally, authors will apply a multiplier against a specific (typically first) year of sales or equipment.
 
-**Adding equipment**: Equipment is added based on sales. For most authors, this is preferred. However, to override this behavior, use `set equipment` to override the value.
+**Adding equipment**: Equipment is added based on sales. For most authors, this is preferred. However, to override this behavior, use `set equipment` to override the total value, or target `newEquipment` directly with `set`, `change`, `cap`, or `floor` to affect only the equipment added in the current year. Because `newEquipment` is recomputed each year from sales, recharge, and precharge, writes to it are implemented as an equivalent change to `sales`: `change` applies the same marginal delta to `sales` in any unit; `set` to a mass unit (`kg`, `mt`, `tCO2e`) adds this year's recharge and precharge volume on top of the target before setting `sales`, while `set` to `unit`/`units` relies on the implicit-recharge behavior described above; a bare `%` on `set` resolves against this year's already-computed `newEquipment` value. `cap`/`floor` percentage forms (bare `%`, `% prior year`, `% current year`) resolve against `newEquipment`'s own raw prior-/current-year value, not `sales`'s, and support the same displacement options described under Displacement below. Any resulting negative value is silently clamped to 0.
+
+```
+set newEquipment to 900 units during year 3
+cap newEquipment to 90 % prior year displacing "SubB" during years 3 to onwards
+```
 
 **Removing equipment**: Most analyses will remove equipment through retirement (also called hazard rate or scrap rate). Consider these examples:
 
@@ -301,9 +306,11 @@ cap import to 750 mt during years 4 to 5
 cap domestic to 0 mt during years 10 to onwards
 ```
 
-Sales, virgin, domestic, import, export, and equipment streams can accept the cap. If specifying an aggregate stream, it will be applied proportionally. For example, for sales, the effect will be split proportionally between domestic and imports. For virgin, the effect will be split proportionally between domestic and import without subtracting recycling.
+Sales, virgin, domestic, import, export, equipment, and newEquipment streams can accept the cap. If specifying an aggregate stream, it will be applied proportionally. For example, for sales, the effect will be split proportionally between domestic and imports. For virgin, the effect will be split proportionally between domestic and import without subtracting recycling.
 
 When using units (equipment) in cap commands, those limits apply after recharge calculations. So a cap of 100 units means 100 units of new equipment on top of recharge needs for prior equipment.
+
+`newEquipment` can also be capped directly (see "Adding equipment" above for how this differs from capping `equipment` or `sales`).
 
 ### Floor
 A minimum level can be set using `floor`:
@@ -314,6 +321,8 @@ floor import to 100 mt during years 5 to onwards
 ```
 
 This prevents unrealistic reductions below specified levels.
+
+Like `cap`, `floor` can target `newEquipment` directly; it behaves as the mirror image, applying any deficit as an increase to `sales` rather than a reduction (see "Adding equipment" above).
 
 ### Displacement
 Caps and floors can specify displacement to alternative substances or streams:
@@ -541,7 +550,7 @@ get streamName N years ago of "substanceName"
 get streamName N years ago of "substanceName" as units
 ```
 
-**Available Streams:** `sales`, `virgin`, `domestic`, `import`, `export`, `equipment`, `priorEquipment`, `bank`, `age`
+**Available Streams:** `sales`, `virgin`, `domestic`, `import`, `export`, `equipment`, `priorEquipment`, `newEquipment`, `bank`, `age`
 
 **Indirect Access (Cross-substance):** The `of "substanceName"` option allows you to access stream values from other substances within the same application.
 
@@ -574,11 +583,12 @@ set import to 1 mt during year 2
 set sales of "HFC-134a" to 1 mt
 set domestic of "HFC-134a" to 1 mt during year 2
 set priorEquipment to 1000 units during year 1
+set newEquipment to 900 units during year 3
 ```
 
 If year is not specified, it is applied in all years.
 
-Setting an aggregate stream like `sales` will cause the value to be distributed proportionally to the prior value of the sub-streams. In the case of this example, this would be applied across import, domestic, and export. For `virgin`, the value is distributed proportionally across domestic and import without subtracting recycling.
+Setting an aggregate stream like `sales` will cause the value to be distributed proportionally to the prior value of the sub-streams. In the case of this example, this would be applied across import, domestic, and export. For `virgin`, the value is distributed proportionally across domestic and import without subtracting recycling. Setting `newEquipment` targets only the equipment added in the current year — see `Adding equipment` under Population for how this differs from setting `equipment` or `priorEquipment`, and for mass-unit recharge/precharge handling.
 
 ### Age stream
 The `age` stream provides access to the weighted average age of equipment in the population. This is a read-only computed stream:
