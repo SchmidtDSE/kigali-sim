@@ -14,13 +14,29 @@ Finally, we want to again express our gratitude for your feedback and time.
 
 The following changes have been adopted and released.
 
+### Allow writing to newEquipment
+
+**Status**: Preview released August 4, 2026. Full release August 5, 2026.
+
+**Classification**: Enhancement
+
+For some time, users have been able to read from `newEquipment` which is the number of new units added in a year for a substance / application pair. However, this stream could not accept writes. With this change, we now allow users to specify `newEquipment` or, in other words, the new equipment sales outside of recharge demands. This can be useful for certain policies that only operate on new equipment. In practice, this is similar to sales but just without the servicing component.
+
+### Not showing previous simulation results on load
+
+**Status**: Preview released August 4, 2026. Full release August 5, 2026.
+
+**Classification**: Bug
+
+On load when one already has a simulation from a previous session, the tool looked at the simulation but did not show results for it. This updates to show those results. Our apologies for the inconvenience.
+
 ### Displacement persistence after policy ends
 
-**Status**: Preview released August 4, 2026. Full release expected August 5, 2026.
+**Status**: Preview released August 4, 2026. Full release August 5, 2026.
 
 **Classification**: Clarification
 
-Clarified that when a `cap`/`floor ... displacing "X"` policy sends volume to another substance, that substance now keeps the position it reached once the displacing policy stops applying (for example, once its `during` window ends) rather than reverting back toward its pre-displacement level. This matches how a directly capped, set, or floored substance already behaved: once a value takes effect, it is retained until something else changes it. Previously, the displaced-into substance was the one place this did not hold true, and it could lose the displaced volume and drop back down once the policy that produced it stopped running. Multi-year scenarios combining substance-replacement policies with active recharge could also see the size of displaced amounts drift with each passing year; this is corrected as well so that results stay consistent over the full simulation horizon.
+Clarified that when a `cap`/`floor ... displacing "X"` policy sends volume to another substance, that substance now keeps the position it reached once the displacing policy stops applying (for example, once its `during` window ends) rather than reverting back toward its pre-displacement level. This matches how a directly capped, set, or floored substance already behaved: once a value takes effect, it is retained until something else changes it. This is a change from prior expectations for what happens when a policy ends or how effects from prior years should carry over. We believe this is more likely to capture real world dynamics. In general, this only applies when using a specific target like on a cap and where demand was inferred or continued for future years from past year values.
 
 ### Get X years ago
 
