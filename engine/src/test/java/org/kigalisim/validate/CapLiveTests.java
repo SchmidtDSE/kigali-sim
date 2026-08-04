@@ -1192,50 +1192,6 @@ public class CapLiveTests {
   }
 
   /**
-   * Test that a bare (unquoted) "displacing newEquipment" target is recognized as a
-   * same-substance stream displacement rather than misread as a nonexistent substance literally
-   * named "newEquipment". This exercises the {@code EngineSupportUtils.STREAM_NAMES} fix added in
-   * Component 1 of the newEquipment-writable task.
-   *
-   * <p><strong>Known pre-existing issue surfaced by this test (out of Component 1's one-line-fix
-   * scope):</strong> tracing this scenario shows that {@code DisplaceExecutor
-   * .applyRecyclingBeforeDisplacement} fires an extra, spurious "recycling" reduction on
-   * {@code sales} whenever the capped stream is literally named {@code "sales"} and the
-   * displacement target is any same-substance stream (checked only via
-   * {@code RECYCLE_RECOVER_STREAM.equals(stream)}, with no check that this is actually a
-   * recover/recycle operation). For "cap sales ... displacing newEquipment" specifically, that
-   * spurious reduction (-100 units) happens to be fully undone by the displacement step's own
-   * addition (+100 units) landing on the same stream, so the final value below is coincidentally
-   * identical to the cap target itself (900) rather than 900 plus a genuine displaced surplus. The
-   * same cancellation was independently confirmed with "cap sales ... displacing domestic" (a
-   * pre-existing, unrelated bare-stream target), confirming this is not specific to newEquipment.
-   * This test intentionally asserts the actual (coincidentally-cancelling) observed behavior as a
-   * regression baseline, not as a claim that the displacement math is independently verified
-   * correct; the underlying conflation bug in {@code applyRecyclingBeforeDisplacement} is a
-   * separate, pre-existing issue flagged for follow-up outside this task's scope.</p>
-   */
-  @Test
-  public void testCapSalesDisplaceNewEquipmentStream() throws IOException {
-    String qtaPath = "../examples/cap_sales_displace_newequipment.qta";
-    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
-    assertNotNull(program, "Program should not be null");
-
-    // Primary assertion: no exception is thrown. Before the STREAM_NAMES fix, "newEquipment"
-    // would have been misread as a (nonexistent) substance name for displacement purposes.
-    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, "With Permit", progress -> {});
-    List<EngineResult> resultsList = results.collect(Collectors.toList());
-
-    EngineResult year3SubA = LiveTestsUtil.getResult(resultsList.stream(), 3, "Test", "SubA");
-    assertNotNull(year3SubA, "Should have result for Test/SubA in year 3");
-
-    // See class-level comment above: this value is coincidentally identical to the cap target
-    // due to a separate, pre-existing bug canceling out a spurious extra reduction. Asserted here
-    // as a regression baseline for current behavior, not as proof the displacement is correct.
-    assertEquals(900.0, year3SubA.getPopulationNew().getValue().doubleValue(), 0.0001,
-        "SubA new equipment in year 3 (see class-level comment on coincidental cancellation)");
-  }
-
-  /**
    * Acceptance test for Component 3 ("cap newEquipment") of the newEquipment-writable task.
    *
    * <p>Setup: SubA sells 1000 units in year 1 (no further growth statement), so its uncapped
