@@ -14,6 +14,14 @@ Finally, we want to again express our gratitude for your feedback and time.
 
 The following changes have been adopted and released.
 
+### Displacement persistence after policy ends
+
+**Status**: Preview released August 4, 2026. Full release expected August 5, 2026.
+
+**Classification**: Clarification
+
+Clarified that when a `cap`/`floor ... displacing "X"` policy sends volume to another substance, that substance now keeps the position it reached once the displacing policy stops applying (for example, once its `during` window ends) rather than reverting back toward its pre-displacement level. This matches how a directly capped, set, or floored substance already behaved: once a value takes effect, it is retained until something else changes it. Previously, the displaced-into substance was the one place this did not hold true, and it could lose the displaced volume and drop back down once the policy that produced it stopped running. Multi-year scenarios combining substance-replacement policies with active recharge could also see the size of displaced amounts drift with each passing year; this is corrected as well so that results stay consistent over the full simulation horizon.
+
 ### Get X years ago
 
 **Status**: Preview released July 30, 2026. Full release July 31, 2026.
