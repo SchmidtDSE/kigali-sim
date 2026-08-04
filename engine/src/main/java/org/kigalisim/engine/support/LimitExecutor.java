@@ -447,20 +447,21 @@ public class LimitExecutor {
 
   /**
    * Returns whether the new-equipment basis must be used to compute the change in kg for a
-   * displacement operation on the given production metastream denominated in the given units.
+   * displacement operation on the given sales-related stream denominated in the given units.
+   *
+   * <p>This applies equally to production metastreams ("sales"/"virgin") and sales substreams
+   * ("domestic"/"import"): both carry recharge/precharge kg riding on top of their raw value when
+   * unit-tracked, so both need the new-equipment basis rather than a raw-kg diff (see
+   * {@link #getChangeInKgForDisplacement}).</p>
    *
    * @param stream The stream identifier being capped/floored (e.g., "sales", "domestic")
    * @param destinationUnits The units of the cap/floor amount
    * @return True if the new-equipment basis must be used, false otherwise
    */
   private boolean getUsesNewEquipmentBasis(String stream, String destinationUnits) {
-    if (!EngineSupportUtils.isProductionMetastream(stream)) {
-      return false;
-    } else if (!getIfServicingRequiresAccounting(stream, destinationUnits)) {
-      return false;
-    } else {
-      return true;
-    }
+    boolean isSalesRelated = EngineSupportUtils.isProductionMetastream(stream)
+        || EngineSupportUtils.isSalesSubstream(stream);
+    return isSalesRelated && getIfServicingRequiresAccounting(stream, destinationUnits);
   }
 
   /**
@@ -628,29 +629,7 @@ public class LimitExecutor {
    * @param stream The stream identifier whose value should be recorded as lastSpecified
    */
   private void setCurrentValueAsLastSpecified(Scope scope, String stream) {
-    SimulationState simulationState = engine.getStreamKeeper();
-    EngineNumber currentValue = engine.getStream(stream);
-    simulationState.setLastSpecifiedValue(scope, stream, currentValue);
-
-    if (EngineSupportUtils.isProductionMetastream(stream)) {
-      updateComponentStreamsLastSpecified(simulationState, scope);
-    }
-  }
-
-  /**
-   * Updates lastSpecified for domestic and import streams based on their current values.
-   *
-   * <p>This is called when a "sales" stream cap/floor is applied, to ensure subsequent
-   * percentage changes to component streams use the capped/floored values.</p>
-   *
-   * @param simulationState The simulation state to update
-   * @param scope The current scope (UseKey) for the update
-   */
-  private void updateComponentStreamsLastSpecified(SimulationState simulationState, Scope scope) {
-    EngineNumber domesticValue = engine.getStream("domestic");
-    EngineNumber importValue = engine.getStream("import");
-    simulationState.setLastSpecifiedValue(scope, "domestic", domesticValue);
-    simulationState.setLastSpecifiedValue(scope, "import", importValue);
+    EngineSupportUtils.recordCleanLastSpecified(engine, scope, stream);
   }
 
 }
