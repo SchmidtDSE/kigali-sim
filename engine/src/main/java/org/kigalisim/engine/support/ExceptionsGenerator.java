@@ -32,14 +32,14 @@ public class ExceptionsGenerator {
   private static final String NEW_EQUIPMENT_INITIAL_CHARGE_MESSAGE =
       "Cannot set initial charge for newEquipment because newEquipment is a "
       + "derived stream that Kigali Sim recalculates automatically each year "
-      + "from sales, recharge, and precharge -- initial charge has no effect "
+      + "from sales, recharge, and precharge: initial charge has no effect "
       + "on it. To control how many new units are added, use set, change, "
       + "cap, or floor on newEquipment instead.";
 
   private static final String NEW_EQUIPMENT_REPLACE_MESSAGE =
       "Cannot replace newEquipment because newEquipment is a derived stream "
       + "that Kigali Sim recalculates automatically each year from sales, "
-      + "recharge, and precharge -- replace is not supported on it. To "
+      + "recharge, and precharge: replace is not supported on it. To "
       + "control how many new units are added, use set, change, cap, or "
       + "floor on newEquipment instead.";
 

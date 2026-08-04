@@ -101,23 +101,14 @@ The `assume` command is particularly useful for bank (equipment) tracking scenar
 **Recharge**: When using units (of equipment) in cap, floor, and set commands, those limits apply after recharge calculations. So a cap of 100 units means 100 units on top of recharge for prior equipment.
 
 **New Equipment**: `newEquipment` (equipment added in the current year) is
-writable via `set`, `change`, `cap`, and `floor`, in addition to `get`. It
-is a derived stream — recomputed each year from sales, recharge, and
-precharge — so writes are converted into an equivalent `sales` operation
-under the hood rather than stored directly:
-- `change` applies the same marginal delta to `sales` in any unit;
-  recharge/precharge are fixed for the year and independent of the
-  current year's sales amount, so no adjustment is needed.
-- `set` to a mass unit (`kg`/`mt`/`tCO2e`) adds this year's recharge and
-  precharge volume on top of the target before setting `sales`; `set` to
-  `unit`/`units` relies on the same implicit-recharge machinery described
-  above. A bare `%` target resolves against this year's already-computed
-  `newEquipment` value.
-- `cap`/`floor` percentage forms (bare `%`, `% prior year`, `% current
-  year`) resolve against `newEquipment`'s own raw prior-/current-year
-  stream value — not `sales`'s — and support `displacing`/`by volume`/
-  `by units` the same as any other stream.
-- Any resulting negative value is silently clamped to 0 (no error).
+writable via `set`, `change`, `cap`, and `floor`, in addition to `get`. As a
+derived stream recomputed each year from sales, recharge, and precharge,
+writes are converted internally into an equivalent `sales` change, with any
+resulting negative value clamped to 0. `cap`/`floor` percentage forms
+resolve against `newEquipment`'s own prior-/current-year value (not
+`sales`'s) and support `displacing`/`by volume`/`by units` like any other
+stream. `initial charge` and `replace` are not supported on `newEquipment`
+and raise an error.
 
 ```qubectalk
 set newEquipment to 900 units during year 3

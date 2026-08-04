@@ -12,14 +12,14 @@ import org.kigalisim.engine.recalc.StreamUpdate;
 import org.kigalisim.engine.recalc.StreamUpdateBuilder;
 
 /**
- * Unit tests for NewEquipmentChangeUtil class.
+ * Unit tests for NewEquipmentToSalesInterpreter class.
  *
  * <p>Tests changing the newEquipment stream by absolute amounts (units, kg, mt) and
  * by percent, including the zero-clamp behavior for large negative changes.</p>
  */
-class NewEquipmentChangeUtilTest {
+class NewEquipmentToSalesInterpreterTest {
   private SingleThreadEngine engine;
-  private NewEquipmentChangeUtil newEquipmentChangeUtil;
+  private NewEquipmentToSalesInterpreter newEquipmentToSalesInterpreter;
 
   @BeforeEach
   void setUp() {
@@ -31,7 +31,7 @@ class NewEquipmentChangeUtilTest {
     engine.equals(new EngineNumber(new BigDecimal("1430"), "kgCO2e / kg"), null);
     engine.setInitialCharge(new EngineNumber(BigDecimal.ONE, "kg / unit"), "domestic", null);
 
-    newEquipmentChangeUtil = new NewEquipmentChangeUtil(engine);
+    newEquipmentToSalesInterpreter = new NewEquipmentToSalesInterpreter(engine);
   }
 
   private void setStreamValue(String stream, BigDecimal value, String units) {
@@ -50,7 +50,7 @@ class NewEquipmentChangeUtilTest {
     EngineNumber changeAmount = new EngineNumber(new BigDecimal("10"), "units");
 
     // Act
-    newEquipmentChangeUtil.handleChange(changeAmount);
+    newEquipmentToSalesInterpreter.handleChange(changeAmount);
 
     // Assert - sales should increase by 10 units worth of kg (1 kg/unit)
     EngineNumber salesResult = engine.getStream("sales");
@@ -66,7 +66,7 @@ class NewEquipmentChangeUtilTest {
     EngineNumber changeAmount = new EngineNumber(new BigDecimal("20"), "kg");
 
     // Act - 20kg at 1 kg/unit initial charge is a 20-unit delta in sales
-    newEquipmentChangeUtil.handleChange(changeAmount);
+    newEquipmentToSalesInterpreter.handleChange(changeAmount);
 
     // Assert
     EngineNumber salesResult = engine.getStream("sales");
@@ -82,7 +82,7 @@ class NewEquipmentChangeUtilTest {
     EngineNumber changeAmount = new EngineNumber(new BigDecimal("1"), "mt");
 
     // Act - 1mt = 1000kg = 1000 units delta at 1 kg/unit
-    newEquipmentChangeUtil.handleChange(changeAmount);
+    newEquipmentToSalesInterpreter.handleChange(changeAmount);
 
     // Assert
     EngineNumber salesResult = engine.getStream("sales");
@@ -98,7 +98,7 @@ class NewEquipmentChangeUtilTest {
     EngineNumber changeAmount = new EngineNumber(new BigDecimal("10"), "%");
 
     // Act - 10% of 100 units newEquipment is a 10-unit delta in sales
-    newEquipmentChangeUtil.handleChange(changeAmount);
+    newEquipmentToSalesInterpreter.handleChange(changeAmount);
 
     // Assert
     EngineNumber salesResult = engine.getStream("sales");
@@ -115,7 +115,7 @@ class NewEquipmentChangeUtilTest {
 
     // Act - a -200% change would drive newEquipment to -100, so it should clamp to a
     // delta of exactly -100 (landing newEquipment at 0), not -200.
-    newEquipmentChangeUtil.handleChange(changeAmount);
+    newEquipmentToSalesInterpreter.handleChange(changeAmount);
 
     // Assert - sales should decrease by only 100 (clamped), not 200
     EngineNumber salesResult = engine.getStream("sales");
@@ -132,7 +132,7 @@ class NewEquipmentChangeUtilTest {
 
     // Act - a -500 unit change would drive newEquipment to -400, so it should clamp to a
     // delta of exactly -100 (landing newEquipment at 0), not -500.
-    newEquipmentChangeUtil.handleChange(changeAmount);
+    newEquipmentToSalesInterpreter.handleChange(changeAmount);
 
     // Assert
     EngineNumber salesResult = engine.getStream("sales");
@@ -144,7 +144,7 @@ class NewEquipmentChangeUtilTest {
   void testHandleSetAbsoluteUnits() {
     // Act - set newEquipment to an absolute unit target; no prior state needed since set is
     // absolute, not delta.
-    newEquipmentChangeUtil.handleSet(new EngineNumber(new BigDecimal("150"), "units"));
+    newEquipmentToSalesInterpreter.handleSet(new EngineNumber(new BigDecimal("150"), "units"));
 
     // Assert - unit-path sets sales directly to 150 units, i.e. 150 kg at 1 kg/unit with zero
     // recharge/precharge configured in this fixture.
@@ -156,7 +156,7 @@ class NewEquipmentChangeUtilTest {
   @Test
   void testHandleSetAbsoluteKg() {
     // Act - mass-path target with zero recharge/precharge to add on top.
-    newEquipmentChangeUtil.handleSet(new EngineNumber(new BigDecimal("300"), "kg"));
+    newEquipmentToSalesInterpreter.handleSet(new EngineNumber(new BigDecimal("300"), "kg"));
 
     // Assert
     EngineNumber salesResult = engine.getStream("sales");
@@ -167,7 +167,7 @@ class NewEquipmentChangeUtilTest {
   @Test
   void testHandleSetAbsoluteMt() {
     // Act - 1 mt = 1000 kg, mass-path, zero recharge/precharge to add.
-    newEquipmentChangeUtil.handleSet(new EngineNumber(BigDecimal.ONE, "mt"));
+    newEquipmentToSalesInterpreter.handleSet(new EngineNumber(BigDecimal.ONE, "mt"));
 
     // Assert
     EngineNumber salesResult = engine.getStream("sales");
@@ -182,7 +182,7 @@ class NewEquipmentChangeUtilTest {
     setStreamValue("newEquipment", new BigDecimal("200"), "units");
 
     // Act
-    newEquipmentChangeUtil.handleSet(new EngineNumber(new BigDecimal("50"), "%"));
+    newEquipmentToSalesInterpreter.handleSet(new EngineNumber(new BigDecimal("50"), "%"));
 
     // Assert - target resolves to 100 units (50% of 200), set directly as sales.
     EngineNumber salesResult = engine.getStream("sales");
@@ -194,7 +194,7 @@ class NewEquipmentChangeUtilTest {
   void testHandleSetNegativeUnitsClampsAtZero() {
     // Act - a negative unit target should clamp to zero before the unit-path set, not be
     // left negative.
-    newEquipmentChangeUtil.handleSet(new EngineNumber(new BigDecimal("-50"), "units"));
+    newEquipmentToSalesInterpreter.handleSet(new EngineNumber(new BigDecimal("-50"), "units"));
 
     // Assert
     EngineNumber salesResult = engine.getStream("sales");
@@ -205,7 +205,7 @@ class NewEquipmentChangeUtilTest {
   @Test
   void testHandleSetNegativeMassClampsAtZero() {
     // Act - a negative mass target should clamp to zero before the mass-path set.
-    newEquipmentChangeUtil.handleSet(new EngineNumber(new BigDecimal("-10"), "kg"));
+    newEquipmentToSalesInterpreter.handleSet(new EngineNumber(new BigDecimal("-10"), "kg"));
 
     // Assert
     EngineNumber salesResult = engine.getStream("sales");
@@ -220,7 +220,7 @@ class NewEquipmentChangeUtilTest {
     setStreamValue("newEquipment", new BigDecimal("100"), "units");
 
     // Act - cap below the current 100-unit value should apply the excess as a sales reduction.
-    newEquipmentChangeUtil.handleCap(new EngineNumber(new BigDecimal("60"), "units"), null, null);
+    newEquipmentToSalesInterpreter.handleCap(new EngineNumber(new BigDecimal("60"), "units"), null, null);
 
     // Assert - excess is 40 units, so sales drops from 100 to 60.
     EngineNumber salesResult = engine.getStream("sales");
@@ -235,7 +235,7 @@ class NewEquipmentChangeUtilTest {
     setStreamValue("newEquipment", new BigDecimal("100"), "units");
 
     // Act - cap above the current 100-unit value is already satisfied, so it should no-op.
-    newEquipmentChangeUtil.handleCap(new EngineNumber(new BigDecimal("150"), "units"), null, null);
+    newEquipmentToSalesInterpreter.handleCap(new EngineNumber(new BigDecimal("150"), "units"), null, null);
 
     // Assert - sales is untouched.
     EngineNumber salesResult = engine.getStream("sales");
@@ -250,7 +250,7 @@ class NewEquipmentChangeUtilTest {
     setStreamValue("newEquipment", new BigDecimal("100"), "units");
 
     // Act - cap exactly equal to the current value should also no-op (not raise excess to 0).
-    newEquipmentChangeUtil.handleCap(new EngineNumber(new BigDecimal("100"), "units"), null, null);
+    newEquipmentToSalesInterpreter.handleCap(new EngineNumber(new BigDecimal("100"), "units"), null, null);
 
     // Assert
     EngineNumber salesResult = engine.getStream("sales");
@@ -265,7 +265,7 @@ class NewEquipmentChangeUtilTest {
     setStreamValue("newEquipment", new BigDecimal("100"), "units");
 
     // Act
-    newEquipmentChangeUtil.handleCap(new EngineNumber(new BigDecimal("50"), "kg"), null, null);
+    newEquipmentToSalesInterpreter.handleCap(new EngineNumber(new BigDecimal("50"), "kg"), null, null);
 
     // Assert - excess is 50 units (100 - 50), so sales drops from 100 to 50.
     EngineNumber salesResult = engine.getStream("sales");
@@ -288,7 +288,7 @@ class NewEquipmentChangeUtilTest {
     setStreamValue("newEquipment", new BigDecimal("1200"), "units");
 
     // Act - bare "%" cap should resolve against year 1's raw 1000, not year 2's current 1200.
-    newEquipmentChangeUtil.handleCap(new EngineNumber(new BigDecimal("90"), "%"), null, null);
+    newEquipmentToSalesInterpreter.handleCap(new EngineNumber(new BigDecimal("90"), "%"), null, null);
 
     // Assert - target is 900 (90% of prior year's 1000); current is 1200, so excess is 300 and
     // sales drops from 1200 to 900.
@@ -309,7 +309,7 @@ class NewEquipmentChangeUtilTest {
     setStreamValue("newEquipment", new BigDecimal("1200"), "units");
 
     // Act - explicit "% prior year" should be identical to bare "%" for cap.
-    newEquipmentChangeUtil.handleCap(new EngineNumber(new BigDecimal("90"), "%prioryear"), null, null);
+    newEquipmentToSalesInterpreter.handleCap(new EngineNumber(new BigDecimal("90"), "%prioryear"), null, null);
 
     // Assert - same result as the bare-percent test: 900.
     EngineNumber salesResult = engine.getStream("sales");
@@ -329,7 +329,7 @@ class NewEquipmentChangeUtilTest {
     setStreamValue("newEquipment", new BigDecimal("1200"), "units");
 
     // Act - "% current year" should resolve against year 2's current 1200, not year 1's 1000.
-    newEquipmentChangeUtil.handleCap(new EngineNumber(new BigDecimal("90"), "%currentyear"), null, null);
+    newEquipmentToSalesInterpreter.handleCap(new EngineNumber(new BigDecimal("90"), "%currentyear"), null, null);
 
     // Assert - target is 1080 (90% of current year's 1200); current is 1200, so excess is 120
     // and sales drops from 1200 to 1080 -- measurably different from the prior-year basis's 900.
@@ -350,7 +350,7 @@ class NewEquipmentChangeUtilTest {
     setStreamValue("newEquipment", new BigDecimal("1200"), "units");
 
     // Act - "% current" should be identical to "% current year" for cap.
-    newEquipmentChangeUtil.handleCap(new EngineNumber(new BigDecimal("90"), "%current"), null, null);
+    newEquipmentToSalesInterpreter.handleCap(new EngineNumber(new BigDecimal("90"), "%current"), null, null);
 
     // Assert - same result as the current-year test: 1080.
     EngineNumber salesResult = engine.getStream("sales");
@@ -366,7 +366,7 @@ class NewEquipmentChangeUtilTest {
 
     // Act - a negative absolute cap target should clamp to a zero target (decision 1), not go
     // negative; this drives newEquipment all the way down to 0, not below.
-    newEquipmentChangeUtil.handleCap(new EngineNumber(new BigDecimal("-50"), "units"), null, null);
+    newEquipmentToSalesInterpreter.handleCap(new EngineNumber(new BigDecimal("-50"), "units"), null, null);
 
     // Assert - all 100 units of excess are removed from sales, landing at 0, not -50.
     EngineNumber salesResult = engine.getStream("sales");
@@ -381,7 +381,7 @@ class NewEquipmentChangeUtilTest {
     setStreamValue("newEquipment", new BigDecimal("100"), "units");
 
     // Act - floor below the current 100-unit value is already satisfied, so it should no-op.
-    newEquipmentChangeUtil.handleFloor(new EngineNumber(new BigDecimal("60"), "units"), null,
+    newEquipmentToSalesInterpreter.handleFloor(new EngineNumber(new BigDecimal("60"), "units"), null,
         null);
 
     // Assert - sales is untouched.
@@ -398,7 +398,7 @@ class NewEquipmentChangeUtilTest {
     setStreamValue("newEquipment", new BigDecimal("100"), "units");
 
     // Act - floor above the current 100-unit value should apply the deficit as a sales raise.
-    newEquipmentChangeUtil.handleFloor(new EngineNumber(new BigDecimal("150"), "units"), null,
+    newEquipmentToSalesInterpreter.handleFloor(new EngineNumber(new BigDecimal("150"), "units"), null,
         null);
 
     // Assert - deficit is 50 units, so sales rises from 100 to 150.
@@ -414,7 +414,7 @@ class NewEquipmentChangeUtilTest {
     setStreamValue("newEquipment", new BigDecimal("100"), "units");
 
     // Act - floor exactly equal to the current value should also no-op (not raise deficit to 0).
-    newEquipmentChangeUtil.handleFloor(new EngineNumber(new BigDecimal("100"), "units"), null,
+    newEquipmentToSalesInterpreter.handleFloor(new EngineNumber(new BigDecimal("100"), "units"), null,
         null);
 
     // Assert
@@ -432,7 +432,7 @@ class NewEquipmentChangeUtilTest {
     setStreamValue("newEquipment", new BigDecimal("100"), "units");
 
     // Act
-    newEquipmentChangeUtil.handleFloor(new EngineNumber(new BigDecimal("150"), "kg"), null, null);
+    newEquipmentToSalesInterpreter.handleFloor(new EngineNumber(new BigDecimal("150"), "kg"), null, null);
 
     // Assert - deficit is 50 units (150 - 100), so sales rises from 100 to 150.
     EngineNumber salesResult = engine.getStream("sales");
@@ -455,7 +455,7 @@ class NewEquipmentChangeUtilTest {
     setStreamValue("newEquipment", new BigDecimal("800"), "units");
 
     // Act - bare "%" floor should resolve against year 1's raw 1000, not year 2's current 800.
-    newEquipmentChangeUtil.handleFloor(new EngineNumber(new BigDecimal("110"), "%"), null, null);
+    newEquipmentToSalesInterpreter.handleFloor(new EngineNumber(new BigDecimal("110"), "%"), null, null);
 
     // Assert - target is 1100 (110% of prior year's 1000); current is 800, so deficit is 300 and
     // sales rises from 800 to 1100.
@@ -477,7 +477,7 @@ class NewEquipmentChangeUtilTest {
     setStreamValue("newEquipment", new BigDecimal("800"), "units");
 
     // Act - explicit "% prior year" should be identical to bare "%" for floor.
-    newEquipmentChangeUtil.handleFloor(new EngineNumber(new BigDecimal("110"), "%prioryear"),
+    newEquipmentToSalesInterpreter.handleFloor(new EngineNumber(new BigDecimal("110"), "%prioryear"),
         null, null);
 
     // Assert - same result as the bare-percent test: 1100.
@@ -498,7 +498,7 @@ class NewEquipmentChangeUtilTest {
     setStreamValue("newEquipment", new BigDecimal("800"), "units");
 
     // Act - "% current year" should resolve against year 2's current 800, not year 1's 1000.
-    newEquipmentChangeUtil.handleFloor(new EngineNumber(new BigDecimal("110"), "%currentyear"),
+    newEquipmentToSalesInterpreter.handleFloor(new EngineNumber(new BigDecimal("110"), "%currentyear"),
         null, null);
 
     // Assert - target is 880 (110% of current year's 800); current is 800, so deficit is 80
@@ -521,7 +521,7 @@ class NewEquipmentChangeUtilTest {
     setStreamValue("newEquipment", new BigDecimal("800"), "units");
 
     // Act - "% current" should be identical to "% current year" for floor.
-    newEquipmentChangeUtil.handleFloor(new EngineNumber(new BigDecimal("110"), "%current"), null,
+    newEquipmentToSalesInterpreter.handleFloor(new EngineNumber(new BigDecimal("110"), "%current"), null,
         null);
 
     // Assert - same result as the current-year test: 880.
@@ -542,7 +542,7 @@ class NewEquipmentChangeUtilTest {
     // never trigger a raise -- this test confirms the no-op path, not a clamped raise (unlike
     // cap's negative-target test, which does trigger a clamped reduction to zero). The deficit
     // here is 0 - 100 = -100, correctly <= 0.
-    newEquipmentChangeUtil.handleFloor(new EngineNumber(new BigDecimal("-50"), "units"), null,
+    newEquipmentToSalesInterpreter.handleFloor(new EngineNumber(new BigDecimal("-50"), "units"), null,
         null);
 
     // Assert - sales is untouched.

@@ -47,7 +47,7 @@ import org.kigalisim.engine.support.EngineSupportUtils;
 import org.kigalisim.engine.support.EquipmentChangeUtil;
 import org.kigalisim.engine.support.ExceptionsGenerator;
 import org.kigalisim.engine.support.LimitExecutor;
-import org.kigalisim.engine.support.NewEquipmentChangeUtil;
+import org.kigalisim.engine.support.NewEquipmentToSalesInterpreter;
 import org.kigalisim.engine.support.ReplaceExecutor;
 import org.kigalisim.engine.support.SetExecutor;
 import org.kigalisim.engine.support.StreamUpdateExecutor;
@@ -79,7 +79,7 @@ public class SingleThreadEngine implements Engine {
   private final SimulationState simulationState;
   private final ChangeExecutor changeExecutor;
   private final EquipmentChangeUtil equipmentChangeUtil;
-  private final NewEquipmentChangeUtil newEquipmentChangeUtil;
+  private final NewEquipmentToSalesInterpreter newEquipmentToSalesInterpreter;
   private final StreamUpdateExecutor streamUpdateExecutor;
   private final StreamUpdateShortcuts streamUpdateShortcuts;
   private final ReplaceExecutor replaceExecutor;
@@ -112,7 +112,7 @@ public class SingleThreadEngine implements Engine {
     simulationState.setCurrentYear(startYear);
     changeExecutor = new ChangeExecutor(this);
     equipmentChangeUtil = new EquipmentChangeUtil(this);
-    newEquipmentChangeUtil = new NewEquipmentChangeUtil(this);
+    newEquipmentToSalesInterpreter = new NewEquipmentToSalesInterpreter(this);
     streamUpdateExecutor = new StreamUpdateExecutor(this);
     streamUpdateShortcuts = new StreamUpdateShortcuts(this);
     replaceExecutor = new ReplaceExecutor(this);
@@ -264,7 +264,7 @@ public class SingleThreadEngine implements Engine {
 
     switch (name) {
       case "equipment" -> equipmentChangeUtil.handleSet(value);
-      case "newEquipment" -> newEquipmentChangeUtil.handleSet(value);
+      case "newEquipment" -> newEquipmentToSalesInterpreter.handleSet(value);
       case "sales" -> {
         simulationState.clearLastSpecifiedValue(scope, name);
         SetExecutor setExecutor = new SetExecutor(this);
@@ -753,7 +753,7 @@ public class SingleThreadEngine implements Engine {
     if (!getIsInRange(yearMatcher)) {
       return;
     }
-    newEquipmentChangeUtil.handleChange(amount);
+    newEquipmentToSalesInterpreter.handleChange(amount);
   }
 
   @Override
@@ -767,7 +767,7 @@ public class SingleThreadEngine implements Engine {
     // Handle equipment stream with special logic
     switch (stream) {
       case "equipment" -> equipmentChangeUtil.handleCap(amount, displaceTarget);
-      case "newEquipment" -> newEquipmentChangeUtil.handleCap(amount, displaceTarget, displacementType);
+      case "newEquipment" -> newEquipmentToSalesInterpreter.handleCap(amount, displaceTarget, displacementType);
       default -> limitExecutor.executeCap(stream, amount, yearMatcher, displaceTarget, displacementType);
     }
   }
@@ -783,7 +783,7 @@ public class SingleThreadEngine implements Engine {
     // Handle equipment stream with special logic
     switch (stream) {
       case "equipment" -> equipmentChangeUtil.handleFloor(amount, displaceTarget);
-      case "newEquipment" -> newEquipmentChangeUtil.handleFloor(amount, displaceTarget, displacementType);
+      case "newEquipment" -> newEquipmentToSalesInterpreter.handleFloor(amount, displaceTarget, displacementType);
       default -> limitExecutor.executeFloor(stream, amount, yearMatcher, displaceTarget, displacementType);
     }
   }

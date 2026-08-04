@@ -1192,7 +1192,7 @@ public class CapLiveTests {
   }
 
   /**
-   * Acceptance test for Component 3 ("cap newEquipment") of the newEquipment-writable task.
+   * Acceptance test for capping the newEquipment stream.
    *
    * <p>Setup: SubA sells 1000 units in year 1 (no further growth statement), so its uncapped
    * newEquipment stays flat at ~1000 units/year (recharge/precharge ride on top of the 1000-unit

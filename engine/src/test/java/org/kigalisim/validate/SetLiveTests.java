@@ -131,7 +131,7 @@ public class SetLiveTests {
    * itself a function of the current year's newEquipment (self-referential, unlike recharge which
    * is fixed off priorEquipment), the expected values here were NOT hand-derived: they were read
    * off an actual engine run, then independently confirmed self-consistent by instrumenting
-   * {@code NewEquipmentChangeUtil.handleSet} to print the actual
+   * {@code NewEquipmentToSalesInterpreter.handleSet} to print the actual
    * {@code RechargeVolumeCalculator}/{@code PrechargeVolumeCalculator} figures used for year 2
    * (rechargeVolume = 0 kg, since no recharge of priorEquipment is configured here; precharge
    * Volume = 10.0 kg, i.e. 10% precharge against the ~100-unit pre-adjustment newEquipment carried

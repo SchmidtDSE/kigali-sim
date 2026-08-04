@@ -134,13 +134,6 @@ public class DisplaceExecutor {
     };
   }
 
-  // Note: an "automatic recycling addition" branch used to live here, crediting recycled
-  // material back to sales before displacement. It supported a `recover ... displacing` grammar
-  // feature removed in commit eb96e411, and by then had no legitimate callers left -- yet it kept
-  // firing incorrectly for any ordinary `cap`/`floor sales ... displacing <same-substance stream>`
-  // call, applying a spurious extra reduction to sales. Removed rather than gated; see this
-  // project's task history for the full trace.
-
   /**
    * Applies equipment-unit-based displacement logic.
    *

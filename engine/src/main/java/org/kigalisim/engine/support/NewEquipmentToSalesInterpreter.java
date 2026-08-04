@@ -28,15 +28,15 @@ import org.kigalisim.lang.operation.DisplacementType;
  * newEquipment is a purely marginal (delta) quantity recomputed fresh each year, so every
  * operation bottoms out in a sales change or set rather than a retirement.</p>
  */
-public class NewEquipmentChangeUtil {
+public class NewEquipmentToSalesInterpreter {
   private final Engine engine;
 
   /**
-   * Creates a new NewEquipmentChangeUtil for the given engine.
+   * Creates a new NewEquipmentToSalesInterpreter for the given engine.
    *
    * @param engine The Engine instance to operate on
    */
-  public NewEquipmentChangeUtil(Engine engine) {
+  public NewEquipmentToSalesInterpreter(Engine engine) {
     this.engine = engine;
   }
 
@@ -116,9 +116,17 @@ public class NewEquipmentChangeUtil {
       BigDecimal clampedTargetKg = clampAtZero(targetKg.getValue());
 
       EngineNumber rechargeVolume = RechargeVolumeCalculator.calculateRechargeVolume(
-          engine.getScope(), engine.getStateGetter(), engine.getStreamKeeper(), engine);
+          engine.getScope(),
+          engine.getStateGetter(),
+          engine.getStreamKeeper(),
+          engine
+      );
       EngineNumber prechargeVolume = PrechargeVolumeCalculator.calculatePrechargeVolume(
-          engine.getScope(), engine.getStateGetter(), engine.getStreamKeeper(), engine);
+          engine.getScope(),
+          engine.getStateGetter(),
+          engine.getStreamKeeper(),
+          engine
+      );
 
       BigDecimal salesKg = clampedTargetKg
           .add(rechargeVolume.getValue())
@@ -164,7 +172,7 @@ public class NewEquipmentChangeUtil {
 
     BigDecimal excessUnits = currentNewEquipment.getValue().subtract(capUnits.getValue());
     if (excessUnits.compareTo(BigDecimal.ZERO) <= 0) {
-      return; // Cap already satisfied - no action, matching every other cap's no-op behavior.
+      return;
     }
 
     BigDecimal deltaUnits = clampDeltaAtZero(currentNewEquipment.getValue(), excessUnits.negate());
@@ -175,11 +183,17 @@ public class NewEquipmentChangeUtil {
     EngineNumber deltaUnitsNumber = new EngineNumber(deltaUnits, "units");
     engine.changeStream("sales", deltaUnitsNumber, null);
 
-    if (displaceTarget != null) {
+    boolean hasDisplace = displaceTarget != null;
+    if (hasDisplace) {
       BigDecimal changeInKg = unitConverter.convert(deltaUnitsNumber, "kg").getValue();
       DisplaceExecutor displaceExecutor = new DisplaceExecutor(engine);
-      displaceExecutor.execute("sales", deltaUnitsNumber, changeInKg, displaceTarget,
-          displacementType);
+      displaceExecutor.execute(
+          "sales",
+          deltaUnitsNumber,
+          changeInKg,
+          displaceTarget,
+          displacementType
+      );
     }
   }
 
@@ -220,12 +234,15 @@ public class NewEquipmentChangeUtil {
     EngineNumber currentNewEquipment = engine.getStream("newEquipment");
     UnitConverter unitConverter = createNewEquipmentUnitConverter();
 
-    EngineNumber floorUnits = resolveLimitTargetUnits(floorValue, currentNewEquipment,
-        unitConverter);
+    EngineNumber floorUnits = resolveLimitTargetUnits(
+        floorValue,
+        currentNewEquipment,
+        unitConverter
+    );
 
     BigDecimal deficitUnits = floorUnits.getValue().subtract(currentNewEquipment.getValue());
     if (deficitUnits.compareTo(BigDecimal.ZERO) <= 0) {
-      return; // Floor already satisfied - no action, matching every other floor's no-op behavior.
+      return;
     }
 
     BigDecimal deltaUnits = clampDeltaAtZero(currentNewEquipment.getValue(), deficitUnits);
@@ -236,11 +253,17 @@ public class NewEquipmentChangeUtil {
     EngineNumber deltaUnitsNumber = new EngineNumber(deltaUnits, "units");
     engine.changeStream("sales", deltaUnitsNumber, null);
 
-    if (displaceTarget != null) {
+    boolean hasDisplace = displaceTarget != null;
+    if (hasDisplace) {
       BigDecimal changeInKg = unitConverter.convert(deltaUnitsNumber, "kg").getValue();
       DisplaceExecutor displaceExecutor = new DisplaceExecutor(engine);
-      displaceExecutor.execute("sales", deltaUnitsNumber, changeInKg, displaceTarget,
-          displacementType);
+      displaceExecutor.execute(
+          "sales",
+          deltaUnitsNumber,
+          changeInKg,
+          displaceTarget,
+          displacementType
+      );
     }
   }
 
@@ -258,41 +281,15 @@ public class NewEquipmentChangeUtil {
       EngineNumber currentNewEquipment, UnitConverter unitConverter) {
     String units = limitValue.getUnits();
     EngineNumber targetUnits;
-    if (isPercentUnits(units)) {
-      EngineNumber basis = isPriorYearBasis(units) ? getPriorNewEquipmentRaw() : currentNewEquipment;
+    if (EngineSupportUtils.isPercentBasisUnits(units)) {
+      boolean isPriorYearBasis = EngineSupportUtils.isCapFloorPriorYearBasis(units);
+      EngineNumber basis = isPriorYearBasis ? getPriorNewEquipmentRaw() : currentNewEquipment;
       BigDecimal targetValue = calculatePercentageChange(basis, limitValue);
       targetUnits = new EngineNumber(targetValue, basis.getUnits()); // basis.getUnits() is "units"
     } else {
       targetUnits = unitConverter.convert(limitValue, "units");
     }
     return new EngineNumber(clampAtZero(targetUnits.getValue()), "units");
-  }
-
-  /**
-   * Check whether a unit string is one of the four cap/floor percent forms.
-   *
-   * @param units The units string to check
-   * @return True if units is "%", "%prioryear", "%currentyear", or "%current"
-   */
-  private boolean isPercentUnits(String units) {
-    return switch (units) {
-      case "%", "%prioryear", "%currentyear", "%current" -> true;
-      default -> false;
-    };
-  }
-
-  /**
-   * Check whether a percent unit string resolves against the prior-year basis.
-   *
-   * <p>Per the existing cap/floor convention elsewhere in the engine, bare "%" aliases to the
-   * prior-year basis (not the current-year basis used by change/set's bare "%"); "% current year"
-   * and "% current" both resolve against the current-year basis instead.</p>
-   *
-   * @param units The units string to check
-   * @return True for "%" or "%prioryear", false for "%currentyear" or "%current"
-   */
-  private boolean isPriorYearBasis(String units) {
-    return "%".equals(units) || "%prioryear".equals(units);
   }
 
   /**

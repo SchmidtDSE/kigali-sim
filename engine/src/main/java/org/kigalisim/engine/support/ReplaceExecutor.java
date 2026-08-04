@@ -81,10 +81,11 @@ public class ReplaceExecutor {
       ExceptionsGenerator.raiseNoAppOrSubstance("setting stream", " specified");
     }
 
-    // newEquipment is a derived stream with no meaningful replace semantics;
-    // ReplaceExecutor has no case for it (or equipment/priorEquipment) below,
-    // so reject explicitly rather than silently writing to a stream that gets
-    // clobbered by the next population recalc.
+    // A cross-substance replace could in principle be given meaning (mirroring how cap/floor
+    // displacement moves a newEquipment change to another substance's sales), but ReplaceExecutor
+    // has no case for newEquipment (or equipment/priorEquipment) below, and implementing that
+    // mirror is out of scope here. Reject explicitly rather than silently writing to a stream that
+    // gets clobbered by the next population recalc.
     if ("newEquipment".equals(stream)) {
       ExceptionsGenerator.raiseNewEquipmentReplace();
     }
