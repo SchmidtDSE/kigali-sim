@@ -43,6 +43,7 @@ public final class EngineSupportUtils {
   static {
     STREAM_NAMES.add("priorEquipment");
     STREAM_NAMES.add("equipment");
+    STREAM_NAMES.add("newEquipment");
     STREAM_NAMES.add("export");
     STREAM_NAMES.add("import");
     STREAM_NAMES.add("domestic");
