@@ -36,7 +36,7 @@ A percent cap or floor without specifying `% current` or `% prior year` was caus
 
 **Classification**: Clarification
 
-Clarified that, for unit-tracked streams, percent-based cap and floor operations (`% prior year` or `% current`) apply to the new equipment count actually specified by the user rather than a total that also includes recharge/precharge servicing volume. Recharge and precharge reflect servicing of the existing equipment population and grow independently of new sales, so including that volume in the percentage basis caused the effective limit to drift for reasons unrelated to the policy itself. We believe excluding it better reflects user intent when specifying a cap or floor in units. Tests have been added to prevent regression. We understand some users may prefer the alternative behavior and one can still use `0.85 * (get sales as units)` or similar to apply against the full stream.
+Clarified that, for unit-tracked streams, percent-based cap and floor operations (`% prior year` or `% current`) apply to the new equipment count actually specified by the user rather than a total that also includes recharge/precharge servicing volume. Recharge and precharge reflect servicing of the existing equipment population and grow independently of new sales, so including that volume in the percentage basis caused the effective limit to drift for reasons unrelated to the policy itself. We believe excluding it better reflects user intent when specifying a cap or floor in units. Tests have been added to prevent regression. We understand some users may prefer the alternative behavior and one can still use `0.85 * (get sales 1 year ago as units)` or similar to apply against the full stream (using `get sales as units` instead for the current-year basis).
 
 ### Not showing previous simulation results on load
 
@@ -53,6 +53,14 @@ On load when one already has a simulation from a previous session, the tool look
 **Classification**: Bug / clarification
 
 Clarified that when a `cap`/`floor ... displacing "X"` policy sends volume to another substance, that substance now keeps the position it reached once the displacing policy stops applying (for example, once its `during` window ends) rather than reverting back toward its pre-displacement level. This matches how a directly capped, set, or floored substance already behaved: once a value takes effect, it is retained until something else changes it. This is a change from prior expectations for what happens when a policy ends or how effects from prior years should carry over. We believe this is more likely to capture real world dynamics. In general, this only applies when using a specific target like on a cap and where demand was inferred or continued for future years from past year values. Tests have been added to prevent regression. We apologize that this prior behavior may have been unexpected.
+
+### Singular year in X years ago
+
+**Status**: Released August 6, 2026
+
+**Classification**: Enhancement
+
+The `get ... X years ago` accessor now also accepts the singular `year` (e.g. `get sales 1 year ago`) in addition to `years`, so authors no longer need to remember to pluralize when looking back exactly one year.
 
 ### Get X years ago
 
