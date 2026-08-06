@@ -22,6 +22,14 @@ The following changes have been adopted and released.
 
 For some time, users have been able to read from `newEquipment` which is the number of new units added in a year for a substance / application pair. However, this stream could not accept writes. With this change, we now allow users to specify `newEquipment` or, in other words, the new equipment sales outside of recharge demands. This can be useful for certain policies that only operate on new equipment. In practice, this is similar to sales but just without the servicing component.
 
+### Bare sales percentage using populations
+
+**Status**: Preview released August 4, 2026. Full release August 5, 2026.
+
+**Classification**: Bug
+
+A percent cap without specifying `% current` or `% prior year` was causing total population to be used as a base, typically leading the operation not to do anything. While this would be noticeable immediately from reviewing the results, we apologize for this issue.
+
 ### Not showing previous simulation results on load
 
 **Status**: Preview released August 4, 2026. Full release August 5, 2026.
@@ -574,24 +582,4 @@ Note that this was queued to go to deployment so the release date may be approxi
 
 Information about issues or discussions still underway, with target completion before December launch.
 
-### Servicing of new equipment
-
-**Status:** In discussion
-
-Some prior modeling efforts outside of Kigali Sim would apply servicing (top up or repair) to all equipment in a year while others would only apply it to equipment over a certain age, avoiding maintenance on equipment just sold. Kigali Sim currently takes the later approach where only existing equipment from previous years are subject to servicing and new equipment are not assumed to need recharge or repair. Multiple proposals have been made:
-
-- Keep the current logic which only applies servicing to existing equipment from previous years.
-- Use simpler logic where recharge applies to all equipment not old equipment to simplify manual calculations of users validating Kigali Sim models using manual calculations.
-- Allow the user to specify which behavior is desired. However, this adds additional complexity to the tool and may lead to confusion when comparing results between Kigali Sim models.
-
-This is being discussed in [#469](https://github.com/SchmidtDSE/kigali-sim/issues/469) and we welcome feedback. Note that the default behavior of Kigali Sim is to retire old equipment and then recharge from the remaining population but this can be modified through [QubecTalk](https://kigalisim.org/guide/tutorial_07.html) code (see the editor tab for advanced capabilities).
-
-### Initial charge / recharge consumption options
-
-**Status:** In discussion
-
-In addition to the emissions radio button, there is discussion of adding initial charge and recharge options under consumption. In some ways these are redundant to the emissions optinos but with more unit conversions though it causes potential confusion when setting custom metrics and in understanding trade attribution.
-
-This is being discussed in [#490](https://github.com/SchmidtDSE/kigali-sim/issues/490). Please let us know what you think!
-
-
+**None at the moment!** Drop us an issue.
