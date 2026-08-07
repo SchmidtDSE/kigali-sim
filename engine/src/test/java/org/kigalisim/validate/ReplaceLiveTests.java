@@ -531,13 +531,12 @@ public class ReplaceLiveTests {
     int targetYear = 10;
 
     EngineResult bauSubA = LiveTestsUtil.getResult(bauResultsList.stream(), targetYear, "Test", "SubA");
-    EngineResult bauSubB = LiveTestsUtil.getResult(bauResultsList.stream(), targetYear, "Test", "SubB");
-    EngineResult replaceSubA = LiveTestsUtil.getResult(replaceResultsList.stream(), targetYear, "Test", "SubA");
-    EngineResult replaceSubB = LiveTestsUtil.getResult(replaceResultsList.stream(), targetYear, "Test", "SubB");
-
     assertNotNull(bauSubA, "Should have BAU result for Test/SubA in year 10");
+    EngineResult bauSubB = LiveTestsUtil.getResult(bauResultsList.stream(), targetYear, "Test", "SubB");
     assertNotNull(bauSubB, "Should have BAU result for Test/SubB in year 10");
+    EngineResult replaceSubA = LiveTestsUtil.getResult(replaceResultsList.stream(), targetYear, "Test", "SubA");
     assertNotNull(replaceSubA, "Should have With Replace result for Test/SubA in year 10");
+    EngineResult replaceSubB = LiveTestsUtil.getResult(replaceResultsList.stream(), targetYear, "Test", "SubB");
     assertNotNull(replaceSubB, "Should have With Replace result for Test/SubB in year 10");
 
     double bauTotalImport = bauSubA.getImport().getValue().doubleValue()
