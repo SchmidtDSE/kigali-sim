@@ -18,8 +18,8 @@ overrides:
   lodash: '>=4.18.0'
   picomatch: '>=2.3.2 <3'
   flatted: '>=3.4.2'
-  js-yaml@>=4.0.0: '>=4.3.0 <5'
-  js-yaml@<4.0.0: '>=3.15.0 <4'
+  js-yaml@>=4.0.0: '>=4.3.1 <5'
+  js-yaml@<4.0.0: '>=3.15.1 <4'
   linkify-it: '>=5.0.2 <6'
   markdown-it: '>=14.2.0'
   morgan: '>=1.11.0'
@@ -1640,12 +1640,12 @@ packages:
   js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
 
-  js-yaml@3.15.0:
-    resolution: {integrity: sha512-ttBQIIQPDeLjpPOohtUdXuXUVoA2uIB6fEH9HyJ7234s5mBJ5wTx20njxplLZQgLaOfpmPQA7X2t5AX6tIPbog==}
+  js-yaml@3.15.1:
+    resolution: {integrity: sha512-S99WuO3HlhO3XN41EtYUNl9zzXjoJx7QvmipxsJVxtCBT0YHEFy+iOJhjSvrmV12nYhWpZaM8lPHkJm0yUMbag==}
     hasBin: true
 
-  js-yaml@4.3.0:
-    resolution: {integrity: sha512-1td788aAnnZ5qs7V2QIRl1owjtYpbKt749Y3xauqQgwIIGF/xXWz1wMTEBx5O3LK3lXLVuqXPdPxj2BoFHaW9Q==}
+  js-yaml@4.3.1:
+    resolution: {integrity: sha512-CY6crGq313MX8GkwvB7tzgp99vjQxY1++5y10/BKN/GUfHqWaOGQMNZkBvqSzsZKWk/ijwHlWzzkLulsGHhjWQ==}
     hasBin: true
 
   js2xmlparser@4.0.2:
@@ -3200,7 +3200,7 @@ snapshots:
       globals: 13.24.0
       ignore: 5.3.2
       import-fresh: 3.3.1
-      js-yaml: 4.3.0
+      js-yaml: 4.3.1
       minimatch: 10.2.4
       strip-json-comments: 3.1.1
     transitivePeerDependencies:
@@ -3679,7 +3679,7 @@ snapshots:
     dependencies:
       env-paths: 2.2.1
       import-fresh: 3.3.1
-      js-yaml: 4.3.0
+      js-yaml: 4.3.1
       parse-json: 5.2.0
 
   cross-spawn@7.0.6:
@@ -3820,7 +3820,7 @@ snapshots:
       imurmurhash: 0.1.4
       is-glob: 4.0.3
       is-path-inside: 3.0.3
-      js-yaml: 4.3.0
+      js-yaml: 4.3.1
       json-stable-stringify-without-jsonify: 1.0.1
       levn: 0.4.1
       lodash.merge: 4.6.2
@@ -4127,7 +4127,7 @@ snapshots:
       grunt-legacy-log: 3.0.0
       grunt-legacy-util: 2.0.1
       iconv-lite: 0.6.3
-      js-yaml: 3.15.0
+      js-yaml: 3.15.1
       minimatch: 10.2.4
       nopt: 3.0.6
 
@@ -4273,12 +4273,12 @@ snapshots:
 
   js-tokens@4.0.0: {}
 
-  js-yaml@3.15.0:
+  js-yaml@3.15.1:
     dependencies:
       argparse: 1.0.10
       esprima: 4.0.1
 
-  js-yaml@4.3.0:
+  js-yaml@4.3.1:
     dependencies:
       argparse: 2.0.1
 
