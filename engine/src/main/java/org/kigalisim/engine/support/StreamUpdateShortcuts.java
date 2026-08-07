@@ -23,7 +23,6 @@ import org.kigalisim.engine.recalc.RecalcOperationBuilder;
 import org.kigalisim.engine.recalc.StreamUpdate;
 import org.kigalisim.engine.recalc.StreamUpdateBuilder;
 import org.kigalisim.engine.state.Scope;
-import org.kigalisim.engine.state.SimpleUseKey;
 import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.state.YearMatcher;
 
@@ -169,6 +168,12 @@ public class StreamUpdateShortcuts {
    * for accurate unit conversion and recalculation, then restored to the original scope after the
    * operation completes.</p>
    *
+   * <p>Since {@code propagateChanges=false} skips the standard lastSpecifiedValue tracking, this
+   * method records it itself via {@link EngineSupportUtils#recordLastSpecifiedKeepingUnits},
+   * which correctly backs out implied recharge/precharge kg before recording -- the same helper
+   * {@code DisplaceExecutor} and {@code ReplaceExecutor} use elsewhere, so there is only one
+   * implementation of that bookkeeping to keep correct.</p>
+   *
    * @param stream The stream identifier to modify
    * @param amount The amount to change the stream by
    * @param destinationScope The scope for the destination substance
@@ -198,8 +203,9 @@ public class StreamUpdateShortcuts {
 
     engine.executeStreamUpdate(update);
 
-    // Update lastSpecifiedValue for sales substreams since propagateChanges=false skips this
-    forceSetLastSpecifiedValue(stream, outputWithUnits, destinationScope);
+    // Record lastSpecifiedValue since propagateChanges=false skipped the standard tracking.
+    // Engine scope is already switched to destination, matching what this helper expects.
+    EngineSupportUtils.recordLastSpecifiedKeepingUnits(engine, destinationScope, stream);
 
     // Only recalculate for streams that affect equipment populations
     if (!EngineSupportUtils.getIsSalesStream(stream, false)) {
@@ -254,34 +260,6 @@ public class StreamUpdateShortcuts {
     BigDecimal newAmountBound = negativeAllowed ? newAmount : EngineSupportUtils.ensurePositive(newAmount);
 
     return new EngineNumber(newAmountBound, currentValue.getUnits());
-  }
-
-  /**
-   * Updates the lastSpecifiedValue for a sales substream.
-   *
-   * <p>This method ensures that the lastSpecifiedValue is properly tracked for sales
-   * substreams when propagateChanges=false skips the normal tracking mechanism. This is necessary for
-   * correct unit-based carry-over behavior in subsequent operations.</p>
-   *
-   * @param stream The stream identifier
-   * @param value The EngineNumber value to set as the last specified value
-   * @param destinationScope The scope for the destination substance
-   */
-  private void forceSetLastSpecifiedValue(String stream, EngineNumber value,
-      Scope destinationScope) {
-    if (EngineSupportUtils.getIsSalesStream(stream, false)) {
-      UseKey destKey = new SimpleUseKey(destinationScope.getApplication(),
-                                        destinationScope.getSubstance());
-      // Preserve the units of the last-specified value this is overwriting, so unit-based
-      // carry-over / percentage-change semantics are not silently changed by displacement.
-      EngineNumber prior = engine.getStreamKeeper().getLastSpecifiedValue(destKey, stream);
-      EngineNumber valueToRecord = value;
-      if (prior != null) {
-        UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(engine, stream);
-        valueToRecord = unitConverter.convert(value, prior.getUnits());
-      }
-      engine.getStreamKeeper().setLastSpecifiedValue(destKey, stream, valueToRecord);
-    }
   }
 
   /**
