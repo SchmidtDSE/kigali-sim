@@ -347,10 +347,10 @@ expression: number  # simpleExpression
   | GET_ target=stream AS_ conversion=unitOrRatio  # getStreamConversion
   | GET_ target=stream OF_ rescope=string  # getStreamIndirect
   | GET_ target=stream OF_ rescope=string AS_ conversion=unitOrRatio  # getStreamIndirectConversion
-  | GET_ target=stream INTEGER_ YEARS_ AGO_  # getStreamPrior
-  | GET_ target=stream INTEGER_ YEARS_ AGO_ AS_ conversion=unitOrRatio  # getStreamPriorConversion
-  | GET_ target=stream INTEGER_ YEARS_ AGO_ OF_ rescope=string  # getStreamIndirectPrior
-  | GET_ target=stream INTEGER_ YEARS_ AGO_ OF_ rescope=string AS_ conversion=unitOrRatio  # getStreamIndirectPriorConversion
+  | GET_ target=stream INTEGER_ (YEAR_ | YEARS_) AGO_  # getStreamPrior
+  | GET_ target=stream INTEGER_ (YEAR_ | YEARS_) AGO_ AS_ conversion=unitOrRatio  # getStreamPriorConversion
+  | GET_ target=stream INTEGER_ (YEAR_ | YEARS_) AGO_ OF_ rescope=string  # getStreamIndirectPrior
+  | GET_ target=stream INTEGER_ (YEAR_ | YEARS_) AGO_ OF_ rescope=string AS_ conversion=unitOrRatio  # getStreamIndirectPriorConversion
   | identifier  # simpleIdentifier
   | expression POW_ expression  # powExpression
   | expression op=(MULT_ | DIV_) expression  # multiplyExpression
