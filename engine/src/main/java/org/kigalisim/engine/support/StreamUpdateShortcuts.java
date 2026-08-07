@@ -98,11 +98,19 @@ public class StreamUpdateShortcuts {
     EngineNumber outputWithUnits = new EngineNumber(newAmountBound, currentValue.getUnits());
 
     // Allow propagation but don't track units (since units tracking was handled by the caller)
-    // Also set subtractRecycling=false to avoid negative value clamping in setStreamSalesSubstream
+    // Also set subtractRecycling=false to avoid negative value clamping in setStreamSalesSubstream.
+    // preserveImplicitRecharge=true since this moves kg volume without genuinely re-specifying
+    // the stream, so implicitRecharge/implicitPrecharge should not be recomputed or cleared.
+    // preserveLastSpecified=true since the "restore prior + delta" logic below already handles
+    // lastSpecifiedValue for `stream` itself; without this, the standard tracking update above
+    // would stamp the "sales" composite with this update's raw kg value first, corrupting its
+    // unit-tracking before that restoration (and the caller's own follow-up fix) can reach it.
     StreamUpdateBuilder builder = new StreamUpdateBuilder()
         .setName(stream)
         .setValue(outputWithUnits)
-        .setSubtractRecycling(false);
+        .setSubtractRecycling(false)
+        .setPreserveImplicitRecharge(true)
+        .setPreserveLastSpecified(true);
 
     if (scope.isPresent()) {
       builder.setKey(scope.get());
@@ -192,13 +200,16 @@ public class StreamUpdateShortcuts {
     // Get current value and calculate new value
     EngineNumber outputWithUnits = applyDelta(stream, amount, negativeAllowed);
 
-    // Set the stream value without triggering standard recalc to avoid double calculation
-    // Also set subtractRecycling=false to avoid negative value clamping in setStreamSalesSubstream
+    // Set the stream value without triggering standard recalc to avoid double calculation.
+    // Also set subtractRecycling=false to avoid negative value clamping in setStreamSalesSubstream.
+    // preserveImplicitRecharge=true since this moves kg volume without genuinely re-specifying
+    // the stream, so implicitRecharge/implicitPrecharge should not be recomputed or cleared.
     StreamUpdate update = new StreamUpdateBuilder()
         .setName(stream)
         .setValue(outputWithUnits)
         .setPropagateChanges(false)
         .setSubtractRecycling(false)
+        .setPreserveImplicitRecharge(true)
         .build();
 
     engine.executeStreamUpdate(update);

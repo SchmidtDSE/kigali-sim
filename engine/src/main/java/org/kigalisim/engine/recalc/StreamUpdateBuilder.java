@@ -23,6 +23,8 @@ public final class StreamUpdateBuilder extends ValidatedBuilder<StreamUpdate> {
   private boolean subtractRecycling = true;
   private boolean forceUseFullRecharge = false;
   private Optional<SalesStreamDistribution> distribution;
+  private boolean preserveImplicitRecharge = false;
+  private boolean preserveLastSpecified = false;
 
   /**
    * Creates a new StreamUpdateBuilder with default values.
@@ -164,6 +166,30 @@ public final class StreamUpdateBuilder extends ValidatedBuilder<StreamUpdate> {
   }
 
   /**
+   * Sets whether to leave the implicitRecharge/implicitPrecharge streams untouched.
+   *
+   * @param preserveImplicitRecharge whether to preserve the existing implicitRecharge/
+   *     implicitPrecharge streams instead of updating or clearing them based on this update
+   * @return this builder
+   */
+  public StreamUpdateBuilder setPreserveImplicitRecharge(boolean preserveImplicitRecharge) {
+    this.preserveImplicitRecharge = preserveImplicitRecharge;
+    return this;
+  }
+
+  /**
+   * Sets whether to skip the standard lastSpecifiedValue/composite ("sales") tracking update.
+   *
+   * @param preserveLastSpecified whether to skip the standard lastSpecifiedValue/composite
+   *     tracking update this update would otherwise trigger
+   * @return this builder
+   */
+  public StreamUpdateBuilder setPreserveLastSpecified(boolean preserveLastSpecified) {
+    this.preserveLastSpecified = preserveLastSpecified;
+    return this;
+  }
+
+  /**
    * Infers the subtractRecycling flag based on stream name and value units.
    *
    * @return this builder with subtractRecycling set appropriately
@@ -205,7 +231,9 @@ public final class StreamUpdateBuilder extends ValidatedBuilder<StreamUpdate> {
         unitsToRecord,
         subtractRecycling,
         forceUseFullRecharge,
-        distribution
+        distribution,
+        preserveImplicitRecharge,
+        preserveLastSpecified
     );
   }
 }
