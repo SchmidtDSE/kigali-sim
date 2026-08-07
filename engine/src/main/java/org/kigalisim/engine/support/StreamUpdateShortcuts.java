@@ -85,6 +85,9 @@ public class StreamUpdateShortcuts {
       return;
     }
 
+    UseKey useKeyEffective = scope.orElse(engine.getScope());
+    Optional<EngineNumber> priorLastSpecified = getLastSpecifiedIfSales(useKeyEffective, stream);
+
     EngineNumber currentValue = engine.getStream(stream, scope, Optional.empty());
     UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(engine, stream);
 
@@ -108,6 +111,36 @@ public class StreamUpdateShortcuts {
 
     StreamUpdate update = builder.build();
     engine.executeStreamUpdate(update);
+
+    // executeStreamUpdate folds recharge into lastSpecifiedValue; restore it to prior + this
+    // call's own delta so recharge is never absorbed into the tracked sales intent.
+    if (priorLastSpecified.isPresent()) {
+      EngineNumber prior = priorLastSpecified.get();
+      EngineNumber deltaInPriorUnits = unitConverter.convert(amount, prior.getUnits());
+      BigDecimal newLastSpecifiedValue = prior.getValue().add(deltaInPriorUnits.getValue());
+      BigDecimal newLastSpecifiedValueBound;
+      if (negativeAllowed) {
+        newLastSpecifiedValueBound = newLastSpecifiedValue;
+      } else {
+        newLastSpecifiedValueBound = EngineSupportUtils.ensurePositive(newLastSpecifiedValue);
+      }
+      EngineNumber preserved = new EngineNumber(newLastSpecifiedValueBound, prior.getUnits());
+      engine.getStreamKeeper().setLastSpecifiedValue(useKeyEffective, stream, preserved);
+    }
+  }
+
+  /**
+   * Gets the tracked lastSpecifiedValue for a stream, if it is a sales stream.
+   *
+   * @param useKey The scope to look up
+   * @param stream The stream identifier
+   * @return The tracked value, or empty if the stream isn't sales-related or has no tracked value
+   */
+  private Optional<EngineNumber> getLastSpecifiedIfSales(UseKey useKey, String stream) {
+    if (!EngineSupportUtils.getIsSalesStream(stream, false)) {
+      return Optional.empty();
+    }
+    return Optional.ofNullable(engine.getStreamKeeper().getLastSpecifiedValue(useKey, stream));
   }
 
   /**

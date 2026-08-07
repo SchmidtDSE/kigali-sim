@@ -23,7 +23,6 @@ import org.kigalisim.engine.number.UnitConverter;
 import org.kigalisim.engine.state.ConverterStateGetter;
 import org.kigalisim.engine.state.OverridingConverterStateGetter;
 import org.kigalisim.engine.state.Scope;
-import org.kigalisim.engine.state.SimpleUseKey;
 import org.kigalisim.engine.state.SimulationState;
 import org.kigalisim.engine.state.YearMatcher;
 
@@ -95,9 +94,6 @@ public class ReplaceExecutor {
       ExceptionsGenerator.raiseSelfReplacement(currentSubstance);
     }
 
-    // Update last specified values for both substances
-    updateLastSpecified(currentScope, application, destinationSubstance, stream, amountRaw);
-
     // Resolve percentage to concrete amount
     EngineNumber effectiveAmount = getEffectiveAmount(currentScope, stream, amountRaw);
 
@@ -107,37 +103,6 @@ public class ReplaceExecutor {
     } else {
       applyReplaceWithVolume(currentScope, stream, destinationSubstance, effectiveAmount);
     }
-  }
-
-  /**
-   * Updates last specified values for sales streams in both source and destination substances.
-   *
-   * <p>For sales streams (domestic, import, sales), this method tracks the user-specified
-   * amount for both the current substance and the destination substance. This enables subsequent
-   * change operations to correctly interpret percentage-based specifications and maintain proper
-   * carry-over behavior.</p>
-   *
-   * @param currentScope The current scope containing the source substance
-   * @param application The application name
-   * @param destinationSubstance The destination substance name
-   * @param stream The stream being modified
-   * @param amountRaw The raw amount specified by the user
-   */
-  private void updateLastSpecified(Scope currentScope, String application,
-      String destinationSubstance, String stream, EngineNumber amountRaw) {
-    boolean isSalesStream = EngineSupportUtils.getIsSalesStream(stream, true);
-    if (!isSalesStream) {
-      return;
-    }
-
-    SimulationState simulationState = engine.getStreamKeeper();
-
-    // Track for current substance
-    simulationState.setLastSpecifiedValue(currentScope, stream, amountRaw);
-
-    // Track for destination substance
-    SimpleUseKey destKey = new SimpleUseKey(application, destinationSubstance);
-    simulationState.setLastSpecifiedValue(destKey, stream, amountRaw);
   }
 
   /**
@@ -218,6 +183,7 @@ public class ReplaceExecutor {
         Optional.empty(),
         Optional.empty()
     );
+    updateLastSpecifiedAfterReplace(stream, currentScope);
 
     // Add to destination substance using destination's initial charge
     Scope destinationScope = currentScope.getWithSubstance(destinationSubstance);
@@ -245,6 +211,7 @@ public class ReplaceExecutor {
         destinationVolumeChange,
         destinationScope
     );
+    updateLastSpecifiedAfterReplace(stream, destinationScope);
   }
 
   /**
@@ -277,6 +244,7 @@ public class ReplaceExecutor {
         Optional.empty(),
         Optional.empty()
     );
+    updateLastSpecifiedAfterReplace(stream, currentScope);
 
     // Add to destination substance
     Scope destinationScope = currentScope.getWithSubstance(destinationSubstance);
@@ -285,5 +253,34 @@ public class ReplaceExecutor {
         amount,
         destinationScope
     );
+    updateLastSpecifiedAfterReplace(stream, destinationScope);
+  }
+
+  /**
+   * Updates lastSpecified for a stream after replacement so that subsequent percentage- or
+   * units-based changes (and recharge's own year-over-year reassertion) use the post-replacement
+   * value rather than a stale or recharge-inflated one.
+   *
+   * <p>This mirrors {@code DisplaceExecutor}'s equivalent step for cap/floor displacement,
+   * which already relies on {@link EngineSupportUtils#recordLastSpecifiedKeepingUnits} to fold a
+   * substream update (e.g. "import") into the composite "sales" lastSpecified value too, with
+   * implied recharge/precharge backed out first.</p>
+   *
+   * @param stream The stream that received the replacement change
+   * @param scope The scope (application/substance) affected
+   */
+  private void updateLastSpecifiedAfterReplace(String stream, Scope scope) {
+    String originalSubstance = engine.getScope().getSubstance();
+    boolean crossSubstance = !scope.getSubstance().equals(originalSubstance);
+
+    if (crossSubstance) {
+      engine.setSubstance(scope.getSubstance());
+    }
+
+    EngineSupportUtils.recordLastSpecifiedKeepingUnits(engine, scope, stream);
+
+    if (crossSubstance) {
+      engine.setSubstance(originalSubstance);
+    }
   }
 }
