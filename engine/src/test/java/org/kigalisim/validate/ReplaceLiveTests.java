@@ -823,4 +823,61 @@ public class ReplaceLiveTests {
             + "(high GWP) with SubL (low GWP) should reduce, not increase, total emissions",
             replacementTotalConsumption, bauTotalConsumption));
   }
+
+  /**
+   * Test that a "cap ... displacing" clause which is non-binding on its own does not cause
+   * consumption to blow up when stacked after a "replace" policy on the same source substance.
+   *
+   * <p>This reproduces a bug distinct from the ones already fixed in {@code ReplaceExecutor},
+   * {@code DisplaceExecutor}, and {@code EngineSupportUtils#recordLastSpecifiedKeepingUnits}.
+   * Here, SubH uses both "recharge 100% of newEquipment" (precharge) and an ordinary
+   * "recharge 25% with 3 kg/unit" (priorEquipment recharge), while SubL uses only an
+   * ordinary recharge. A "cap import to 1000 units displacing 'SubL'" policy on SubH is set
+   * well above actual demand, so applied alone it never binds and reproduces BAU exactly
+   * ("cap alone" == "bau"). A "replace 2% of import with 'SubL'" policy on SubH applied alone
+   * correctly reduces total consumption relative to BAU, since SubL has much lower GWP.
+   * However, stacking the non-binding cap after the replace policy ("replacement then cap")
+   * causes total consumption to spike to roughly 3x BAU, even though neither policy alone
+   * causes any such effect. As of this writing the root cause has not been identified; this
+   * test only documents the reproduction and is expected to fail until it is found and fixed.</p>
+   */
+  @Test
+  public void testReplaceThenNonBindingCapDoesNotBlowUpConsumption() throws IOException {
+    String qtaPath = "../examples/replace_then_nonbinding_cap_runaway.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, "bau", progress -> {});
+    List<EngineResult> bauResultsList = bauResults.collect(Collectors.toList());
+
+    Stream<EngineResult> replacementThenCapResults =
+        KigaliSimFacade.runScenario(program, "replacement then cap", progress -> {});
+    List<EngineResult> replacementThenCapResultsList = replacementThenCapResults.collect(Collectors.toList());
+
+    int targetYear = 2040;
+
+    EngineResult bauSubH = LiveTestsUtil.getResult(bauResultsList.stream(), targetYear, "App A", "SubH");
+    EngineResult bauSubL = LiveTestsUtil.getResult(bauResultsList.stream(), targetYear, "App A", "SubL");
+    EngineResult replacementThenCapSubH =
+        LiveTestsUtil.getResult(replacementThenCapResultsList.stream(), targetYear, "App A", "SubH");
+    final EngineResult replacementThenCapSubL =
+        LiveTestsUtil.getResult(replacementThenCapResultsList.stream(), targetYear, "App A", "SubL");
+
+    assertNotNull(bauSubH, "Should have BAU result for App A/SubH in year 2040");
+    assertNotNull(bauSubL, "Should have BAU result for App A/SubL in year 2040");
+    assertNotNull(replacementThenCapSubH, "Should have replacement then cap result for App A/SubH in year 2040");
+    assertNotNull(replacementThenCapSubL, "Should have replacement then cap result for App A/SubL in year 2040");
+
+    double bauTotalConsumption = bauSubH.getConsumption().getValue().doubleValue()
+        + bauSubL.getConsumption().getValue().doubleValue();
+    double replacementThenCapTotalConsumption = replacementThenCapSubH.getConsumption().getValue().doubleValue()
+        + replacementThenCapSubL.getConsumption().getValue().doubleValue();
+
+    assertTrue(replacementThenCapTotalConsumption <= bauTotalConsumption * 1.05,
+        String.format("Total consumption under \"replacement then cap\" (%.2f) should not be "
+            + "dramatically higher than BAU (%.2f) in year 2040, since replacing SubH "
+            + "(high GWP) with SubL (low GWP), even with a separately non-binding cap stacked "
+            + "on top, should never increase total emissions this dramatically",
+            replacementThenCapTotalConsumption, bauTotalConsumption));
+  }
 }

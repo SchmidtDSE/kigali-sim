@@ -1,0 +1,70 @@
+start about
+  # Name: Repro - non-binding cap + replace -> consumption blows up
+  # Description: Anonymized minimal case. Ran with Kigali Sim 0.1.3 (2026-08 build, 2nd fix).
+  # Finding: a quota `cap import to N displacing "alt"` that is HIGHER than demand
+  # does not bind on its own (cap alone == BAU, consumption unchanged). But when
+  # chained AFTER `replace P% of import with "alt"` on the same source, combined
+  # consumption rises far ABOVE business as usual.
+  # Note: source (SubH) uses `recharge 100% of newEquipment`; the alternative
+  # (SubL) uses only a percentage recharge.
+end about
+
+start default
+  define application "App A"
+    uses substance "SubH"
+      enable import
+      equals 1000 kgCO2e / kg
+      equals 100 kwh / unit
+      initial charge with 3 kg / unit for import
+      set import to 100 units during year 2025
+      change import by +10 units during years 2026 to 2039
+      retire 5 % each year
+      recharge 100 % of newEquipment with 3 kg / unit during years 2025 to onwards
+      recharge 25 % with 3 kg / unit during years 2025 to onwards
+    end substance
+    uses substance "SubL"
+      enable import
+      equals 1 kgCO2e / kg
+      equals 100 kwh / unit
+      initial charge with 3 kg / unit for import
+      set import to 0 units during year 2025
+      retire 5 % each year
+      recharge 40 % with 3 kg / unit during years 2025 to onwards
+    end substance
+  end application
+end default
+
+start policy "BAU"
+  modify application "App A"
+    modify substance "SubH"
+      recharge 100 % of newEquipment with 3 kg / unit during years 2026 to onwards
+      recharge 25 % with 3 kg / unit during years 2026 to onwards
+    end substance
+    modify substance "SubL"
+      recharge 40 % with 3 kg / unit during years 2026 to onwards
+    end substance
+  end application
+end policy
+
+start policy "Replacement"
+  modify application "App A"
+    modify substance "SubH"
+      replace 2 % of import with "SubL" during years 2026 to onwards
+    end substance
+  end application
+end policy
+
+start policy "Cap"
+  modify application "App A"
+    modify substance "SubH"
+      cap import to 1000 units displacing "SubL" during years 2026 to onwards
+    end substance
+  end application
+end policy
+
+start simulations
+  simulate "bau" using "BAU" from years 2025 to 2040
+  simulate "replacement alone" using "BAU" then "Replacement" from years 2025 to 2040
+  simulate "cap alone" using "BAU" then "Cap" from years 2025 to 2040
+  simulate "replacement then cap" using "BAU" then "Replacement" then "Cap" from years 2025 to 2040
+end simulations

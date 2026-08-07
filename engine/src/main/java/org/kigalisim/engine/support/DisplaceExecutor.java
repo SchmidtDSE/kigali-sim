@@ -240,9 +240,9 @@ public class DisplaceExecutor {
    * for the destination substance afterwards.
    *
    * <p>This is the shared destination-side half of substance-based displacement: applying the
-   * change (with correct GWP context via {@link StreamUpdateShortcuts#changeStreamWithDisplacementContext})
-   * and recording it via {@link #updateLastSpecifiedAfterDisplacement}. It is used both by
-   * {@link #execute} for cap/floor/recover's "displacing" clause and directly by
+   * change and recording it as lastSpecified, both handled internally by {@link
+   * StreamUpdateShortcuts#changeStreamWithDisplacementContext} with correct GWP context. It is
+   * used both by {@link #execute} for cap/floor/recover's "displacing" clause and directly by
    * {@code ReplaceExecutor}, which always displaces to a different substance and needs this same
    * transfer-plus-bookkeeping logic without duplicating it.</p>
    *
@@ -288,24 +288,21 @@ public class DisplaceExecutor {
       );
       EngineNumber displaceChange = new EngineNumber(destinationVolumeChange.getValue(), "kg");
 
-      // Use custom recalc kit with destination substance's properties for correct GWP calculation
+      // Use custom recalc kit with destination substance's properties for correct GWP calculation;
+      // this also records lastSpecified for the destination internally.
       shortcuts.changeStreamWithDisplacementContext(stream, displaceChange, destinationScope);
-
-      updateLastSpecifiedAfterDisplacement(stream, destinationScope);
 
       // Restore original scope
       engine.setSubstance(originalSubstance);
     } else {
       EngineNumber displaceChange = new EngineNumber(changeAmount.negate(), "kg");
 
+      // Records lastSpecified for the destination internally.
       shortcuts.changeStreamWithDisplacementContext(
           stream,
           displaceChange,
           destinationScope
       );
-
-      // Update lastSpecified for the displaced stream in destination scope
-      updateLastSpecifiedAfterDisplacement(stream, destinationScope);
     }
   }
 
