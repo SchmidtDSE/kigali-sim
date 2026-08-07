@@ -508,4 +508,45 @@ public class ReplaceLiveTests {
     // Note: Target substances may remain at zero if they have no initial import/sales in the QTA setup
     // The key validation is that replaced substances are reduced but not eliminated entirely
   }
+
+  /**
+   * Test that a 0% replace policy is a no-op and does not change total imports.
+   *
+   * <p>Replacing 0% of import with another substance should have no effect on either
+   * substance's stream, so "With Replace" should have identical total import to "BAU"
+   * in every year, including year 10.</p>
+   */
+  @Test
+  public void testReplaceZeroPercentIsNoOp() throws IOException {
+    String qtaPath = "../examples/replace_zero_percent.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, "BAU", progress -> {});
+    List<EngineResult> bauResultsList = bauResults.collect(Collectors.toList());
+
+    Stream<EngineResult> replaceResults = KigaliSimFacade.runScenario(program, "With Replace", progress -> {});
+    List<EngineResult> replaceResultsList = replaceResults.collect(Collectors.toList());
+
+    int targetYear = 10;
+
+    EngineResult bauSubA = LiveTestsUtil.getResult(bauResultsList.stream(), targetYear, "Test", "SubA");
+    EngineResult bauSubB = LiveTestsUtil.getResult(bauResultsList.stream(), targetYear, "Test", "SubB");
+    EngineResult replaceSubA = LiveTestsUtil.getResult(replaceResultsList.stream(), targetYear, "Test", "SubA");
+    EngineResult replaceSubB = LiveTestsUtil.getResult(replaceResultsList.stream(), targetYear, "Test", "SubB");
+
+    assertNotNull(bauSubA, "Should have BAU result for Test/SubA in year 10");
+    assertNotNull(bauSubB, "Should have BAU result for Test/SubB in year 10");
+    assertNotNull(replaceSubA, "Should have With Replace result for Test/SubA in year 10");
+    assertNotNull(replaceSubB, "Should have With Replace result for Test/SubB in year 10");
+
+    double bauTotalImport = bauSubA.getImport().getValue().doubleValue()
+        + bauSubB.getImport().getValue().doubleValue();
+    double replaceTotalImport = replaceSubA.getImport().getValue().doubleValue()
+        + replaceSubB.getImport().getValue().doubleValue();
+
+    assertEquals(bauTotalImport, replaceTotalImport, 0.0001,
+        String.format("Total import should be unchanged by a 0%% replace policy in year 10. "
+            + "BAU: %.6f, With Replace: %.6f", bauTotalImport, replaceTotalImport));
+  }
 }
