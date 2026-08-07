@@ -1,0 +1,56 @@
+start about
+  # Name: Repro - replace % of import on growing import + precharge
+  # Description: Anonymized minimal case. Ran with Kigali Sim 0.1.3 (2026-08 build).
+  # Trigger: `replace P% of import with "alt"` combined with a growing import
+  # stream (`change import by +N`) AND `recharge 100% of newEquipment`. This
+  # causes consumption to blow up far above business as usual. Removing any one
+  # of (replace / growth / newEquipment recharge) makes it behave correctly.
+end about
+
+start default
+  define application "App A"
+    uses substance "SubH"
+      enable import
+      equals 1000 kgCO2e / kg
+      equals 100 kwh / unit
+      initial charge with 1 kg / unit for import
+      set import to 100 units during year 2025
+      change import by +10 units during years 2026 to 2039
+      retire 5 % each year
+      recharge 100 % of newEquipment with 1 kg / unit during years 2025 to onwards
+    end substance
+    uses substance "SubL"
+      enable import
+      equals 1 kgCO2e / kg
+      equals 100 kwh / unit
+      initial charge with 1 kg / unit for import
+      set import to 0 units during year 2025
+      retire 5 % each year
+      recharge 100 % of newEquipment with 1 kg / unit during years 2025 to onwards
+    end substance
+  end application
+end default
+
+start policy "BAU"
+  modify application "App A"
+    modify substance "SubH"
+      recharge 100 % of newEquipment with 1 kg / unit during years 2026 to onwards
+    end substance
+    modify substance "SubL"
+      recharge 100 % of newEquipment with 1 kg / unit during years 2026 to onwards
+    end substance
+  end application
+end policy
+
+start policy "Replacement"
+  modify application "App A"
+    modify substance "SubH"
+      replace 2 % of import with "SubL" during years 2026 to onwards
+    end substance
+  end application
+end policy
+
+start simulations
+  simulate "bau" using "BAU" from years 2025 to 2040
+  simulate "replacement alone" using "BAU" then "Replacement" from years 2025 to 2040
+end simulations

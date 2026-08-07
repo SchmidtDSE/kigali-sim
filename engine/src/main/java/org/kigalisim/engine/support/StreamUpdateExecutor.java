@@ -75,22 +75,31 @@ public class StreamUpdateExecutor {
     boolean isUnits = value.hasEquipmentUnits();
     boolean isSalesSubstream = EngineSupportUtils.isSalesSubstream(name);
 
-    ImplicitRechargeUpdate rechargeUpdate = handleImplicitRecharge(
-        keyEffective,
-        name,
-        value,
-        isSales,
-        isUnits,
-        isSalesSubstream
-    );
+    EngineNumber valueToSet;
+    if (update.getPreserveImplicitRecharge()) {
+      // This update moves kg volume into or out of the stream without genuinely
+      // re-specifying it, so implicitRecharge/implicitPrecharge (recording how much servicing
+      // kg is already baked into the stream's total) stay exactly as they are -- see
+      // StreamUpdate#getPreserveImplicitRecharge.
+      valueToSet = value;
+    } else {
+      ImplicitRechargeUpdate rechargeUpdate = handleImplicitRecharge(
+          keyEffective,
+          name,
+          value,
+          isSales,
+          isUnits,
+          isSalesSubstream
+      );
 
-    EngineNumber valueToSet = rechargeUpdate.getValueToSet();
+      valueToSet = rechargeUpdate.getValueToSet();
 
-    rechargeUpdate.getImplicitRechargeStateUpdate()
-        .ifPresent(engine.getStreamKeeper()::update);
+      rechargeUpdate.getImplicitRechargeStateUpdate()
+          .ifPresent(engine.getStreamKeeper()::update);
 
-    rechargeUpdate.getImplicitPrechargeStateUpdate()
-        .ifPresent(engine.getStreamKeeper()::update);
+      rechargeUpdate.getImplicitPrechargeStateUpdate()
+          .ifPresent(engine.getStreamKeeper()::update);
+    }
 
     SimulationStateUpdate simulationStateUpdate = new SimulationStateUpdateBuilder()
         .setUseKey(keyEffective)
@@ -105,8 +114,11 @@ public class StreamUpdateExecutor {
       return;
     }
 
-    // Update last specified value and units target for sales streams
-    if (isSales) {
+    // Update last specified value and units target for sales streams. Skipped when the caller
+    // already performs its own targeted lastSpecifiedValue restoration (see
+    // StreamUpdate#getPreserveLastSpecified) -- otherwise this would stamp lastSpecifiedValue
+    // (and the "sales" composite) with this update's raw value before that restoration runs.
+    if (isSales && !update.getPreserveLastSpecified()) {
       engine.getStreamKeeper().setLastSpecifiedValue(keyEffective, name, value);
       updateComposite(keyEffective, name, value);
     }
@@ -172,9 +184,14 @@ public class StreamUpdateExecutor {
     boolean eitherUnits = thisIsUnits || otherIsUnits;
     String targetUnits = eitherUnits ? "units" : value.getUnits();
 
+    // Each substream (domestic / import) can have its own initial charge (kg / unit), so a
+    // converter built for one substream cannot be reused to convert the other substream's
+    // value: doing so divides by the wrong (possibly zero) initial charge.
+    String otherStreamName = "domestic".equals(streamName) ? "import" : "domestic";
     UnitConverter converter = EngineSupportUtils.createUnitConverterWithTotal(engine, streamName);
+    UnitConverter otherConverter = EngineSupportUtils.createUnitConverterWithTotal(engine, otherStreamName);
     EngineNumber valueConverted = converter.convert(value, targetUnits);
-    EngineNumber otherConverted = converter.convert(otherValue, targetUnits);
+    EngineNumber otherConverted = otherConverter.convert(otherValue, targetUnits);
 
     BigDecimal combinedValue = valueConverted.getValue().add(otherConverted.getValue());
     EngineNumber salesIntent = new EngineNumber(combinedValue, targetUnits);

@@ -28,6 +28,8 @@ public final class StreamUpdate {
   private final boolean subtractRecycling;
   private final boolean forceUseFullRecharge;
   private final Optional<SalesStreamDistribution> distribution;
+  private final boolean preserveImplicitRecharge;
+  private final boolean preserveLastSpecified;
 
   /**
    * Package-private constructor for creating a StreamUpdate instance.
@@ -42,11 +44,16 @@ public final class StreamUpdate {
    * @param subtractRecycling whether recycling should be subtracted from the value
    * @param forceUseFullRecharge whether to force full recharge for sales substreams
    * @param distribution optional pre-calculated distribution for sales streams
+   * @param preserveImplicitRecharge whether to leave the implicitRecharge/implicitPrecharge
+   *     streams untouched instead of updating or clearing them based on this update's units
+   * @param preserveLastSpecified whether to skip the standard lastSpecifiedValue/composite
+   *     ("sales") tracking update this update would otherwise trigger
    */
   StreamUpdate(String name, EngineNumber value, Optional<YearMatcher> yearMatcher,
       Optional<UseKey> key, boolean propagateChanges, Optional<String> unitsToRecord,
       boolean subtractRecycling, boolean forceUseFullRecharge,
-      Optional<SalesStreamDistribution> distribution) {
+      Optional<SalesStreamDistribution> distribution, boolean preserveImplicitRecharge,
+      boolean preserveLastSpecified) {
     this.name = name;
     this.value = value;
     this.yearMatcher = yearMatcher;
@@ -56,6 +63,8 @@ public final class StreamUpdate {
     this.subtractRecycling = subtractRecycling;
     this.forceUseFullRecharge = forceUseFullRecharge;
     this.distribution = distribution;
+    this.preserveImplicitRecharge = preserveImplicitRecharge;
+    this.preserveLastSpecified = preserveLastSpecified;
   }
 
   /**
@@ -146,5 +155,41 @@ public final class StreamUpdate {
    */
   public Optional<SalesStreamDistribution> getDistribution() {
     return distribution;
+  }
+
+  /**
+   * Gets whether the implicitRecharge/implicitPrecharge streams should be left untouched.
+   *
+   * <p>Set by internal "shortcut" updates (see {@code StreamUpdateShortcuts}) that move kg
+   * volume into or out of a stream without genuinely re-specifying it in volume or unit terms
+   * (e.g. removing an amount for {@code replace}, or applying a displacement transfer). Such
+   * updates don't change any recharge/precharge parameters, so the servicing kg already recorded
+   * in implicitRecharge/implicitPrecharge remains accurate and should not be recomputed or
+   * cleared based on this update's own units.</p>
+   *
+   * @return true if implicitRecharge/implicitPrecharge should be left as-is, false to update
+   *     them normally based on whether this update's value carries equipment units
+   */
+  public boolean getPreserveImplicitRecharge() {
+    return preserveImplicitRecharge;
+  }
+
+  /**
+   * Gets whether the standard lastSpecifiedValue/composite ("sales") tracking update should be
+   * skipped for this update.
+   *
+   * <p>Set by internal "shortcut" updates (see {@code StreamUpdateShortcuts
+   * #changeStreamWithoutReportingUnits}) that already perform their own targeted
+   * lastSpecifiedValue restoration for the specific stream being changed. Without this flag, the
+   * standard tracking update in {@code StreamUpdateExecutor} would separately stamp
+   * lastSpecifiedValue (and the "sales" composite when a substream changes) with this update's
+   * raw kg value -- run before the shortcut's own restoration reaches the "sales" composite --
+   * permanently flipping "sales" from unit-tracked to kg-tracked even though nothing about this
+   * update genuinely re-specified it in volume terms.</p>
+   *
+   * @return true if the standard lastSpecifiedValue/composite tracking update should be skipped
+   */
+  public boolean getPreserveLastSpecified() {
+    return preserveLastSpecified;
   }
 }

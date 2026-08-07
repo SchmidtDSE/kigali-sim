@@ -208,6 +208,56 @@ public class GetStreamPriorLiveTests {
   }
 
   /**
+   * Test that the singular "year" form (e.g. "2 year ago") is accepted and behaves
+   * identically to the plural "years ago" form.
+   *
+   * <p>Uses get_stream_prior_singular_year.qta, a copy of
+   * get_stream_prior_conversion.qta with "years" replaced by singular "year".</p>
+   */
+  @Test
+  public void testGetStreamPriorSingularYear() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/get_stream_prior_singular_year.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run the scenario
+    String scenarioName = "BAU";
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, scenarioName, progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // Verify simulation completed without error
+    assertTrue(resultsList.size() > 0, "Should have simulation results");
+
+    // Year 1: domestic = 5000 kg, population = 500 (5000 kg / 10 kg/unit)
+    EngineResult year1 = LiveTestsUtil.getResult(resultsList.stream(), 1, "Test", "SubA");
+    assertNotNull(year1, "Should have result for Test/SubA in year 1");
+    double domesticYear1 = year1.getDomestic().getValue().doubleValue();
+    assertEquals(
+        5000.0, domesticYear1, 0.01,
+        "Year 1 domestic should be 5000 kg, but was " + domesticYear1
+    );
+    assertEquals(
+        500.0, year1.getPopulation().getValue().doubleValue(), 0.01,
+        "Year 1 population should be 500 units (5000 kg / 10 kg/unit), but was "
+        + year1.getPopulation().getValue()
+    );
+
+    // Year 3: simulation should still be running (proves singular "year ago" parses
+    // and resolves identically to plural "years ago")
+    EngineResult year3 = LiveTestsUtil.getResult(resultsList.stream(), 3, "Test", "SubA");
+    assertNotNull(year3, "Should have result for Test/SubA in year 3");
+    assertTrue(year3.getPopulation().getValue().doubleValue() > 0,
+        "Year 3 population should be positive");
+
+    // Year 4: simulation should still be running
+    EngineResult year4 = LiveTestsUtil.getResult(resultsList.stream(), 4, "Test", "SubA");
+    assertNotNull(year4, "Should have result for Test/SubA in year 4");
+    assertTrue(year4.getPopulation().getValue().doubleValue() > 0,
+        "Year 4 population should be positive");
+  }
+
+  /**
    * Test cross-substance sales access.
    *
    * <p>Uses get_stream_prior_multi_substance.qta which tests:

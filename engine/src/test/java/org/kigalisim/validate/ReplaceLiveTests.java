@@ -508,4 +508,376 @@ public class ReplaceLiveTests {
     // Note: Target substances may remain at zero if they have no initial import/sales in the QTA setup
     // The key validation is that replaced substances are reduced but not eliminated entirely
   }
+
+  /**
+   * Test that a 0% replace policy is a no-op and does not change total imports.
+   *
+   * <p>Replacing 0% of import with another substance should have no effect on either
+   * substance's stream, so "With Replace" should have identical total import to "BAU"
+   * in every year, including year 10.</p>
+   */
+  @Test
+  public void testReplaceZeroPercentIsNoOp() throws IOException {
+    String qtaPath = "../examples/replace_zero_percent.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, "BAU", progress -> {});
+    List<EngineResult> bauResultsList = bauResults.collect(Collectors.toList());
+
+    Stream<EngineResult> replaceResults = KigaliSimFacade.runScenario(program, "With Replace", progress -> {});
+    List<EngineResult> replaceResultsList = replaceResults.collect(Collectors.toList());
+
+    int targetYear = 10;
+
+    EngineResult bauSubA = LiveTestsUtil.getResult(bauResultsList.stream(), targetYear, "Test", "SubA");
+    assertNotNull(bauSubA, "Should have BAU result for Test/SubA in year 10");
+    EngineResult bauSubB = LiveTestsUtil.getResult(bauResultsList.stream(), targetYear, "Test", "SubB");
+    assertNotNull(bauSubB, "Should have BAU result for Test/SubB in year 10");
+    EngineResult replaceSubA = LiveTestsUtil.getResult(replaceResultsList.stream(), targetYear, "Test", "SubA");
+    assertNotNull(replaceSubA, "Should have With Replace result for Test/SubA in year 10");
+    EngineResult replaceSubB = LiveTestsUtil.getResult(replaceResultsList.stream(), targetYear, "Test", "SubB");
+    assertNotNull(replaceSubB, "Should have With Replace result for Test/SubB in year 10");
+
+    double bauTotalImport = bauSubA.getImport().getValue().doubleValue()
+        + bauSubB.getImport().getValue().doubleValue();
+    double replaceTotalImport = replaceSubA.getImport().getValue().doubleValue()
+        + replaceSubB.getImport().getValue().doubleValue();
+
+    assertEquals(bauTotalImport, replaceTotalImport, 0.0001,
+        String.format("Total import should be unchanged by a 0%% replace policy in year 10. "
+            + "BAU: %.6f, With Replace: %.6f", bauTotalImport, replaceTotalImport));
+  }
+
+  /**
+   * Test that a 0% replace policy stays a no-op in every year it is active, not just the last.
+   *
+   * <p>This guards against regressions where a per-year replace operation (even one that moves
+   * zero volume) accumulates drift over time, since a bug of that kind may only become visible
+   * after several years even though it is present from the first year the policy runs.</p>
+   */
+  @Test
+  public void testReplaceZeroPercentIsNoOpEveryYear() throws IOException {
+    String qtaPath = "../examples/replace_zero_percent.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, "BAU", progress -> {});
+    List<EngineResult> bauResultsList = bauResults.collect(Collectors.toList());
+
+    Stream<EngineResult> replaceResults = KigaliSimFacade.runScenario(program, "With Replace", progress -> {});
+    List<EngineResult> replaceResultsList = replaceResults.collect(Collectors.toList());
+
+    for (int year = 1; year <= 10; year++) {
+      EngineResult bauSubA = LiveTestsUtil.getResult(bauResultsList.stream(), year, "Test", "SubA");
+      assertNotNull(bauSubA, "Should have BAU result for Test/SubA in year " + year);
+      EngineResult bauSubB = LiveTestsUtil.getResult(bauResultsList.stream(), year, "Test", "SubB");
+      assertNotNull(bauSubB, "Should have BAU result for Test/SubB in year " + year);
+      EngineResult replaceSubA = LiveTestsUtil.getResult(replaceResultsList.stream(), year, "Test", "SubA");
+      assertNotNull(replaceSubA, "Should have With Replace result for Test/SubA in year " + year);
+      EngineResult replaceSubB = LiveTestsUtil.getResult(replaceResultsList.stream(), year, "Test", "SubB");
+      assertNotNull(replaceSubB, "Should have With Replace result for Test/SubB in year " + year);
+
+      double bauTotalImport = bauSubA.getImport().getValue().doubleValue()
+          + bauSubB.getImport().getValue().doubleValue();
+      double replaceTotalImport = replaceSubA.getImport().getValue().doubleValue()
+          + replaceSubB.getImport().getValue().doubleValue();
+
+      final int yearFinal = year;
+      assertEquals(bauTotalImport, replaceTotalImport, 0.0001,
+          String.format("Total import should be unchanged by a 0%% replace policy in year %d. "
+              + "BAU: %.6f, With Replace: %.6f", yearFinal, bauTotalImport, replaceTotalImport));
+    }
+  }
+
+  /**
+   * Test that a nonzero percent-based replace conserves total import while shifting it between
+   * substances, across multiple years of a "change sales" policy running alongside "replace".
+   *
+   * <p>Since SubA and SubB share the same import initial charge (1 kg / unit), redistributing
+   * import between them should not change the combined total, only how much each substance
+   * carries. This exercises the percent-based (volume) replace path over several years.</p>
+   */
+  @Test
+  public void testReplaceTenPercentConservesTotalAcrossYears() throws IOException {
+    String qtaPath = "../examples/replace_ten_percent_norecharge.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, "BAU", progress -> {});
+    List<EngineResult> bauResultsList = bauResults.collect(Collectors.toList());
+
+    Stream<EngineResult> replaceResults = KigaliSimFacade.runScenario(program, "With Replace", progress -> {});
+    List<EngineResult> replaceResultsList = replaceResults.collect(Collectors.toList());
+
+    for (int year : new int[] {5, 10}) {
+      EngineResult bauSubA = LiveTestsUtil.getResult(bauResultsList.stream(), year, "Test", "SubA");
+      assertNotNull(bauSubA, "Should have BAU result for Test/SubA in year " + year);
+      EngineResult bauSubB = LiveTestsUtil.getResult(bauResultsList.stream(), year, "Test", "SubB");
+      assertNotNull(bauSubB, "Should have BAU result for Test/SubB in year " + year);
+      EngineResult replaceSubA = LiveTestsUtil.getResult(replaceResultsList.stream(), year, "Test", "SubA");
+      assertNotNull(replaceSubA, "Should have With Replace result for Test/SubA in year " + year);
+      EngineResult replaceSubB = LiveTestsUtil.getResult(replaceResultsList.stream(), year, "Test", "SubB");
+      assertNotNull(replaceSubB, "Should have With Replace result for Test/SubB in year " + year);
+
+      double bauTotalImport = bauSubA.getImport().getValue().doubleValue()
+          + bauSubB.getImport().getValue().doubleValue();
+      double replaceTotalImport = replaceSubA.getImport().getValue().doubleValue()
+          + replaceSubB.getImport().getValue().doubleValue();
+
+      assertEquals(bauTotalImport, replaceTotalImport, 0.0001,
+          String.format("Total import should be conserved by a 10%% replace policy in year %d. "
+              + "BAU: %.6f, With Replace: %.6f", year, bauTotalImport, replaceTotalImport));
+
+      if (year >= 2) {
+        double replacedImportA = replaceSubA.getImport().getValue().doubleValue();
+        double bauImportA = bauSubA.getImport().getValue().doubleValue();
+        assertTrue(replacedImportA < bauImportA,
+            String.format("SubA import should be reduced relative to BAU by year %d under a 10%% "
+                + "replace policy. BAU: %.6f, With Replace: %.6f", year, bauImportA, replacedImportA));
+
+        double replacedImportB = replaceSubB.getImport().getValue().doubleValue();
+        double bauImportB = bauSubB.getImport().getValue().doubleValue();
+        assertTrue(replacedImportB > bauImportB,
+            String.format("SubB import should be increased relative to BAU by year %d under a 10%% "
+                + "replace policy. BAU: %.6f, With Replace: %.6f", year, bauImportB, replacedImportB));
+      }
+    }
+  }
+
+  /**
+   * Test that a units-based replace conserves total import across multiple years, exercising the
+   * equipment-units replace path (as opposed to the percent/volume path) alongside a "change
+   * sales" policy.
+   *
+   * <p>Since SubA and SubB share the same import initial charge (1 kg / unit), moving a fixed
+   * number of units per year between them should not change the combined total import.</p>
+   */
+  @Test
+  public void testReplaceUnitsBasisConservesTotalAcrossYears() throws IOException {
+    String qtaPath = "../examples/replace_units_norecharge.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, "BAU", progress -> {});
+    List<EngineResult> bauResultsList = bauResults.collect(Collectors.toList());
+
+    Stream<EngineResult> replaceResults = KigaliSimFacade.runScenario(program, "With Replace", progress -> {});
+    List<EngineResult> replaceResultsList = replaceResults.collect(Collectors.toList());
+
+    for (int year : new int[] {5, 10}) {
+      EngineResult bauSubA = LiveTestsUtil.getResult(bauResultsList.stream(), year, "Test", "SubA");
+      assertNotNull(bauSubA, "Should have BAU result for Test/SubA in year " + year);
+      EngineResult bauSubB = LiveTestsUtil.getResult(bauResultsList.stream(), year, "Test", "SubB");
+      assertNotNull(bauSubB, "Should have BAU result for Test/SubB in year " + year);
+      EngineResult replaceSubA = LiveTestsUtil.getResult(replaceResultsList.stream(), year, "Test", "SubA");
+      assertNotNull(replaceSubA, "Should have With Replace result for Test/SubA in year " + year);
+      EngineResult replaceSubB = LiveTestsUtil.getResult(replaceResultsList.stream(), year, "Test", "SubB");
+      assertNotNull(replaceSubB, "Should have With Replace result for Test/SubB in year " + year);
+
+      double bauTotalImport = bauSubA.getImport().getValue().doubleValue()
+          + bauSubB.getImport().getValue().doubleValue();
+      double replaceTotalImport = replaceSubA.getImport().getValue().doubleValue()
+          + replaceSubB.getImport().getValue().doubleValue();
+
+      assertEquals(bauTotalImport, replaceTotalImport, 0.0001,
+          String.format("Total import should be conserved by a units-based replace policy in year %d. "
+              + "BAU: %.6f, With Replace: %.6f", year, bauTotalImport, replaceTotalImport));
+    }
+  }
+
+  /**
+   * Test that total equipment population is conserved when a percent-based replace policy runs
+   * alongside "recharge % of priorEquipment" over multiple years.
+   *
+   * <p>SubA and SubB share the same initial charge, retire rate, and recharge specification, so
+   * redistributing import sales between them should not change the combined equipment population
+   * or combined import (sales + recharge) over time -- only how much each substance carries.</p>
+   *
+   * <p>This previously failed: total population diverged by roughly 27% by year 10 in
+   * replace_ten_percent_multiyear.qta (identical to replace_ten_percent_norecharge.qta above
+   * except for the added "recharge" specifications). The cause was that displacement into the
+   * destination substance (see {@code StreamUpdateShortcuts#changeStreamWithDisplacementContext})
+   * only updated the substream's (e.g. "import") lastSpecifiedValue, never the composite "sales"
+   * lastSpecifiedValue that recharge's yearly reassertion reads from
+   * ({@code SingleThreadEngine#recharge}). That let recharge silently reset the destination's
+   * reported sales back to its stale, pre-replace baseline every year, discarding all previously
+   * received displaced volume. Fixed by having {@code ReplaceExecutor} record lastSpecifiedValue
+   * after each transfer via {@code EngineSupportUtils#recordLastSpecifiedKeepingUnits}, mirroring
+   * what {@code DisplaceExecutor} already does for cap/floor displacement.</p>
+   */
+  @Test
+  public void testReplaceTenPercentConservesTotalPopulationWithRecharge() throws IOException {
+    String qtaPath = "../examples/replace_ten_percent_multiyear.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, "BAU", progress -> {});
+    List<EngineResult> bauResultsList = bauResults.collect(Collectors.toList());
+
+    Stream<EngineResult> replaceResults = KigaliSimFacade.runScenario(program, "With Replace", progress -> {});
+    List<EngineResult> replaceResultsList = replaceResults.collect(Collectors.toList());
+
+    for (int year : new int[] {5, 10}) {
+      EngineResult bauSubA = LiveTestsUtil.getResult(bauResultsList.stream(), year, "Test", "SubA");
+      assertNotNull(bauSubA, "Should have BAU result for Test/SubA in year " + year);
+      EngineResult bauSubB = LiveTestsUtil.getResult(bauResultsList.stream(), year, "Test", "SubB");
+      assertNotNull(bauSubB, "Should have BAU result for Test/SubB in year " + year);
+      EngineResult replaceSubA = LiveTestsUtil.getResult(replaceResultsList.stream(), year, "Test", "SubA");
+      assertNotNull(replaceSubA, "Should have With Replace result for Test/SubA in year " + year);
+      EngineResult replaceSubB = LiveTestsUtil.getResult(replaceResultsList.stream(), year, "Test", "SubB");
+      assertNotNull(replaceSubB, "Should have With Replace result for Test/SubB in year " + year);
+
+      double bauTotalPopulation = bauSubA.getPopulation().getValue().doubleValue()
+          + bauSubB.getPopulation().getValue().doubleValue();
+      double replaceTotalPopulation = replaceSubA.getPopulation().getValue().doubleValue()
+          + replaceSubB.getPopulation().getValue().doubleValue();
+
+      assertEquals(bauTotalPopulation, replaceTotalPopulation, bauTotalPopulation * 0.01,
+          String.format("Total equipment population should be conserved (within 1%%) by a 10%% "
+              + "replace policy with recharge in year %d. BAU: %.6f, With Replace: %.6f",
+              year, bauTotalPopulation, replaceTotalPopulation));
+    }
+  }
+
+  /**
+   * Test that replacing import into a substance using "recharge X% of priorEquipment"
+   * still results in nonzero consumption for the target substance in later years.
+   *
+   * <p>This reproduces a divide-by-zero bug reported against a script where SubB (the
+   * "replace" target) starts with a small sales volume and both substances use
+   * "recharge % of priorEquipment". Under "With Replace", SubB should end up with
+   * more than 0 kg of consumption by year 10.</p>
+   */
+  @Test
+  public void testReplaceIntoPriorEquipmentRechargeTarget() throws IOException {
+    String qtaPath = "../examples/replace_import_priorequipment_recharge.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, "With Replace", progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    EngineResult resultSubbYear10 = LiveTestsUtil.getResult(resultsList.stream(), 10, "Test", "SubB");
+    assertNotNull(resultSubbYear10, "Should have result for Test/SubB in year 10");
+
+    assertTrue(resultSubbYear10.getConsumption().getValue().doubleValue() > 0.0,
+        "SubB should have more than 0 kg of consumption in year 10 under With Replace");
+  }
+
+  /**
+   * Test that a percent-based "replace X% of import" policy does not cause consumption to
+   * blow up far above business as usual when combined with a growing import stream
+   * ("change import by +N units") and "recharge 100% of newEquipment" (precharge).
+   *
+   * <p>This reproduced a user-reported bug distinct from the priorEquipment-recharge
+   * under-counting bugs already fixed in {@code ReplaceExecutor} and
+   * {@code StreamUpdateShortcuts}, and turned out to be orthogonal to {@code ReplaceExecutor}
+   * entirely -- it reproduced identically via a plain "cap ... displacing" clause. The root
+   * cause was in the shared {@code EngineSupportUtils#recordLastSpecifiedKeepingUnits} helper
+   * (used by both {@code DisplaceExecutor} and {@code ReplaceExecutor}): its
+   * {@code removeImpliedRecharge} step only backed out ordinary recharge (of priorEquipment)
+   * volume via {@code RechargeVolumeCalculator}, never precharge (of newEquipment) volume via
+   * {@code PrechargeVolumeCalculator}. For a substance using precharge instead of (or in
+   * addition to) recharge, the leftover precharge kg riding on the stream's raw value was
+   * misread as additional sold units when converted back to lastSpecified's unit-tracked
+   * basis, inflating it. Combined with unit-based year-over-year growth ("change ... by ...
+   * units"), that inflated base compounded every year, producing runaway growth. Fixed by
+   * having {@code removeImpliedRecharge} back out both recharge and precharge volume.</p>
+   */
+  @Test
+  public void testReplacePrechargeGrowthDoesNotBlowUpConsumption() throws IOException {
+    String qtaPath = "../examples/replace_precharge_growth_runaway.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, "bau", progress -> {});
+    List<EngineResult> bauResultsList = bauResults.collect(Collectors.toList());
+
+    Stream<EngineResult> replacementResults =
+        KigaliSimFacade.runScenario(program, "replacement alone", progress -> {});
+    List<EngineResult> replacementResultsList = replacementResults.collect(Collectors.toList());
+
+    int targetYear = 2040;
+
+    EngineResult bauSubH = LiveTestsUtil.getResult(bauResultsList.stream(), targetYear, "App A", "SubH");
+    EngineResult bauSubL = LiveTestsUtil.getResult(bauResultsList.stream(), targetYear, "App A", "SubL");
+    EngineResult replacementSubH =
+        LiveTestsUtil.getResult(replacementResultsList.stream(), targetYear, "App A", "SubH");
+    final EngineResult replacementSubL =
+        LiveTestsUtil.getResult(replacementResultsList.stream(), targetYear, "App A", "SubL");
+
+    assertNotNull(bauSubH, "Should have BAU result for App A/SubH in year 2040");
+    assertNotNull(bauSubL, "Should have BAU result for App A/SubL in year 2040");
+    assertNotNull(replacementSubH, "Should have replacement alone result for App A/SubH in year 2040");
+    assertNotNull(replacementSubL, "Should have replacement alone result for App A/SubL in year 2040");
+
+    double bauTotalConsumption = bauSubH.getConsumption().getValue().doubleValue()
+        + bauSubL.getConsumption().getValue().doubleValue();
+    double replacementTotalConsumption = replacementSubH.getConsumption().getValue().doubleValue()
+        + replacementSubL.getConsumption().getValue().doubleValue();
+
+    assertTrue(replacementTotalConsumption <= bauTotalConsumption * 1.05,
+        String.format("Total consumption under \"replacement alone\" (%.2f) should not be "
+            + "dramatically higher than BAU (%.2f) in year 2040, since replacing SubH "
+            + "(high GWP) with SubL (low GWP) should reduce, not increase, total emissions",
+            replacementTotalConsumption, bauTotalConsumption));
+  }
+
+  /**
+   * Test that a "cap ... displacing" clause which is non-binding on its own does not cause
+   * consumption to blow up when stacked after a "replace" policy on the same source substance.
+   *
+   * <p>This reproduces a bug distinct from the ones already fixed in {@code ReplaceExecutor},
+   * {@code DisplaceExecutor}, and {@code EngineSupportUtils#recordLastSpecifiedKeepingUnits}.
+   * Here, SubH uses both "recharge 100% of newEquipment" (precharge) and an ordinary
+   * "recharge 25% with 3 kg/unit" (priorEquipment recharge), while SubL uses only an
+   * ordinary recharge. A "cap import to 1000 units displacing 'SubL'" policy on SubH is set
+   * well above actual demand, so applied alone it never binds and reproduces BAU exactly
+   * ("cap alone" == "bau"). A "replace 2% of import with 'SubL'" policy on SubH applied alone
+   * correctly reduces total consumption relative to BAU, since SubL has much lower GWP.
+   * However, stacking the non-binding cap after the replace policy ("replacement then cap")
+   * causes total consumption to spike to roughly 3x BAU, even though neither policy alone
+   * causes any such effect. As of this writing the root cause has not been identified; this
+   * test only documents the reproduction and is expected to fail until it is found and fixed.</p>
+   */
+  @Test
+  public void testReplaceThenNonBindingCapDoesNotBlowUpConsumption() throws IOException {
+    String qtaPath = "../examples/replace_then_nonbinding_cap_runaway.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, "bau", progress -> {});
+    List<EngineResult> bauResultsList = bauResults.collect(Collectors.toList());
+
+    Stream<EngineResult> replacementThenCapResults =
+        KigaliSimFacade.runScenario(program, "replacement then cap", progress -> {});
+    List<EngineResult> replacementThenCapResultsList = replacementThenCapResults.collect(Collectors.toList());
+
+    int targetYear = 2040;
+
+    EngineResult bauSubH = LiveTestsUtil.getResult(bauResultsList.stream(), targetYear, "App A", "SubH");
+    EngineResult bauSubL = LiveTestsUtil.getResult(bauResultsList.stream(), targetYear, "App A", "SubL");
+    EngineResult replacementThenCapSubH =
+        LiveTestsUtil.getResult(replacementThenCapResultsList.stream(), targetYear, "App A", "SubH");
+    final EngineResult replacementThenCapSubL =
+        LiveTestsUtil.getResult(replacementThenCapResultsList.stream(), targetYear, "App A", "SubL");
+
+    assertNotNull(bauSubH, "Should have BAU result for App A/SubH in year 2040");
+    assertNotNull(bauSubL, "Should have BAU result for App A/SubL in year 2040");
+    assertNotNull(replacementThenCapSubH, "Should have replacement then cap result for App A/SubH in year 2040");
+    assertNotNull(replacementThenCapSubL, "Should have replacement then cap result for App A/SubL in year 2040");
+
+    double bauTotalConsumption = bauSubH.getConsumption().getValue().doubleValue()
+        + bauSubL.getConsumption().getValue().doubleValue();
+    double replacementThenCapTotalConsumption = replacementThenCapSubH.getConsumption().getValue().doubleValue()
+        + replacementThenCapSubL.getConsumption().getValue().doubleValue();
+
+    assertTrue(replacementThenCapTotalConsumption <= bauTotalConsumption * 1.05,
+        String.format("Total consumption under \"replacement then cap\" (%.2f) should not be "
+            + "dramatically higher than BAU (%.2f) in year 2040, since replacing SubH "
+            + "(high GWP) with SubL (low GWP), even with a separately non-binding cap stacked "
+            + "on top, should never increase total emissions this dramatically",
+            replacementThenCapTotalConsumption, bauTotalConsumption));
+  }
 }
