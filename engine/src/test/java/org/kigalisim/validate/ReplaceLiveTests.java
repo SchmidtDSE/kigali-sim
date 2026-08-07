@@ -764,4 +764,63 @@ public class ReplaceLiveTests {
     assertTrue(resultSubbYear10.getConsumption().getValue().doubleValue() > 0.0,
         "SubB should have more than 0 kg of consumption in year 10 under With Replace");
   }
+
+  /**
+   * Test that a percent-based "replace X% of import" policy does not cause consumption to
+   * blow up far above business as usual when combined with a growing import stream
+   * ("change import by +N units") and "recharge 100% of newEquipment" (precharge).
+   *
+   * <p>This reproduces a user-reported bug distinct from the priorEquipment-recharge
+   * under-counting bugs already fixed in {@code ReplaceExecutor} and
+   * {@code StreamUpdateShortcuts}. Here, SubH has a growing import stream and a
+   * newEquipment-targeted recharge (precharge), meaning new equipment is charged before
+   * sale on top of its initial charge. When "replace 2% of import with SubL" runs each
+   * year against this growing base, the reported combination of (a) percent-based replace,
+   * (b) year-over-year import growth, and (c) newEquipment precharge apparently interacts
+   * such that consumption compounds well beyond what shifting 2% of import from a
+   * high-GWP substance (SubH, 1000 kgCO2e/kg) to a low-GWP substance (SubL, 1 kgCO2e/kg)
+   * should ever produce -- removing any single one of the three factors was reported to
+   * restore sane behavior. Since replacing high-GWP SubH volume with low-GWP SubL volume
+   * should reduce total consumption relative to BAU (not increase it), this test asserts
+   * that total consumption across both substances in "replacement alone" at year 2040 is
+   * not dramatically higher than in "bau".</p>
+   */
+  @Test
+  public void testReplacePrechargeGrowthDoesNotBlowUpConsumption() throws IOException {
+    String qtaPath = "../examples/replace_precharge_growth_runaway.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, "bau", progress -> {});
+    List<EngineResult> bauResultsList = bauResults.collect(Collectors.toList());
+
+    Stream<EngineResult> replacementResults =
+        KigaliSimFacade.runScenario(program, "replacement alone", progress -> {});
+    List<EngineResult> replacementResultsList = replacementResults.collect(Collectors.toList());
+
+    int targetYear = 2040;
+
+    EngineResult bauSubH = LiveTestsUtil.getResult(bauResultsList.stream(), targetYear, "App A", "SubH");
+    EngineResult bauSubL = LiveTestsUtil.getResult(bauResultsList.stream(), targetYear, "App A", "SubL");
+    EngineResult replacementSubH =
+        LiveTestsUtil.getResult(replacementResultsList.stream(), targetYear, "App A", "SubH");
+    final EngineResult replacementSubL =
+        LiveTestsUtil.getResult(replacementResultsList.stream(), targetYear, "App A", "SubL");
+
+    assertNotNull(bauSubH, "Should have BAU result for App A/SubH in year 2040");
+    assertNotNull(bauSubL, "Should have BAU result for App A/SubL in year 2040");
+    assertNotNull(replacementSubH, "Should have replacement alone result for App A/SubH in year 2040");
+    assertNotNull(replacementSubL, "Should have replacement alone result for App A/SubL in year 2040");
+
+    double bauTotalConsumption = bauSubH.getConsumption().getValue().doubleValue()
+        + bauSubL.getConsumption().getValue().doubleValue();
+    double replacementTotalConsumption = replacementSubH.getConsumption().getValue().doubleValue()
+        + replacementSubL.getConsumption().getValue().doubleValue();
+
+    assertTrue(replacementTotalConsumption <= bauTotalConsumption * 1.05,
+        String.format("Total consumption under \"replacement alone\" (%.2f) should not be "
+            + "dramatically higher than BAU (%.2f) in year 2040, since replacing SubH "
+            + "(high GWP) with SubL (low GWP) should reduce, not increase, total emissions",
+            replacementTotalConsumption, bauTotalConsumption));
+  }
 }
