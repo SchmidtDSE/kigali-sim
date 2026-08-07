@@ -183,6 +183,7 @@ public class ReplaceExecutor {
         Optional.empty(),
         Optional.empty()
     );
+    updateLastSpecifiedAfterReplace(stream, currentScope);
 
     // Add to destination substance using destination's initial charge
     Scope destinationScope = currentScope.getWithSubstance(destinationSubstance);
@@ -210,6 +211,7 @@ public class ReplaceExecutor {
         destinationVolumeChange,
         destinationScope
     );
+    updateLastSpecifiedAfterReplace(stream, destinationScope);
   }
 
   /**
@@ -242,6 +244,7 @@ public class ReplaceExecutor {
         Optional.empty(),
         Optional.empty()
     );
+    updateLastSpecifiedAfterReplace(stream, currentScope);
 
     // Add to destination substance
     Scope destinationScope = currentScope.getWithSubstance(destinationSubstance);
@@ -250,5 +253,34 @@ public class ReplaceExecutor {
         amount,
         destinationScope
     );
+    updateLastSpecifiedAfterReplace(stream, destinationScope);
+  }
+
+  /**
+   * Updates lastSpecified for a stream after replacement so that subsequent percentage- or
+   * units-based changes (and recharge's own year-over-year reassertion) use the post-replacement
+   * value rather than a stale or recharge-inflated one.
+   *
+   * <p>This mirrors {@code DisplaceExecutor}'s equivalent step for cap/floor displacement,
+   * which already relies on {@link EngineSupportUtils#recordLastSpecifiedKeepingUnits} to fold a
+   * substream update (e.g. "import") into the composite "sales" lastSpecified value too, with
+   * implied recharge/precharge backed out first.</p>
+   *
+   * @param stream The stream that received the replacement change
+   * @param scope The scope (application/substance) affected
+   */
+  private void updateLastSpecifiedAfterReplace(String stream, Scope scope) {
+    String originalSubstance = engine.getScope().getSubstance();
+    boolean crossSubstance = !scope.getSubstance().equals(originalSubstance);
+
+    if (crossSubstance) {
+      engine.setSubstance(scope.getSubstance());
+    }
+
+    EngineSupportUtils.recordLastSpecifiedKeepingUnits(engine, scope, stream);
+
+    if (crossSubstance) {
+      engine.setSubstance(originalSubstance);
+    }
   }
 }

@@ -694,11 +694,17 @@ public class ReplaceLiveTests {
    * redistributing import sales between them should not change the combined equipment population
    * or combined import (sales + recharge) over time -- only how much each substance carries.</p>
    *
-   * <p>This currently FAILS: total population diverges by roughly 27% by year 10 (see
-   * replace_ten_percent_multiyear.qta, which is identical to replace_ten_percent_norecharge.qta
-   * above except for the added "recharge" specifications). This appears to be a separate,
-   * pre-existing issue in how population/recharge recalculation propagates through a replace
-   * policy, distinct from the lastSpecifiedValue tracking bug fixed elsewhere in this change.</p>
+   * <p>This previously failed: total population diverged by roughly 27% by year 10 in
+   * replace_ten_percent_multiyear.qta (identical to replace_ten_percent_norecharge.qta above
+   * except for the added "recharge" specifications). The cause was that displacement into the
+   * destination substance (see {@code StreamUpdateShortcuts#changeStreamWithDisplacementContext})
+   * only updated the substream's (e.g. "import") lastSpecifiedValue, never the composite "sales"
+   * lastSpecifiedValue that recharge's yearly reassertion reads from
+   * ({@code SingleThreadEngine#recharge}). That let recharge silently reset the destination's
+   * reported sales back to its stale, pre-replace baseline every year, discarding all previously
+   * received displaced volume. Fixed by having {@code ReplaceExecutor} record lastSpecifiedValue
+   * after each transfer via {@code EngineSupportUtils#recordLastSpecifiedKeepingUnits}, mirroring
+   * what {@code DisplaceExecutor} already does for cap/floor displacement.</p>
    */
   @Test
   public void testReplaceTenPercentConservesTotalPopulationWithRecharge() throws IOException {
