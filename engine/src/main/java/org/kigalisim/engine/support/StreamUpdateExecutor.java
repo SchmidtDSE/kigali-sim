@@ -172,9 +172,14 @@ public class StreamUpdateExecutor {
     boolean eitherUnits = thisIsUnits || otherIsUnits;
     String targetUnits = eitherUnits ? "units" : value.getUnits();
 
+    // Each substream (domestic / import) can have its own initial charge (kg / unit), so a
+    // converter built for one substream cannot be reused to convert the other substream's
+    // value: doing so divides by the wrong (possibly zero) initial charge.
+    String otherStreamName = "domestic".equals(streamName) ? "import" : "domestic";
     UnitConverter converter = EngineSupportUtils.createUnitConverterWithTotal(engine, streamName);
+    UnitConverter otherConverter = EngineSupportUtils.createUnitConverterWithTotal(engine, otherStreamName);
     EngineNumber valueConverted = converter.convert(value, targetUnits);
-    EngineNumber otherConverted = converter.convert(otherValue, targetUnits);
+    EngineNumber otherConverted = otherConverter.convert(otherValue, targetUnits);
 
     BigDecimal combinedValue = valueConverted.getValue().add(otherConverted.getValue());
     EngineNumber salesIntent = new EngineNumber(combinedValue, targetUnits);

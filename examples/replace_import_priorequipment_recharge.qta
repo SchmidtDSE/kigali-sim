@@ -1,0 +1,57 @@
+start default
+
+  define application "Test"
+
+    uses substance "SubA"
+      enable import
+      initial charge with 0 kg / unit for domestic
+      initial charge with 1 kg / unit for import
+      initial charge with 0 kg / unit for export
+      equals 1 kgCO2e / kg
+      equals 1 kwh / unit
+      set sales to 10 units during year 1
+      change sales by 1 units during years 2 to 10
+      retire 5 % / year
+      recharge 5 % of priorEquipment with 0.85 kg / unit
+    end substance
+
+
+    uses substance "SubB"
+      enable import
+      initial charge with 1 kg / unit for import
+      equals 1 kgCO2e / kg
+      equals 1 kwh / unit
+      set sales to 1 units during year 1
+      retire 5 % / year
+      recharge 5 % of priorEquipment with 0.85 kg / unit
+    end substance
+
+  end application
+
+end default
+
+
+start policy "Replace"
+
+  modify application "Test"
+
+    modify substance "SubA"
+      replace 10 % of import with "SubB" during years 2 to 10
+    end substance
+
+  end application
+
+end policy
+
+
+start simulations
+
+  simulate "BAU"
+  from years 1 to 10
+
+
+  simulate "With Replace"
+    using "Replace"
+  from years 1 to 10
+
+end simulations

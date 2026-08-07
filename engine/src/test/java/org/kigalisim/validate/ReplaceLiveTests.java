@@ -739,4 +739,29 @@ public class ReplaceLiveTests {
               year, bauTotalPopulation, replaceTotalPopulation));
     }
   }
+
+  /**
+   * Test that replacing import into a substance using "recharge X% of priorEquipment"
+   * still results in nonzero consumption for the target substance in later years.
+   *
+   * <p>This reproduces a divide-by-zero bug reported against a script where SubB (the
+   * "replace" target) starts with a small sales volume and both substances use
+   * "recharge % of priorEquipment". Under "With Replace", SubB should end up with
+   * more than 0 kg of consumption by year 10.</p>
+   */
+  @Test
+  public void testReplaceIntoPriorEquipmentRechargeTarget() throws IOException {
+    String qtaPath = "../examples/replace_import_priorequipment_recharge.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, "With Replace", progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    EngineResult resultSubbYear10 = LiveTestsUtil.getResult(resultsList.stream(), 10, "Test", "SubB");
+    assertNotNull(resultSubbYear10, "Should have result for Test/SubB in year 10");
+
+    assertTrue(resultSubbYear10.getConsumption().getValue().doubleValue() > 0.0,
+        "SubB should have more than 0 kg of consumption in year 10 under With Replace");
+  }
 }
