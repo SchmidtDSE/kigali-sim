@@ -770,20 +770,20 @@ public class ReplaceLiveTests {
    * blow up far above business as usual when combined with a growing import stream
    * ("change import by +N units") and "recharge 100% of newEquipment" (precharge).
    *
-   * <p>This reproduces a user-reported bug distinct from the priorEquipment-recharge
+   * <p>This reproduced a user-reported bug distinct from the priorEquipment-recharge
    * under-counting bugs already fixed in {@code ReplaceExecutor} and
-   * {@code StreamUpdateShortcuts}. Here, SubH has a growing import stream and a
-   * newEquipment-targeted recharge (precharge), meaning new equipment is charged before
-   * sale on top of its initial charge. When "replace 2% of import with SubL" runs each
-   * year against this growing base, the reported combination of (a) percent-based replace,
-   * (b) year-over-year import growth, and (c) newEquipment precharge apparently interacts
-   * such that consumption compounds well beyond what shifting 2% of import from a
-   * high-GWP substance (SubH, 1000 kgCO2e/kg) to a low-GWP substance (SubL, 1 kgCO2e/kg)
-   * should ever produce -- removing any single one of the three factors was reported to
-   * restore sane behavior. Since replacing high-GWP SubH volume with low-GWP SubL volume
-   * should reduce total consumption relative to BAU (not increase it), this test asserts
-   * that total consumption across both substances in "replacement alone" at year 2040 is
-   * not dramatically higher than in "bau".</p>
+   * {@code StreamUpdateShortcuts}, and turned out to be orthogonal to {@code ReplaceExecutor}
+   * entirely -- it reproduced identically via a plain "cap ... displacing" clause. The root
+   * cause was in the shared {@code EngineSupportUtils#recordLastSpecifiedKeepingUnits} helper
+   * (used by both {@code DisplaceExecutor} and {@code ReplaceExecutor}): its
+   * {@code removeImpliedRecharge} step only backed out ordinary recharge (of priorEquipment)
+   * volume via {@code RechargeVolumeCalculator}, never precharge (of newEquipment) volume via
+   * {@code PrechargeVolumeCalculator}. For a substance using precharge instead of (or in
+   * addition to) recharge, the leftover precharge kg riding on the stream's raw value was
+   * misread as additional sold units when converted back to lastSpecified's unit-tracked
+   * basis, inflating it. Combined with unit-based year-over-year growth ("change ... by ...
+   * units"), that inflated base compounded every year, producing runaway growth. Fixed by
+   * having {@code removeImpliedRecharge} back out both recharge and precharge volume.</p>
    */
   @Test
   public void testReplacePrechargeGrowthDoesNotBlowUpConsumption() throws IOException {
