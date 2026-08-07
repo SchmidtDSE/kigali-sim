@@ -86,10 +86,7 @@ public class StreamUpdateShortcuts {
     }
 
     UseKey useKeyEffective = scope.orElse(engine.getScope());
-    boolean isSalesStream = EngineSupportUtils.getIsSalesStream(stream, false);
-    EngineNumber priorLastSpecified = isSalesStream
-        ? engine.getStreamKeeper().getLastSpecifiedValue(useKeyEffective, stream)
-        : null;
+    Optional<EngineNumber> priorLastSpecified = getLastSpecifiedIfSales(useKeyEffective, stream);
 
     EngineNumber currentValue = engine.getStream(stream, scope, Optional.empty());
     UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(engine, stream);
@@ -115,21 +112,35 @@ public class StreamUpdateShortcuts {
     StreamUpdate update = builder.build();
     engine.executeStreamUpdate(update);
 
-    // executeStreamUpdate's sales propagation re-records lastSpecifiedValue from the stream's
-    // native total, which includes recharge volume. Since this method's contract is to change
-    // the stream "without reporting units" (i.e. without disturbing unit-based carry-over
-    // tracking), restore lastSpecifiedValue to the prior tracked value plus this call's own
-    // delta (converted into the prior's units) instead, so recharge volume already present in
-    // the native stream is never folded into the tracked sales intent. A zero delta (e.g. a 0%
-    // replace) then leaves lastSpecifiedValue truly unchanged.
-    if (priorLastSpecified != null) {
-      EngineNumber deltaInPriorUnits = unitConverter.convert(amount, priorLastSpecified.getUnits());
-      BigDecimal newLastSpecifiedValue = priorLastSpecified.getValue().add(deltaInPriorUnits.getValue());
-      BigDecimal newLastSpecifiedValueBound = negativeAllowed
-          ? newLastSpecifiedValue : EngineSupportUtils.ensurePositive(newLastSpecifiedValue);
-      EngineNumber preserved = new EngineNumber(newLastSpecifiedValueBound, priorLastSpecified.getUnits());
+    // executeStreamUpdate folds recharge into lastSpecifiedValue; restore it to prior + this
+    // call's own delta so recharge is never absorbed into the tracked sales intent.
+    if (priorLastSpecified.isPresent()) {
+      EngineNumber prior = priorLastSpecified.get();
+      EngineNumber deltaInPriorUnits = unitConverter.convert(amount, prior.getUnits());
+      BigDecimal newLastSpecifiedValue = prior.getValue().add(deltaInPriorUnits.getValue());
+      BigDecimal newLastSpecifiedValueBound;
+      if (negativeAllowed) {
+        newLastSpecifiedValueBound = newLastSpecifiedValue;
+      } else {
+        newLastSpecifiedValueBound = EngineSupportUtils.ensurePositive(newLastSpecifiedValue);
+      }
+      EngineNumber preserved = new EngineNumber(newLastSpecifiedValueBound, prior.getUnits());
       engine.getStreamKeeper().setLastSpecifiedValue(useKeyEffective, stream, preserved);
     }
+  }
+
+  /**
+   * Gets the tracked lastSpecifiedValue for a stream, if it is a sales stream.
+   *
+   * @param useKey The scope to look up
+   * @param stream The stream identifier
+   * @return The tracked value, or empty if the stream isn't sales-related or has no tracked value
+   */
+  private Optional<EngineNumber> getLastSpecifiedIfSales(UseKey useKey, String stream) {
+    if (!EngineSupportUtils.getIsSalesStream(stream, false)) {
+      return Optional.empty();
+    }
+    return Optional.ofNullable(engine.getStreamKeeper().getLastSpecifiedValue(useKey, stream));
   }
 
   /**
