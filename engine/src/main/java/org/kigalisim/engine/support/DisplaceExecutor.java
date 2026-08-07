@@ -162,22 +162,10 @@ public class DisplaceExecutor {
    */
   private void applyUnitsDisplacement(String stream, BigDecimal changeAmount,
       String displaceTarget, boolean isStreamDisplacement) {
-    UnitConverter currentUnitConverter = EngineSupportUtils.createUnitConverterWithTotal(
-        engine,
-        stream
-    );
-
-    // Convert the volume change back to units in the original substance
-    EngineNumber volumeChangeFlip = new EngineNumber(changeAmount.negate(), "kg");
-    EngineNumber unitsChanged = currentUnitConverter.convert(
-        volumeChangeFlip,
-        "units"
-    );
-
     if (isStreamDisplacement) {
       applyUnitsDisplacementSameSubstance(stream, changeAmount, displaceTarget);
     } else {
-      applyUnitsDisplacementDifferentSubstance(stream, unitsChanged, displaceTarget);
+      applyChangeToSubstance(stream, changeAmount, displaceTarget, true);
     }
   }
 
@@ -210,58 +198,6 @@ public class DisplaceExecutor {
   }
 
   /**
-   * Applies equipment-unit displacement to a different substance.
-   *
-   * <p>When displacing to a different substance, the same number of equipment units is
-   * transferred, but the actual substance volumes differ based on each substance's initial charge
-   * requirements. This method:</p>
-   * <ol>
-   *   <li>Switches to the destination substance scope</li>
-   *   <li>Converts the number of units to destination substance volume using the
-   *       destination's initial charge</li>
-   *   <li>Applies the destination volume change using displacement context for correct
-   *       GWP calculations</li>
-   *   <li>Restores the original scope</li>
-   * </ol>
-   *
-   * <p>Example: Capping HFC-134a to 80% displacing "R-600a" transfers units to R-600a,
-   * but R-600a may have a different initial charge (kg/unit), resulting in different total substance
-   * volume but same equipment count.</p>
-   *
-   * @param stream The source stream identifier
-   * @param unitsChanged The number of equipment units to transfer
-   * @param displaceTarget The destination substance name
-   */
-  private void applyUnitsDisplacementDifferentSubstance(String stream,
-      EngineNumber unitsChanged, String displaceTarget) {
-    Scope currentScope = engine.getScope();
-    Scope destinationScope = currentScope.getWithSubstance(displaceTarget);
-    final String originalSubstance = currentScope.getSubstance();
-
-    // Temporarily change scope to destination for unit conversion
-    engine.setSubstance(displaceTarget);
-    UnitConverter destinationUnitConverter = EngineSupportUtils.createUnitConverterWithTotal(
-        engine,
-        stream
-    );
-
-    // Convert units to destination substance volume using destination's initial charge
-    EngineNumber destinationVolumeChange = destinationUnitConverter.convert(
-        unitsChanged,
-        "kg"
-    );
-    EngineNumber displaceChange = new EngineNumber(destinationVolumeChange.getValue(), "kg");
-
-    // Use custom recalc kit with destination substance's properties for correct GWP calculation
-    shortcuts.changeStreamWithDisplacementContext(stream, displaceChange, destinationScope);
-
-    updateLastSpecifiedAfterDisplacement(stream, destinationScope);
-
-    // Restore original scope
-    engine.setSubstance(originalSubstance);
-  }
-
-  /**
    * Applies volume-based displacement using the same substance volume.
    *
    * <p>For volume-based operations (kg, mt), displacement uses the same substance volume
@@ -283,9 +219,8 @@ public class DisplaceExecutor {
    */
   private void applyVolumeDisplacement(String stream, BigDecimal changeAmount,
       String displaceTarget, boolean isStreamDisplacement) {
-    EngineNumber displaceChange = new EngineNumber(changeAmount.negate(), "kg");
-
     if (isStreamDisplacement) {
+      EngineNumber displaceChange = new EngineNumber(changeAmount.negate(), "kg");
       shortcuts.changeStreamWithoutReportingUnits(
           displaceTarget,
           displaceChange,
@@ -295,8 +230,73 @@ public class DisplaceExecutor {
 
       updateLastSpecifiedAfterDisplacement(displaceTarget, engine.getScope());
     } else {
-      Scope currentScope = engine.getScope();
-      Scope destinationScope = currentScope.getWithSubstance(displaceTarget);
+      applyChangeToSubstance(stream, changeAmount, displaceTarget, false);
+    }
+  }
+
+  /**
+   * Transfers a computed change to a different substance's stream, handling equipment-unit or
+   * volume-based transfer depending on {@code useUnits}, and updating lastSpecified bookkeeping
+   * for the destination substance afterwards.
+   *
+   * <p>This is the shared destination-side half of substance-based displacement: applying the
+   * change (with correct GWP context via {@link StreamUpdateShortcuts#changeStreamWithDisplacementContext})
+   * and recording it via {@link #updateLastSpecifiedAfterDisplacement}. It is used both by
+   * {@link #execute} for cap/floor/recover's "displacing" clause and directly by
+   * {@code ReplaceExecutor}, which always displaces to a different substance and needs this same
+   * transfer-plus-bookkeeping logic without duplicating it.</p>
+   *
+   * <p>For equipment units, the same number of units is transferred but converted to volume
+   * using the destination substance's own initial charge for {@code stream} (so volumes may
+   * differ between source and destination). For volume, the identical kg amount is transferred.</p>
+   *
+   * @param stream The stream identifier being modified (e.g., "domestic", "import", "sales")
+   * @param changeAmount The change already applied to the source stream, in kg (negative for a
+   *     reduction removed from source)
+   * @param destinationSubstance The destination substance name
+   * @param useUnits True to preserve equipment units via each substance's own initial charge,
+   *     false to transfer the identical kg volume to the destination
+   */
+  void applyChangeToSubstance(String stream, BigDecimal changeAmount,
+      String destinationSubstance, boolean useUnits) {
+    Scope currentScope = engine.getScope();
+    Scope destinationScope = currentScope.getWithSubstance(destinationSubstance);
+
+    if (useUnits) {
+      UnitConverter currentUnitConverter = EngineSupportUtils.createUnitConverterWithTotal(
+          engine,
+          stream
+      );
+
+      // Convert the volume change back to units in the original substance
+      EngineNumber volumeChangeFlip = new EngineNumber(changeAmount.negate(), "kg");
+      EngineNumber unitsChanged = currentUnitConverter.convert(volumeChangeFlip, "units");
+
+      final String originalSubstance = currentScope.getSubstance();
+
+      // Temporarily change scope to destination for unit conversion
+      engine.setSubstance(destinationSubstance);
+      UnitConverter destinationUnitConverter = EngineSupportUtils.createUnitConverterWithTotal(
+          engine,
+          stream
+      );
+
+      // Convert units to destination substance volume using destination's initial charge
+      EngineNumber destinationVolumeChange = destinationUnitConverter.convert(
+          unitsChanged,
+          "kg"
+      );
+      EngineNumber displaceChange = new EngineNumber(destinationVolumeChange.getValue(), "kg");
+
+      // Use custom recalc kit with destination substance's properties for correct GWP calculation
+      shortcuts.changeStreamWithDisplacementContext(stream, displaceChange, destinationScope);
+
+      updateLastSpecifiedAfterDisplacement(stream, destinationScope);
+
+      // Restore original scope
+      engine.setSubstance(originalSubstance);
+    } else {
+      EngineNumber displaceChange = new EngineNumber(changeAmount.negate(), "kg");
 
       shortcuts.changeStreamWithDisplacementContext(
           stream,
