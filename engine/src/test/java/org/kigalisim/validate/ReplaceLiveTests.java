@@ -764,4 +764,63 @@ public class ReplaceLiveTests {
     assertTrue(resultSubbYear10.getConsumption().getValue().doubleValue() > 0.0,
         "SubB should have more than 0 kg of consumption in year 10 under With Replace");
   }
+
+  /**
+   * Test that a percent-based "replace X% of import" policy does not cause consumption to
+   * blow up far above business as usual when combined with a growing import stream
+   * ("change import by +N units") and "recharge 100% of newEquipment" (precharge).
+   *
+   * <p>This reproduced a user-reported bug distinct from the priorEquipment-recharge
+   * under-counting bugs already fixed in {@code ReplaceExecutor} and
+   * {@code StreamUpdateShortcuts}, and turned out to be orthogonal to {@code ReplaceExecutor}
+   * entirely -- it reproduced identically via a plain "cap ... displacing" clause. The root
+   * cause was in the shared {@code EngineSupportUtils#recordLastSpecifiedKeepingUnits} helper
+   * (used by both {@code DisplaceExecutor} and {@code ReplaceExecutor}): its
+   * {@code removeImpliedRecharge} step only backed out ordinary recharge (of priorEquipment)
+   * volume via {@code RechargeVolumeCalculator}, never precharge (of newEquipment) volume via
+   * {@code PrechargeVolumeCalculator}. For a substance using precharge instead of (or in
+   * addition to) recharge, the leftover precharge kg riding on the stream's raw value was
+   * misread as additional sold units when converted back to lastSpecified's unit-tracked
+   * basis, inflating it. Combined with unit-based year-over-year growth ("change ... by ...
+   * units"), that inflated base compounded every year, producing runaway growth. Fixed by
+   * having {@code removeImpliedRecharge} back out both recharge and precharge volume.</p>
+   */
+  @Test
+  public void testReplacePrechargeGrowthDoesNotBlowUpConsumption() throws IOException {
+    String qtaPath = "../examples/replace_precharge_growth_runaway.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    Stream<EngineResult> bauResults = KigaliSimFacade.runScenario(program, "bau", progress -> {});
+    List<EngineResult> bauResultsList = bauResults.collect(Collectors.toList());
+
+    Stream<EngineResult> replacementResults =
+        KigaliSimFacade.runScenario(program, "replacement alone", progress -> {});
+    List<EngineResult> replacementResultsList = replacementResults.collect(Collectors.toList());
+
+    int targetYear = 2040;
+
+    EngineResult bauSubH = LiveTestsUtil.getResult(bauResultsList.stream(), targetYear, "App A", "SubH");
+    EngineResult bauSubL = LiveTestsUtil.getResult(bauResultsList.stream(), targetYear, "App A", "SubL");
+    EngineResult replacementSubH =
+        LiveTestsUtil.getResult(replacementResultsList.stream(), targetYear, "App A", "SubH");
+    final EngineResult replacementSubL =
+        LiveTestsUtil.getResult(replacementResultsList.stream(), targetYear, "App A", "SubL");
+
+    assertNotNull(bauSubH, "Should have BAU result for App A/SubH in year 2040");
+    assertNotNull(bauSubL, "Should have BAU result for App A/SubL in year 2040");
+    assertNotNull(replacementSubH, "Should have replacement alone result for App A/SubH in year 2040");
+    assertNotNull(replacementSubL, "Should have replacement alone result for App A/SubL in year 2040");
+
+    double bauTotalConsumption = bauSubH.getConsumption().getValue().doubleValue()
+        + bauSubL.getConsumption().getValue().doubleValue();
+    double replacementTotalConsumption = replacementSubH.getConsumption().getValue().doubleValue()
+        + replacementSubL.getConsumption().getValue().doubleValue();
+
+    assertTrue(replacementTotalConsumption <= bauTotalConsumption * 1.05,
+        String.format("Total consumption under \"replacement alone\" (%.2f) should not be "
+            + "dramatically higher than BAU (%.2f) in year 2040, since replacing SubH "
+            + "(high GWP) with SubL (low GWP) should reduce, not increase, total emissions",
+            replacementTotalConsumption, bauTotalConsumption));
+  }
 }

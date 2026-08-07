@@ -365,6 +365,13 @@ public final class EngineSupportUtils {
    * Removes recharge/precharge kg implied by a sales-related stream's value when it is
    * unit-tracked.
    *
+   * <p>Both recharge (servicing of priorEquipment) and precharge (servicing of newEquipment)
+   * ride on top of a unit-tracked stream's raw kg value rather than being absorbed within it,
+   * so both must be backed out here. Omitting precharge would leave its kg riding on the value
+   * recorded as lastSpecified; since that value is then reinterpreted as a unit count, the
+   * precharge kg gets misread as additional sold units, inflating lastSpecified in a way that
+   * compounds year over year once combined with unit-based growth.</p>
+   *
    * @param engine The engine to read recharge state from
    * @param scope The scope (application/substance) of the stream
    * @param stream The stream identifier
@@ -387,19 +394,30 @@ public final class EngineSupportUtils {
         simulationState,
         engine
     );
-    BigDecimal distributedRecharge = getDistributedRecharge(
+    EngineNumber prechargeVolume = PrechargeVolumeCalculator.calculatePrechargeVolume(
+        scope,
+        engine.getStateGetter(),
+        simulationState,
+        engine
+    );
+    BigDecimal distributedServicing = getDistributedRecharge(
         stream,
         rechargeVolume,
         scope,
         simulationState
-    );
-    if (distributedRecharge.compareTo(BigDecimal.ZERO) == 0) {
+    ).add(getDistributedRecharge(
+        stream,
+        prechargeVolume,
+        scope,
+        simulationState
+    ));
+    if (distributedServicing.compareTo(BigDecimal.ZERO) == 0) {
       return value;
     }
 
     UnitConverter unitConverter = createUnitConverterWithTotal(engine, stream);
     EngineNumber valueKg = unitConverter.convert(value, "kg");
-    BigDecimal netKg = valueKg.getValue().subtract(distributedRecharge);
+    BigDecimal netKg = valueKg.getValue().subtract(distributedServicing);
     if (netKg.compareTo(BigDecimal.ZERO) < 0) {
       netKg = BigDecimal.ZERO;
     }
