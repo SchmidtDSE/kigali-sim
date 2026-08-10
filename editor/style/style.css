@@ -167,6 +167,29 @@ select option[disabled] {
   border-radius: 2px;
 }
 
+/*
+ * Ace renders its scrollbar as a div with native overflow: scroll, so it
+ * otherwise inherits the OS/browser's auto-hiding overlay scrollbar. Giving
+ * it explicit scrollbar styling opts it out of that overlay behavior so the
+ * thumb stays visible instead of fading after a moment of inactivity.
+ */
+#code-editor .ace_scrollbar-v {
+  scrollbar-color: rgba(0, 0, 0, 0.35) transparent;
+}
+
+#code-editor .ace_scrollbar-v::-webkit-scrollbar {
+  width: 12px;
+}
+
+#code-editor .ace_scrollbar-v::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.35);
+  border-radius: 6px;
+}
+
+#code-editor .ace_scrollbar-v::-webkit-scrollbar-track {
+  background: transparent;
+}
+
 #editor-tabs {
   margin-bottom: 10px;
 }
