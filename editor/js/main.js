@@ -52,7 +52,15 @@ class MainPresenter {
     self._hasCompilationErrors = false;
 
     self._runningIndicatorPresenter = new RunningIndicatorPresenter();
-    self._buildGenerationTracker = new BuildGenerationTracker();
+
+    // Tracks every _onBuild call (compile-only or run) so the button panel is
+    // only re-enabled by whichever build started last, regardless of kind.
+    self._buttonGenerationTracker = new BuildGenerationTracker();
+
+    // Tracks run=true builds only, so a compile-only build started after a
+    // run cannot cause that run's eventual results/errors to be discarded as
+    // "stale" once it resolves.
+    self._runGenerationTracker = new BuildGenerationTracker();
 
     self._initStorageKeeper();
     self._initWasmBackend();
@@ -292,7 +300,8 @@ class MainPresenter {
   _onBuild(run, resetFilters, isAutoRefresh) {
     const self = this;
     self._buttonPanelPresenter.disable();
-    const generationId = run ? self._buildGenerationTracker.startNewGeneration() : null;
+    const buttonGenerationId = self._buttonGenerationTracker.startNewGeneration();
+    const runGenerationId = run ? self._runGenerationTracker.startNewGeneration() : null;
 
     if (resetFilters === undefined) {
       resetFilters = false;
@@ -314,7 +323,9 @@ class MainPresenter {
 
       if (hasErrors) {
         self._codeEditorPresenter.showError(compileErrors[0]);
-        self._buttonPanelPresenter.enable();
+        if (self._buttonGenerationTracker.isCurrent(buttonGenerationId)) {
+          self._buttonPanelPresenter.enable();
+        }
         return;
       } else {
         self._codeEditorPresenter.hideError();
@@ -328,8 +339,8 @@ class MainPresenter {
 
           self._runningIndicatorPresenter.hide();
 
-          if (generationId !== null && !self._buildGenerationTracker.isCurrent(generationId)) {
-            // A newer build has since started; discard this stale result.
+          if (runGenerationId !== null && !self._runGenerationTracker.isCurrent(runGenerationId)) {
+            // A newer run has since started; discard this stale result.
             return;
           }
 
@@ -348,8 +359,8 @@ class MainPresenter {
         } catch (e) {
           self._runningIndicatorPresenter.hide();
 
-          if (generationId !== null && !self._buildGenerationTracker.isCurrent(generationId)) {
-            // A newer build has since started; discard this stale error.
+          if (runGenerationId !== null && !self._runGenerationTracker.isCurrent(runGenerationId)) {
+            // A newer run has since started; discard this stale error.
             return;
           }
 
@@ -371,7 +382,7 @@ class MainPresenter {
       try {
         await execute();
       } catch (e) {
-        if (generationId !== null && self._buildGenerationTracker.isCurrent(generationId)) {
+        if (self._buttonGenerationTracker.isCurrent(buttonGenerationId)) {
           const message = "Execute error: " + e;
           if (!isAutoRefresh) {
             alertWithHelpOption(message);
@@ -382,7 +393,7 @@ class MainPresenter {
         }
       }
 
-      if (generationId !== null && self._buildGenerationTracker.isCurrent(generationId)) {
+      if (self._buttonGenerationTracker.isCurrent(buttonGenerationId)) {
         self._buttonPanelPresenter.enable();
       }
     };

@@ -104,6 +104,7 @@ class CodeEditorPresenter {
 
     self._editor.setOption("printMarginColumn", 100);
     self._editor.setOption("enableKeyboardAccessibility", true);
+    self._editor.setOption("vScrollBarAlwaysVisible", true);
 
     self._editor.setTheme("ace/theme/textmate");
 
