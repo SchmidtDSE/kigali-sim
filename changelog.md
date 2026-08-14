@@ -16,7 +16,7 @@ The following changes have been adopted and released.
 
 ### Editor run and error panel visibility fix
 
-**Status**: Released Aug 13, 2026
+**Status**: Released Aug 14, 2026
 
 **Classification**: Bug
 
