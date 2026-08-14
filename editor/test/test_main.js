@@ -55,6 +55,33 @@ function buildMainTests() {
       assert.equal(progressBar.value, 0, "reset should force progress back to 0 for a new batch");
     });
 
+    QUnit.test("RunningIndicatorPresenter show clears stale overlays", function (assert) {
+      const presenter = new RunningIndicatorPresenter();
+      const errorIndicator = document.getElementById("error-indicator");
+      const noResultsMessage = document.getElementById("no-results-message");
+
+      errorIndicator.style.display = "block";
+      noResultsMessage.style.display = "block";
+
+      presenter.show();
+
+      assert.equal(
+        errorIndicator.style.display,
+        "none",
+        "show should hide a stale error indicator before a new run",
+      );
+      assert.equal(
+        noResultsMessage.style.display,
+        "none",
+        "show should hide a stale no-results message before a new run",
+      );
+      assert.equal(
+        presenter._runningIndicator.style.display,
+        "block",
+        "show should display the running indicator",
+      );
+    });
+
     QUnit.test("ButtonPanelPresenter can be initialized", function (assert) {
       const root = document.getElementById("code-buttons-panel");
       const mockOnBuild = function () {};

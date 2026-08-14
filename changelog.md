@@ -14,6 +14,14 @@ Finally, we want to again express our gratitude for your feedback and time.
 
 The following changes have been adopted and released.
 
+### Editor run and error panel visibility fix
+
+**Status**: Released Aug 13, 2026
+
+**Classification**: Bug
+
+In some circumstances, the code-based editor run button would not appear after a code change. Also, after an error, the error panel would overlay the status bar after recovering from an error.
+
 ### Replace switching unit tracking basis
 
 **Status**: Released August 7, 2026
