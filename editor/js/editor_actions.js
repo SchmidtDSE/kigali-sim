@@ -23,6 +23,25 @@ class RunningIndicatorPresenter {
     self.reset();
     self._resultsSection.style.display = "block";
     self._runningIndicator.style.display = "block";
+    self._hideStaleOverlays();
+  }
+
+  /**
+   * Clear any stale results overlays (error indicator and no-results
+   * message) before a new run begins.
+   *
+   * @private
+   */
+  _hideStaleOverlays() {
+    const self = this;
+    const errorIndicator = document.getElementById("error-indicator");
+    if (errorIndicator) {
+      errorIndicator.style.display = "none";
+    }
+    const noResultsMessage = document.getElementById("no-results-message");
+    if (noResultsMessage) {
+      noResultsMessage.style.display = "none";
+    }
   }
 
   /**
