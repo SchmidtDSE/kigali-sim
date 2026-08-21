@@ -69,6 +69,80 @@ public class QubecTalkParserTest {
   }
 
   /**
+   * Helper to wrap a retire statement in a valid program skeleton.
+   *
+   * @param retireLine the retire statement to embed
+   * @return a full QubecTalk program containing the statement
+   */
+  private String wrapRetire(String retireLine) {
+    return "start default\n"
+        + "  define application \"test\"\n"
+        + "    uses substance \"test\"\n"
+        + "      enable domestic\n"
+        + "      initial charge with 1 kg / unit for domestic\n"
+        + "      " + retireLine + "\n"
+        + "      set domestic to 100 units\n"
+        + "      equals 5 tCO2e / mt\n"
+        + "    end substance\n"
+        + "  end application\n"
+        + "end default\n"
+        + "start simulations\n"
+        + "  simulate \"business as usual\" from years 1 to 12\n"
+        + "end simulations\n";
+  }
+
+  /**
+   * Test that a Weibull retire without the full tail is a parse error.
+   */
+  @Test
+  public void testParseInvalidWeibullMissingTail() {
+    ParseResult result = parser.parse(wrapRetire("retire 5 year old"));
+    assertTrue(result.hasErrors(), "Missing 'mean weibull' tail should be a parse error");
+    assertFalse(result.getProgram().isPresent(), "Invalid Weibull retire should not produce a program");
+  }
+
+  /**
+   * Test that a Weibull retire missing 'weibull' is a parse error.
+   */
+  @Test
+  public void testParseInvalidWeibullMissingWeibull() {
+    ParseResult result = parser.parse(wrapRetire("retire 5 year old mean"));
+    assertTrue(result.hasErrors(), "Missing 'weibull' should be a parse error");
+    assertFalse(result.getProgram().isPresent(), "Invalid Weibull retire should not produce a program");
+  }
+
+  /**
+   * Test that a Weibull retire from a percentage form is a parse error.
+   */
+  @Test
+  public void testParseInvalidWeibullPercentForm() {
+    ParseResult result = parser.parse(wrapRetire("retire 5 % / year old mean weibull"));
+    assertTrue(result.hasErrors(), "Percentage form with weibull tail should be a parse error");
+    assertFalse(result.getProgram().isPresent(), "Invalid Weibull retire should not produce a program");
+  }
+
+  /**
+   * Test that a Weibull retire with 'with replacement' is a parse error.
+   */
+  @Test
+  public void testParseInvalidWeibullWithReplacement() {
+    ParseResult result = parser.parse(wrapRetire("retire 5 year old mean weibull with replacement"));
+    assertTrue(result.hasErrors(), "Weibull with replacement should be a parse error");
+    assertFalse(result.getProgram().isPresent(), "Invalid Weibull retire should not produce a program");
+  }
+
+  /**
+   * Test that a plain retire with a temporal unit still parses as before.
+   */
+  @Test
+  public void testParseWeibullRegressionPlainYearRetire() {
+    ParseResult result = parser.parse(wrapRetire("retire 5 year"));
+    assertNotNull(result, "Parse result should not be null");
+    assertFalse(result.hasErrors(), "Plain 'retire 5 year' should still parse");
+    assertTrue(result.getProgram().isPresent(), "Plain 'retire 5 year' should produce a program");
+  }
+
+  /**
    * Test that parsing enable statements works correctly.
    */
   @Test

@@ -1386,7 +1386,12 @@ class ConsumptionListPresenter {
     const retirementReducesCheckbox = self._dialog.querySelector(
       ".retirement-reduces-equipment-checkbox",
     );
-    const withReplacement = !retirementReducesCheckbox.checked;
+    let withReplacement = !retirementReducesCheckbox.checked;
+
+    // The grammar has no Weibull-with-replacement form
+    if (retirement !== null && retirement.getUnits() === "year old mean weibull") {
+      withReplacement = false;
+    }
 
     // Create retire command with withReplacement flag
     const retireCommand = new RetireCommand(retirement, null, withReplacement);

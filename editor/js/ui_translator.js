@@ -1150,6 +1150,34 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
   }
 
   /**
+   * Visit a Weibull retire command with all years duration node.
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {RetireCommand} New retire command instance.
+   */
+  visitRetireWeibullAllYears(ctx) {
+    const mean = parseFloat(ctx.mean.getText());
+    const assumingNew = ctx.getText().toLowerCase().includes("assumingnew");
+    const value = new EngineNumber(mean, "year old mean weibull");
+    return new RetireCommand(value, null, false, assumingNew);
+  }
+
+  /**
+   * Visit a Weibull retire command with duration node.
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {RetireCommand} New retire command instance.
+   */
+  visitRetireWeibullDuration(ctx) {
+    const self = this;
+    const mean = parseFloat(ctx.mean.getText());
+    const assumingNew = ctx.getText().toLowerCase().includes("assumingnew");
+    const duration = ctx.duration.accept(self);
+    const value = new EngineNumber(mean, "year old mean weibull");
+    return new RetireCommand(value, duration, false, assumingNew);
+  }
+
+  /**
    * Visit a set command with all years duration node.
    *
    * @param {Object} ctx - The parse tree node context.
@@ -1388,15 +1416,14 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
       .filter((x) => x !== "simulations")
       .map((x) => stanzasByName.get(x));
 
+    const stanzas = Array.of(...stanzasByName.values());
+    const isCompatible = self._getChildrenCompatible(stanzas);
+
     if (!stanzasByName.has("simulations")) {
-      return new Program(applications, policies, [], true);
+      return new Program(applications, policies, [], isCompatible);
     }
 
     const scenarios = stanzasByName.get("simulations").getScenarios();
-
-    const stanzas = Array.of(...stanzasByName.values());
-
-    const isCompatible = self._getChildrenCompatible(stanzas);
 
     return new Program(applications, policies, scenarios, isCompatible);
   }

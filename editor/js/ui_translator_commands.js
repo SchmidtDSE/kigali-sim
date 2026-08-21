@@ -104,12 +104,15 @@ class RetireCommand {
    * @param {EngineNumber} value - Retirement rate/amount.
    * @param {YearMatcher|null} duration - Duration specification or null for all years.
    * @param {boolean} withReplacement - Whether to maintain equipment via replacement.
+   * @param {boolean} assumingNew - Whether prior equipment is treated as a pseudo-cohort
+   *   of typical age (the "assuming new" modifier).
    */
-  constructor(value, duration, withReplacement) {
+  constructor(value, duration, withReplacement, assumingNew) {
     const self = this;
     self._value = value;
     self._duration = duration;
     self._withReplacement = withReplacement;
+    self._assumingNew = assumingNew !== undefined ? assumingNew : false;
   }
 
   /**
@@ -153,13 +156,24 @@ class RetireCommand {
   }
 
   /**
+   * Get whether this retire command uses the "assuming new" modifier.
+   *
+   * @returns {boolean} True if prior equipment is treated as a pseudo-cohort of typical age.
+   */
+  getAssumingNew() {
+    const self = this;
+    return self._assumingNew;
+  }
+
+  /**
    * Check if this command is compatible with UI editing.
    *
-   * @returns {boolean} Always returns true as retire commands are UI-compatible.
+   * @returns {boolean} Retire commands are UI-compatible except when the
+   *   "assuming new" modifier is set, which the Basic Editor cannot express.
    */
   getIsCompatible() {
     const self = this;
-    return true;
+    return !self._assumingNew;
   }
 }
 

@@ -254,6 +254,44 @@ function buildIntegrationTests() {
       },
     ]);
 
+    buildTest("interprets a weibull retire command", "/examples/weibull_retire.qta", [
+      (result, assert) => {
+        const record = getResult(result, BAU_NAME, 1, 0, "test", "test");
+        const population = record.getPopulation();
+        assert.closeTo(population.getValue(), 100, 0.01);
+        assert.deepEqual(population.getUnits(), "units");
+      },
+      (result, assert) => {
+        const record = getResult(result, BAU_NAME, 2, 0, "test", "test");
+        const population = record.getPopulation();
+        assert.closeTo(population.getValue(), 196.907, 0.01);
+        assert.deepEqual(population.getUnits(), "units");
+      },
+      (result, assert) => {
+        const record = getResult(result, BAU_NAME, 3, 0, "test", "test");
+        const population = record.getPopulation();
+        assert.closeTo(population.getValue(), 285.098, 0.01);
+        assert.deepEqual(population.getUnits(), "units");
+      },
+    ]);
+
+    QUnit.test("weibull retire with prior equipment surfaces readable error", function (assert) {
+      const done = assert.async();
+      loadRemote("/examples/weibull_retire_prior_error.qta").then(async (content) => {
+        assert.ok(content.length > 0);
+        try {
+          await wasmBackend.execute(content);
+          assert.ok(false, "Should have thrown for priorEquipment with Weibull retire");
+        } catch (e) {
+          assert.ok(
+            e.message.indexOf("Weibull retirement requires equipment ages") !== -1,
+            "Error should mention unknown equipment ages, got: " + e.message,
+          );
+        }
+        done();
+      });
+    });
+
     buildTest("interprets multiple retire commands", "/examples/retire_multiple.qta", [
       (result, assert) => {
         const record = getResult(result, BAU_NAME, 1, 0, "test", "test");

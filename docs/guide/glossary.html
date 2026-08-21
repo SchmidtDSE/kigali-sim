@@ -186,7 +186,7 @@ retirement schedules.</dd>
           <dd>See Bank.</dd>
 
           <dt>Retire</dt>
-          <dd>A command that sets equipment retirement rates determining equipment lifespan. Also called hazard rate or scrap rate. Syntax: <code>retire percentage % each year</code>. Use <code>with replacement</code> to maintain equipment population by automatically replacing retired units.</dd>
+          <dd>A command that sets equipment retirement rates determining equipment lifespan. Also called hazard rate or scrap rate. Syntax: <code>retire percentage % each year</code>. Use <code>with replacement</code> to maintain equipment population by automatically replacing retired units. A mean lifetime form, <code>retire 20 year old mean weibull</code>, applies a Weibull survival curve (shape 2) whose hazard rises with equipment age; see Weibull Retirement.</dd>
 
           <dt>Retirement Rate</dt>
           <dd>The annual percentage or amount of equipment that is scrapped or retired from service. A constant retirement percentage corresponds to an exponential decay model. Also called hazard rate or scrap rate.</dd>
@@ -226,6 +226,9 @@ retirement schedules.</dd>
 
           <dt>WASM</dt>
           <dd>WebAssembly. A binary instruction format that enables high-performance execution of code in web browsers. Kigali Sim's Java engine is compiled to WASM for browser-based execution.</dd>
+
+          <dt>Weibull Retirement</dt>
+          <dd>An age-dependent retirement model specified by a mean equipment lifetime, e.g. <code>retire 20 year old mean weibull</code>. Kigali Sim applies a Weibull survival curve (shape 2, the Rayleigh case) so the hazard of retirement rises with equipment age: for a 20-year mean, 0.2% in a unit's first year, 3.7% at age 10, and 7.4% at age 20. Equipment ages derive from simulated sales, so the simulation should begin before the substance entered service; combining the form with <code>set priorEquipment</code> raises a validation error unless the <code>assuming new</code> modifier treats existing stock as a single cohort of typical age. See Tutorial 15.</dd>
         </dl>
       </section>
 

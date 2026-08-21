@@ -306,6 +306,14 @@ ONLY_: 'only';
 
 CONTINUED_: 'continued';
 
+OLD_: 'old';
+
+WEIBULL_: 'weibull';
+
+ASSUMING_: 'assuming';
+
+NEW_: 'new';
+
 /**
  * -----------
  * -- Other --
@@ -469,6 +477,8 @@ replaceStatement: REPLACE_ volume=unitValue OF_ target=stream WITH_ destination=
 
 retireStatement: RETIRE_ volume=unitValue (WITH_ REPLACEMENT_)?  # retireAllYears
   | RETIRE_ volume=unitValue (WITH_ REPLACEMENT_)? duration=during  # retireDuration
+  | RETIRE_ mean=number (YEAR_ | YEARS_) OLD_ MEAN_ WEIBULL_ (ASSUMING_ NEW_)?  # retireWeibullAllYears
+  | RETIRE_ mean=number (YEAR_ | YEARS_) OLD_ MEAN_ WEIBULL_ (ASSUMING_ NEW_)? duration=during  # retireWeibullDuration
   ;
 
 setStatement: SET_ target=stream TO_ value=unitValue  # setAllYears

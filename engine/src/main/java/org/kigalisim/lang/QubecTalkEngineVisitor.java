@@ -55,6 +55,7 @@ import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
 import org.kigalisim.lang.operation.RemoveUnitsOperation;
 import org.kigalisim.lang.operation.ReplaceOperation;
 import org.kigalisim.lang.operation.RetireOperation;
+import org.kigalisim.lang.operation.RetireWeibullOperation;
 import org.kigalisim.lang.operation.RetireWithReplacementOperation;
 import org.kigalisim.lang.operation.SetOperation;
 import org.kigalisim.lang.operation.SubtractionOperation;
@@ -1255,6 +1256,57 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
         : new RetireOperation(volumeOperation, during);
 
     return new OperationFragment(operation);
+  }
+
+  /**
+   * Processes a Weibull retire operation applied to all years.
+   *
+   * <p>Rejects a non-positive mean lifetime and creates a Weibull retire operation with
+   * the mean and the assuming-new flag.</p>
+   */
+  @Override
+  public Fragment visitRetireWeibullAllYears(QubecTalkParser.RetireWeibullAllYearsContext ctx) {
+    BigDecimal meanYears = parseMeanYears(ctx.mean);
+    boolean assumingNew = ctx.ASSUMING_() != null;
+    Operation operation = new RetireWeibullOperation(meanYears, assumingNew);
+    return new OperationFragment(operation);
+  }
+
+  /**
+   * Processes a Weibull retire operation for a specified duration.
+   *
+   * <p>Rejects a non-positive mean lifetime and creates a Weibull retire operation with
+   * the mean, the assuming-new flag, and the duration.</p>
+   */
+  @Override
+  public Fragment visitRetireWeibullDuration(QubecTalkParser.RetireWeibullDurationContext ctx) {
+    BigDecimal meanYears = parseMeanYears(ctx.mean);
+    boolean assumingNew = ctx.ASSUMING_() != null;
+    ParsedDuring during = visit(ctx.duration).getDuring();
+    Operation operation = new RetireWeibullOperation(meanYears, assumingNew, during);
+    return new OperationFragment(operation);
+  }
+
+  /**
+   * Parse the mean lifetime from a number context, rejecting a non-positive value.
+   *
+   * <p>The mean is a literal number whose text may contain thousands commas; these are
+   * stripped before parsing. A mean of zero or less is rejected.</p>
+   *
+   * @param ctx The number context carrying the mean text.
+   * @return the parsed mean lifetime in years.
+   */
+  private BigDecimal parseMeanYears(QubecTalkParser.NumberContext ctx) {
+    String rawText = ctx.getText().replaceAll(",", "");
+    FlexibleNumberParseResult parseResult = numberParser.parseFlexibleNumber(rawText);
+    if (parseResult.isError()) {
+      throw new RuntimeException("Failed to parse Weibull mean lifetime: " + parseResult.getError().get());
+    }
+    BigDecimal mean = parseResult.getParsedNumber().get();
+    if (mean.compareTo(BigDecimal.ZERO) <= 0) {
+      throw new RuntimeException("Weibull retirement requires a positive mean lifetime in years");
+    }
+    return mean;
   }
 
   /**

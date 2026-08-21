@@ -68,11 +68,14 @@ Both GHG and energy intensities set via `equals` support optional `during` claus
 
 #### Equipment Lifecycle
 - `retire {amount} <with replacement> <during>` - Equipment retirement rate, also called hazard rate or scrap rate (with replacement maintains equipment population)
+- `retire {number} year old mean weibull <assuming new> <during>` - Age-dependent retirement from a mean equipment lifetime in years (Weibull survival curve, shape 2; hazard rises with age). Requires equipment ages, so begin the simulation before the substance entered service. Combining with `set priorEquipment` / `change priorEquipment` on the same substance raises a validation error unless `assuming new` is given, which treats existing stock as a single cohort of typical age (round(2μ/π) years for mean μ; 13 years for a 20-year mean). Basic Editor: choose "year old (mean life, Weibull)" units; `assuming new` is code editor only.
 - `recharge {population} with {volume} <during>` - Service recharging (population = equipment to recharge, volume = substance per unit). Defaults to priorEquipment. Use `of newEquipment` for precharge (servicing new equipment before sale).
 - `recharge {population} of {target} with {volume} <during>` - Service recharging with explicit target. Target can be `priorEquipment` (default, existing equipment) or `newEquipment` (precharge, new equipment before sale).
 - `set priorEquipment to {amount} <during>` - Pre-existing equipment.
 
 **Note**: Precharge may be useful when some leakage is expected before sale, so a top up prior to equipment's useful lifetime is required.
+
+**Note**: A flat `retire x % / year` is the constant-hazard (shape 1) case: each unit has the same x% chance of retiring each year regardless of age, so it over-retires relative to an age-dependent model in growing fleets. A mean lifetime (`retire 20 year old mean weibull`) reaches the same steady state under constant sales (population = annual sales x mean lifetime) but concentrates retirement realistically around the middle of the lifetime distribution.
 
 #### Sales Assumptions (Bank Tracking)
 The `assume` command provides control over sales carryover behavior:
@@ -523,11 +526,23 @@ Bank calculations use initial charge values and GWP (Global Warming Potential) f
 
 ## Hazards Schedule
 
-Constant hazard rates are recommended for simple scripts. Variable schedules are recommended for sophisticated models. Fixed schedules should only be used when the user is very sure or has confirmed they know exact age and retirement expectations (ask the user the first time they use it if they are certain).
+Constant hazard rates are recommended for simple scripts. Mean lifetime (Weibull) retirement is recommended when the user has an average equipment lifetime, the statistic most surveys and emissions models report. Fixed schedules should only be used when the user is very sure or has confirmed they know exact age and retirement expectations (ask the user the first time they use it if they are certain).
 
 ### Constant
 
 Constant hazard is `x % / year` (or just `x %`). Each year, each unit has a `x %` chance of retiring. Recommended for simple scripts when exact age data is unavailable.
+
+### Mean Lifetime (Weibull)
+
+Give a mean equipment lifetime in years and Kigali Sim applies a Weibull survival curve (shape 2) whose hazard rises with age, as empirical studies of refrigeration and AC equipment find:
+
+```
+retire 20 year old mean weibull
+retire 12.5 years old mean weibull during years 2030 to onwards
+retire 20 year old mean weibull assuming new
+```
+
+Cohort ages are tracked through simulated sales history, so start the simulation before the substance entered service. A 20-year mean gives hazards of 0.2% at age 1, 3.7% at age 10, and 7.4% at age 20, with retirement concentrated around age 16; under constant sales the steady-state population equals annual sales times the mean lifetime. Combining with `set priorEquipment` / `change priorEquipment` raises a validation error (ages unknown); `assuming new` treats existing stock as one cohort of typical age instead. This is the recommended form when the user has a mean lifetime estimate.
 
 ### Fixed Schedule
 
@@ -539,7 +554,7 @@ retire (0.6 * (get newEquipment 10 years ago as units)) units / year
 retire (0.2 * (get newEquipment 11 years ago as units)) units / year
 ```
 
-Asking for a value before simulation start returns 0. Only use when user knows exact equipment ages.
+Asking for a value before simulation start returns 0. Only use when user knows exact equipment ages. This technique (one `get newEquipment N years ago` term per cohort age) also reconstructs the exact schedule a Weibull retire applies.
 
 ### Variable Schedule
 
@@ -552,12 +567,12 @@ uses substance "R-407C"
   initial charge with 10 kg / unit for import
   equals 1774 kgCO2e / kg
   set priorEquipment to 100 units during year 2022
-  retire (get age as years)^2 * 0.195% / year
+  retire (get age as years)^2 * 0.228% / year
   recharge (get age as years) * 0.109% with 10 kg / unit
 end substance
 ```
 
-Here leakage hazard rate linearly increases with age and retirement exponentially: 10 year expected lifespan with 6% recharge during that lifetime.
+Here leakage hazard rate linearly increases with age and retirement exponentially: 10 year expected lifespan with 6% recharge during that lifetime. The retirement coefficient solves the continuous hazard integral to ln(2) over 10 years (3·ln(2)/1000 ≈ 0.208%) then corrects for Kigali Sim's discrete annual stepping (0.228% leaves half of a cohort retired at the end of its tenth year in service). Note that `get age` is the fleet's average age, so such formulas are exact for linear hazards and single cohorts but approximate for faster-rising functions on mixed-age fleets; prefer the mean lifetime form above when possible.
 
 ## Projections
 

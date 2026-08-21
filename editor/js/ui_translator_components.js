@@ -1909,13 +1909,19 @@ class Substance {
     }
 
     const engineNumber = self._retire.getValue();
+    const isWeibull = engineNumber.getUnits() === "year old mean weibull";
     const pieces = [
       "retire",
       formatEngineNumber(engineNumber),
     ];
 
-    // Add "with replacement" if the flag is set (must come before duration)
-    if (self._retire.getWithReplacement()) {
+    if (isWeibull) {
+      // The grammar has no Weibull-with-replacement form and "assuming new"
+      // comes after the units but before any duration.
+      if (self._retire.getAssumingNew()) {
+        pieces.push("assuming new");
+      }
+    } else if (self._retire.getWithReplacement()) {
       pieces.push("with replacement");
     }
 
