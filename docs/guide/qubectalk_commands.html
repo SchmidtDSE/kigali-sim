@@ -380,6 +380,27 @@ retire 10% each year</code></pre>
         <pre><code class="language-qubectalk">retire 20 year old mean weibull
 retire 12.5 years old mean weibull during years 2030 to onwards
 retire 20 year old mean weibull assuming new</code></pre>
+
+        <p>
+          <strong>Exact-age form:</strong>
+          <code>retire number year old exact</code> retires 100% of a sales
+          cohort in the year it turns that many years old. It is a shortcut
+          for <code>retire (get newEquipment number years ago as units)
+          units / year</code>, so it shares that lookup's behavior: ages
+          come from simulated sales history, and a cohort sold before the
+          simulation start counts as zero. Use it when the exact retirement
+          age is known rather than a hazard rate or mean lifetime; only use
+          one exact-age retire per cohort, since a later age's lookup still
+          sees the full original sales record rather than what an earlier
+          age already retired. In the Basic Editor, choose "year old
+          (exact)" from the retirement units dropdown and enter the age as
+          the value. See <a href="/guide/tutorial_15.html">Tutorial 15</a>
+          for the exact retirement schedule section.
+        </p>
+
+        <p><strong>Examples:</strong></p>
+        <pre><code class="language-qubectalk">retire 5 year old exact
+retire 10 years old exact during years 2030 to onwards</code></pre>
       </section>
 
       <section class="major" id="set">
