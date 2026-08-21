@@ -14,6 +14,14 @@ Finally, we want to again express our gratitude for your feedback and time.
 
 The following changes have been adopted and released.
 
+### Exact-age retirement shortcut
+
+**Status**: Released August 21, 2026
+
+**Classification**: Enhancement
+
+Kigali Sim now supports a shortcut for retiring an entire sales cohort at a known age: `retire 5 year old exact`. This is exactly equivalent to writing `retire (get newEquipment 5 years ago as units) units / year` by hand, a pattern already documented in Tutorial 15 for exact retirement schedules; the new form just saves typing when the retirement fraction is 100% at a single fixed age. The Basic Editor supports the shortcut through a new "year old (exact)" option in the retirement units dropdown.
+
 ### Weibull retirement by mean lifetime
 
 **Status**: Released August 21, 2026
