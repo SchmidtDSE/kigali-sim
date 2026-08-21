@@ -1288,6 +1288,50 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
   }
 
   /**
+   * Processes an exact retire operation applied to all years.
+   *
+   * <p>Shortcut for {@code retire (get newEquipment N years ago as units) units / year},
+   * built from the same operations that form would produce rather than a dedicated
+   * operation class.</p>
+   */
+  @Override
+  public Fragment visitRetireExactAllYears(QubecTalkParser.RetireExactAllYearsContext ctx) {
+    Operation volumeOperation = buildExactRetireVolumeOperation(ctx.age);
+    Operation operation = new RetireOperation(volumeOperation);
+    return new OperationFragment(operation);
+  }
+
+  /**
+   * Processes an exact retire operation for a specified duration.
+   *
+   * <p>Shortcut for {@code retire (get newEquipment N years ago as units) units / year}
+   * limited to the given duration.</p>
+   */
+  @Override
+  public Fragment visitRetireExactDuration(QubecTalkParser.RetireExactDurationContext ctx) {
+    Operation volumeOperation = buildExactRetireVolumeOperation(ctx.age);
+    ParsedDuring during = visit(ctx.duration).getDuring();
+    Operation operation = new RetireOperation(volumeOperation, during);
+    return new OperationFragment(operation);
+  }
+
+  /**
+   * Build the volume operation for an exact retire, equivalent to
+   * {@code (get newEquipment N years ago as units) units / year}.
+   *
+   * @param ageToken The INTEGER_ token carrying the equipment age in years.
+   * @return the operation computing the retirement amount from the sales cohort at that age.
+   */
+  private Operation buildExactRetireVolumeOperation(Token ageToken) {
+    int ageYears = Integer.parseInt(ageToken.getText().replaceAll(",", ""));
+    Operation cohortInUnits = new JointOperation(
+        new GetStreamOperation("newEquipment", ageYears, "units"),
+        new RemoveUnitsOperation()
+    );
+    return new ChangeUnitsOperation(cohortInUnits, "units / year");
+  }
+
+  /**
    * Parse the mean lifetime from a number context, rejecting a non-positive value.
    *
    * <p>The mean is a literal number whose text may contain thousands commas; these are

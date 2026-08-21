@@ -188,6 +188,16 @@ end simulations</code></pre>
         <p>
           This approach only works if the user knows the exact age of equipment. If you are uncertain about equipment ages, it may be more appropriate to use a mean lifetime (the Weibull form from earlier), a continuous hazard function (like the age-dependent approach from the previous section), or a constant percentage retirement rate. It is also the technique for inspecting exactly what a Weibull retire does: a schedule of terms like these, one per cohort age with the cohort's retirement fraction as the coefficient, reproduces the Weibull retirement year by year.
         </p>
+
+        <p>
+          The single-age, 100%-retirement case above (all of a cohort retiring in one specific year) comes up often enough that Kigali Sim provides a shortcut for it. Instead of writing <code>retire (get newEquipment 5 years ago as units) units / year</code>, you can write:
+        </p>
+
+        <pre><code class="language-qubectalk">retire 5 year old exact</code></pre>
+
+        <p>
+          These two lines mean exactly the same thing to Kigali Sim; the shortcut just saves typing when the retirement fraction is 100% and the age is fixed. It shares the same age-from-sales-history behavior as the full form, so a cohort sold before the simulation start still counts as zero. The shortcut only covers the 100%-at-one-age case, though: it cannot express the 20%/60%/20% split above, since each <code>year old exact</code> line always looks up the full original sales record for its age rather than however much of that cohort a previous line already retired. For a fractional split across ages, use the full form with an explicit coefficient as shown above. In the UI-based editor, choose "year old (exact)" from the retirement units dropdown and enter the age as the value.
+        </p>
       </section>
 
       <section class="major" id="fitting-a-function">

@@ -95,6 +95,9 @@
           <dt>Equipment</dt>
           <dd>A stream representing both prior and new equipment population. The total units of equipment in service.</dd>
 
+          <dt>Exact Retirement</dt>
+          <dd>A retirement form specified by an equipment age rather than a hazard rate or mean lifetime, e.g. <code>retire 5 year old exact</code>, which retires 100% of the sales cohort that turns 5 years old that year. Shorthand for <code>retire (get newEquipment 5 years ago as units) units / year</code>. See Tutorial 15.</dd>
+
           <dt>Export</dt>
           <dd>A stream representing substances or equipment exported from a country to other countries.</dd>
 
@@ -186,7 +189,7 @@ retirement schedules.</dd>
           <dd>See Bank.</dd>
 
           <dt>Retire</dt>
-          <dd>A command that sets equipment retirement rates determining equipment lifespan. Also called hazard rate or scrap rate. Syntax: <code>retire percentage % each year</code>. Use <code>with replacement</code> to maintain equipment population by automatically replacing retired units. A mean lifetime form, <code>retire 20 year old mean weibull</code>, applies a Weibull survival curve (shape 2) whose hazard rises with equipment age; see Weibull Retirement.</dd>
+          <dd>A command that sets equipment retirement rates determining equipment lifespan. Also called hazard rate or scrap rate. Syntax: <code>retire percentage % each year</code>. Use <code>with replacement</code> to maintain equipment population by automatically replacing retired units. A mean lifetime form, <code>retire 20 year old mean weibull</code>, applies a Weibull survival curve (shape 2) whose hazard rises with equipment age; see Weibull Retirement. An exact-age form, <code>retire 5 year old exact</code>, retires a sales cohort in full at a known age; see Exact Retirement.</dd>
 
           <dt>Retirement Rate</dt>
           <dd>The annual percentage or amount of equipment that is scrapped or retired from service. A constant retirement percentage corresponds to an exponential decay model. Also called hazard rate or scrap rate.</dd>

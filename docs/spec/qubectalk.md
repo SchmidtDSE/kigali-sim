@@ -236,6 +236,17 @@ retire 20 year old mean weibull assuming new
 
 A Weibull retire may be combined with other `retire` commands in the usual additive fashion, though competing constant-rate retirement biases the effective schedule (older cohorts deplete faster than the Weibull weights assume); prefer a single Weibull retire with a shorter mean over mixing forms. The `with replacement` modifier has no Weibull form. The Basic Editor supports the Weibull form through the "year old (mean life, Weibull)" units option; `assuming new` is Advanced Editor only.
 
+**Exact-age retirement**: When the exact age at which a cohort retires is known rather than a hazard rate or mean lifetime, `retire N year old exact` retires 100% of a sales cohort in the year it turns N years old:
+
+```
+retire 5 year old exact
+retire 10 years old exact during years 2030 to onwards
+```
+
+This is a shortcut for `retire (get newEquipment N years ago as units) units / year`, so it shares the years-ago lookup's behavior: ages are derived from simulated sales history, and asking for a cohort sold before the simulation start returns 0. Because the lookup always reads the original sales record for that year rather than how much of the cohort remains, only use one exact-age retire per cohort; stacking exact retires at several ages does not split a cohort's retirement across those ages (a later age's lookup still sees the full original amount, redundant with whatever an earlier age already retired). For a schedule split fractionally across several ages, use the general form with an explicit fraction coefficient documented under Years-Ago Queries instead of the exact shortcut.
+
+The `with replacement` modifier has no exact-age form. The Basic Editor supports this shortcut through the "year old (exact)" units option.
+
 To maintain a constant equipment population, use the `with replacement` modifier:
 
 ```
@@ -577,7 +588,7 @@ get streamName N years ago of "substanceName" as units
 
 **Indirect Access (Cross-substance):** The `of "substanceName"` option allows you to access stream values from other substances within the same application.
 
-**Years-Ago Queries:** The `N years ago` syntax retrieves a stream value from N years before the current simulation year. This is useful for modeling fixed retirement schedules based on equipment age. Asking for a value before the simulation start returns 0. It is also the building block for reproducing exact age-based retirement schedules by hand: a schedule of `retire (get newEquipment a years ago) * k units` terms (one per cohort age, with `k` the share of that cohort retiring) is equivalent to the age-weighted Weibull retirement described under Population.
+**Years-Ago Queries:** The `N years ago` syntax retrieves a stream value from N years before the current simulation year. This is useful for modeling fixed retirement schedules based on equipment age. Asking for a value before the simulation start returns 0. It is also the building block for reproducing exact age-based retirement schedules by hand: a schedule of `retire (get newEquipment a years ago) * k units` terms (one per cohort age, with `k` the share of that cohort retiring) is equivalent to the age-weighted Weibull retirement described under Population. When `k` is 100% for a single age, `retire N year old exact` is a shortcut for `retire (get newEquipment N years ago as units) units / year`, described under Population's exact-age retirement.
 
 **Examples:**
 

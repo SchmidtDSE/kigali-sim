@@ -1388,8 +1388,9 @@ class ConsumptionListPresenter {
     );
     let withReplacement = !retirementReducesCheckbox.checked;
 
-    // The grammar has no Weibull-with-replacement form
-    if (retirement !== null && retirement.getUnits() === "year old mean weibull") {
+    // The grammar has no Weibull-with-replacement or exact-with-replacement form
+    const retirementUnits = retirement === null ? null : retirement.getUnits();
+    if (retirementUnits === "year old mean weibull" || retirementUnits === "year old exact") {
       withReplacement = false;
     }
 

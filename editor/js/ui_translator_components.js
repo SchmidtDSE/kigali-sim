@@ -1910,6 +1910,7 @@ class Substance {
 
     const engineNumber = self._retire.getValue();
     const isWeibull = engineNumber.getUnits() === "year old mean weibull";
+    const isExact = engineNumber.getUnits() === "year old exact";
     const pieces = [
       "retire",
       formatEngineNumber(engineNumber),
@@ -1921,7 +1922,8 @@ class Substance {
       if (self._retire.getAssumingNew()) {
         pieces.push("assuming new");
       }
-    } else if (self._retire.getWithReplacement()) {
+    } else if (!isExact && self._retire.getWithReplacement()) {
+      // The grammar has no exact-with-replacement form.
       pieces.push("with replacement");
     }
 
