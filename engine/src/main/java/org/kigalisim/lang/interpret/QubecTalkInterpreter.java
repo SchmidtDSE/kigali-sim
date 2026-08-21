@@ -10,6 +10,7 @@ import org.kigalisim.lang.QubecTalkEngineVisitor;
 import org.kigalisim.lang.fragment.Fragment;
 import org.kigalisim.lang.parse.ParseResult;
 import org.kigalisim.lang.program.ParsedProgram;
+import org.kigalisim.lang.program.ProgramValidator;
 
 /**
  * Strategy to interpret a QubecTalk program into a single ParsedProgram.
@@ -36,7 +37,9 @@ public class QubecTalkInterpreter {
     QubecTalkEngineVisitor visitor = new QubecTalkEngineVisitor();
     Fragment fragment = visitor.visit(parseResult.getProgram().orElseThrow());
 
-    return fragment.getProgram();
+    ParsedProgram program = fragment.getProgram();
+    ProgramValidator.validate(program);
+    return program;
   }
 
 }

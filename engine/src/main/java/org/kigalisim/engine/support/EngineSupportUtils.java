@@ -156,6 +156,33 @@ public final class EngineSupportUtils {
   }
 
   /**
+   * Ensure retire commands are not mixed with and without replacement in the same step.
+   *
+   * <p>Checks whether a retire command has already been calculated in this step for the
+   * current scope. If so, verifies that its replacement status matches {@code withReplacement};
+   * a mismatch raises an error. Records the replacement status for the current step.</p>
+   *
+   * @param engine The engine containing the current simulation state
+   * @param withReplacement Whether the current retire command is a with-replacement command
+   * @throws RuntimeException if retire commands with mixed replacement settings are detected
+   *     in the same step for the same application/substance
+   */
+  public static void ensureConsistentReplacement(Engine engine, boolean withReplacement) {
+    SimulationState simulationState = engine.getStreamKeeper();
+    UseKey scope = engine.getScope();
+    boolean retireCalculated = simulationState.getRetireCalculatedThisStep(scope);
+    if (retireCalculated) {
+      boolean currentReplacement = simulationState.getHasReplacementThisStep(scope);
+      if (currentReplacement != withReplacement) {
+        throw new RuntimeException(
+            "Cannot mix retire commands with and without replacement in same step for "
+            + scope.getApplication() + "/" + scope.getSubstance());
+      }
+    }
+    simulationState.setHasReplacementThisStep(scope, withReplacement);
+  }
+
+  /**
    * Creates a unit converter with total values initialized.
    *
    * @param stateGetter The converter state getter from the engine

@@ -217,6 +217,38 @@ function buildUiTranslatorReverseTests() {
       assert.notEqual(code.indexOf("retire 10 % with replacement during years 1 to 5"), -1);
     });
 
+    QUnit.test("emits weibull retire", function (assert) {
+      const number = new EngineNumber("20", "year old mean weibull");
+      const command = new RetireCommand(number, null, false);
+      const substance = createWithCommand("test", false, command);
+      const code = substance.toCode(0);
+      assert.notEqual(code.indexOf("retire 20 year old mean weibull"), -1);
+    });
+
+    QUnit.test("emits weibull retire assuming new before duration", function (assert) {
+      const command = new RetireCommand(
+        new EngineNumber("20", "year old mean weibull"),
+        new YearMatcher(new ParsedYear(2), new ParsedYear(5)),
+        false,
+        true,
+      );
+      const substance = createWithCommand("test", false, command);
+      const code = substance.toCode(0);
+      assert.notEqual(
+        code.indexOf("retire 20 year old mean weibull assuming new during years 2 to 5"),
+        -1,
+      );
+    });
+
+    QUnit.test("never emits with replacement for weibull retire", function (assert) {
+      const number = new EngineNumber("20", "year old mean weibull");
+      const command = new RetireCommand(number, null, true);
+      const substance = createWithCommand("test", false, command);
+      const code = substance.toCode(0);
+      assert.equal(code.indexOf("with replacement"), -1);
+      assert.notEqual(code.indexOf("retire 20 year old mean weibull"), -1);
+    });
+
     QUnit.test("sets values in substances", function (assert) {
       const command = new Command("setVal", "domestic", new EngineNumber("10", "mt"), null);
       const substance = createWithCommand("test", true, command);
