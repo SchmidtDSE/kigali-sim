@@ -14,6 +14,14 @@ Finally, we want to again express our gratitude for your feedback and time.
 
 The following changes have been adopted and released.
 
+### Weibull retirement by mean lifetime
+
+**Status**: Released August 24, 2026
+
+**Classification**: Enhancement
+
+Kigali Sim now supports age-dependent equipment retirement specified by a mean lifetime: `retire 20 year old mean weibull`, applying a Weibull survival curve (shape 2) whose hazard rises with equipment age instead of the constant hazard used by `retire 5 % / year`. Equipment ages derive from simulated sales history, so simulations should begin before the substance entered service. Combining the form with `set priorEquipment` or `change priorEquipment` for the same substance anywhere in a scenario's stack raises a validation error unless the `assuming new` modifier (code editor only) is used, including when the two statements sit in different stanzas such as a default-stanza `set priorEquipment` and a Weibull retire added by a policy. The Basic Editor supports the form through a new "year old (mean life, Weibull)" option in the retirement units dropdown. See [Tutorial 15](/guide/tutorial_15.html) for a worked comparison against a flat rate and the details behind this feature.
+
 ### Editor run and error panel visibility fix
 
 **Status**: Released Aug 14, 2026

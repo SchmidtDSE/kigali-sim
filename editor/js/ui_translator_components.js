@@ -1400,7 +1400,7 @@ class Substance {
       const retirementWithReplacementStr = newMetadata.getRetirementWithReplacement();
       const withReplacement = retirementWithReplacementStr === "true";
 
-      self._retire = new RetireCommand(retirementValue, null, withReplacement);
+      self._retire = new RetireCommand(retirementValue, null, withReplacement, false);
     } else {
       self._retire = null;
     }
@@ -1909,13 +1909,20 @@ class Substance {
     }
 
     const engineNumber = self._retire.getValue();
+    const isWeibull = engineNumber.getUnits() === "year old mean weibull";
     const pieces = [
       "retire",
       formatEngineNumber(engineNumber),
     ];
 
-    // Add "with replacement" if the flag is set (must come before duration)
-    if (self._retire.getWithReplacement()) {
+    if (isWeibull) {
+      if (self._retire.getAssumingNew()) {
+        pieces.push("assuming new");
+      }
+      if (self._retire.getWithReplacement()) {
+        pieces.push("with replacement");
+      }
+    } else if (self._retire.getWithReplacement()) {
       pieces.push("with replacement");
     }
 

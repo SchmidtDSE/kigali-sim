@@ -106,18 +106,7 @@ public class RetireWithReplacementOperation implements Operation {
    * @param engine The current simulation engine.
    */
   private void handleMixedReplacement(Engine engine) {
-    SimulationState simulationState = engine.getStreamKeeper();
-    UseKey scope = engine.getScope();
-    boolean retireCalculated = simulationState.getRetireCalculatedThisStep(scope);
-    if (retireCalculated) {
-      boolean currentReplacement = simulationState.getHasReplacementThisStep(scope);
-      if (!currentReplacement) {
-        throw new RuntimeException(
-            "Cannot mix retire commands with and without replacement in same step for "
-            + scope.getApplication() + "/" + scope.getSubstance());
-      }
-    }
-    simulationState.setHasReplacementThisStep(scope, true);
+    EngineSupportUtils.ensureConsistentReplacement(engine, true);
   }
 
   /**

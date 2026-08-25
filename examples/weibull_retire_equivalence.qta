@@ -1,0 +1,32 @@
+start default
+
+  define application "test"
+
+    uses substance "test"
+      enable domestic
+      initial charge with 1 kg / unit for domestic
+      retire (get newEquipment 1 years ago) * 0.030928
+        + (get newEquipment 2 years ago) * 0.087161
+        + (get newEquipment 3 years ago) * 0.128198
+        + (get newEquipment 4 years ago) * 0.148791
+        + (get newEquipment 5 years ago) * 0.148984
+        + (get newEquipment 6 years ago) * 0.133219
+        + (get newEquipment 7 years ago) * 0.108205
+        + (get newEquipment 8 years ago) * 0.080608
+        + (get newEquipment 9 years ago) * 0.055408
+        + (get newEquipment 10 years ago) * 0.035283
+        + (get newEquipment 11 years ago) * 0.020873 units
+      set domestic to 100 units
+      equals 5 tCO2e / mt
+    end substance
+
+  end application
+
+end default
+
+
+start simulations
+
+  simulate "business as usual" from years 1 to 12
+
+end simulations

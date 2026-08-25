@@ -353,6 +353,35 @@ replace 100% of sales with "HFC-32" during years 2025 to onwards</code></pre>
         <pre><code class="language-qubectalk">retire 5% each year
 retire 7% each year during years 2025 to 2030
 retire 10% each year</code></pre>
+
+        <p>
+          <strong>Mean lifetime (Weibull) form:</strong>
+          <code>retire number year old mean weibull</code> applies a Weibull
+          survival curve (shape 2) driven by a mean equipment lifetime in
+          years. So, the hazard of retirement rises with equipment age. The
+          number is the average years a unit remains in service
+          (a 20-year mean gives hazards of 0.2% at age 1, 3.7% at age 10,
+          and 7.4% at age 20). Kigali Sim derives equipment ages from
+          simulated sales, so it is recommended to start the simulation
+          before the substance entered service. Combining this form with
+          <code>set priorEquipment</code> / <code>change priorEquipment</code>
+          for the same substance anywhere in a scenario's stack, including
+          across stanzas such as a default-stanza
+          <code>set priorEquipment</code> and a Weibull retire in a policy,
+          raises a validation error. This is
+          suppressed by treating existing stock as a single cohort of
+          typical age (<code>assuming new</code>). In the Basic Editor,
+          choose "year old (mean life, Weibull)" from the retirement units
+          dropdown and enter the mean lifetime as the value;
+          <code>assuming new</code> is code editor only. See
+          <a href="/guide/tutorial_15.html">Tutorial 15</a> for a worked
+          comparison against a flat rate.
+        </p>
+
+        <p><strong>Examples:</strong></p>
+        <pre><code class="language-qubectalk">retire 20 year old mean weibull
+retire 12.5 years old mean weibull during years 2030 to onwards
+retire 20 year old mean weibull assuming new</code></pre>
       </section>
 
       <section class="major" id="set">
