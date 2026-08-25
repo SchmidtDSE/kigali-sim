@@ -9,8 +9,6 @@ package org.kigalisim.lang.operation;
 import java.util.Optional;
 import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
-import org.kigalisim.engine.state.SimulationState;
-import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.state.YearMatcher;
 import org.kigalisim.engine.support.EngineSupportUtils;
 import org.kigalisim.lang.machine.PushDownMachine;
@@ -86,29 +84,12 @@ public class RetireOperation implements Operation {
   /**
    * Ensure retire commands are not mixed with and without replacement in the same step.
    *
-   * <div>
-   * Checks if a retire command has already been calculated in this step for the current scope.
-   * If so, verifies that the replacement status is consistent. If a retire command was already
-   * calculated with replacement, but this one does not have replacement (or vice versa), an exception
-   * is thrown.
-   * </div>
+   * <p>This non-replacement retire records a non-replacement step and rejects a mismatch
+   * with any prior replacement retire in the same step.</p>
    *
    * @param engine The engine containing the current simulation state.
-   * @throws RuntimeException if retire commands with mixed replacement settings are detected
-   *     in the same step for the same application/substance.
    */
   private void handleMixedReplacement(Engine engine) {
-    SimulationState simulationState = engine.getStreamKeeper();
-    UseKey scope = engine.getScope();
-    boolean retireCalculated = simulationState.getRetireCalculatedThisStep(scope);
-    if (retireCalculated) {
-      boolean currentReplacement = simulationState.getHasReplacementThisStep(scope);
-      if (currentReplacement) {
-        throw new RuntimeException(
-            "Cannot mix retire commands with and without replacement in same step for "
-            + scope.getApplication() + "/" + scope.getSubstance());
-      }
-    }
-    simulationState.setHasReplacementThisStep(scope, false);
+    EngineSupportUtils.ensureConsistentReplacement(engine, false);
   }
 }

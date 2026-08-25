@@ -213,6 +213,57 @@ retire 6.7 % each year
 
 If a year is not specified, it will be apply across the entire timeseries. In addition to accepting percentages, an absolute number of units may be given. Note that authors may also choose to use `set equipment` as seen in adding equipment.
 
+**Age-dependent retirement (Weibull)**: The forms above apply a constant annual hazard rate: each unit has the same probability of retiring each year regardless of its age. Empirical studies of refrigeration and air-conditioning equipment instead find a hazard that rises with age. To model this, specify a mean equipment lifetime and Kigali Sim applies a Weibull survival curve (shape 2, the Rayleigh case):
+
+```
+retire 5 year old mean weibull
+retire 12.5 years old mean weibull during years 2030 to onwards
+```
+
+The mean lifetime is the average number of years a unit remains in service. For a 5-year mean, the discrete annual hazard rises from 3.1% in a unit's first year of service to 44.9% at age 10; for a 20-year mean, the hazard is 0.2% at age 1, 3.7% at age 10, and 7.4% at age 20. The full hazard schedule for a 5-year mean is:
+
+| Age (years) | Hazard |
+|---|---|
+| 1 | 3.1% |
+| 2 | 9.0% |
+| 3 | 14.5% |
+| 4 | 19.7% |
+| 5 | 24.6% |
+| 6 | 29.2% |
+| 7 | 33.5% |
+| 8 | 37.6% |
+| 9 | 41.4% |
+| 10 | 44.9% |
+| 11 | 48.3% |
+| 15 | 100% |
+
+Cohorts are tracked through sales history: the retirement in a given year is computed from how many units were sold in each prior year and how many of those have survived, so a unit sold in year *t* first faces an age-1 hazard in year *t*+1. Under constant sales, the steady-state population equals sales multiplied by the mean lifetime, and 99.9% of each cohort retires by roughly three times the mean lifetime (the small residual is swept up at that point).
+
+Because equipment ages are derived from simulated sales, a Weibull retire cannot be combined with `set priorEquipment` or `change priorEquipment` for the same substance anywhere in a scenario's stack: doing so raises an error at validation time. That includes statements split across stanzas, such as a `set priorEquipment` in `start default` and a Weibull retire in a policy the scenario applies. Begin the simulation before the substance entered service so that ages are known, or use a constant rate such as `retire 5 % / year`. If the existing stock must be entered manually, the `assuming new` modifier treats it as a single cohort of typical age (round((2 / pi) * mu) years for a mean lifetime of mu; 13 years for a 20-year mean) instead of raising the error:
+
+```
+retire 20 year old mean weibull assuming new
+```
+
+Use a single Weibull retire per substance, choosing a shorter mean rather than adding a second retirement form on top. Pairing a Weibull retire with another `retire` command makes the effective schedule depend on the order the two commands appear in, and competing constant-rate retirement biases it further (older cohorts deplete faster than the Weibull weights assume). The `with replacement` modifier may be combined with the Weibull form, maintaining population size the same way it does for the constant-hazard forms. The Basic Editor supports the Weibull form through the "year old (mean life, Weibull)" units option; `assuming new` is Advanced Editor only.
+
+**Exact-age retirement**: When the exact age at which a cohort retires is known rather than a hazard rate or mean lifetime, `retire N year old exact` retires 100% of a sales cohort in the year it turns N years old:
+
+```
+retire 5 year old exact
+retire 10 years old exact during years 2030 to onwards
+```
+
+This is a shortcut for `retire (get newEquipment N years ago as units) units / year`, so it shares the years-ago lookup's behavior: ages are derived from simulated sales history, and asking for a cohort sold before the simulation start returns 0. Because the lookup always reads the original sales record for that year rather than how much of the cohort remains, it is recommended to only use one exact-age retire per cohort. For a schedule split fractionally across several ages, use the general form with an explicit fraction coefficient documented under Years-Ago Queries instead of the exact shortcut.
+
+Because ages come from simulated sales the same way as the Weibull form, an exact-age retire cannot be combined with `set priorEquipment` or `change priorEquipment` for the same substance anywhere in a scenario's stack: doing so raises an error at validation time, since equipment entered directly has no sales record and would never match this shortcut's cohort lookup. As with the Weibull form, the `assuming new` modifier suppresses this, treating the existing stock as a single cohort assumed to have entered service when the simulation began so it retires in full once the simulation reaches the given age:
+
+```
+retire 5 year old exact assuming new
+```
+
+The `with replacement` modifier may be combined with the exact-age form, maintaining population size the same way it does for the other retirement forms. The Basic Editor supports this shortcut through the "year old (exact)" units option; `assuming new` is Advanced Editor only.
+
 To maintain a constant equipment population, use the `with replacement` modifier:
 
 ```
@@ -554,7 +605,7 @@ get streamName N years ago of "substanceName" as units
 
 **Indirect Access (Cross-substance):** The `of "substanceName"` option allows you to access stream values from other substances within the same application.
 
-**Years-Ago Queries:** The `N years ago` syntax retrieves a stream value from N years before the current simulation year. This is useful for modeling fixed retirement schedules based on equipment age. Asking for a value before the simulation start returns 0.
+**Years-Ago Queries:** The `N years ago` syntax retrieves a stream value from N years before the current simulation year. This is useful for modeling fixed retirement schedules based on equipment age. Asking for a value before the simulation start returns 0. It is also the building block for reproducing exact age-based retirement schedules by hand: a schedule of `retire (get newEquipment a years ago) * k units` terms (one per cohort age, with `k` the share of that cohort retiring) is equivalent to the age-weighted Weibull retirement described under Population. When `k` is 100% for a single age, `retire N year old exact` is a shortcut for `retire (get newEquipment N years ago as units) units / year`, described under Population's exact-age retirement.
 
 **Examples:**
 

@@ -14,6 +14,22 @@ Finally, we want to again express our gratitude for your feedback and time.
 
 The following changes have been adopted and released.
 
+### Exact-age retirement shortcut
+
+**Status**: Preview released August 24, 2026. Full release August 25, 2026.
+
+**Classification**: Enhancement
+
+Kigali Sim now supports a shortcut for retiring an entire sales cohort at a known age: `retire 5 year old exact`. This is exactly equivalent to writing `retire (get newEquipment 5 years ago as units) units / year` by hand, a pattern already documented in Tutorial 15 for exact retirement schedules; the new form just saves typing when the retirement fraction is 100% at a single fixed age. As with Weibull retirement, equipment ages derive from simulated sales history, so combining this form with `set priorEquipment` or `change priorEquipment` for the same substance anywhere in a scenario's stack raises a validation error unless the `assuming new` modifier (code editor only) is used, which treats existing stock as a single cohort assumed to have entered service when the simulation began so it retires in full once the simulation reaches the given age. The `with replacement` modifier may be combined with this form to maintain equipment population. The Basic Editor supports the shortcut through a new "year old (exact)" option in the retirement units dropdown.
+
+### Weibull retirement by mean lifetime
+
+**Status**: Preview released August 24, 2026. Full release August 25, 2026.
+
+**Classification**: Enhancement
+
+Kigali Sim now supports age-dependent equipment retirement specified by a mean lifetime: `retire 20 year old mean weibull`, applying a Weibull survival curve (shape 2) whose hazard rises with equipment age instead of the constant hazard used by `retire 5 % / year`. Equipment ages derive from simulated sales history, so simulations should begin before the substance entered service. Combining the form with `set priorEquipment` or `change priorEquipment` for the same substance anywhere in a scenario's stack raises a validation error unless the `assuming new` modifier (code editor only) is used, including when the two statements sit in different stanzas such as a default-stanza `set priorEquipment` and a Weibull retire added by a policy. The Basic Editor supports the form through a new "year old (mean life, Weibull)" option in the retirement units dropdown. See [Tutorial 15](/guide/tutorial_15.html) for a worked comparison against a flat rate and the details behind this feature.
+
 ### Editor run and error panel visibility fix
 
 **Status**: Released Aug 14, 2026

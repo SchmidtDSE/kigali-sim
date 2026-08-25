@@ -1400,7 +1400,7 @@ class Substance {
       const retirementWithReplacementStr = newMetadata.getRetirementWithReplacement();
       const withReplacement = retirementWithReplacementStr === "true";
 
-      self._retire = new RetireCommand(retirementValue, null, withReplacement);
+      self._retire = new RetireCommand(retirementValue, null, withReplacement, false);
     } else {
       self._retire = null;
     }
@@ -1914,7 +1914,9 @@ class Substance {
       formatEngineNumber(engineNumber),
     ];
 
-    // Add "with replacement" if the flag is set (must come before duration)
+    if (self._retire.getAssumingNew()) {
+      pieces.push("assuming new");
+    }
     if (self._retire.getWithReplacement()) {
       pieces.push("with replacement");
     }

@@ -70,4 +70,13 @@ public class ChangeOperation implements Operation {
     Engine engine = machine.getEngine();
     engine.changeStream(stream, result, yearMatcher);
   }
+
+  /**
+   * The name of the stream this operation changes.
+   *
+   * @return the stream name.
+   */
+  public String getStream() {
+    return stream;
+  }
 }

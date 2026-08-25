@@ -54,7 +54,9 @@ import org.kigalisim.lang.operation.RecoverOperation;
 import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
 import org.kigalisim.lang.operation.RemoveUnitsOperation;
 import org.kigalisim.lang.operation.ReplaceOperation;
+import org.kigalisim.lang.operation.RetireExactOperation;
 import org.kigalisim.lang.operation.RetireOperation;
+import org.kigalisim.lang.operation.RetireWeibullOperation;
 import org.kigalisim.lang.operation.RetireWithReplacementOperation;
 import org.kigalisim.lang.operation.SetOperation;
 import org.kigalisim.lang.operation.SubtractionOperation;
@@ -1255,6 +1257,119 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
         : new RetireOperation(volumeOperation, during);
 
     return new OperationFragment(operation);
+  }
+
+  /**
+   * Processes a Weibull retire operation applied to all years.
+   *
+   * <p>Rejects a non-positive mean lifetime and creates a Weibull retire operation with
+   * the mean and the assuming-new flag.</p>
+   */
+  @Override
+  public Fragment visitRetireWeibullAllYears(QubecTalkParser.RetireWeibullAllYearsContext ctx) {
+    BigDecimal meanYears = parseMeanYears(ctx.mean);
+    boolean assumingNew = ctx.ASSUMING_() != null;
+    boolean withReplacement = hasWithReplacement(ctx);
+    Operation operation = new RetireWeibullOperation(meanYears, assumingNew, withReplacement);
+    return new OperationFragment(operation);
+  }
+
+  /**
+   * Processes a Weibull retire operation for a specified duration.
+   *
+   * <p>Rejects a non-positive mean lifetime and creates a Weibull retire operation with
+   * the mean, the assuming-new flag, and the duration.</p>
+   */
+  @Override
+  public Fragment visitRetireWeibullDuration(QubecTalkParser.RetireWeibullDurationContext ctx) {
+    BigDecimal meanYears = parseMeanYears(ctx.mean);
+    boolean assumingNew = ctx.ASSUMING_() != null;
+    boolean withReplacement = hasWithReplacement(ctx);
+    ParsedDuring during = visit(ctx.duration).getDuring();
+    Operation operation = new RetireWeibullOperation(meanYears, assumingNew, withReplacement, during);
+    return new OperationFragment(operation);
+  }
+
+  /**
+   * Processes an exact retire operation applied to all years.
+   *
+   * <p>Shortcut for {@code retire (get newEquipment N years ago as units) units / year},
+   * built from the same volume operation that form would produce.</p>
+   */
+  @Override
+  public Fragment visitRetireExactAllYears(QubecTalkParser.RetireExactAllYearsContext ctx) {
+    int ageYears = parseExactAge(ctx.age);
+    Operation volumeOperation = buildExactRetireVolumeOperation(ageYears);
+    boolean assumingNew = ctx.ASSUMING_() != null;
+    boolean withReplacement = hasWithReplacement(ctx);
+    Operation operation = new RetireExactOperation(volumeOperation, ageYears, assumingNew, withReplacement);
+    return new OperationFragment(operation);
+  }
+
+  /**
+   * Processes an exact retire operation for a specified duration.
+   *
+   * <p>Shortcut for {@code retire (get newEquipment N years ago as units) units / year}
+   * limited to the given duration.</p>
+   */
+  @Override
+  public Fragment visitRetireExactDuration(QubecTalkParser.RetireExactDurationContext ctx) {
+    int ageYears = parseExactAge(ctx.age);
+    Operation volumeOperation = buildExactRetireVolumeOperation(ageYears);
+    boolean assumingNew = ctx.ASSUMING_() != null;
+    boolean withReplacement = hasWithReplacement(ctx);
+    ParsedDuring during = visit(ctx.duration).getDuring();
+    Operation operation = new RetireExactOperation(volumeOperation, ageYears, assumingNew,
+        withReplacement, during);
+    return new OperationFragment(operation);
+  }
+
+  /**
+   * Parse the exact retirement age from its INTEGER_ token.
+   *
+   * @param ageToken The INTEGER_ token carrying the equipment age in years, whose text may
+   *     contain thousands commas.
+   * @return the parsed age in years.
+   */
+  private int parseExactAge(Token ageToken) {
+    return Integer.parseInt(ageToken.getText().replaceAll(",", ""));
+  }
+
+  /**
+   * Build the volume operation for an exact retire, equivalent to
+   * {@code (get newEquipment N years ago as units) units / year}.
+   *
+   * @param ageYears The equipment age in years at which the cohort retires.
+   * @return the operation computing the retirement amount from the sales cohort at that age.
+   */
+  private Operation buildExactRetireVolumeOperation(int ageYears) {
+    Operation cohortInUnits = new JointOperation(
+        new GetStreamOperation("newEquipment", ageYears, "units"),
+        new RemoveUnitsOperation()
+    );
+    return new ChangeUnitsOperation(cohortInUnits, "units / year");
+  }
+
+  /**
+   * Parse the mean lifetime from a number context, rejecting a non-positive value.
+   *
+   * <p>The mean is a literal number whose text may contain thousands commas; these are
+   * stripped before parsing. A mean of zero or less is rejected.</p>
+   *
+   * @param ctx The number context carrying the mean text.
+   * @return the parsed mean lifetime in years.
+   */
+  private BigDecimal parseMeanYears(QubecTalkParser.NumberContext ctx) {
+    String rawText = ctx.getText().replaceAll(",", "");
+    FlexibleNumberParseResult parseResult = numberParser.parseFlexibleNumber(rawText);
+    if (parseResult.isError()) {
+      throw new RuntimeException("Failed to parse Weibull mean lifetime: " + parseResult.getError().get());
+    }
+    BigDecimal mean = parseResult.getParsedNumber().get();
+    if (mean.compareTo(BigDecimal.ZERO) <= 0) {
+      throw new RuntimeException("Weibull retirement requires a positive mean lifetime in years");
+    }
+    return mean;
   }
 
   /**

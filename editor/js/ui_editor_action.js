@@ -1389,7 +1389,7 @@ class ConsumptionListPresenter {
     const withReplacement = !retirementReducesCheckbox.checked;
 
     // Create retire command with withReplacement flag
-    const retireCommand = new RetireCommand(retirement, null, withReplacement);
+    const retireCommand = new RetireCommand(retirement, null, withReplacement, false);
     substanceBuilder.addCommand(retireCommand);
 
     const levels = getListInput(self._dialog.querySelector(".level-list"), readSetCommandUi);

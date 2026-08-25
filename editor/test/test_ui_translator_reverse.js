@@ -185,21 +185,21 @@ function buildUiTranslatorReverseTests() {
     });
 
     QUnit.test("retires substances", function (assert) {
-      const command = new RetireCommand(new EngineNumber("10", "%"), null, false);
+      const command = new RetireCommand(new EngineNumber("10", "%"), null, false, false);
       const substance = createWithCommand("test", false, command);
       const code = substance.toCode(0);
       assert.notEqual(code.indexOf("retire 10 %"), -1);
     });
 
     QUnit.test("retires substances with replacement", function (assert) {
-      const command = new RetireCommand(new EngineNumber("5", "% / year"), null, true);
+      const command = new RetireCommand(new EngineNumber("5", "% / year"), null, true, false);
       const substance = createWithCommand("test", false, command);
       const code = substance.toCode(0);
       assert.notEqual(code.indexOf("retire 5 % / year with replacement"), -1);
     });
 
     QUnit.test("retires substances without replacement flag", function (assert) {
-      const command = new RetireCommand(new EngineNumber("5", "% / year"), null, false);
+      const command = new RetireCommand(new EngineNumber("5", "% / year"), null, false, false);
       const substance = createWithCommand("test", false, command);
       const code = substance.toCode(0);
       assert.equal(code.indexOf("with replacement"), -1);
@@ -211,10 +211,99 @@ function buildUiTranslatorReverseTests() {
         new EngineNumber("10", "%"),
         new YearMatcher(new ParsedYear(1), new ParsedYear(5)),
         true,
+        false,
       );
       const substance = createWithCommand("test", false, command);
       const code = substance.toCode(0);
       assert.notEqual(code.indexOf("retire 10 % with replacement during years 1 to 5"), -1);
+    });
+
+    QUnit.test("emits weibull retire", function (assert) {
+      const number = new EngineNumber("20", "year old mean weibull");
+      const command = new RetireCommand(number, null, false, false);
+      const substance = createWithCommand("test", false, command);
+      const code = substance.toCode(0);
+      assert.notEqual(code.indexOf("retire 20 year old mean weibull"), -1);
+    });
+
+    QUnit.test("emits weibull retire assuming new before duration", function (assert) {
+      const command = new RetireCommand(
+        new EngineNumber("20", "year old mean weibull"),
+        new YearMatcher(new ParsedYear(2), new ParsedYear(5)),
+        false,
+        true,
+      );
+      const substance = createWithCommand("test", false, command);
+      const code = substance.toCode(0);
+      assert.notEqual(
+        code.indexOf("retire 20 year old mean weibull assuming new during years 2 to 5"),
+        -1,
+      );
+    });
+
+    QUnit.test("emits with replacement for weibull retire", function (assert) {
+      const number = new EngineNumber("20", "year old mean weibull");
+      const command = new RetireCommand(number, null, true, false);
+      const substance = createWithCommand("test", false, command);
+      const code = substance.toCode(0);
+      assert.notEqual(code.indexOf("retire 20 year old mean weibull with replacement"), -1);
+    });
+
+    QUnit.test("emits weibull retire assuming new with replacement", function (assert) {
+      const number = new EngineNumber("20", "year old mean weibull");
+      const command = new RetireCommand(number, null, true, true);
+      const substance = createWithCommand("test", false, command);
+      const code = substance.toCode(0);
+      assert.notEqual(
+        code.indexOf("retire 20 year old mean weibull assuming new with replacement"),
+        -1,
+      );
+    });
+
+    QUnit.test("emits exact retire", function (assert) {
+      const number = new EngineNumber("5", "year old exact");
+      const command = new RetireCommand(number, null, false);
+      const substance = createWithCommand("test", false, command);
+      const code = substance.toCode(0);
+      assert.notEqual(code.indexOf("retire 5 year old exact"), -1);
+    });
+
+    QUnit.test("emits exact retire with duration", function (assert) {
+      const command = new RetireCommand(
+        new EngineNumber("5", "year old exact"),
+        new YearMatcher(new ParsedYear(2), new ParsedYear(5)),
+        false,
+      );
+      const substance = createWithCommand("test", false, command);
+      const code = substance.toCode(0);
+      assert.notEqual(code.indexOf("retire 5 year old exact during years 2 to 5"), -1);
+    });
+
+    QUnit.test("emits with replacement for exact retire", function (assert) {
+      const number = new EngineNumber("5", "year old exact");
+      const command = new RetireCommand(number, null, true, false);
+      const substance = createWithCommand("test", false, command);
+      const code = substance.toCode(0);
+      assert.notEqual(code.indexOf("retire 5 year old exact with replacement"), -1);
+    });
+
+    QUnit.test("emits assuming new for exact retire", function (assert) {
+      const number = new EngineNumber("5", "year old exact");
+      const command = new RetireCommand(number, null, false, true);
+      const substance = createWithCommand("test", false, command);
+      const code = substance.toCode(0);
+      assert.notEqual(code.indexOf("retire 5 year old exact assuming new"), -1);
+    });
+
+    QUnit.test("emits exact retire assuming new with replacement", function (assert) {
+      const number = new EngineNumber("5", "year old exact");
+      const command = new RetireCommand(number, null, true, true);
+      const substance = createWithCommand("test", false, command);
+      const code = substance.toCode(0);
+      assert.notEqual(
+        code.indexOf("retire 5 year old exact assuming new with replacement"),
+        -1,
+      );
     });
 
     QUnit.test("sets values in substances", function (assert) {
@@ -241,6 +330,7 @@ function buildUiTranslatorReverseTests() {
         new EngineNumber("10", "%"),
         new YearMatcher(new ParsedYear(2), new ParsedYear(5)),
         false,
+        false,
       );
       const substance = createWithCommand("test", false, command);
       const code = substance.toCode(0);
@@ -251,6 +341,7 @@ function buildUiTranslatorReverseTests() {
       const command = new RetireCommand(
         new EngineNumber("10", "%"),
         new YearMatcher(new ParsedYear(5), new ParsedYear(2)),
+        false,
         false,
       );
       const substance = createWithCommand("test", false, command);
