@@ -358,16 +358,15 @@ retire 10% each year</code></pre>
           <strong>Mean lifetime (Weibull) form:</strong>
           <code>retire number year old mean weibull</code> applies a Weibull
           survival curve (shape 2) driven by a mean equipment lifetime in
-          years, so the hazard of retirement rises with equipment age as
-          empirical studies of refrigeration and air-conditioning equipment
-          find. The number is the average years a unit remains in service
+          years. So, the hazard of retirement rises with equipment age. The
+          number is the average years a unit remains in service
           (a 20-year mean gives hazards of 0.2% at age 1, 3.7% at age 10,
           and 7.4% at age 20). Kigali Sim derives equipment ages from
-          simulated sales, so start the simulation before the substance
-          entered service; combining this form with
+          simulated sales, so it is recommended to start the simulation
+          before the substance entered service. Combining this form with
           <code>set priorEquipment</code> / <code>change priorEquipment</code>
-          on the same substance raises a validation error, which the
-          <code>assuming new</code> modifier suppresses by treating existing
+          on the same substance raises a validation error. At this time,
+          <code>assuming new</code> suppresses this by treating existing
           stock as a single cohort of typical age. In the Basic Editor,
           choose "year old (mean life, Weibull)" from the retirement units
           dropdown and enter the mean lifetime as the value;

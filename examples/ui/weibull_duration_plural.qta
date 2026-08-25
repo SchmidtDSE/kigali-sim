@@ -1,0 +1,22 @@
+start default
+
+  define application "test"
+
+    uses substance "test"
+      enable domestic
+      equals 1 tCO2e / mt
+      initial charge with 1 kg / unit for domestic
+      set domestic to 100 mt during year 1
+      retire 12.5 years old mean weibull during years 2 to 5
+    end substance
+
+  end application
+
+end default
+
+
+start simulations
+
+  simulate "business as usual" from years 1 to 5
+
+end simulations

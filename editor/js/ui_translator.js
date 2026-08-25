@@ -1127,7 +1127,7 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     const withReplacement = ctx.getText().toLowerCase().includes("withreplacement");
 
     // Create retire-specific command
-    return new RetireCommand(value, null, withReplacement);
+    return new RetireCommand(value, null, withReplacement, false);
   }
 
   /**
@@ -1146,7 +1146,7 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     const withReplacement = ctx.getText().toLowerCase().includes("withreplacement");
 
     // Create retire-specific command with duration
-    return new RetireCommand(value, duration, withReplacement);
+    return new RetireCommand(value, duration, withReplacement, false);
   }
 
   /**
@@ -1158,8 +1158,9 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
   visitRetireWeibullAllYears(ctx) {
     const mean = parseFloat(ctx.mean.getText());
     const assumingNew = ctx.getText().toLowerCase().includes("assumingnew");
+    const withReplacement = ctx.getText().toLowerCase().includes("withreplacement");
     const value = new EngineNumber(mean, "year old mean weibull");
-    return new RetireCommand(value, null, false, assumingNew);
+    return new RetireCommand(value, null, withReplacement, assumingNew);
   }
 
   /**
@@ -1172,9 +1173,10 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
     const self = this;
     const mean = parseFloat(ctx.mean.getText());
     const assumingNew = ctx.getText().toLowerCase().includes("assumingnew");
+    const withReplacement = ctx.getText().toLowerCase().includes("withreplacement");
     const duration = ctx.duration.accept(self);
     const value = new EngineNumber(mean, "year old mean weibull");
-    return new RetireCommand(value, duration, false, assumingNew);
+    return new RetireCommand(value, duration, withReplacement, assumingNew);
   }
 
   /**

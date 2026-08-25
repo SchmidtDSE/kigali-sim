@@ -1400,7 +1400,7 @@ class Substance {
       const retirementWithReplacementStr = newMetadata.getRetirementWithReplacement();
       const withReplacement = retirementWithReplacementStr === "true";
 
-      self._retire = new RetireCommand(retirementValue, null, withReplacement);
+      self._retire = new RetireCommand(retirementValue, null, withReplacement, false);
     } else {
       self._retire = null;
     }
@@ -1916,10 +1916,13 @@ class Substance {
     ];
 
     if (isWeibull) {
-      // The grammar has no Weibull-with-replacement form and "assuming new"
-      // comes after the units but before any duration.
+      // "assuming new" comes after the units and before "with replacement",
+      // which in turn comes before any duration.
       if (self._retire.getAssumingNew()) {
         pieces.push("assuming new");
+      }
+      if (self._retire.getWithReplacement()) {
+        pieces.push("with replacement");
       }
     } else if (self._retire.getWithReplacement()) {
       pieces.push("with replacement");

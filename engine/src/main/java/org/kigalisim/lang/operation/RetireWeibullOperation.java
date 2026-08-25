@@ -11,6 +11,8 @@ import java.math.MathContext;
 import java.util.Optional;
 import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
+import org.kigalisim.engine.number.UnitConverter;
+import org.kigalisim.engine.state.SimulationState;
 import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.state.YearMatcher;
 import org.kigalisim.engine.support.EngineSupportUtils;
@@ -34,6 +36,8 @@ public class RetireWeibullOperation implements Operation {
 
   private final boolean assumingNew;
 
+  private final boolean withReplacement;
+
   private final Optional<ParsedDuring> duringMaybe;
 
   /**
@@ -42,10 +46,13 @@ public class RetireWeibullOperation implements Operation {
    * @param meanYears The mean equipment lifetime in years.
    * @param assumingNew Whether prior equipment should be treated as a pseudo-cohort of
    *     typical age (the {@code assuming new} modifier).
+   * @param withReplacement Whether retired equipment should be replaced to maintain
+   *     population.
    */
-  public RetireWeibullOperation(BigDecimal meanYears, boolean assumingNew) {
+  public RetireWeibullOperation(BigDecimal meanYears, boolean assumingNew, boolean withReplacement) {
     this.meanYears = meanYears;
     this.assumingNew = assumingNew;
+    this.withReplacement = withReplacement;
     this.duringMaybe = Optional.empty();
   }
 
@@ -55,11 +62,15 @@ public class RetireWeibullOperation implements Operation {
    * @param meanYears The mean equipment lifetime in years.
    * @param assumingNew Whether prior equipment should be treated as a pseudo-cohort of
    *     typical age (the {@code assuming new} modifier).
+   * @param withReplacement Whether retired equipment should be replaced to maintain
+   *     population.
    * @param during The time period during which this operation applies.
    */
-  public RetireWeibullOperation(BigDecimal meanYears, boolean assumingNew, ParsedDuring during) {
+  public RetireWeibullOperation(BigDecimal meanYears, boolean assumingNew, boolean withReplacement,
+      ParsedDuring during) {
     this.meanYears = meanYears;
     this.assumingNew = assumingNew;
+    this.withReplacement = withReplacement;
     this.duringMaybe = Optional.of(during);
   }
 
@@ -82,12 +93,23 @@ public class RetireWeibullOperation implements Operation {
   }
 
   /**
+   * Whether retired equipment is replaced to maintain population.
+   *
+   * @return true if the {@code with replacement} modifier is set
+   */
+  public boolean getWithReplacement() {
+    return withReplacement;
+  }
+
+  /**
    * Execute the Weibull retire operation on the given push-down machine.
    *
    * <p>Builds a year matcher from the optional during clause, skips execution if the
-   * current year is out of range, records this as a non-replacement retire, computes
-   * the unit count from the survival history, and delegates the actual retirement to
-   * the existing units-based retirement path.</p>
+   * current year is out of range, computes the unit count from the survival history, and
+   * delegates the actual retirement to the existing units-based retirement path. With
+   * {@code with replacement}, measures the equipment population before and after
+   * retirement and increases sales by the actual reduction to maintain population,
+   * mirroring {@link RetireWithReplacementOperation}.</p>
    *
    * @param machine The push-down machine context for evaluating operations.
    */
@@ -104,10 +126,64 @@ public class RetireWeibullOperation implements Operation {
       return;
     }
 
-    EngineSupportUtils.ensureConsistentReplacement(engine, false);
+    EngineSupportUtils.ensureConsistentReplacement(engine, withReplacement);
 
     BigDecimal retireUnits = calculateRetireUnits(engine);
-    engine.retire(new EngineNumber(retireUnits, "units"), yearMatcher);
+    EngineNumber retireAmount = new EngineNumber(retireUnits, "units");
+
+    if (withReplacement) {
+      retireWithReplacement(engine, retireAmount, yearMatcher);
+    } else {
+      engine.retire(retireAmount, yearMatcher);
+    }
+  }
+
+  /**
+   * Retire the given amount and replace it by increasing sales.
+   *
+   * <p>Measures equipment before and after retirement to determine the actual
+   * reduction, then increases sales by that amount in whichever units sales were last
+   * specified, maintaining the equipment population while simulating turnover.</p>
+   *
+   * @param engine The engine to read and update stream state on.
+   * @param retireAmount The number of units to retire.
+   * @param yearMatcher The year matcher for this operation.
+   */
+  private void retireWithReplacement(Engine engine, EngineNumber retireAmount, YearMatcher yearMatcher) {
+    UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(engine, "sales");
+    EngineNumber equipmentBefore = unitConverter.convert(engine.getStream("equipment"), "units");
+
+    engine.retire(retireAmount, yearMatcher);
+
+    EngineNumber equipmentAfter = unitConverter.convert(engine.getStream("equipment"), "units");
+    BigDecimal actualReduction = equipmentBefore.getValue().subtract(equipmentAfter.getValue());
+
+    if (actualReduction.compareTo(BigDecimal.ZERO) > 0) {
+      String targetUnits = determineTargetUnits(engine);
+      EngineNumber replacementAmount = unitConverter.convert(
+          new EngineNumber(actualReduction, "units"),
+          targetUnits
+      );
+      engine.changeStream("sales", replacementAmount, yearMatcher);
+    }
+  }
+
+  /**
+   * Determine the target units for replacement based on how sales were last specified.
+   *
+   * @param engine The current simulation engine.
+   * @return The target units for replacement ("units" or "kg").
+   */
+  private String determineTargetUnits(Engine engine) {
+    SimulationState simulationState = engine.getStreamKeeper();
+    UseKey scope = engine.getScope();
+    EngineNumber lastSalesValue = simulationState.getLastSpecifiedValue(scope, "sales");
+
+    if (lastSalesValue != null && lastSalesValue.hasEquipmentUnits()) {
+      return "units";
+    } else {
+      return "kg";
+    }
   }
 
   /**
@@ -133,7 +209,11 @@ public class RetireWeibullOperation implements Operation {
 
     for (int a = 1; a <= survival.getTruncationAge(); a++) {
       BigDecimal cohort = engine.getStream(
-          "newEquipment", Optional.of(scope), Optional.of("units"), a).getValue();
+          "newEquipment",
+          Optional.of(scope),
+          Optional.of("units"),
+          a
+      ).getValue();
       if (cohort.signum() == 0) {
         continue;
       }
@@ -146,9 +226,9 @@ public class RetireWeibullOperation implements Operation {
     if (assumingNew) {
       BigDecimal prior = engine.getStreamFor(scope, "priorEquipment").getValue();
       if (prior.signum() > 0) {
-        int pseudoAge = Math.min(
-            (engine.getYear() - engine.getStartYear()) + survival.getSyntheticCohortOffsetYears(),
-            survival.getTruncationAge());
+        int effectiveYears = (engine.getYear() - engine.getStartYear())
+            + survival.getSyntheticCohortOffsetYears();
+        int pseudoAge = Math.min(effectiveYears, survival.getTruncationAge());
         BigDecimal survivalPrior = survival.getSurvival(pseudoAge - 1);
         BigDecimal weight = prior.multiply(survivalPrior);
         weightSum = weightSum.add(weight);

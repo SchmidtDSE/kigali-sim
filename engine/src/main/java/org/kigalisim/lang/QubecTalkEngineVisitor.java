@@ -1268,7 +1268,8 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
   public Fragment visitRetireWeibullAllYears(QubecTalkParser.RetireWeibullAllYearsContext ctx) {
     BigDecimal meanYears = parseMeanYears(ctx.mean);
     boolean assumingNew = ctx.ASSUMING_() != null;
-    Operation operation = new RetireWeibullOperation(meanYears, assumingNew);
+    boolean withReplacement = hasWithReplacement(ctx);
+    Operation operation = new RetireWeibullOperation(meanYears, assumingNew, withReplacement);
     return new OperationFragment(operation);
   }
 
@@ -1282,8 +1283,9 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
   public Fragment visitRetireWeibullDuration(QubecTalkParser.RetireWeibullDurationContext ctx) {
     BigDecimal meanYears = parseMeanYears(ctx.mean);
     boolean assumingNew = ctx.ASSUMING_() != null;
+    boolean withReplacement = hasWithReplacement(ctx);
     ParsedDuring during = visit(ctx.duration).getDuring();
-    Operation operation = new RetireWeibullOperation(meanYears, assumingNew, during);
+    Operation operation = new RetireWeibullOperation(meanYears, assumingNew, withReplacement, during);
     return new OperationFragment(operation);
   }
 

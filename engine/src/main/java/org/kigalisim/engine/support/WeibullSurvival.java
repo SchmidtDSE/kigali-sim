@@ -79,7 +79,7 @@ public final class WeibullSurvival {
    * @return the characteristic life in years
    */
   public BigDecimal getCharacteristicLife() {
-    return toBigDecimal(characteristicLife);
+    return BigDecimal.valueOf(characteristicLife);
   }
 
   /**
@@ -88,7 +88,7 @@ public final class WeibullSurvival {
    * @return the median life in years
    */
   public BigDecimal getMedianLife() {
-    return toBigDecimal(characteristicLife * Math.sqrt(LN_2));
+    return BigDecimal.valueOf(characteristicLife * Math.sqrt(LN_2));
   }
 
   /**
@@ -111,7 +111,7 @@ public final class WeibullSurvival {
    */
   public BigDecimal getSurvival(int age) {
     double ratio = age / characteristicLife;
-    return toBigDecimal(Math.exp(-(ratio * ratio)));
+    return BigDecimal.valueOf(Math.exp(-(ratio * ratio)));
   }
 
   /**
@@ -128,7 +128,7 @@ public final class WeibullSurvival {
     }
     double priorSurvival = getSurvival(age - 1).doubleValue();
     double hazard = 1.0 - getSurvival(age).doubleValue() / priorSurvival;
-    return toBigDecimal(hazard);
+    return BigDecimal.valueOf(hazard);
   }
 
   /**
@@ -142,7 +142,4 @@ public final class WeibullSurvival {
     return syntheticCohortOffsetYears;
   }
 
-  private static BigDecimal toBigDecimal(double value) {
-    return BigDecimal.valueOf(value);
-  }
 }

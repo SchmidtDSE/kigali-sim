@@ -171,6 +171,27 @@ public class WeibullRetireLiveTests {
   }
 
   /**
+   * Test that "with replacement" parses and interprets for a Weibull retire.
+   */
+  @Test
+  public void testWithReplacementParses() throws IOException {
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret("../examples/weibull_retire_with_replacement.qta");
+    assertNotNull(program, "Weibull retire with replacement should parse and interpret");
+  }
+
+  /**
+   * Test that "with replacement" increases sales to offset Weibull retirement, unlike the
+   * non-replacing baseline where the flat sales rate never grows.
+   */
+  @Test
+  public void testWithReplacementIncreasesSales() throws IOException {
+    double baselineSales = getDomesticSales("../examples/weibull_retire.qta", 5);
+    double withReplacementSales = getDomesticSales("../examples/weibull_retire_with_replacement.qta", 5);
+    assertTrue(withReplacementSales > baselineSales,
+        "with replacement should increase sales above the flat non-replacing baseline");
+  }
+
+  /**
    * Test that competing retirement over-retires relative to the Weibull-only baseline.
    */
   @Test
@@ -231,5 +252,14 @@ public class WeibullRetireLiveTests {
     EngineResult result = LiveTestsUtil.getResult(list.stream(), year, "test", "test");
     assertNotNull(result, "should have a result for test/test at year " + year);
     return result.getPopulation().getValue().doubleValue();
+  }
+
+  private static double getDomesticSales(String path, int year) throws IOException {
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(path);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, "business as usual", progress -> {});
+    List<EngineResult> list = results.collect(Collectors.toList());
+    EngineResult result = LiveTestsUtil.getResult(list.stream(), year, "test", "test");
+    assertNotNull(result, "should have a result for test/test at year " + year);
+    return result.getDomestic().getValue().doubleValue();
   }
 }
