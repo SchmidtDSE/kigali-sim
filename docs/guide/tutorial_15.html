@@ -41,7 +41,7 @@
         </p>
 
         <p>
-          This tutorial will use the QubecTalk code-based editor. However, the mean lifetime form can be entered through the UI-based editor as well by choosing "year old (mean life, Weibull)" as the retirement units, and formulas can be typed into any numeric retirement field.
+          This tutorial will use the QubecTalk code-based editor in parts. However, the mean lifetime form can be entered through the UI-based editor as well by choosing "year old (mean life, Weibull)" as the retirement units, and formulas can be typed into any numeric retirement field in the UI-based editor.
         </p>
       </section>
 
@@ -53,25 +53,26 @@
         </p>
 
         <p>
-          We see that equipment does drop but, if we took the 5% as 20 year lifespan seriously, we wouldn't have any population (see bank and set to units of equipment) after 2010. Instead, we see that some equipment keeps "getting lucky" and surviving that annual retirement probability (hazard rate) of 5%. This is like how you aren't guaranteed to have a heads on a coin after two flips.
+          We see that equipment does drop. However, if we took the 5% as 20 year lifespan seriously, we wouldn't have any population (see bank and set to units of equipment) after 2010. Instead, we see that some equipment keeps "getting lucky" and surviving that annual retirement probability (hazard rate) of 5%. This is like how you aren't guaranteed to have a heads on a coin after two flips.
         </p>
 
         <p>
-          Note that what we have written here is a survival model with a constant hazard: mathematically, the Weibull distribution with shape 1. Every unit faces the same 5% chance each year no matter its age, so nothing ever becomes "due" for retirement. The average lifetime is 20 years, but the median unit retires after only 13.9, and the most likely age of retirement is the first year, since retirement never becomes more likely with age.
+          Note that what we have written here is a survival model with a constant hazard. Mathematically, this is the <a href="https://www.datacamp.com/tutorial/weibull-distribution">Weibull distribution with shape (k) of 1</a>. Every unit faces the same 5% chance each year no matter its age. The average lifetime is 20 years, but the median unit retires after only 13.9.
         </p>
+
+        <p>To see this effect, please have bank selected with units of equipment.</p>
 
         <p id="tutorial-gif-3-1" class="tutorial-gif-holder">
           <img src="/style/analysis_example.png" alt="Screenshot of results of a simple starting simulation.">
         </p>
 
-        <p>To see this effect, please have bank selected with units of equipment.</p>
       </section>
 
       <section class="major" id="retirement-with-a-mean-lifetime">
         <h2>Retirement with a mean lifetime</h2>
 
         <p>
-          Many studies, surveys, and emissions models report equipment lifetime as a single number. For example, a 20 year mean life for commercial refrigeration. Kigali Sim can use that number directly. Give the mean lifetime in years and it applies a Weibull survival curve (shape 2) whose hazard rises with age:
+          Many studies, surveys, and emissions models report equipment lifetime as a single number. For example, a 20 year mean life for commercial refrigeration. Kigali Sim can use that number directly. Give the mean lifetime in years and it can apply a <a href="https://www.datacamp.com/tutorial/weibull-distribution">Weibull survival curve (shape or k of 2)</a> whose hazard rises with age:
         </p>
 
         <pre><code class="language-qubectalk">uses substance "HFC-134a"
@@ -102,18 +103,25 @@ end substance</code></pre>
         </table>
 
         <p>
-          Under constant sales, both shapes reach the same steady state: annual sales multiplied by the mean lifetime. The difference is in the transients and in growing markets. In a fleet growing 5% per year with a 20 year mean life, the flat 5% hazard keeps retiring 5% of the stock each year, while the Weibull model retires only about 3.5% because a growing fleet is a young fleet and young cohorts face low hazard. A flat rate matched to a mean lifetime therefore systematically over-retires in exactly the fast-growing markets where this kind of modeling is most applied.
+          Under constant sales, both shapes reach the same steady state: annual sales multiplied by the mean lifetime. The difference is in the transients and in growing markets. In a fleet growing 5% per year with a 20 year mean life, the flat 5% hazard keeps retiring 5% of the stock each year. Meanwhile, the Weibull model retires only about 3.5% because a growing fleet is a young fleet and young cohorts face low hazard.
         </p>
 
         <p>
-          Because Kigali Sim derives equipment ages from simulated sales, begin the simulation before the substance entered service in the country, as we did by starting in 1990 above. If a model instead enters existing stock directly with <code>set priorEquipment</code>, combining that with a Weibull retire raises an error at validation time since the ages of those units are unknown. In that situation you can either fall back to a flat rate such as <code>retire 5 % / year</code> or add the <code>assuming new</code> modifier (code-based editor only), which treats the existing stock as a single cohort of typical age:
+          This approach is very effective. However, note that, because Kigali Sim derives equipment ages from simulated sales so we have to begin the simulation earlier. In other words, we have to have ages for all of the equipment. If a model instead enters existing stock directly with <code>set priorEquipment</code>, combining that with a Weibull retire raises an error at validation time since the ages of those units are unknown. You might do this because you don't know the equipment age distribution. In that situation, it's often best to fall back to a flat rate such as <code>retire 5 % / year</code>. However, you can also add the <code>assuming new</code> modifier (code-based editor only) which treats the existing stock as a single cohort of typical age.
+        </p>
+
+        <details>
+          <summary>Other shapes</summary>
+          <p>
+            You can use other shapes of this distribution through a custom formula using "get new equipment" which is further described in <a href="#exact-retirement-schedule">the exact retirement schedule section</a>. We offer this k = 1 and k = 2 as common but not exhaustive options.
+          </p>
+        </details>
+
+        <p>
+          To try this in the UI-based editor, choose "year old (mean life, Weibull)" from the units dropdown next to the retirement value and enter the mean lifetime as the number. Otherwise, see the code below:
         </p>
 
         <pre><code class="language-qubectalk">retire 20 year old mean weibull assuming new</code></pre>
-
-        <p>
-          In the UI-based editor, choose "year old (mean life, Weibull)" from the units dropdown next to the retirement value and enter the mean lifetime as the number.
-        </p>
       </section>
 
       <section class="major" id="increasing-hazard-rates-with-age">
@@ -138,9 +146,12 @@ end substance</code></pre>
           By the time we get to 2000, much of the equipment is already a few years old so its hazard rate is already higher than the 5% we previously assumed. This rate keeps going up as our population of equipment ages, causing us to hit zero units much sooner.
         </p>
 
-        <p>
-          One caveat: <code>get age</code> is the average age across the whole equipment population. This is why the mean lifetime form from the previous section is generally preferred when you have a mean life estimate: it tracks each sales cohort's age through the simulation history.
-        </p>
+        <details>
+          <summary>More about get age</summary>
+          <p>
+            One caveat: <code>get age</code> is the average age across the whole equipment population. This is why the mean lifetime form from the previous section is generally preferred when you have a mean life estimate: it tracks each sales cohort's age through the simulation history.
+          </p>
+        </details>
 
         <p>
           <strong>Download the completed tutorial</strong>: <a href="tutorial_15.qta" download>tutorial_15.qta</a> which contains the complete variable retirement model with age-dependent hazard rates. If you are using the UI-based editor, you can instead enter "(get age as years) * 1" into the text box for retirement (without quotes)!
@@ -151,11 +162,25 @@ end substance</code></pre>
         <h2>Exact retirement schedule</h2>
 
         <p>
-          It is somewhat uncommon for countries to know the equipment in service duration. So, it is typically not ideal to, for example, retire all equipment at exactly 10 years of service. Even so, sometimes you may know the exact age of equipment already in service and want to model a precise hazard rate per year of equipment age instead of a continuous hazard function. For example, you might have data showing that a specific percentage of equipment retires at specific ages.
+          It is somewhat uncommon for countries to know the exact equipment in service duration. So, it is typically not ideal to, for example, retire all equipment at exactly 10 years of service.
         </p>
 
         <p>
-          Let's consider an example for HFC-134a in commercial refrigeration where the retirement schedule is: 20% of equipment retires at 9 years, 60% at 10 years, and 20% at 11 years. This pattern means equipment has a 10-year expected lifespan but with a narrow window of retirement concentrated around that age. To model this, you use the `get streamName N years ago` syntax to retrieve the equipment population from N years ago (when those units were sold) and apply the retirement fraction:
+          Even so, sometimes you may know the exact age of equipment already in service and want to model a precise hazard rate per year of equipment age instead of a continuous hazard function. For example, you might have data showing that a specific percentage of equipment retires at specific ages.
+        </p>
+
+        <p>
+          Let's consider an example for HFC-134a in commercial refrigeration where the retirement schedule is: 20% of equipment retires at 9 years, 60% at 10 years, and 20% at 11 years. This pattern means equipment has a 10-year expected lifespan but with a narrow window of retirement concentrated around that age. In the UI-based editor, choose "year old (exact)" from the retirement units dropdown and enter the age as the value. To model this in code, you use the `retire year old exact` syntax to retrieve the equipment population from N years ago (when those units were sold) and apply the retirement fraction:
+        </p>
+
+        <pre><code class="language-qubectalk">retire 5 year old exact</code></pre>
+
+        <p>
+          This approach only works if the user knows the exact age of equipment. If you are uncertain about equipment ages, it may be more appropriate to use a mean lifetime (the Weibull form from earlier), a continuous hazard function (like the age-dependent approach from the previous section), or a constant percentage retirement rate.
+        </p>
+
+        <p>
+          The single-age 100%-retirement case above (all of a cohort retiring in one specific year) comes up often enough that Kigali Sim provides a shortcut for it. However, instead of writing that abbreviation, you can write something like:
         </p>
 
         <pre><code class="language-qubectalk">start default
@@ -186,22 +211,15 @@ start simulations
 end simulations</code></pre>
 
         <p>
-          This approach only works if the user knows the exact age of equipment. If you are uncertain about equipment ages, it may be more appropriate to use a mean lifetime (the Weibull form from earlier), a continuous hazard function (like the age-dependent approach from the previous section), or a constant percentage retirement rate.
+          The shortcut just saves typing when the retirement fraction is 100% and the age is fixed. It shares the same age-from-sales-history behavior as the full form, so a cohort sold before the simulation start still counts as zero. However, the shortcut only covers the 100%-at-one-age case. In other words, it cannot express the 20%/60%/20% split above. That is because each <code>year old exact</code> line always looks up the full 100% original sales record for its age.
         </p>
 
-        <p>
-          The single-age, 100%-retirement case above (all of a cohort retiring in one specific year) comes up often enough that Kigali Sim provides a shortcut for it. Instead of writing <code>retire (get newEquipment 5 years ago as units) units / year</code>, you can write:
-        </p>
-
-        <pre><code class="language-qubectalk">retire 5 year old exact</code></pre>
-
-        <p>
-          These two lines mean exactly the same thing to Kigali Sim. The shortcut just saves typing when the retirement fraction is 100% and the age is fixed. It shares the same age-from-sales-history behavior as the full form, so a cohort sold before the simulation start still counts as zero. The shortcut only covers the 100%-at-one-age case, though: it cannot express the 20%/60%/20% split above, since each <code>year old exact</code> line always looks up the full original sales record for its age rather than however much of that cohort a previous line already retired. For a fractional split across ages, use the full form with an explicit coefficient as shown above. In the UI-based editor, choose "year old (exact)" from the retirement units dropdown and enter the age as the value.
-        </p>
-
-        <p>
-          As with the Weibull form, an exact-age retire needs equipment ages, which come from simulated sales history. Entering existing stock directly with <code>set priorEquipment</code> for the same substance raises an error at validation time instead of silently never retiring that stock, since it has no sales record for the shortcut's cohort lookup to find. As with Weibull retirement, the <code>assuming new</code> modifier (code-based editor only) suppresses this: it treats the existing stock as a single cohort assumed to have entered service when the simulation began, so <code>retire 5 year old exact assuming new</code> retires that stock in full once the simulation reaches year 5. The <code>with replacement</code> modifier works with the exact-age form the same way it does for the other retirement forms, maintaining equipment population.
-        </p>
+        <details>
+          <summary>When exact retirement is an option</summary>
+          <p>
+            As with the Weibull form, an exact-age retire needs equipment ages, which come from simulated sales history. Entering existing stock directly with <code>set priorEquipment</code> for the same substance raises an error at validation time instead of silently never retiring that stock, since it has no sales record for the shortcut's cohort lookup to find. As with Weibull retirement, the <code>assuming new</code> modifier (code-based editor only) suppresses this: it treats the existing stock as a single cohort assumed to have entered service when the simulation began, so <code>retire 5 year old exact assuming new</code> retires that stock in full once the simulation reaches year 5. The <code>with replacement</code> modifier works with the exact-age form the same way it does for the other retirement forms, maintaining equipment population.
+          </p>
+        </details>
       </section>
 
       <section class="major" id="fitting-a-function">
@@ -250,14 +268,14 @@ start simulations
 end simulations</code></pre>
 
           <p>
-            How did we arrive at those formulas? Here, we need that tiny bit of calculus. For retirement, we want half of a cohort retired by the end of year 10, which means the cumulative hazard must reach ln(2) because a cumulative hazard of 0.5 leaves 61% of units surviving. For leakage, the 6% is itself a cumulative fraction, so we can integrate it directly. We can integrate over the first ten years of life such that we have 50% retirement and 6% recharge. With this operation, we derive a hazard function to fit observed data! Consider the following short code snippets runnable at Wolfram Alpha:
+            How did we arrive at those formulas? Here, we need that tiny bit of calculus. For retirement, we want half of a cohort retired by the end of year 10, which means the cumulative hazard must reach ln(2) because a cumulative hazard of 0.5 leaves 61% of units surviving. For leakage, the 6% is itself a cumulative fraction (so we can integrate it directly). We can integrate over the first ten years of life such that we have 50% retirement and 6% recharge. With this operation, we derive a hazard function to fit observed data! Consider the following short code snippets runnable at Wolfram Alpha:
           </p>
           <ul>
             <li>Solve for retirement rate: <a href="https://www.wolframalpha.com/input?i=integrate+x*t%5E2+from+t%3D0+to+10+equals+ln%282%29%2C+solve+for+x">integrate x*t^2 from t=0 to 10 equals ln(2), solve for x</a>.</li>
             <li>Solve for servicing: <a href="https://www.wolframalpha.com/input?i=integrate+x*t+from+t%3D0+to+10+equals+0.06%2C+solve+for+x">integrate x*t from t=0 to 10 equals 0.06, solve for x</a></li>
           </ul>
           <p>
-            These are provided in Wolfram Alpha for brevity but can be adapted easily to Python (using numpy) or other languages. The continuous solution for retirement is x = 3·ln(2)/1000 ≈ 0.208% per year. However, Kigali Sim applies calculations once per year as we don't know the exact time during the year that equipment comes into service, so the discrete stepping needs a slightly larger coefficient: 0.228% gives half of a 100 unit cohort retired at the end of its tenth year in service (2030 in this simulation). The leakage solution x = 0.0012, written as 3/2500 above, needs no such correction because it is a cumulative top-up rather than a compounding survival.
+            These are provided in Wolfram Alpha for brevity but can be adapted easily to Python (using numpy) or other languages. The continuous solution for retirement is x = 3·ln(2)/1000 ≈ 0.208% per year. However, Kigali Sim applies calculations once per year as we don't know the exact time during the year that equipment comes into service. Therefore, the discrete stepping needs a slightly larger coefficient: 0.228% gives half of a 100 unit cohort retired at the end of its tenth year in service (2030 in this simulation). The leakage solution x = 0.0012, written as 3/2500 above, needs no such correction because it is a cumulative top-up rather than a compounding survival.
           </p>
           <p>
             Note that we are providing a very direct interpretation of the input assumptions. For some alternative types of input, consider using numpy / Python and an iterative solver. Also, remember from the previous section that the age stream is the fleet's average age, so this quadratic hazard is exact for a single cohort (as here, where all 100 units enter in 2020) and approximate for mixed-age fleets.
