@@ -365,7 +365,10 @@ retire 10% each year</code></pre>
           simulated sales, so it is recommended to start the simulation
           before the substance entered service. Combining this form with
           <code>set priorEquipment</code> / <code>change priorEquipment</code>
-          on the same substance raises a validation error. This is
+          for the same substance anywhere in a scenario's stack, including
+          across stanzas such as a default-stanza
+          <code>set priorEquipment</code> and a Weibull retire in a policy,
+          raises a validation error. This is
           suppressed by treating existing stock as a single cohort of
           typical age (<code>assuming new</code>). In the Basic Editor,
           choose "year old (mean life, Weibull)" from the retirement units

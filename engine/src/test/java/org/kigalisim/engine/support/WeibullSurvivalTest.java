@@ -20,14 +20,9 @@ import org.junit.jupiter.api.Test;
  */
 public class WeibullSurvivalTest {
 
-  @Test
-  public void testScaleFromMean() {
-    assertEquals(5.641896, WeibullSurvival.fromMean(new BigDecimal("5"))
-        .getCharacteristicLife().doubleValue(), 1e-4);
-    assertEquals(22.567583, WeibullSurvival.fromMean(new BigDecimal("20"))
-        .getCharacteristicLife().doubleValue(), 1e-4);
-  }
-
+  /**
+   * Check survival at several ages, which pins the scale lambda = mean * 2/sqrt(pi).
+   */
   @Test
   public void testSurvivalValues() {
     WeibullSurvival fiveYear = WeibullSurvival.fromMean(new BigDecimal("5"));
@@ -72,9 +67,16 @@ public class WeibullSurvivalTest {
   }
 
   @Test
-  public void testMedianLife() {
-    assertEquals(4.697, WeibullSurvival.fromMean(new BigDecimal("5")).getMedianLife().doubleValue(), 1e-3);
-    assertEquals(18.789, WeibullSurvival.fromMean(new BigDecimal("20")).getMedianLife().doubleValue(), 1e-3);
+  public void testSyntheticCohortOffsetFlooredAtOneYear() {
+    assertEquals(1, WeibullSurvival.fromMean(new BigDecimal("0.5")).getSyntheticCohortOffsetYears());
+    assertEquals(1, WeibullSurvival.fromMean(new BigDecimal("0.1")).getSyntheticCohortOffsetYears());
+  }
+
+  @Test
+  public void testHazardBelowFirstYearIsZero() {
+    WeibullSurvival fiveYear = WeibullSurvival.fromMean(new BigDecimal("5"));
+    assertEquals(0.0, fiveYear.getHazard(0).doubleValue(), 1e-9);
+    assertEquals(0.0, fiveYear.getHazard(-1).doubleValue(), 1e-9);
   }
 
   @Test

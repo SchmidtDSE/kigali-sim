@@ -953,6 +953,34 @@ end default
       },
     ]);
 
+    buildTest(
+      "reports compatibility without a simulations stanza",
+      "/examples/ui/no_simulations_basic.qta",
+      [
+        (result, assert) => {
+          assert.equal(result.getScenarios().length, 0, "Program should have no scenarios");
+          assert.ok(
+            result.getIsCompatible(),
+            "UI-expressible program should still report compatible",
+          );
+        },
+      ],
+    );
+
+    buildTest(
+      "reports incompatibility without a simulations stanza",
+      "/examples/ui/no_simulations_assuming_new.qta",
+      [
+        (result, assert) => {
+          assert.equal(result.getScenarios().length, 0, "Program should have no scenarios");
+          assert.ok(
+            !result.getIsCompatible(),
+            "Assuming-new program should report incompatible even with no simulations stanza",
+          );
+        },
+      ],
+    );
+
     QUnit.test("preprocessEachYearSyntax - removes end-of-line each year", function (assert) {
       // Test basic removal cases
       const input1 = "retire 5 % each year";

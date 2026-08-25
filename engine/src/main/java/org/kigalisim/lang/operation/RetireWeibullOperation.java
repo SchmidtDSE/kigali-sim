@@ -75,30 +75,12 @@ public class RetireWeibullOperation implements Operation {
   }
 
   /**
-   * The mean equipment lifetime in years.
-   *
-   * @return the mean lifetime in years
-   */
-  public BigDecimal getMeanYears() {
-    return meanYears;
-  }
-
-  /**
    * Whether prior equipment is treated as a pseudo-cohort of typical age.
    *
    * @return true if the {@code assuming new} modifier is set
    */
   public boolean getAssumingNew() {
     return assumingNew;
-  }
-
-  /**
-   * Whether retired equipment is replaced to maintain population.
-   *
-   * @return true if the {@code with replacement} modifier is set
-   */
-  public boolean getWithReplacement() {
-    return withReplacement;
   }
 
   /**
@@ -189,13 +171,16 @@ public class RetireWeibullOperation implements Operation {
   /**
    * Compute the number of units to retire this year from the survival history.
    *
-   * <p>For each age <i>a</i> up to the truncation age the cohort is the
+   * <p>For each age <i>a</i> up to the truncation age, or the years elapsed so far if
+   * that is smaller, the cohort is the
    * {@code newEquipment} value from <i>a</i> years ago, weighted by S(a&minus;1)
    * (the cohort's survival heading into its <i>a</i>-th year) and then by the hazard
    * h(a). The retire amount is the current equipment population times the hazard
-   * weight over the survival weight. With {@code assuming new}, prior equipment
-   * contributes a single pseudo-cohort at a typical age. If there is no weight at
-   * all, zero units are retired.</p>
+   * weight over the survival weight. With {@code assuming new}, any prior equipment
+   * the sales history does not account for contributes a single pseudo-cohort at a
+   * typical age; equipment already covered by a tracked cohort is left to that
+   * cohort so it is not counted twice. If there is no weight at all, zero units are
+   * retired.</p>
    *
    * @param engine The engine to read stream and year state from.
    * @return the number of units to retire.
@@ -203,11 +188,16 @@ public class RetireWeibullOperation implements Operation {
   private BigDecimal calculateRetireUnits(Engine engine) {
     WeibullSurvival survival = WeibullSurvival.fromMean(meanYears);
     UseKey scope = engine.getScope();
+    BigDecimal population = engine.getStreamFor(scope, "priorEquipment").getValue();
+    int yearsElapsed = engine.getYear() - engine.getStartYear();
 
     BigDecimal weightSum = BigDecimal.ZERO;
     BigDecimal retireWeight = BigDecimal.ZERO;
 
-    for (int a = 1; a <= survival.getTruncationAge(); a++) {
+    // Ages beyond the elapsed years have no recorded history and always read zero, so
+    // stop there rather than walking the whole truncation window every year.
+    int oldestTrackedAge = Math.min(survival.getTruncationAge(), yearsElapsed);
+    for (int a = 1; a <= oldestTrackedAge; a++) {
       BigDecimal cohort = engine.getStream(
           "newEquipment",
           Optional.of(scope),
@@ -224,22 +214,20 @@ public class RetireWeibullOperation implements Operation {
     }
 
     if (assumingNew) {
-      BigDecimal prior = engine.getStreamFor(scope, "priorEquipment").getValue();
-      if (prior.signum() > 0) {
-        int effectiveYears = (engine.getYear() - engine.getStartYear())
-            + survival.getSyntheticCohortOffsetYears();
+      // The loop's weights are the tracked cohorts' surviving units, so whatever prior
+      // equipment they do not explain is the manually entered stock of unknown age.
+      BigDecimal untracked = population.subtract(weightSum).max(BigDecimal.ZERO);
+      if (untracked.signum() > 0) {
+        int effectiveYears = yearsElapsed + survival.getSyntheticCohortOffsetYears();
         int pseudoAge = Math.min(effectiveYears, survival.getTruncationAge());
-        BigDecimal survivalPrior = survival.getSurvival(pseudoAge - 1);
-        BigDecimal weight = prior.multiply(survivalPrior);
-        weightSum = weightSum.add(weight);
-        retireWeight = retireWeight.add(weight.multiply(survival.getHazard(pseudoAge)));
+        weightSum = weightSum.add(untracked);
+        retireWeight = retireWeight.add(untracked.multiply(survival.getHazard(pseudoAge)));
       }
     }
 
     if (weightSum.signum() == 0) {
       return BigDecimal.ZERO;
     }
-    BigDecimal population = engine.getStreamFor(scope, "priorEquipment").getValue();
     return population.multiply(retireWeight)
         .divide(weightSum, MathContext.DECIMAL128);
   }
