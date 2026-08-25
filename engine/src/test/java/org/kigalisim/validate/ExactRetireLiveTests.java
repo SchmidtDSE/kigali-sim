@@ -153,6 +153,57 @@ public class ExactRetireLiveTests {
         "with replacement should increase sales above the flat non-replacing baseline");
   }
 
+  /**
+   * Test that assuming new suppresses the prior-equipment error for an exact retire.
+   */
+  @Test
+  public void testAssumingNewSuppressesError() throws IOException {
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret("../examples/exact_retire_assuming_new.qta");
+    assertNotNull(program, "assuming new should suppress the prior-equipment error");
+  }
+
+  /**
+   * Test that assuming new retires manually entered priorEquipment in full once the
+   * simulation reaches the given age, treating that stock as if it entered service when
+   * the simulation began.
+   */
+  @Test
+  public void testAssumingNewRetiresUntrackedStockAtGivenAge() throws IOException {
+    for (int year = 1; year <= 5; year++) {
+      assertEquals(100, getPopulation("../examples/exact_retire_assuming_new.qta", year), 1e-6,
+          "Population should remain at 100 before the pseudo-cohort reaches age 5 (year " + year + ")");
+    }
+    for (int year = 6; year <= 8; year++) {
+      assertEquals(0, getPopulation("../examples/exact_retire_assuming_new.qta", year), 1e-6,
+          "Population should drop to 0 once the pseudo-cohort reaches age 5 (year " + year + ")");
+    }
+  }
+
+  /**
+   * Test that assuming new does nothing when the sales history explains the whole fleet.
+   *
+   * <p>The modifier only speaks for stock entered by hand, so a model whose equipment all
+   * came from simulated sales must retire identically with and without it.</p>
+   */
+  @Test
+  public void testAssumingNewIsNoOpWithoutPriorStock() throws IOException {
+    for (int year = 1; year <= 10; year++) {
+      double baseline = getPopulation("../examples/exact_retire.qta", year);
+      double assumingNew = getPopulation("../examples/exact_retire_assuming_new_no_prior.qta", year);
+      assertEquals(baseline, assumingNew, 1e-6,
+          "assuming new should not change a fleet with no manually entered stock at year " + year);
+    }
+  }
+
+  private static double getPopulation(String path, int year) throws IOException {
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(path);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, "business as usual", progress -> {});
+    List<EngineResult> list = results.collect(Collectors.toList());
+    EngineResult result = LiveTestsUtil.getResult(list.stream(), year, "test", "test");
+    assertNotNull(result, "should have a result for test/test at year " + year);
+    return result.getPopulation().getValue().doubleValue();
+  }
+
   private static double getDomesticSales(String path, int year) throws IOException {
     ParsedProgram program = KigaliSimFacade.parseAndInterpret(path);
     Stream<EngineResult> results = KigaliSimFacade.runScenario(program, "business as usual", progress -> {});

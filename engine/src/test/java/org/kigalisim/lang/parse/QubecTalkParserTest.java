@@ -197,6 +197,30 @@ public class QubecTalkParserTest {
   }
 
   /**
+   * Test that an exact retire with 'assuming new' parses successfully.
+   */
+  @Test
+  public void testParseValidExactAssumingNew() throws IOException {
+    ParseResult result = parser.parse(wrapRetire("retire 5 year old exact assuming new"));
+    assertFalse(result.hasErrors(), "Exact retire assuming new should parse without errors");
+    assertTrue(result.getProgram().isPresent(),
+        "Valid exact retire assuming new should produce a program");
+  }
+
+  /**
+   * Test that an exact retire with 'assuming new' and 'with replacement' together parses.
+   */
+  @Test
+  public void testParseValidExactAssumingNewWithReplacement() throws IOException {
+    ParseResult result = parser.parse(
+        wrapRetire("retire 5 year old exact assuming new with replacement"));
+    assertFalse(result.hasErrors(),
+        "Exact retire assuming new with replacement should parse without errors");
+    assertTrue(result.getProgram().isPresent(),
+        "Valid exact retire assuming new with replacement should produce a program");
+  }
+
+  /**
    * Test that parsing enable statements works correctly.
    */
   @Test

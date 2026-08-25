@@ -307,7 +307,7 @@ function buildIntegrationTests() {
       },
     ]);
 
-    QUnit.test("exact retire matches its equivalent full form", function (assert) {
+    QUnit.test("exact retire matches its equivalent expanded form", function (assert) {
       const done = assert.async();
       Promise.all([
         loadRemote("/examples/exact_retire.qta"),

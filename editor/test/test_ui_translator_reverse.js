@@ -287,6 +287,25 @@ function buildUiTranslatorReverseTests() {
       assert.notEqual(code.indexOf("retire 5 year old exact with replacement"), -1);
     });
 
+    QUnit.test("emits assuming new for exact retire", function (assert) {
+      const number = new EngineNumber("5", "year old exact");
+      const command = new RetireCommand(number, null, false, true);
+      const substance = createWithCommand("test", false, command);
+      const code = substance.toCode(0);
+      assert.notEqual(code.indexOf("retire 5 year old exact assuming new"), -1);
+    });
+
+    QUnit.test("emits exact retire assuming new with replacement", function (assert) {
+      const number = new EngineNumber("5", "year old exact");
+      const command = new RetireCommand(number, null, true, true);
+      const substance = createWithCommand("test", false, command);
+      const code = substance.toCode(0);
+      assert.notEqual(
+        code.indexOf("retire 5 year old exact assuming new with replacement"),
+        -1,
+      );
+    });
+
     QUnit.test("sets values in substances", function (assert) {
       const command = new Command("setVal", "domestic", new EngineNumber("10", "mt"), null);
       const substance = createWithCommand("test", true, command);

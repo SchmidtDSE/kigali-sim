@@ -1189,9 +1189,10 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
    */
   visitRetireExactAllYears(ctx) {
     const age = parseInt(ctx.age.text, 10);
+    const assumingNew = ctx.getText().toLowerCase().includes("assumingnew");
     const withReplacement = ctx.getText().toLowerCase().includes("withreplacement");
     const value = new EngineNumber(age, "year old exact");
-    return new RetireCommand(value, null, withReplacement, false);
+    return new RetireCommand(value, null, withReplacement, assumingNew);
   }
 
   /**
@@ -1205,10 +1206,11 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
   visitRetireExactDuration(ctx) {
     const self = this;
     const age = parseInt(ctx.age.text, 10);
+    const assumingNew = ctx.getText().toLowerCase().includes("assumingnew");
     const withReplacement = ctx.getText().toLowerCase().includes("withreplacement");
     const duration = ctx.duration.accept(self);
     const value = new EngineNumber(age, "year old exact");
-    return new RetireCommand(value, duration, withReplacement, false);
+    return new RetireCommand(value, duration, withReplacement, assumingNew);
   }
 
   /**

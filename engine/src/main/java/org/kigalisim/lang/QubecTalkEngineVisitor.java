@@ -1298,9 +1298,11 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    */
   @Override
   public Fragment visitRetireExactAllYears(QubecTalkParser.RetireExactAllYearsContext ctx) {
-    Operation volumeOperation = buildExactRetireVolumeOperation(ctx.age);
+    int ageYears = parseExactAge(ctx.age);
+    Operation volumeOperation = buildExactRetireVolumeOperation(ageYears);
+    boolean assumingNew = ctx.ASSUMING_() != null;
     boolean withReplacement = hasWithReplacement(ctx);
-    Operation operation = new RetireExactOperation(volumeOperation, withReplacement);
+    Operation operation = new RetireExactOperation(volumeOperation, ageYears, assumingNew, withReplacement);
     return new OperationFragment(operation);
   }
 
@@ -1312,22 +1314,35 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    */
   @Override
   public Fragment visitRetireExactDuration(QubecTalkParser.RetireExactDurationContext ctx) {
-    Operation volumeOperation = buildExactRetireVolumeOperation(ctx.age);
+    int ageYears = parseExactAge(ctx.age);
+    Operation volumeOperation = buildExactRetireVolumeOperation(ageYears);
+    boolean assumingNew = ctx.ASSUMING_() != null;
     boolean withReplacement = hasWithReplacement(ctx);
     ParsedDuring during = visit(ctx.duration).getDuring();
-    Operation operation = new RetireExactOperation(volumeOperation, withReplacement, during);
+    Operation operation = new RetireExactOperation(volumeOperation, ageYears, assumingNew,
+        withReplacement, during);
     return new OperationFragment(operation);
+  }
+
+  /**
+   * Parse the exact retirement age from its INTEGER_ token.
+   *
+   * @param ageToken The INTEGER_ token carrying the equipment age in years, whose text may
+   *     contain thousands commas.
+   * @return the parsed age in years.
+   */
+  private int parseExactAge(Token ageToken) {
+    return Integer.parseInt(ageToken.getText().replaceAll(",", ""));
   }
 
   /**
    * Build the volume operation for an exact retire, equivalent to
    * {@code (get newEquipment N years ago as units) units / year}.
    *
-   * @param ageToken The INTEGER_ token carrying the equipment age in years.
+   * @param ageYears The equipment age in years at which the cohort retires.
    * @return the operation computing the retirement amount from the sales cohort at that age.
    */
-  private Operation buildExactRetireVolumeOperation(Token ageToken) {
-    int ageYears = Integer.parseInt(ageToken.getText().replaceAll(",", ""));
+  private Operation buildExactRetireVolumeOperation(int ageYears) {
     Operation cohortInUnits = new JointOperation(
         new GetStreamOperation("newEquipment", ageYears, "units"),
         new RemoveUnitsOperation()

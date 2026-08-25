@@ -1019,94 +1019,57 @@ end default
       ],
     );
 
-    QUnit.test("translates exact retire command", function (assert) {
-      const code = `
-start default
-  define application "test"
-    uses substance "test"
-      enable domestic
-      equals 1 tCO2e / mt
-      initial charge with 1 kg / unit for domestic
-      set domestic to 100 mt during year 1
-      retire 5 year old exact
-    end substance
-  end application
-end default
-`;
+    buildTest("translates exact retire command", "/examples/ui/exact_basic.qta", [
+      (result, assert) => {
+        const substance = result.getApplications()[0].getSubstances()[0];
+        const retire = substance.getRetire();
+        assert.ok(retire !== null, "Retire command should be present");
+        assert.equal(retire.getValue().getValue(), 5);
+        assert.equal(retire.getValue().getUnits(), "year old exact");
+        assert.equal(retire.getWithReplacement(), false);
+        assert.ok(result.getIsCompatible(), "Exact retire should be UI-compatible");
+      },
+    ]);
 
-      const compiler = new UiTranslatorCompiler();
-      const result = compiler.compile(code);
-      assert.strictEqual(result.getErrors().length, 0, "Should compile without errors");
+    buildTest(
+      "translates exact retire command with replacement",
+      "/examples/ui/exact_with_replacement.qta",
+      [
+        (result, assert) => {
+          const substance = result.getApplications()[0].getSubstances()[0];
+          const retire = substance.getRetire();
+          assert.ok(retire !== null, "Retire command should be present");
+          assert.equal(retire.getValue().getValue(), 5);
+          assert.equal(retire.getValue().getUnits(), "year old exact");
+          assert.equal(retire.getWithReplacement(), true);
+          assert.ok(result.getIsCompatible(), "Exact retire with replacement should be UI-compatible");
+        },
+      ],
+    );
 
-      const program = result.getProgram();
-      const substance = program.getApplications()[0].getSubstances()[0];
+    buildTest(
+      "translates exact retire command with duration and plural years",
+      "/examples/ui/exact_duration_plural.qta",
+      [
+        (result, assert) => {
+          const substance = result.getApplications()[0].getSubstances()[0];
+          const retire = substance.getRetire();
+          assert.ok(retire !== null, "Retire command should be present");
+          assert.equal(retire.getValue().getValue(), 10);
+          assert.equal(retire.getValue().getUnits(), "year old exact");
+          assert.notEqual(retire.getDuration(), null, "Duration should be preserved");
+        },
+      ],
+    );
 
-      const retire = substance.getRetire();
-      assert.ok(retire !== null, "Retire command should be present");
-      assert.equal(retire.getValue().getValue(), 5);
-      assert.equal(retire.getValue().getUnits(), "year old exact");
-      assert.equal(retire.getWithReplacement(), false);
-      assert.ok(program.getIsCompatible(), "Exact retire should be UI-compatible");
-    });
-
-    QUnit.test("translates exact retire command with replacement", function (assert) {
-      const code = `
-start default
-  define application "test"
-    uses substance "test"
-      enable domestic
-      equals 1 tCO2e / mt
-      initial charge with 1 kg / unit for domestic
-      set domestic to 100 mt during year 1
-      retire 5 year old exact with replacement
-    end substance
-  end application
-end default
-`;
-
-      const compiler = new UiTranslatorCompiler();
-      const result = compiler.compile(code);
-      assert.strictEqual(result.getErrors().length, 0, "Should compile without errors");
-
-      const program = result.getProgram();
-      const substance = program.getApplications()[0].getSubstances()[0];
-
-      const retire = substance.getRetire();
-      assert.ok(retire !== null, "Retire command should be present");
-      assert.equal(retire.getValue().getValue(), 5);
-      assert.equal(retire.getValue().getUnits(), "year old exact");
-      assert.equal(retire.getWithReplacement(), true);
-      assert.ok(program.getIsCompatible(), "Exact retire with replacement should be UI-compatible");
-    });
-
-    QUnit.test("translates exact retire command with duration and plural years", function (assert) {
-      const code = `
-start default
-  define application "test"
-    uses substance "test"
-      enable domestic
-      equals 1 tCO2e / mt
-      initial charge with 1 kg / unit for domestic
-      set domestic to 100 mt during year 1
-      retire 10 years old exact during years 2 to 5
-    end substance
-  end application
-end default
-`;
-
-      const compiler = new UiTranslatorCompiler();
-      const result = compiler.compile(code);
-      assert.strictEqual(result.getErrors().length, 0, "Should compile without errors");
-
-      const program = result.getProgram();
-      const substance = program.getApplications()[0].getSubstances()[0];
-
-      const retire = substance.getRetire();
-      assert.ok(retire !== null, "Retire command should be present");
-      assert.equal(retire.getValue().getValue(), 10);
-      assert.equal(retire.getValue().getUnits(), "year old exact");
-      assert.notEqual(retire.getDuration(), null, "Duration should be preserved");
-    });
+    buildTest("assuming new exact retire is UI-incompatible", "/examples/ui/exact_assuming_new.qta", [
+      (result, assert) => {
+        const substance = result.getApplications()[0].getSubstances()[0];
+        const retire = substance.getRetire();
+        assert.equal(retire.getAssumingNew(), true);
+        assert.ok(!result.getIsCompatible(), "Assuming-new program should be UI-incompatible");
+      },
+    ]);
 
     QUnit.test("preprocessEachYearSyntax - removes end-of-line each year", function (assert) {
       // Test basic removal cases

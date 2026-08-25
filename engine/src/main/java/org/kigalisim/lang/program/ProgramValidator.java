@@ -38,9 +38,9 @@ public final class ProgramValidator {
       "Exact-age retirement requires equipment ages, which are derived from simulated sales. "
       + "priorEquipment is set directly for this substance, so ages are unknown and that stock "
       + "will never match an exact-age retire's cohort lookup. You can begin the simulation "
-      + "before this substance entered service or use a constant rate such as "
-      + "`retire 5 % / year` instead; unlike Weibull retirement, there is no `assuming new` "
-      + "equivalent for the exact-age form.";
+      + "before this substance entered service, use a constant rate such as "
+      + "`retire 5 % / year`, or assume the existing equipment entered service when the "
+      + "simulation began by adding the `assuming new` keyword in the Advanced Editor.";
 
   private ProgramValidator() {
     // Utility class - prevent instantiation
@@ -129,15 +129,15 @@ public final class ProgramValidator {
    */
   private static void validateOperations(Iterable<Operation> operations) {
     boolean hasWeibullWithoutAssumingNew = false;
-    boolean hasExactRetire = false;
+    boolean hasExactRetireWithoutAssumingNew = false;
     boolean setsPriorEquipment = false;
 
     for (Operation operation : operations) {
       if (operation instanceof RetireWeibullOperation weibull && !weibull.getAssumingNew()) {
         hasWeibullWithoutAssumingNew = true;
       }
-      if (operation instanceof RetireExactOperation) {
-        hasExactRetire = true;
+      if (operation instanceof RetireExactOperation exact && !exact.getAssumingNew()) {
+        hasExactRetireWithoutAssumingNew = true;
       }
       if (operation instanceof SetOperation set && "priorEquipment".equals(set.getStream())) {
         setsPriorEquipment = true;
@@ -150,7 +150,7 @@ public final class ProgramValidator {
     if (hasWeibullWithoutAssumingNew && setsPriorEquipment) {
       throw new RuntimeException(PRIOR_MESSAGE);
     }
-    if (hasExactRetire && setsPriorEquipment) {
+    if (hasExactRetireWithoutAssumingNew && setsPriorEquipment) {
       throw new RuntimeException(EXACT_PRIOR_MESSAGE);
     }
   }

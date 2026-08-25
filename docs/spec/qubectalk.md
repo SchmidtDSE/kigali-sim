@@ -254,11 +254,15 @@ retire 5 year old exact
 retire 10 years old exact during years 2030 to onwards
 ```
 
-This is a shortcut for `retire (get newEquipment N years ago as units) units / year`, so it shares the years-ago lookup's behavior: ages are derived from simulated sales history, and asking for a cohort sold before the simulation start returns 0. Because the lookup always reads the original sales record for that year rather than how much of the cohort remains, only use one exact-age retire per cohort; stacking exact retires at several ages does not split a cohort's retirement across those ages (a later age's lookup still sees the full original amount, redundant with whatever an earlier age already retired). For a schedule split fractionally across several ages, use the general form with an explicit fraction coefficient documented under Years-Ago Queries instead of the exact shortcut.
+This is a shortcut for `retire (get newEquipment N years ago as units) units / year`, so it shares the years-ago lookup's behavior: ages are derived from simulated sales history, and asking for a cohort sold before the simulation start returns 0. Because the lookup always reads the original sales record for that year rather than how much of the cohort remains, it is recommended to only use one exact-age retire per cohort. For a schedule split fractionally across several ages, use the general form with an explicit fraction coefficient documented under Years-Ago Queries instead of the exact shortcut.
 
-Because ages come from simulated sales the same way as the Weibull form, an exact-age retire cannot be combined with `set priorEquipment` or `change priorEquipment` for the same substance anywhere in a scenario's stack: doing so raises an error at validation time, since equipment entered directly has no sales record and would never match this shortcut's cohort lookup. Begin the simulation before the substance entered service so that ages are known, or use a constant rate such as `retire 5 % / year`. Unlike the Weibull form, there is no `assuming new` equivalent here, since there is no age distribution to fold untracked stock into.
+Because ages come from simulated sales the same way as the Weibull form, an exact-age retire cannot be combined with `set priorEquipment` or `change priorEquipment` for the same substance anywhere in a scenario's stack: doing so raises an error at validation time, since equipment entered directly has no sales record and would never match this shortcut's cohort lookup. As with the Weibull form, the `assuming new` modifier suppresses this, treating the existing stock as a single cohort assumed to have entered service when the simulation began so it retires in full once the simulation reaches the given age:
 
-The `with replacement` modifier may be combined with the exact-age form, maintaining population size the same way it does for the other retirement forms. The Basic Editor supports this shortcut through the "year old (exact)" units option.
+```
+retire 5 year old exact assuming new
+```
+
+The `with replacement` modifier may be combined with the exact-age form, maintaining population size the same way it does for the other retirement forms. The Basic Editor supports this shortcut through the "year old (exact)" units option; `assuming new` is Advanced Editor only.
 
 To maintain a constant equipment population, use the `with replacement` modifier:
 
