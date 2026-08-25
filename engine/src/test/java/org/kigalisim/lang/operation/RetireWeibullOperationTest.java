@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Test;
 import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.SingleThreadEngine;
 import org.kigalisim.engine.number.EngineNumber;
+import org.kigalisim.engine.recalc.StreamUpdateBuilder;
 import org.kigalisim.engine.state.Scope;
 import org.kigalisim.engine.state.SimulationState;
 import org.kigalisim.engine.state.YearMatcher;
@@ -136,7 +137,7 @@ public class RetireWeibullOperationTest {
     engine.setSubstance("sub");
     PushDownMachine machine = new SingleThreadPushDownMachine(engine);
 
-    engine.executeStreamUpdate(new org.kigalisim.engine.recalc.StreamUpdateBuilder()
+    engine.executeStreamUpdate(new StreamUpdateBuilder()
         .setName("priorEquipment")
         .setValue(new EngineNumber(new BigDecimal("1000"), "units"))
         .setYearMatcher(Optional.of(YearMatcher.unbounded()))

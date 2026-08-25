@@ -103,13 +103,41 @@ public class WeibullRetireLiveTests {
   }
 
   /**
+   * Test that the conflict is caught when the two statements are in different stanzas.
+   *
+   * <p>A scenario stacks its policies on top of the default stanza, so a
+   * {@code set priorEquipment} there meets a Weibull retire added by a policy.</p>
+   */
+  @Test
+  public void testPriorEquipmentAcrossStanzasRaises() {
+    RuntimeException ex = assertThrows(RuntimeException.class, () ->
+        KigaliSimFacade.parseAndInterpret("../examples/weibull_retire_prior_error_policy.qta"));
+    assertTrue(ex.getMessage().contains(PRIOR_MESSAGE), "error should mention unknown ages");
+    assertFalse(KigaliSimFacade.validate("../examples/weibull_retire_prior_error_policy.qta"),
+        "validate should report the cross-stanza prior-equipment conflict");
+  }
+
+  /**
+   * Test that a policy no scenario applies does not raise a cross-stanza conflict.
+   */
+  @Test
+  public void testUnusedPolicyDoesNotRaise() throws IOException {
+    ParsedProgram program =
+        KigaliSimFacade.parseAndInterpret("../examples/weibull_retire_unused_policy.qta");
+    assertNotNull(program, "an unapplied policy should not create a conflict");
+    assertTrue(KigaliSimFacade.validate("../examples/weibull_retire_unused_policy.qta"),
+        "validate should accept a Weibull retire in a policy no scenario uses");
+  }
+
+  /**
    * Test that a set bank (equipment) does not conflict with Weibull.
    */
   @Test
   public void testSetBankWithWeibullIsValid() throws IOException {
     ParsedProgram program = KigaliSimFacade.parseAndInterpret("../examples/weibull_retire_bank.qta");
     assertNotNull(program, "set bank with Weibull should be valid");
-    KigaliSimFacade.validate("../examples/weibull_retire_bank.qta");
+    assertTrue(KigaliSimFacade.validate("../examples/weibull_retire_bank.qta"),
+        "validate should accept set bank with Weibull");
   }
 
   /**
@@ -222,6 +250,37 @@ public class WeibullRetireLiveTests {
     double year2 = getPopulation("../examples/weibull_retire_assuming_new.qta", 2);
     assertEquals(952.098, year1, 0.01, "year-1 equipment after assuming-new retirement");
     assertEquals(902.938, year2, 0.01, "year-2 equipment after assuming-new retirement");
+  }
+
+  /**
+   * Test that assuming new does nothing when the sales history explains the whole fleet.
+   *
+   * <p>The modifier only speaks for stock entered by hand, so a model whose equipment all
+   * came from simulated sales must retire identically with and without it.</p>
+   */
+  @Test
+  public void testAssumingNewIsNoOpWithoutPriorStock() throws IOException {
+    for (int year = 1; year <= 15; year++) {
+      double baseline = getPopulation("../examples/weibull_retire_20yr.qta", year);
+      double assumingNew = getPopulation(
+          "../examples/weibull_retire_assuming_new_no_prior.qta", year);
+      assertEquals(baseline, assumingNew, 1e-6,
+          "assuming new should not change a fleet with no manually entered stock at year " + year);
+    }
+  }
+
+  /**
+   * Test that a sub-year mean lifetime retires rather than producing a negative amount.
+   *
+   * <p>A mean under about 0.79 years rounds the synthetic cohort offset to zero, which
+   * previously placed the pseudo-cohort at age zero and yielded a negative hazard.</p>
+   */
+  @Test
+  public void testShortMeanAssumingNewRetires() throws IOException {
+    assertEquals(43.214, getPopulation("../examples/weibull_retire_short_mean.qta", 1), 0.01,
+        "year-1 equipment for a half-year mean lifetime");
+    assertEquals(0.0, getPopulation("../examples/weibull_retire_short_mean.qta", 2), 1e-6,
+        "the remainder should be swept up at the truncation age");
   }
 
   /**

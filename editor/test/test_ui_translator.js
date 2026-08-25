@@ -953,6 +953,57 @@ end default
       },
     ]);
 
+    QUnit.test("reports compatibility without a simulations stanza", function (assert) {
+      const code = `
+start default
+  define application "test"
+    uses substance "test"
+      enable domestic
+      equals 1 tCO2e / mt
+      initial charge with 1 kg / unit for domestic
+      set domestic to 100 mt during year 1
+      retire 5 % / year
+    end substance
+  end application
+end default
+`;
+
+      const compiler = new UiTranslatorCompiler();
+      const result = compiler.compile(code);
+      assert.strictEqual(result.getErrors().length, 0, "Should compile without errors");
+
+      const program = result.getProgram();
+      assert.equal(program.getScenarios().length, 0, "Program should have no scenarios");
+      assert.ok(program.getIsCompatible(), "UI-expressible program should still report compatible");
+    });
+
+    QUnit.test("reports incompatibility without a simulations stanza", function (assert) {
+      const code = `
+start default
+  define application "test"
+    uses substance "test"
+      enable domestic
+      equals 1 tCO2e / mt
+      initial charge with 1 kg / unit for domestic
+      set domestic to 100 mt during year 1
+      retire 20 year old mean weibull assuming new
+    end substance
+  end application
+end default
+`;
+
+      const compiler = new UiTranslatorCompiler();
+      const result = compiler.compile(code);
+      assert.strictEqual(result.getErrors().length, 0, "Should compile without errors");
+
+      const program = result.getProgram();
+      assert.equal(program.getScenarios().length, 0, "Program should have no scenarios");
+      assert.ok(
+        !program.getIsCompatible(),
+        "Assuming-new program should report incompatible even with no simulations stanza",
+      );
+    });
+
     QUnit.test("preprocessEachYearSyntax - removes end-of-line each year", function (assert) {
       // Test basic removal cases
       const input1 = "retire 5 % each year";
