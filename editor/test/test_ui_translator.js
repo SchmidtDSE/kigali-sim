@@ -1049,6 +1049,36 @@ end default
       assert.ok(program.getIsCompatible(), "Exact retire should be UI-compatible");
     });
 
+    QUnit.test("translates exact retire command with replacement", function (assert) {
+      const code = `
+start default
+  define application "test"
+    uses substance "test"
+      enable domestic
+      equals 1 tCO2e / mt
+      initial charge with 1 kg / unit for domestic
+      set domestic to 100 mt during year 1
+      retire 5 year old exact with replacement
+    end substance
+  end application
+end default
+`;
+
+      const compiler = new UiTranslatorCompiler();
+      const result = compiler.compile(code);
+      assert.strictEqual(result.getErrors().length, 0, "Should compile without errors");
+
+      const program = result.getProgram();
+      const substance = program.getApplications()[0].getSubstances()[0];
+
+      const retire = substance.getRetire();
+      assert.ok(retire !== null, "Retire command should be present");
+      assert.equal(retire.getValue().getValue(), 5);
+      assert.equal(retire.getValue().getUnits(), "year old exact");
+      assert.equal(retire.getWithReplacement(), true);
+      assert.ok(program.getIsCompatible(), "Exact retire with replacement should be UI-compatible");
+    });
+
     QUnit.test("translates exact retire command with duration and plural years", function (assert) {
       const code = `
 start default

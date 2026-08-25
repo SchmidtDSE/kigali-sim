@@ -1386,13 +1386,7 @@ class ConsumptionListPresenter {
     const retirementReducesCheckbox = self._dialog.querySelector(
       ".retirement-reduces-equipment-checkbox",
     );
-    let withReplacement = !retirementReducesCheckbox.checked;
-
-    // The grammar has no exact-with-replacement form.
-    const retirementUnits = retirement === null ? null : retirement.getUnits();
-    if (retirementUnits === "year old exact") {
-      withReplacement = false;
-    }
+    const withReplacement = !retirementReducesCheckbox.checked;
 
     // Create retire command with withReplacement flag
     const retireCommand = new RetireCommand(retirement, null, withReplacement, false);

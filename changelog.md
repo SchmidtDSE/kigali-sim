@@ -20,7 +20,7 @@ The following changes have been adopted and released.
 
 **Classification**: Enhancement
 
-Kigali Sim now supports a shortcut for retiring an entire sales cohort at a known age: `retire 5 year old exact`. This is exactly equivalent to writing `retire (get newEquipment 5 years ago as units) units / year` by hand, a pattern already documented in Tutorial 15 for exact retirement schedules; the new form just saves typing when the retirement fraction is 100% at a single fixed age. The Basic Editor supports the shortcut through a new "year old (exact)" option in the retirement units dropdown.
+Kigali Sim now supports a shortcut for retiring an entire sales cohort at a known age: `retire 5 year old exact`. This is exactly equivalent to writing `retire (get newEquipment 5 years ago as units) units / year` by hand, a pattern already documented in Tutorial 15 for exact retirement schedules; the new form just saves typing when the retirement fraction is 100% at a single fixed age. As with Weibull retirement, equipment ages derive from simulated sales history, so combining this form with `set priorEquipment` or `change priorEquipment` for the same substance anywhere in a scenario's stack raises a validation error; unlike Weibull retirement, there is no `assuming new` escape since there is no age distribution to fold untracked stock into. The `with replacement` modifier may be combined with this form to maintain equipment population. The Basic Editor supports the shortcut through a new "year old (exact)" option in the retirement units dropdown.
 
 ### Weibull retirement by mean lifetime
 

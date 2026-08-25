@@ -54,6 +54,7 @@ import org.kigalisim.lang.operation.RecoverOperation;
 import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
 import org.kigalisim.lang.operation.RemoveUnitsOperation;
 import org.kigalisim.lang.operation.ReplaceOperation;
+import org.kigalisim.lang.operation.RetireExactOperation;
 import org.kigalisim.lang.operation.RetireOperation;
 import org.kigalisim.lang.operation.RetireWeibullOperation;
 import org.kigalisim.lang.operation.RetireWithReplacementOperation;
@@ -1293,13 +1294,13 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
    * Processes an exact retire operation applied to all years.
    *
    * <p>Shortcut for {@code retire (get newEquipment N years ago as units) units / year},
-   * built from the same operations that form would produce rather than a dedicated
-   * operation class.</p>
+   * built from the same volume operation that form would produce.</p>
    */
   @Override
   public Fragment visitRetireExactAllYears(QubecTalkParser.RetireExactAllYearsContext ctx) {
     Operation volumeOperation = buildExactRetireVolumeOperation(ctx.age);
-    Operation operation = new RetireOperation(volumeOperation);
+    boolean withReplacement = hasWithReplacement(ctx);
+    Operation operation = new RetireExactOperation(volumeOperation, withReplacement);
     return new OperationFragment(operation);
   }
 
@@ -1312,8 +1313,9 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
   @Override
   public Fragment visitRetireExactDuration(QubecTalkParser.RetireExactDurationContext ctx) {
     Operation volumeOperation = buildExactRetireVolumeOperation(ctx.age);
+    boolean withReplacement = hasWithReplacement(ctx);
     ParsedDuring during = visit(ctx.duration).getDuring();
-    Operation operation = new RetireOperation(volumeOperation, during);
+    Operation operation = new RetireExactOperation(volumeOperation, withReplacement, during);
     return new OperationFragment(operation);
   }
 

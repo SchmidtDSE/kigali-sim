@@ -394,15 +394,25 @@ retire 20 year old mean weibull assuming new</code></pre>
           age is known rather than a hazard rate or mean lifetime; only use
           one exact-age retire per cohort, since a later age's lookup still
           sees the full original sales record rather than what an earlier
-          age already retired. In the Basic Editor, choose "year old
-          (exact)" from the retirement units dropdown and enter the age as
-          the value. See <a href="/guide/tutorial_15.html">Tutorial 15</a>
-          for the exact retirement schedule section.
+          age already retired. Because ages come from sales the same way as
+          the Weibull form, combining this form with
+          <code>set priorEquipment</code> /
+          <code>change priorEquipment</code> for the same substance
+          anywhere in a scenario's stack raises a validation error; unlike
+          the Weibull form, there is no <code>assuming new</code>
+          equivalent, so start the simulation before the substance entered
+          service or use a hazard-rate form instead. Combine with
+          <code>with replacement</code> to maintain equipment population.
+          In the Basic Editor, choose "year old (exact)" from the
+          retirement units dropdown and enter the age as the value. See
+          <a href="/guide/tutorial_15.html">Tutorial 15</a> for the exact
+          retirement schedule section.
         </p>
 
         <p><strong>Examples:</strong></p>
         <pre><code class="language-qubectalk">retire 5 year old exact
-retire 10 years old exact during years 2030 to onwards</code></pre>
+retire 10 years old exact during years 2030 to onwards
+retire 5 year old exact with replacement</code></pre>
       </section>
 
       <section class="major" id="set">

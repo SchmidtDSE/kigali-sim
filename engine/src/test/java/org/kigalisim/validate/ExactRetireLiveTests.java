@@ -7,7 +7,10 @@
 package org.kigalisim.validate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.List;
@@ -23,6 +26,9 @@ import org.kigalisim.lang.program.ParsedProgram;
  * {@code retire (get newEquipment N years ago as units) units / year}.
  */
 public class ExactRetireLiveTests {
+
+  private static final String EXACT_PRIOR_MESSAGE =
+      "Exact-age retirement requires equipment ages, which are derived from simulated sales";
 
   /**
    * Test that an exact retire fully retires a cohort exactly N years after its sale and
@@ -93,5 +99,66 @@ public class ExactRetireLiveTests {
           shortcutResult.getPopulation().getValue(),
           "Shortcut and full form should produce identical population in year " + year);
     }
+  }
+
+  /**
+   * Test that an exact retire combined with a priorEquipment set raises an error.
+   *
+   * <p>Manually entered priorEquipment has no sales record, so it can never match the
+   * exact-age cohort lookup this shortcut relies on and would silently never retire.</p>
+   */
+  @Test
+  public void testPriorEquipmentWithExactRetireRaises() {
+    RuntimeException ex = assertThrows(RuntimeException.class, () ->
+        KigaliSimFacade.parseAndInterpret("../examples/exact_retire_prior_error.qta"));
+    assertTrue(ex.getMessage().contains(EXACT_PRIOR_MESSAGE), "error should mention unknown ages");
+    assertTrue(ex.getMessage().contains("priorEquipment"), "error should mention priorEquipment");
+    assertTrue(ex.getMessage().contains("% / year"), "error should give a remedy");
+    assertFalse(KigaliSimFacade.validate("../examples/exact_retire_prior_error.qta"),
+        "validate should report the prior-equipment conflict");
+  }
+
+  /**
+   * Test that a priorEquipment set in one stanza and an exact retire added by a policy in
+   * another still raises, mirroring the cross-stanza check for Weibull retirement.
+   */
+  @Test
+  public void testPriorEquipmentAcrossStanzasRaises() {
+    RuntimeException ex = assertThrows(RuntimeException.class, () ->
+        KigaliSimFacade.parseAndInterpret("../examples/exact_retire_prior_error_policy.qta"));
+    assertTrue(ex.getMessage().contains(EXACT_PRIOR_MESSAGE), "error should mention unknown ages");
+    assertFalse(KigaliSimFacade.validate("../examples/exact_retire_prior_error_policy.qta"),
+        "validate should report the cross-stanza prior-equipment conflict");
+  }
+
+  /**
+   * Test that "with replacement" parses and interprets for an exact retire.
+   */
+  @Test
+  public void testWithReplacementParses() throws IOException {
+    ParsedProgram program =
+        KigaliSimFacade.parseAndInterpret("../examples/exact_retire_with_replacement.qta");
+    assertNotNull(program, "Exact retire with replacement should parse and interpret");
+  }
+
+  /**
+   * Test that "with replacement" increases sales to offset exact-age retirement, unlike the
+   * non-replacing baseline where the flat sales rate never grows.
+   */
+  @Test
+  public void testWithReplacementIncreasesSales() throws IOException {
+    double baselineSales = getDomesticSales("../examples/exact_retire_steady_sales.qta", 6);
+    double withReplacementSales = getDomesticSales("../examples/exact_retire_with_replacement.qta", 6);
+    assertTrue(withReplacementSales > baselineSales,
+        "with replacement should increase sales above the flat non-replacing baseline");
+  }
+
+  private static double getDomesticSales(String path, int year) throws IOException {
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(path);
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, "business as usual", progress -> {});
+    List<EngineResult> list = results.collect(Collectors.toList());
+    EngineResult result = LiveTestsUtil.getResult(list.stream(), year, "test", "test");
+    assertNotNull(result, "should have a result for test/test at year " + year);
+    return result.getDomestic().getValue().doubleValue();
   }
 }

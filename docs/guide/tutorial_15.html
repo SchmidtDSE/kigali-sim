@@ -198,6 +198,10 @@ end simulations</code></pre>
         <p>
           These two lines mean exactly the same thing to Kigali Sim; the shortcut just saves typing when the retirement fraction is 100% and the age is fixed. It shares the same age-from-sales-history behavior as the full form, so a cohort sold before the simulation start still counts as zero. The shortcut only covers the 100%-at-one-age case, though: it cannot express the 20%/60%/20% split above, since each <code>year old exact</code> line always looks up the full original sales record for its age rather than however much of that cohort a previous line already retired. For a fractional split across ages, use the full form with an explicit coefficient as shown above. In the UI-based editor, choose "year old (exact)" from the retirement units dropdown and enter the age as the value.
         </p>
+
+        <p>
+          As with the Weibull form, an exact-age retire needs equipment ages, which come from simulated sales history. Entering existing stock directly with <code>set priorEquipment</code> for the same substance raises an error at validation time instead of silently never retiring that stock, since it has no sales record for the shortcut's cohort lookup to find. There is no <code>assuming new</code> escape here as there is for Weibull retirement, since there is no age distribution to fold untracked stock into: begin the simulation before the substance entered service, or fall back to a flat rate such as <code>retire 5 % / year</code>. The <code>with replacement</code> modifier works with the exact-age form the same way it does for the other retirement forms, maintaining equipment population.
+        </p>
       </section>
 
       <section class="major" id="fitting-a-function">

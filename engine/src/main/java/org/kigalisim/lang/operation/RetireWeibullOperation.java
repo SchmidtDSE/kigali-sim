@@ -11,8 +11,6 @@ import java.math.MathContext;
 import java.util.Optional;
 import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
-import org.kigalisim.engine.number.UnitConverter;
-import org.kigalisim.engine.state.SimulationState;
 import org.kigalisim.engine.state.UseKey;
 import org.kigalisim.engine.state.YearMatcher;
 import org.kigalisim.engine.support.EngineSupportUtils;
@@ -114,57 +112,9 @@ public class RetireWeibullOperation implements Operation {
     EngineNumber retireAmount = new EngineNumber(retireUnits, "units");
 
     if (withReplacement) {
-      retireWithReplacement(engine, retireAmount, yearMatcher);
+      EngineSupportUtils.retireWithReplacement(engine, retireAmount, yearMatcher);
     } else {
       engine.retire(retireAmount, yearMatcher);
-    }
-  }
-
-  /**
-   * Retire the given amount and replace it by increasing sales.
-   *
-   * <p>Measures equipment before and after retirement to determine the actual
-   * reduction, then increases sales by that amount in whichever units sales were last
-   * specified, maintaining the equipment population while simulating turnover.</p>
-   *
-   * @param engine The engine to read and update stream state on.
-   * @param retireAmount The number of units to retire.
-   * @param yearMatcher The year matcher for this operation.
-   */
-  private void retireWithReplacement(Engine engine, EngineNumber retireAmount, YearMatcher yearMatcher) {
-    UnitConverter unitConverter = EngineSupportUtils.createUnitConverterWithTotal(engine, "sales");
-    EngineNumber equipmentBefore = unitConverter.convert(engine.getStream("equipment"), "units");
-
-    engine.retire(retireAmount, yearMatcher);
-
-    EngineNumber equipmentAfter = unitConverter.convert(engine.getStream("equipment"), "units");
-    BigDecimal actualReduction = equipmentBefore.getValue().subtract(equipmentAfter.getValue());
-
-    if (actualReduction.compareTo(BigDecimal.ZERO) > 0) {
-      String targetUnits = determineTargetUnits(engine);
-      EngineNumber replacementAmount = unitConverter.convert(
-          new EngineNumber(actualReduction, "units"),
-          targetUnits
-      );
-      engine.changeStream("sales", replacementAmount, yearMatcher);
-    }
-  }
-
-  /**
-   * Determine the target units for replacement based on how sales were last specified.
-   *
-   * @param engine The current simulation engine.
-   * @return The target units for replacement ("units" or "kg").
-   */
-  private String determineTargetUnits(Engine engine) {
-    SimulationState simulationState = engine.getStreamKeeper();
-    UseKey scope = engine.getScope();
-    EngineNumber lastSalesValue = simulationState.getLastSpecifiedValue(scope, "sales");
-
-    if (lastSalesValue != null && lastSalesValue.hasEquipmentUnits()) {
-      return "units";
-    } else {
-      return "kg";
     }
   }
 

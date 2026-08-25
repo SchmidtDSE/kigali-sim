@@ -96,7 +96,7 @@
           <dd>A stream representing both prior and new equipment population. The total units of equipment in service.</dd>
 
           <dt>Exact Retirement</dt>
-          <dd>A retirement form specified by an equipment age rather than a hazard rate or mean lifetime, e.g. <code>retire 5 year old exact</code>, which retires 100% of the sales cohort that turns 5 years old that year. Shorthand for <code>retire (get newEquipment 5 years ago as units) units / year</code>. See Tutorial 15.</dd>
+          <dd>A retirement form specified by an equipment age rather than a hazard rate or mean lifetime, e.g. <code>retire 5 year old exact</code>, which retires 100% of the sales cohort that turns 5 years old that year. Shorthand for <code>retire (get newEquipment 5 years ago as units) units / year</code>. Equipment ages derive from simulated sales, so combining this form with <code>set priorEquipment</code> raises a validation error; unlike Weibull Retirement, there is no <code>assuming new</code> escape. See <a href="/guide/tutorial_15.html">Tutorial 15</a>.</dd>
 
           <dt>Export</dt>
           <dd>A stream representing substances or equipment exported from a country to other countries.</dd>

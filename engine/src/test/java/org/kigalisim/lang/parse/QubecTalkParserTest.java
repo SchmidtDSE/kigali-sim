@@ -186,14 +186,14 @@ public class QubecTalkParserTest {
   }
 
   /**
-   * Test that an exact retire with 'with replacement' is a parse error since the grammar
-   * has no exact-with-replacement form.
+   * Test that an exact retire with 'with replacement' parses successfully.
    */
   @Test
-  public void testParseInvalidExactWithReplacement() throws IOException {
+  public void testParseValidExactWithReplacement() throws IOException {
     ParseResult result = parser.parse(wrapRetire("retire 5 year old exact with replacement"));
-    assertTrue(result.hasErrors(), "Exact retire with replacement should be a parse error");
-    assertFalse(result.getProgram().isPresent(), "Invalid exact retire should not produce a program");
+    assertFalse(result.hasErrors(), "Exact retire with replacement should parse without errors");
+    assertTrue(result.getProgram().isPresent(),
+        "Valid exact retire with replacement should produce a program");
   }
 
   /**

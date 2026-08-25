@@ -279,13 +279,12 @@ function buildUiTranslatorReverseTests() {
       assert.notEqual(code.indexOf("retire 5 year old exact during years 2 to 5"), -1);
     });
 
-    QUnit.test("never emits with replacement for exact retire", function (assert) {
+    QUnit.test("emits with replacement for exact retire", function (assert) {
       const number = new EngineNumber("5", "year old exact");
-      const command = new RetireCommand(number, null, true);
+      const command = new RetireCommand(number, null, true, false);
       const substance = createWithCommand("test", false, command);
       const code = substance.toCode(0);
-      assert.equal(code.indexOf("with replacement"), -1);
-      assert.notEqual(code.indexOf("retire 5 year old exact"), -1);
+      assert.notEqual(code.indexOf("retire 5 year old exact with replacement"), -1);
     });
 
     QUnit.test("sets values in substances", function (assert) {
