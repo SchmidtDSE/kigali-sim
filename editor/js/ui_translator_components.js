@@ -1916,8 +1916,6 @@ class Substance {
     ];
 
     if (isWeibull) {
-      // "assuming new" comes after the units and before "with replacement",
-      // which in turn comes before any duration.
       if (self._retire.getAssumingNew()) {
         pieces.push("assuming new");
       }
