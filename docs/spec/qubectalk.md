@@ -222,9 +222,20 @@ retire 12.5 years old mean weibull during years 2030 to onwards
 
 The mean lifetime is the average number of years a unit remains in service. For a 5-year mean, the discrete annual hazard rises from 3.1% in a unit's first year of service to 44.9% at age 10; for a 20-year mean, the hazard is 0.2% at age 1, 3.7% at age 10, and 7.4% at age 20. The full hazard schedule for a 5-year mean is:
 
-| Age (years) | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 15 |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| Hazard | 3.1% | 9.0% | 14.5% | 19.7% | 24.6% | 29.2% | 33.5% | 37.6% | 41.4% | 44.9% | 48.3% | 100% |
+| Age (years) | Hazard |
+|---|---|
+| 1 | 3.1% |
+| 2 | 9.0% |
+| 3 | 14.5% |
+| 4 | 19.7% |
+| 5 | 24.6% |
+| 6 | 29.2% |
+| 7 | 33.5% |
+| 8 | 37.6% |
+| 9 | 41.4% |
+| 10 | 44.9% |
+| 11 | 48.3% |
+| 15 | 100% |
 
 Cohorts are tracked through sales history: the retirement in a given year is computed from how many units were sold in each prior year and how many of those have survived, so a unit sold in year *t* first faces an age-1 hazard in year *t*+1. Under constant sales, the steady-state population equals sales multiplied by the mean lifetime, and 99.9% of each cohort retires by roughly three times the mean lifetime (the small residual is swept up at that point).
 
@@ -234,7 +245,7 @@ Because equipment ages are derived from simulated sales, a Weibull retire cannot
 retire 20 year old mean weibull assuming new
 ```
 
-A Weibull retire may be combined with other `retire` commands in the usual additive fashion, though competing constant-rate retirement biases the effective schedule (older cohorts deplete faster than the Weibull weights assume); prefer a single Weibull retire with a shorter mean over mixing forms. The `with replacement` modifier has no Weibull form. The Basic Editor supports the Weibull form through the "year old (mean life, Weibull)" units option; `assuming new` is Advanced Editor only.
+A Weibull retire may be combined with other `retire` commands in the usual additive fashion, though competing constant-rate retirement biases the effective schedule (older cohorts deplete faster than the Weibull weights assume). Therefore, prefer a single Weibull retire with a shorter mean over mixing forms. The `with replacement` modifier may also be combined with the Weibull form, maintaining population size the same way it does for the constant-hazard forms. The Basic Editor supports the Weibull form through the "year old (mean life, Weibull)" units option; `assuming new` is Advanced Editor only.
 
 To maintain a constant equipment population, use the `with replacement` modifier:
 

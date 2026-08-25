@@ -56,7 +56,7 @@ public class RetireWeibullOperationTest {
 
     PushDownMachine machine = new SingleThreadPushDownMachine(engine);
     RetireWeibullOperation operation =
-        new RetireWeibullOperation(new BigDecimal("20"), false);
+        new RetireWeibullOperation(new BigDecimal("20"), false, false);
 
     operation.execute(machine);
 
@@ -80,7 +80,7 @@ public class RetireWeibullOperationTest {
     ParsedDuring during = new ParsedDuring(Optional.of(start), Optional.empty());
 
     RetireWeibullOperation operation =
-        new RetireWeibullOperation(new BigDecimal("20"), false, during);
+        new RetireWeibullOperation(new BigDecimal("20"), false, false, during);
     operation.execute(machine);
 
     verify(engine, never()).retire(any(), any());
@@ -101,7 +101,7 @@ public class RetireWeibullOperationTest {
     engine.getStreamKeeper().setRetireCalculatedThisStep(engine.getScope(), true);
 
     RetireWeibullOperation operation =
-        new RetireWeibullOperation(new BigDecimal("20"), false);
+        new RetireWeibullOperation(new BigDecimal("20"), false, false);
 
     assertThrows(RuntimeException.class, () -> operation.execute(machine));
   }
@@ -118,7 +118,7 @@ public class RetireWeibullOperationTest {
     PushDownMachine machine = new SingleThreadPushDownMachine(engine);
 
     RetireWeibullOperation operation =
-        new RetireWeibullOperation(new BigDecimal("20"), false);
+        new RetireWeibullOperation(new BigDecimal("20"), false, false);
     operation.execute(machine);
 
     assertEquals(false, engine.getStreamKeeper().getHasReplacementThisStep(engine.getScope()),
@@ -144,7 +144,7 @@ public class RetireWeibullOperationTest {
         .build());
 
     RetireWeibullOperation operation =
-        new RetireWeibullOperation(new BigDecimal("20"), true);
+        new RetireWeibullOperation(new BigDecimal("20"), true, false);
     operation.execute(machine);
 
     BigDecimal retired = engine.getStreamKeeper().getStream(engine.getScope(), "retired").getValue();

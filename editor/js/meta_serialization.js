@@ -1661,7 +1661,7 @@ class MetaChangeApplier {
       const retirementWithReplacementStr = metadata.getRetirementWithReplacement();
       const withReplacement = retirementWithReplacementStr === "true";
 
-      builder.addCommand(new RetireCommand(retirementValue, null, withReplacement));
+      builder.addCommand(new RetireCommand(retirementValue, null, withReplacement, false));
     }
 
     // Set assumeMode from metadata defaultSales (Component 2)
