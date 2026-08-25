@@ -183,6 +183,61 @@ public final class EngineSupportUtils {
   }
 
   /**
+   * Retire the given amount and replace it by increasing sales.
+   *
+   * <p>Measures equipment before and after retirement to determine the actual reduction,
+   * then increases sales by that amount in whichever units sales were last specified,
+   * maintaining the equipment population while simulating turnover. Shared by every
+   * retire form that supports {@code with replacement} (constant-hazard, Weibull, and
+   * exact-age).</p>
+   *
+   * @param engine The engine to read and update stream state on.
+   * @param retireAmount The amount to retire.
+   * @param yearMatcher The year matcher for this operation.
+   */
+  public static void retireWithReplacement(Engine engine, EngineNumber retireAmount,
+      YearMatcher yearMatcher) {
+    UnitConverter unitConverter = createUnitConverterWithTotal(engine, "sales");
+    EngineNumber equipmentBefore = unitConverter.convert(engine.getStream("equipment"), "units");
+
+    engine.retire(retireAmount, yearMatcher);
+
+    EngineNumber equipmentAfter = unitConverter.convert(engine.getStream("equipment"), "units");
+    BigDecimal actualReduction = equipmentBefore.getValue().subtract(equipmentAfter.getValue());
+
+    if (actualReduction.compareTo(BigDecimal.ZERO) > 0) {
+      String targetUnits = determineReplacementTargetUnits(engine);
+      EngineNumber replacementAmount = unitConverter.convert(
+          new EngineNumber(actualReduction, "units"),
+          targetUnits
+      );
+      engine.changeStream("sales", replacementAmount, yearMatcher);
+    }
+  }
+
+  /**
+   * Determine the target units for a retire-with-replacement's replacement sales.
+   *
+   * <p>Checks what units sales were last specified in and returns the appropriate target
+   * units for replacement. If sales were specified in equipment units, returns "units";
+   * otherwise returns "kg".</p>
+   *
+   * @param engine The current simulation engine.
+   * @return The target units for replacement ("units" or "kg").
+   */
+  public static String determineReplacementTargetUnits(Engine engine) {
+    SimulationState simulationState = engine.getStreamKeeper();
+    UseKey scope = engine.getScope();
+    EngineNumber lastSalesValue = simulationState.getLastSpecifiedValue(scope, "sales");
+
+    if (lastSalesValue != null && lastSalesValue.hasEquipmentUnits()) {
+      return "units";
+    } else {
+      return "kg";
+    }
+  }
+
+  /**
    * Creates a unit converter with total values initialized.
    *
    * @param stateGetter The converter state getter from the engine

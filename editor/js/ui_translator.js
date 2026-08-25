@@ -1180,6 +1180,40 @@ class TranslatorVisitor extends toolkit.QubecTalkVisitor {
   }
 
   /**
+   * Visit an exact retire command with all years duration node.
+   *
+   * Shortcut for "retire (get newEquipment N years ago as units) units / year".
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {RetireCommand} New retire command instance.
+   */
+  visitRetireExactAllYears(ctx) {
+    const age = parseInt(ctx.age.text, 10);
+    const assumingNew = ctx.getText().toLowerCase().includes("assumingnew");
+    const withReplacement = ctx.getText().toLowerCase().includes("withreplacement");
+    const value = new EngineNumber(age, "year old exact");
+    return new RetireCommand(value, null, withReplacement, assumingNew);
+  }
+
+  /**
+   * Visit an exact retire command with duration node.
+   *
+   * Shortcut for "retire (get newEquipment N years ago as units) units / year".
+   *
+   * @param {Object} ctx - The parse tree node context.
+   * @returns {RetireCommand} New retire command instance.
+   */
+  visitRetireExactDuration(ctx) {
+    const self = this;
+    const age = parseInt(ctx.age.text, 10);
+    const assumingNew = ctx.getText().toLowerCase().includes("assumingnew");
+    const withReplacement = ctx.getText().toLowerCase().includes("withreplacement");
+    const duration = ctx.duration.accept(self);
+    const value = new EngineNumber(age, "year old exact");
+    return new RetireCommand(value, duration, withReplacement, assumingNew);
+  }
+
+  /**
    * Visit a set command with all years duration node.
    *
    * @param {Object} ctx - The parse tree node context.

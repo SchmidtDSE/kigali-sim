@@ -247,6 +247,23 @@ retire 20 year old mean weibull assuming new
 
 Use a single Weibull retire per substance, choosing a shorter mean rather than adding a second retirement form on top. Pairing a Weibull retire with another `retire` command makes the effective schedule depend on the order the two commands appear in, and competing constant-rate retirement biases it further (older cohorts deplete faster than the Weibull weights assume). The `with replacement` modifier may be combined with the Weibull form, maintaining population size the same way it does for the constant-hazard forms. The Basic Editor supports the Weibull form through the "year old (mean life, Weibull)" units option; `assuming new` is Advanced Editor only.
 
+**Exact-age retirement**: When the exact age at which a cohort retires is known rather than a hazard rate or mean lifetime, `retire N year old exact` retires 100% of a sales cohort in the year it turns N years old:
+
+```
+retire 5 year old exact
+retire 10 years old exact during years 2030 to onwards
+```
+
+This is a shortcut for `retire (get newEquipment N years ago as units) units / year`, so it shares the years-ago lookup's behavior: ages are derived from simulated sales history, and asking for a cohort sold before the simulation start returns 0. Because the lookup always reads the original sales record for that year rather than how much of the cohort remains, it is recommended to only use one exact-age retire per cohort. For a schedule split fractionally across several ages, use the general form with an explicit fraction coefficient documented under Years-Ago Queries instead of the exact shortcut.
+
+Because ages come from simulated sales the same way as the Weibull form, an exact-age retire cannot be combined with `set priorEquipment` or `change priorEquipment` for the same substance anywhere in a scenario's stack: doing so raises an error at validation time, since equipment entered directly has no sales record and would never match this shortcut's cohort lookup. As with the Weibull form, the `assuming new` modifier suppresses this, treating the existing stock as a single cohort assumed to have entered service when the simulation began so it retires in full once the simulation reaches the given age:
+
+```
+retire 5 year old exact assuming new
+```
+
+The `with replacement` modifier may be combined with the exact-age form, maintaining population size the same way it does for the other retirement forms. The Basic Editor supports this shortcut through the "year old (exact)" units option; `assuming new` is Advanced Editor only.
+
 To maintain a constant equipment population, use the `with replacement` modifier:
 
 ```
@@ -588,7 +605,7 @@ get streamName N years ago of "substanceName" as units
 
 **Indirect Access (Cross-substance):** The `of "substanceName"` option allows you to access stream values from other substances within the same application.
 
-**Years-Ago Queries:** The `N years ago` syntax retrieves a stream value from N years before the current simulation year. This is useful for modeling fixed retirement schedules based on equipment age. Asking for a value before the simulation start returns 0. It is also the building block for reproducing exact age-based retirement schedules by hand: a schedule of `retire (get newEquipment a years ago) * k units` terms (one per cohort age, with `k` the share of that cohort retiring) is equivalent to the age-weighted Weibull retirement described under Population.
+**Years-Ago Queries:** The `N years ago` syntax retrieves a stream value from N years before the current simulation year. This is useful for modeling fixed retirement schedules based on equipment age. Asking for a value before the simulation start returns 0. It is also the building block for reproducing exact age-based retirement schedules by hand: a schedule of `retire (get newEquipment a years ago) * k units` terms (one per cohort age, with `k` the share of that cohort retiring) is equivalent to the age-weighted Weibull retirement described under Population. When `k` is 100% for a single age, `retire N year old exact` is a shortcut for `retire (get newEquipment N years ago as units) units / year`, described under Population's exact-age retirement.
 
 **Examples:**
 

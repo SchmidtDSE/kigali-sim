@@ -292,6 +292,43 @@ function buildIntegrationTests() {
       });
     });
 
+    buildTest("interprets an exact retire command", "/examples/exact_retire.qta", [
+      (result, assert) => {
+        const record = getResult(result, BAU_NAME, 5, 0, "test", "test");
+        const population = record.getPopulation();
+        assert.closeTo(population.getValue(), 1000, 0.0001);
+        assert.deepEqual(population.getUnits(), "units");
+      },
+      (result, assert) => {
+        const record = getResult(result, BAU_NAME, 6, 0, "test", "test");
+        const population = record.getPopulation();
+        assert.closeTo(population.getValue(), 0, 0.0001);
+        assert.deepEqual(population.getUnits(), "units");
+      },
+    ]);
+
+    QUnit.test("exact retire matches its equivalent expanded form", function (assert) {
+      const done = assert.async();
+      Promise.all([
+        loadRemote("/examples/exact_retire.qta"),
+        loadRemote("/examples/exact_retire_full_form.qta"),
+      ]).then(async ([shortcutContent, fullFormContent]) => {
+        const shortcutResult = (await wasmBackend.execute(shortcutContent)).getParsedResults();
+        const fullFormResult = (await wasmBackend.execute(fullFormContent)).getParsedResults();
+        for (let year = 1; year <= 10; year++) {
+          const shortcutRecord = getResult(shortcutResult, BAU_NAME, year, 0, "test", "test");
+          const fullFormRecord = getResult(fullFormResult, BAU_NAME, year, 0, "test", "test");
+          assert.closeTo(
+            shortcutRecord.getPopulation().getValue(),
+            fullFormRecord.getPopulation().getValue(),
+            0.0001,
+            "Shortcut and full form should match in year " + year,
+          );
+        }
+        done();
+      });
+    });
+
     buildTest("interprets multiple retire commands", "/examples/retire_multiple.qta", [
       (result, assert) => {
         const record = getResult(result, BAU_NAME, 1, 0, "test", "test");

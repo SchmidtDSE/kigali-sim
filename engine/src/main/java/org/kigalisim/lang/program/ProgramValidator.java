@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import org.kigalisim.lang.operation.ChangeOperation;
 import org.kigalisim.lang.operation.Operation;
+import org.kigalisim.lang.operation.RetireExactOperation;
 import org.kigalisim.lang.operation.RetireWeibullOperation;
 import org.kigalisim.lang.operation.SetOperation;
 
@@ -32,6 +33,14 @@ public final class ProgramValidator {
       + "simulation before this substance entered service, use a constant rate such as "
       + "`retire 5 % / year`, or assume the existing equipment is of typical age by adding the "
       + "`assuming new` keyword in the Advanced Editor.";
+
+  private static final String EXACT_PRIOR_MESSAGE =
+      "Exact-age retirement requires equipment ages, which are derived from simulated sales. "
+      + "priorEquipment is set directly for this substance, so ages are unknown and that stock "
+      + "will never match an exact-age retire's cohort lookup. You can begin the simulation "
+      + "before this substance entered service, use a constant rate such as "
+      + "`retire 5 % / year`, or assume the existing equipment entered service when the "
+      + "simulation began by adding the `assuming new` keyword in the Advanced Editor.";
 
   private ProgramValidator() {
     // Utility class - prevent instantiation
@@ -113,17 +122,22 @@ public final class ProgramValidator {
   }
 
   /**
-   * Validate a set of operations for the prior-equipment / Weibull conflict.
+   * Validate a set of operations for the prior-equipment conflict with age-dependent
+   * retirement forms (Weibull and exact-age).
    *
    * @param operations the operations to validate together.
    */
   private static void validateOperations(Iterable<Operation> operations) {
     boolean hasWeibullWithoutAssumingNew = false;
+    boolean hasExactRetireWithoutAssumingNew = false;
     boolean setsPriorEquipment = false;
 
     for (Operation operation : operations) {
       if (operation instanceof RetireWeibullOperation weibull && !weibull.getAssumingNew()) {
         hasWeibullWithoutAssumingNew = true;
+      }
+      if (operation instanceof RetireExactOperation exact && !exact.getAssumingNew()) {
+        hasExactRetireWithoutAssumingNew = true;
       }
       if (operation instanceof SetOperation set && "priorEquipment".equals(set.getStream())) {
         setsPriorEquipment = true;
@@ -135,6 +149,9 @@ public final class ProgramValidator {
 
     if (hasWeibullWithoutAssumingNew && setsPriorEquipment) {
       throw new RuntimeException(PRIOR_MESSAGE);
+    }
+    if (hasExactRetireWithoutAssumingNew && setsPriorEquipment) {
+      throw new RuntimeException(EXACT_PRIOR_MESSAGE);
     }
   }
 }

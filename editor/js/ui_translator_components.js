@@ -1909,20 +1909,15 @@ class Substance {
     }
 
     const engineNumber = self._retire.getValue();
-    const isWeibull = engineNumber.getUnits() === "year old mean weibull";
     const pieces = [
       "retire",
       formatEngineNumber(engineNumber),
     ];
 
-    if (isWeibull) {
-      if (self._retire.getAssumingNew()) {
-        pieces.push("assuming new");
-      }
-      if (self._retire.getWithReplacement()) {
-        pieces.push("with replacement");
-      }
-    } else if (self._retire.getWithReplacement()) {
+    if (self._retire.getAssumingNew()) {
+      pieces.push("assuming new");
+    }
+    if (self._retire.getWithReplacement()) {
       pieces.push("with replacement");
     }
 

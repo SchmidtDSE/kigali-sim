@@ -54,6 +54,7 @@ import org.kigalisim.lang.operation.RecoverOperation;
 import org.kigalisim.lang.operation.RecoverOperation.RecoveryStage;
 import org.kigalisim.lang.operation.RemoveUnitsOperation;
 import org.kigalisim.lang.operation.ReplaceOperation;
+import org.kigalisim.lang.operation.RetireExactOperation;
 import org.kigalisim.lang.operation.RetireOperation;
 import org.kigalisim.lang.operation.RetireWeibullOperation;
 import org.kigalisim.lang.operation.RetireWithReplacementOperation;
@@ -1287,6 +1288,66 @@ public class QubecTalkEngineVisitor extends QubecTalkBaseVisitor<Fragment> {
     ParsedDuring during = visit(ctx.duration).getDuring();
     Operation operation = new RetireWeibullOperation(meanYears, assumingNew, withReplacement, during);
     return new OperationFragment(operation);
+  }
+
+  /**
+   * Processes an exact retire operation applied to all years.
+   *
+   * <p>Shortcut for {@code retire (get newEquipment N years ago as units) units / year},
+   * built from the same volume operation that form would produce.</p>
+   */
+  @Override
+  public Fragment visitRetireExactAllYears(QubecTalkParser.RetireExactAllYearsContext ctx) {
+    int ageYears = parseExactAge(ctx.age);
+    Operation volumeOperation = buildExactRetireVolumeOperation(ageYears);
+    boolean assumingNew = ctx.ASSUMING_() != null;
+    boolean withReplacement = hasWithReplacement(ctx);
+    Operation operation = new RetireExactOperation(volumeOperation, ageYears, assumingNew, withReplacement);
+    return new OperationFragment(operation);
+  }
+
+  /**
+   * Processes an exact retire operation for a specified duration.
+   *
+   * <p>Shortcut for {@code retire (get newEquipment N years ago as units) units / year}
+   * limited to the given duration.</p>
+   */
+  @Override
+  public Fragment visitRetireExactDuration(QubecTalkParser.RetireExactDurationContext ctx) {
+    int ageYears = parseExactAge(ctx.age);
+    Operation volumeOperation = buildExactRetireVolumeOperation(ageYears);
+    boolean assumingNew = ctx.ASSUMING_() != null;
+    boolean withReplacement = hasWithReplacement(ctx);
+    ParsedDuring during = visit(ctx.duration).getDuring();
+    Operation operation = new RetireExactOperation(volumeOperation, ageYears, assumingNew,
+        withReplacement, during);
+    return new OperationFragment(operation);
+  }
+
+  /**
+   * Parse the exact retirement age from its INTEGER_ token.
+   *
+   * @param ageToken The INTEGER_ token carrying the equipment age in years, whose text may
+   *     contain thousands commas.
+   * @return the parsed age in years.
+   */
+  private int parseExactAge(Token ageToken) {
+    return Integer.parseInt(ageToken.getText().replaceAll(",", ""));
+  }
+
+  /**
+   * Build the volume operation for an exact retire, equivalent to
+   * {@code (get newEquipment N years ago as units) units / year}.
+   *
+   * @param ageYears The equipment age in years at which the cohort retires.
+   * @return the operation computing the retirement amount from the sales cohort at that age.
+   */
+  private Operation buildExactRetireVolumeOperation(int ageYears) {
+    Operation cohortInUnits = new JointOperation(
+        new GetStreamOperation("newEquipment", ageYears, "units"),
+        new RemoveUnitsOperation()
+    );
+    return new ChangeUnitsOperation(cohortInUnits, "units / year");
   }
 
   /**

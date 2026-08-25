@@ -314,6 +314,8 @@ ASSUMING_: 'assuming';
 
 NEW_: 'new';
 
+EXACT_: 'exact';
+
 /**
  * -----------
  * -- Other --
@@ -479,6 +481,8 @@ retireStatement: RETIRE_ volume=unitValue (WITH_ REPLACEMENT_)?  # retireAllYear
   | RETIRE_ volume=unitValue (WITH_ REPLACEMENT_)? duration=during  # retireDuration
   | RETIRE_ mean=number (YEAR_ | YEARS_) OLD_ MEAN_ WEIBULL_ (ASSUMING_ NEW_)? (WITH_ REPLACEMENT_)?  # retireWeibullAllYears
   | RETIRE_ mean=number (YEAR_ | YEARS_) OLD_ MEAN_ WEIBULL_ (ASSUMING_ NEW_)? (WITH_ REPLACEMENT_)? duration=during  # retireWeibullDuration
+  | RETIRE_ age=INTEGER_ (YEAR_ | YEARS_) OLD_ EXACT_ (ASSUMING_ NEW_)? (WITH_ REPLACEMENT_)?  # retireExactAllYears
+  | RETIRE_ age=INTEGER_ (YEAR_ | YEARS_) OLD_ EXACT_ (ASSUMING_ NEW_)? (WITH_ REPLACEMENT_)? duration=during  # retireExactDuration
   ;
 
 setStatement: SET_ target=stream TO_ value=unitValue  # setAllYears

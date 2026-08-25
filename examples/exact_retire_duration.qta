@@ -1,0 +1,23 @@
+start default
+
+  define application "test"
+
+    uses substance "test"
+      enable domestic
+      initial charge with 1 kg / unit for domestic
+      set domestic to 1000 units during year 1
+      set domestic to 0 units during years 2 to onwards
+      retire 5 year old exact during years 2 to 12
+      equals 5 tCO2e / mt
+    end substance
+
+  end application
+
+end default
+
+
+start simulations
+
+  simulate "business as usual" from years 1 to 12
+
+end simulations

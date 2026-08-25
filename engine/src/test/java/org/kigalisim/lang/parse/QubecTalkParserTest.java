@@ -144,6 +144,83 @@ public class QubecTalkParserTest {
   }
 
   /**
+   * Test that a valid exact retire parses with an integer age.
+   */
+  @Test
+  public void testParseValidExactRetire() throws IOException {
+    ParseResult result = parser.parse(wrapRetire("retire 5 year old exact"));
+    assertFalse(result.hasErrors(), "'retire 5 year old exact' should parse");
+    assertTrue(result.getProgram().isPresent(), "Valid exact retire should produce a program");
+  }
+
+  /**
+   * Test that a valid exact retire parses with plural 'years' and a duration.
+   */
+  @Test
+  public void testParseValidExactRetireDurationPlural() throws IOException {
+    ParseResult result = parser.parse(
+        wrapRetire("retire 10 years old exact during years 2 to 5"));
+    assertFalse(result.hasErrors(), "Plural exact retire with duration should parse");
+    assertTrue(result.getProgram().isPresent(), "Valid exact retire should produce a program");
+  }
+
+  /**
+   * Test that an exact retire missing 'exact' is a parse error.
+   */
+  @Test
+  public void testParseInvalidExactMissingExact() throws IOException {
+    ParseResult result = parser.parse(wrapRetire("retire 5 year old"));
+    assertTrue(result.hasErrors(), "Missing 'exact' should be a parse error");
+    assertFalse(result.getProgram().isPresent(), "Invalid exact retire should not produce a program");
+  }
+
+  /**
+   * Test that an exact retire with a decimal age is a parse error since only whole years
+   * of equipment age are meaningful for the underlying years-ago lookup.
+   */
+  @Test
+  public void testParseInvalidExactDecimalAge() throws IOException {
+    ParseResult result = parser.parse(wrapRetire("retire 5.5 year old exact"));
+    assertTrue(result.hasErrors(), "Decimal age exact retire should be a parse error");
+    assertFalse(result.getProgram().isPresent(), "Invalid exact retire should not produce a program");
+  }
+
+  /**
+   * Test that an exact retire with 'with replacement' parses successfully.
+   */
+  @Test
+  public void testParseValidExactWithReplacement() throws IOException {
+    ParseResult result = parser.parse(wrapRetire("retire 5 year old exact with replacement"));
+    assertFalse(result.hasErrors(), "Exact retire with replacement should parse without errors");
+    assertTrue(result.getProgram().isPresent(),
+        "Valid exact retire with replacement should produce a program");
+  }
+
+  /**
+   * Test that an exact retire with 'assuming new' parses successfully.
+   */
+  @Test
+  public void testParseValidExactAssumingNew() throws IOException {
+    ParseResult result = parser.parse(wrapRetire("retire 5 year old exact assuming new"));
+    assertFalse(result.hasErrors(), "Exact retire assuming new should parse without errors");
+    assertTrue(result.getProgram().isPresent(),
+        "Valid exact retire assuming new should produce a program");
+  }
+
+  /**
+   * Test that an exact retire with 'assuming new' and 'with replacement' together parses.
+   */
+  @Test
+  public void testParseValidExactAssumingNewWithReplacement() throws IOException {
+    ParseResult result = parser.parse(
+        wrapRetire("retire 5 year old exact assuming new with replacement"));
+    assertFalse(result.hasErrors(),
+        "Exact retire assuming new with replacement should parse without errors");
+    assertTrue(result.getProgram().isPresent(),
+        "Valid exact retire assuming new with replacement should produce a program");
+  }
+
+  /**
    * Test that parsing enable statements works correctly.
    */
   @Test
