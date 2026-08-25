@@ -16,7 +16,7 @@ The following changes have been adopted and released.
 
 ### Exact-age retirement shortcut
 
-**Status**: Released August 24, 2026
+**Status**: Preview released August 24, 2026. Full release August 25, 2026.
 
 **Classification**: Enhancement
 
@@ -24,7 +24,7 @@ Kigali Sim now supports a shortcut for retiring an entire sales cohort at a know
 
 ### Weibull retirement by mean lifetime
 
-**Status**: Released August 24, 2026
+**Status**: Preview released August 24, 2026. Full release August 25, 2026.
 
 **Classification**: Enhancement
 
