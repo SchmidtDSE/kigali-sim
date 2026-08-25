@@ -167,12 +167,12 @@
           <p>AI assistants can help you build Kigali Sim simulations by reading and writing QubecTalk code. Direct your assistant to read our documentation and then provide your code for help. For a step-by-step guide, see <a href="/guide/tutorial_11.html" target="_blank">Tutorial 11: AI Coding Assistants</a>.</p>
           <p><strong>Documentation URLs:</strong></p>
           <ul>
-            <li><a href="https://kigalisim.org/llms-full.txt?v=20260804" target="_blank">https://kigalisim.org/llms-full.txt?v=20260804</a> — comprehensive documentation (recommended)</li>
-            <li><a href="https://kigalisim.org/llms.txt?v=20260804" target="_blank">https://kigalisim.org/llms.txt?v=20260804</a> — index with links to tutorials and references</li>
+            <li><a href="https://kigalisim.org/llms-full.txt?v=20260825" target="_blank">https://kigalisim.org/llms-full.txt?v=20260825</a> — comprehensive documentation (recommended)</li>
+            <li><a href="https://kigalisim.org/llms.txt?v=20260825" target="_blank">https://kigalisim.org/llms.txt?v=20260825</a> — index with links to tutorials and references</li>
           </ul>
           <details>
             <summary>More details</summary>
-            <p><strong>Version Parameters:</strong> The version parameter (e.g., ?v=20260804) is optional but recommended. It helps ensure your AI assistant accesses the latest documentation by avoiding cached versions.</p>
+            <p><strong>Version Parameters:</strong> The version parameter (e.g., ?v=20260825) is optional but recommended. It helps ensure your AI assistant accesses the latest documentation by avoiding cached versions.</p>
             <p><strong>Tip:</strong> For LLMs which cannot access the internet, you can <a href="/llms-full.txt" download>download llms-full.txt</a> and provide it as an attachment to your AI assistant.</p>
             <p><strong>Note:</strong> Using AI assistants is entirely optional. Their use is subject to their respective terms of service and privacy policies.</p>
             <p><strong>Privacy:</strong> Using an AI assistant may involve disclosing information about your simulation to the AI and its cloud provider. Be sure to check their privacy policies and any policies negotiated by your organization.</p>
@@ -185,7 +185,7 @@
         <dialog id="ai-designer-dialog">
           <h2>AI Assistant</h2>
           <p>AI assistants can help you build Kigali Sim simulations. Start a chat with any AI assistant and send a message like this:</p>
-          <pre class="prompt-code"><code>Hello! I would like help with building a Kigali Sim simulation. Please read https://kigalisim.org/llms-full.txt?v=20260804 to learn more. Please stick to only features compatible with the UI editor.</code></pre>
+          <pre class="prompt-code"><code>Hello! I would like help with building a Kigali Sim simulation. Please read https://kigalisim.org/llms-full.txt?v=20260825 to learn more. Please stick to only features compatible with the UI editor.</code></pre>
           <p>For a step-by-step walkthrough, see <a href="/guide/tutorial_03a.html" target="_blank">Tutorial 3a: Multiple Substances with AI</a>.</p>
           <details>
             <summary>More details</summary>
@@ -743,6 +743,9 @@
                                   class="retirement-units-input"
                                   aria-label="Units of equipment annual retirement"
                                 >
+                                  <option value="%">%</option>
+                                  <option value="year old mean weibull">year old (mean life, Weibull)</option>
+                                  <option value="year old exact">year old (exact)</option>
                                   <option value="kg">kg</option>
                                   <option value="mt">mt</option>
                                   <option value="tCO2e">tCO2e</option>
@@ -761,12 +764,9 @@
                                   <option value="kgCO2e / kg">kgCO2e / kg</option>
                                   <option value="tCO2e / mt">tCO2e / mt</option>
                                   <option value="kgCO2e / mt">kgCO2e / mt</option>
-                                  <option value="%">%</option>
                                   <option value="% prior year">% prior year</option>
                                   <option value="% current">% current</option>
                                   <option value="% / year">% / year</option>
-                                  <option value="year old mean weibull">year old (mean life, Weibull)</option>
-                                  <option value="year old exact">year old (exact)</option>
                                 </select>
                               </span>
                             </div>

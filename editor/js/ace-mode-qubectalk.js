@@ -12,13 +12,13 @@ ace.define("ace/mode/qubectalk", [
       "substance|uses|variables";
 
     const commandKeywords = "across|ago|as|assume|at|by|cap|change|charge|current|" +
-      "continued|during|enable|eol|floor|for|from|get|in|induction|initial|" +
-      "modify|no|of|only|prior|recharge|recover|replace|replacement|retire|reuse|" +
+      "continued|during|enable|eol|exact|floor|for|from|get|in|induction|initial|" +
+      "modify|no|of|old|only|prior|recharge|recover|replace|replacement|retire|reuse|" +
       "set|simulate|then|to|trials|using|volume|with";
 
     const conditionalKeywords = "and|else|endif|if|or|xor";
 
-    const samplingKeywords = "mean|normally|sample|std|uniformly|limit";
+    const samplingKeywords = "mean|normally|sample|std|uniformly|limit|weibull";
 
     const streams = [
       "priorEquipment", "newEquipment", "equipment", "priorBank", "bank", "export", "import",
