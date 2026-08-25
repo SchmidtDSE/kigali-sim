@@ -73,29 +73,18 @@ public class QubecTalkParserTest {
    *
    * @param retireLine the retire statement to embed
    * @return a full QubecTalk program containing the statement
+   * @throws IOException if the template file cannot be read
    */
-  private String wrapRetire(String retireLine) {
-    return "start default\n"
-        + "  define application \"test\"\n"
-        + "    uses substance \"test\"\n"
-        + "      enable domestic\n"
-        + "      initial charge with 1 kg / unit for domestic\n"
-        + "      " + retireLine + "\n"
-        + "      set domestic to 100 units\n"
-        + "      equals 5 tCO2e / mt\n"
-        + "    end substance\n"
-        + "  end application\n"
-        + "end default\n"
-        + "start simulations\n"
-        + "  simulate \"business as usual\" from years 1 to 12\n"
-        + "end simulations\n";
+  private String wrapRetire(String retireLine) throws IOException {
+    String template = loadQtaFile("../examples/parser_test_weibull_retire_template.qta");
+    return template.replace("RETIRE_LINE", retireLine);
   }
 
   /**
    * Test that a Weibull retire without the full tail is a parse error.
    */
   @Test
-  public void testParseInvalidWeibullMissingTail() {
+  public void testParseInvalidWeibullMissingTail() throws IOException {
     ParseResult result = parser.parse(wrapRetire("retire 5 year old"));
     assertTrue(result.hasErrors(), "Missing 'mean weibull' tail should be a parse error");
     assertFalse(result.getProgram().isPresent(), "Invalid Weibull retire should not produce a program");
@@ -105,7 +94,7 @@ public class QubecTalkParserTest {
    * Test that a Weibull retire missing 'weibull' is a parse error.
    */
   @Test
-  public void testParseInvalidWeibullMissingWeibull() {
+  public void testParseInvalidWeibullMissingWeibull() throws IOException {
     ParseResult result = parser.parse(wrapRetire("retire 5 year old mean"));
     assertTrue(result.hasErrors(), "Missing 'weibull' should be a parse error");
     assertFalse(result.getProgram().isPresent(), "Invalid Weibull retire should not produce a program");
@@ -115,27 +104,39 @@ public class QubecTalkParserTest {
    * Test that a Weibull retire from a percentage form is a parse error.
    */
   @Test
-  public void testParseInvalidWeibullPercentForm() {
+  public void testParseInvalidWeibullPercentForm() throws IOException {
     ParseResult result = parser.parse(wrapRetire("retire 5 % / year old mean weibull"));
     assertTrue(result.hasErrors(), "Percentage form with weibull tail should be a parse error");
     assertFalse(result.getProgram().isPresent(), "Invalid Weibull retire should not produce a program");
   }
 
   /**
-   * Test that a Weibull retire with 'with replacement' is a parse error.
+   * Test that a Weibull retire with 'with replacement' parses successfully.
    */
   @Test
-  public void testParseInvalidWeibullWithReplacement() {
+  public void testParseValidWeibullWithReplacement() throws IOException {
     ParseResult result = parser.parse(wrapRetire("retire 5 year old mean weibull with replacement"));
-    assertTrue(result.hasErrors(), "Weibull with replacement should be a parse error");
-    assertFalse(result.getProgram().isPresent(), "Invalid Weibull retire should not produce a program");
+    assertFalse(result.hasErrors(), "Weibull with replacement should parse without errors");
+    assertTrue(result.getProgram().isPresent(), "Valid Weibull retire with replacement should produce a program");
+  }
+
+  /**
+   * Test that a Weibull retire with 'assuming new' and 'with replacement' together parses.
+   */
+  @Test
+  public void testParseValidWeibullAssumingNewWithReplacement() throws IOException {
+    ParseResult result = parser.parse(
+        wrapRetire("retire 5 year old mean weibull assuming new with replacement"));
+    assertFalse(result.hasErrors(), "Weibull assuming new with replacement should parse without errors");
+    assertTrue(result.getProgram().isPresent(),
+        "Valid Weibull retire assuming new with replacement should produce a program");
   }
 
   /**
    * Test that a plain retire with a temporal unit still parses as before.
    */
   @Test
-  public void testParseWeibullRegressionPlainYearRetire() {
+  public void testParseWeibullRegressionPlainYearRetire() throws IOException {
     ParseResult result = parser.parse(wrapRetire("retire 5 year"));
     assertNotNull(result, "Parse result should not be null");
     assertFalse(result.hasErrors(), "Plain 'retire 5 year' should still parse");
@@ -146,7 +147,7 @@ public class QubecTalkParserTest {
    * Test that a valid exact retire parses with an integer age.
    */
   @Test
-  public void testParseValidExactRetire() {
+  public void testParseValidExactRetire() throws IOException {
     ParseResult result = parser.parse(wrapRetire("retire 5 year old exact"));
     assertFalse(result.hasErrors(), "'retire 5 year old exact' should parse");
     assertTrue(result.getProgram().isPresent(), "Valid exact retire should produce a program");
@@ -156,7 +157,7 @@ public class QubecTalkParserTest {
    * Test that a valid exact retire parses with plural 'years' and a duration.
    */
   @Test
-  public void testParseValidExactRetireDurationPlural() {
+  public void testParseValidExactRetireDurationPlural() throws IOException {
     ParseResult result = parser.parse(
         wrapRetire("retire 10 years old exact during years 2 to 5"));
     assertFalse(result.hasErrors(), "Plural exact retire with duration should parse");
@@ -167,7 +168,7 @@ public class QubecTalkParserTest {
    * Test that an exact retire missing 'exact' is a parse error.
    */
   @Test
-  public void testParseInvalidExactMissingExact() {
+  public void testParseInvalidExactMissingExact() throws IOException {
     ParseResult result = parser.parse(wrapRetire("retire 5 year old"));
     assertTrue(result.hasErrors(), "Missing 'exact' should be a parse error");
     assertFalse(result.getProgram().isPresent(), "Invalid exact retire should not produce a program");
@@ -178,7 +179,7 @@ public class QubecTalkParserTest {
    * of equipment age are meaningful for the underlying years-ago lookup.
    */
   @Test
-  public void testParseInvalidExactDecimalAge() {
+  public void testParseInvalidExactDecimalAge() throws IOException {
     ParseResult result = parser.parse(wrapRetire("retire 5.5 year old exact"));
     assertTrue(result.hasErrors(), "Decimal age exact retire should be a parse error");
     assertFalse(result.getProgram().isPresent(), "Invalid exact retire should not produce a program");
@@ -189,7 +190,7 @@ public class QubecTalkParserTest {
    * has no exact-with-replacement form.
    */
   @Test
-  public void testParseInvalidExactWithReplacement() {
+  public void testParseInvalidExactWithReplacement() throws IOException {
     ParseResult result = parser.parse(wrapRetire("retire 5 year old exact with replacement"));
     assertTrue(result.hasErrors(), "Exact retire with replacement should be a parse error");
     assertFalse(result.getProgram().isPresent(), "Invalid exact retire should not produce a program");

@@ -112,7 +112,7 @@ class RetireCommand {
     self._value = value;
     self._duration = duration;
     self._withReplacement = withReplacement;
-    self._assumingNew = assumingNew !== undefined ? assumingNew : false;
+    self._assumingNew = assumingNew;
   }
 
   /**

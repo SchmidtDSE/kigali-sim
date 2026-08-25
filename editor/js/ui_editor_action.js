@@ -1388,14 +1388,14 @@ class ConsumptionListPresenter {
     );
     let withReplacement = !retirementReducesCheckbox.checked;
 
-    // The grammar has no Weibull-with-replacement or exact-with-replacement form
+    // The grammar has no exact-with-replacement form.
     const retirementUnits = retirement === null ? null : retirement.getUnits();
-    if (retirementUnits === "year old mean weibull" || retirementUnits === "year old exact") {
+    if (retirementUnits === "year old exact") {
       withReplacement = false;
     }
 
     // Create retire command with withReplacement flag
-    const retireCommand = new RetireCommand(retirement, null, withReplacement);
+    const retireCommand = new RetireCommand(retirement, null, withReplacement, false);
     substanceBuilder.addCommand(retireCommand);
 
     const levels = getListInput(self._dialog.querySelector(".level-list"), readSetCommandUi);

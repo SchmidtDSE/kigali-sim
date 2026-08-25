@@ -57,7 +57,7 @@
         </p>
 
         <p>
-          What we have written here is a survival model with a constant hazard: mathematically, the Weibull distribution with shape 1. Every unit faces the same 5% chance each year no matter its age, so nothing ever becomes "due" for retirement. The average lifetime is 20 years, but the median unit retires after only 13.9, and the most likely age of retirement is the first year, since retirement never becomes more likely with age.
+          Note that what we have written here is a survival model with a constant hazard: mathematically, the Weibull distribution with shape 1. Every unit faces the same 5% chance each year no matter its age, so nothing ever becomes "due" for retirement. The average lifetime is 20 years, but the median unit retires after only 13.9, and the most likely age of retirement is the first year, since retirement never becomes more likely with age.
         </p>
 
         <p id="tutorial-gif-3-1" class="tutorial-gif-holder">
@@ -71,7 +71,7 @@
         <h2>Retirement with a mean lifetime</h2>
 
         <p>
-          Many studies, surveys, and emissions models report equipment lifetime as a single number: a 20 year mean life for commercial refrigeration, say. Kigali Sim can use that number directly. Give the mean lifetime in years and it applies a Weibull survival curve (shape 2) whose hazard rises with age:
+          Many studies, surveys, and emissions models report equipment lifetime as a single number. For example, a 20 year mean life for commercial refrigeration. Kigali Sim can use that number directly. Give the mean lifetime in years and it applies a Weibull survival curve (shape 2) whose hazard rises with age:
         </p>
 
         <pre><code class="language-qubectalk">uses substance "HFC-134a"
@@ -139,7 +139,7 @@ end substance</code></pre>
         </p>
 
         <p>
-          One caveat: <code>get age</code> is the average age across the whole equipment population, so a formula through it is exact for a linear hazard like this one and approximate for faster-rising functions on mixed-age fleets. This is why the mean lifetime form from the previous section is generally preferred when you have a mean life estimate: it tracks each sales cohort's age through the simulation history.
+          One caveat: <code>get age</code> is the average age across the whole equipment population. This is why the mean lifetime form from the previous section is generally preferred when you have a mean life estimate: it tracks each sales cohort's age through the simulation history.
         </p>
 
         <p>
@@ -186,7 +186,7 @@ start simulations
 end simulations</code></pre>
 
         <p>
-          This approach only works if the user knows the exact age of equipment. If you are uncertain about equipment ages, it may be more appropriate to use a mean lifetime (the Weibull form from earlier), a continuous hazard function (like the age-dependent approach from the previous section), or a constant percentage retirement rate. It is also the technique for inspecting exactly what a Weibull retire does: a schedule of terms like these, one per cohort age with the cohort's retirement fraction as the coefficient, reproduces the Weibull retirement year by year.
+          This approach only works if the user knows the exact age of equipment. If you are uncertain about equipment ages, it may be more appropriate to use a mean lifetime (the Weibull form from earlier), a continuous hazard function (like the age-dependent approach from the previous section), or a constant percentage retirement rate.
         </p>
 
         <p>
@@ -246,7 +246,7 @@ start simulations
 end simulations</code></pre>
 
           <p>
-            How did we arrive at those formulas? Here, we need that tiny bit of calculus. For retirement, we want half of a cohort retired by the end of year 10, which means the cumulative hazard must reach ln(2) — not 0.5 — because a cumulative hazard of 0.5 leaves 61% of units surviving. For leakage, the 6% is itself a cumulative fraction, so we can integrate it directly. We can integrate over the first ten years of life such that we have 50% retirement and 6% recharge. With this operation, we derive a hazard function to fit observed data! Consider the following short code snippets runnable at Wolfram Alpha:
+            How did we arrive at those formulas? Here, we need that tiny bit of calculus. For retirement, we want half of a cohort retired by the end of year 10, which means the cumulative hazard must reach ln(2) because a cumulative hazard of 0.5 leaves 61% of units surviving. For leakage, the 6% is itself a cumulative fraction, so we can integrate it directly. We can integrate over the first ten years of life such that we have 50% retirement and 6% recharge. With this operation, we derive a hazard function to fit observed data! Consider the following short code snippets runnable at Wolfram Alpha:
           </p>
           <ul>
             <li>Solve for retirement rate: <a href="https://www.wolframalpha.com/input?i=integrate+x*t%5E2+from+t%3D0+to+10+equals+ln%282%29%2C+solve+for+x">integrate x*t^2 from t=0 to 10 equals ln(2), solve for x</a>.</li>
@@ -264,7 +264,7 @@ end simulations</code></pre>
         <h2>Conclusion</h2>
 
         <p>
-          If all you have is an average equipment lifetime — the statistic most surveys and emissions models report — the mean lifetime form, <code>retire 20 year old mean weibull</code>, is the recommended path: it needs no other parameter and reproduces the rising hazard that real equipment populations show.
+          If all you have is an average equipment lifetime, the mean lifetime form (<code>retire 20 year old mean weibull</code>) is the recommended path: it needs no other parameter and reproduces the rising hazard that real equipment populations show.
         </p>
 
         <p>

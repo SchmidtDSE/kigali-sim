@@ -955,91 +955,69 @@ end default
       );
     });
 
-    QUnit.test("translates weibull retire command", function (assert) {
-      const code = `
-start default
-  define application "test"
-    uses substance "test"
-      enable domestic
-      equals 1 tCO2e / mt
-      initial charge with 1 kg / unit for domestic
-      set domestic to 100 mt during year 1
-      retire 20 year old mean weibull
-    end substance
-  end application
-end default
-`;
+    buildTest("translates weibull retire command", "/examples/ui/weibull_basic.qta", [
+      (result, assert) => {
+        const substance = result.getApplications()[0].getSubstances()[0];
+        const retire = substance.getRetire();
+        assert.ok(retire !== null, "Retire command should be present");
+        assert.equal(retire.getValue().getValue(), 20);
+        assert.equal(retire.getValue().getUnits(), "year old mean weibull");
+        assert.equal(retire.getWithReplacement(), false);
+        assert.equal(retire.getAssumingNew(), false);
+      },
+    ]);
 
-      const compiler = new UiTranslatorCompiler();
-      const result = compiler.compile(code);
-      assert.strictEqual(result.getErrors().length, 0, "Should compile without errors");
+    buildTest(
+      "translates weibull retire command with duration and plural years",
+      "/examples/ui/weibull_duration_plural.qta",
+      [
+        (result, assert) => {
+          const substance = result.getApplications()[0].getSubstances()[0];
+          const retire = substance.getRetire();
+          assert.ok(retire !== null, "Retire command should be present");
+          assert.equal(retire.getValue().getValue(), 12.5);
+          assert.equal(retire.getValue().getUnits(), "year old mean weibull");
+          assert.notEqual(retire.getDuration(), null, "Duration should be preserved");
+        },
+      ],
+    );
 
-      const program = result.getProgram();
-      const substance = program.getApplications()[0].getSubstances()[0];
+    buildTest("assuming new weibull retire is UI-incompatible", "/examples/ui/weibull_assuming_new.qta", [
+      (result, assert) => {
+        const substance = result.getApplications()[0].getSubstances()[0];
+        const retire = substance.getRetire();
+        assert.equal(retire.getAssumingNew(), true);
+        assert.ok(!result.getIsCompatible(), "Assuming-new program should be UI-incompatible");
+      },
+    ]);
 
-      const retire = substance.getRetire();
-      assert.ok(retire !== null, "Retire command should be present");
-      assert.equal(retire.getValue().getValue(), 20);
-      assert.equal(retire.getValue().getUnits(), "year old mean weibull");
-      assert.equal(retire.getWithReplacement(), false);
-      assert.equal(retire.getAssumingNew(), false);
-    });
+    buildTest(
+      "reports compatibility without a simulations stanza",
+      "/examples/ui/no_simulations_basic.qta",
+      [
+        (result, assert) => {
+          assert.equal(result.getScenarios().length, 0, "Program should have no scenarios");
+          assert.ok(
+            result.getIsCompatible(),
+            "UI-expressible program should still report compatible",
+          );
+        },
+      ],
+    );
 
-    QUnit.test("translates weibull retire command with duration and plural years", function (assert) {
-      const code = `
-start default
-  define application "test"
-    uses substance "test"
-      enable domestic
-      equals 1 tCO2e / mt
-      initial charge with 1 kg / unit for domestic
-      set domestic to 100 mt during year 1
-      retire 12.5 years old mean weibull during years 2 to 5
-    end substance
-  end application
-end default
-`;
-
-      const compiler = new UiTranslatorCompiler();
-      const result = compiler.compile(code);
-      assert.strictEqual(result.getErrors().length, 0, "Should compile without errors");
-
-      const program = result.getProgram();
-      const substance = program.getApplications()[0].getSubstances()[0];
-
-      const retire = substance.getRetire();
-      assert.ok(retire !== null, "Retire command should be present");
-      assert.equal(retire.getValue().getValue(), 12.5);
-      assert.equal(retire.getValue().getUnits(), "year old mean weibull");
-      assert.notEqual(retire.getDuration(), null, "Duration should be preserved");
-    });
-
-    QUnit.test("assuming new weibull retire is UI-incompatible", function (assert) {
-      const code = `
-start default
-  define application "test"
-    uses substance "test"
-      enable domestic
-      equals 1 tCO2e / mt
-      initial charge with 1 kg / unit for domestic
-      set domestic to 100 mt during year 1
-      retire 20 year old mean weibull assuming new
-    end substance
-  end application
-end default
-`;
-
-      const compiler = new UiTranslatorCompiler();
-      const result = compiler.compile(code);
-      assert.strictEqual(result.getErrors().length, 0, "Should compile without errors");
-
-      const program = result.getProgram();
-      const substance = program.getApplications()[0].getSubstances()[0];
-
-      const retire = substance.getRetire();
-      assert.equal(retire.getAssumingNew(), true);
-      assert.ok(!program.getIsCompatible(), "Assuming-new program should be UI-incompatible");
-    });
+    buildTest(
+      "reports incompatibility without a simulations stanza",
+      "/examples/ui/no_simulations_assuming_new.qta",
+      [
+        (result, assert) => {
+          assert.equal(result.getScenarios().length, 0, "Program should have no scenarios");
+          assert.ok(
+            !result.getIsCompatible(),
+            "Assuming-new program should report incompatible even with no simulations stanza",
+          );
+        },
+      ],
+    );
 
     QUnit.test("translates exact retire command", function (assert) {
       const code = `

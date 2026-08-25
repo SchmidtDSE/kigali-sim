@@ -24,13 +24,11 @@ Kigali Sim now supports a shortcut for retiring an entire sales cohort at a know
 
 ### Weibull retirement by mean lifetime
 
-**Status**: Released August 21, 2026
+**Status**: Released August 24, 2026
 
 **Classification**: Enhancement
 
-Kigali Sim now supports age-dependent equipment retirement specified by a mean lifetime: `retire 20 year old mean weibull`. Where `retire 5 % / year` applies a constant hazard (each unit has the same chance of retiring each year regardless of age), the new form applies a Weibull survival curve (shape 2) whose hazard rises with equipment age, as empirical studies of refrigeration and air-conditioning equipment find. This is the statistic most surveys and emissions models report, so no additional parameters are needed. Under constant sales, both forms reach the same steady-state population (annual sales multiplied by the mean lifetime) but differ in transients and in growing markets, where a flat rate matched to a mean lifetime systematically over-retires.
-
-Equipment ages derive from simulated sales history, so simulations should begin before the substance entered service. Combining the form with `set priorEquipment` or `change priorEquipment` on the same substance raises a validation error with guidance; the `assuming new` modifier (code editor only) instead treats existing stock as a single cohort of typical age. The Basic Editor supports the form through a new "year old (mean life, Weibull)" option in the retirement units dropdown. See Tutorial 15 for a worked comparison and the QubecTalk language specification for the hazard schedule.
+Kigali Sim now supports age-dependent equipment retirement specified by a mean lifetime: `retire 20 year old mean weibull`, applying a Weibull survival curve (shape 2) whose hazard rises with equipment age instead of the constant hazard used by `retire 5 % / year`. Equipment ages derive from simulated sales history, so simulations should begin before the substance entered service. Combining the form with `set priorEquipment` or `change priorEquipment` for the same substance anywhere in a scenario's stack raises a validation error unless the `assuming new` modifier (code editor only) is used, including when the two statements sit in different stanzas such as a default-stanza `set priorEquipment` and a Weibull retire added by a policy. The Basic Editor supports the form through a new "year old (mean life, Weibull)" option in the retirement units dropdown. See [Tutorial 15](/guide/tutorial_15.html) for a worked comparison against a flat rate and the details behind this feature.
 
 ### Editor run and error panel visibility fix
 

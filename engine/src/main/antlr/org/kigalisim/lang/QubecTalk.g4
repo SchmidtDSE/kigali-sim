@@ -479,8 +479,8 @@ replaceStatement: REPLACE_ volume=unitValue OF_ target=stream WITH_ destination=
 
 retireStatement: RETIRE_ volume=unitValue (WITH_ REPLACEMENT_)?  # retireAllYears
   | RETIRE_ volume=unitValue (WITH_ REPLACEMENT_)? duration=during  # retireDuration
-  | RETIRE_ mean=number (YEAR_ | YEARS_) OLD_ MEAN_ WEIBULL_ (ASSUMING_ NEW_)?  # retireWeibullAllYears
-  | RETIRE_ mean=number (YEAR_ | YEARS_) OLD_ MEAN_ WEIBULL_ (ASSUMING_ NEW_)? duration=during  # retireWeibullDuration
+  | RETIRE_ mean=number (YEAR_ | YEARS_) OLD_ MEAN_ WEIBULL_ (ASSUMING_ NEW_)? (WITH_ REPLACEMENT_)?  # retireWeibullAllYears
+  | RETIRE_ mean=number (YEAR_ | YEARS_) OLD_ MEAN_ WEIBULL_ (ASSUMING_ NEW_)? (WITH_ REPLACEMENT_)? duration=during  # retireWeibullDuration
   | RETIRE_ age=INTEGER_ (YEAR_ | YEARS_) OLD_ EXACT_  # retireExactAllYears
   | RETIRE_ age=INTEGER_ (YEAR_ | YEARS_) OLD_ EXACT_ duration=during  # retireExactDuration
   ;

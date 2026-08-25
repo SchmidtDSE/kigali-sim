@@ -29,10 +29,6 @@ public final class WeibullSurvival {
 
   private static final double LN_1000 = Math.log(1000.0);
 
-  private static final double LN_2 = Math.log(2.0);
-
-  private final BigDecimal meanYears;
-
   private final double characteristicLife;
 
   private final int truncationAge;
@@ -40,13 +36,13 @@ public final class WeibullSurvival {
   private final int syntheticCohortOffsetYears;
 
   private WeibullSurvival(BigDecimal meanYears) {
-    this.meanYears = meanYears;
     double mean = meanYears.doubleValue();
     this.characteristicLife = mean * ONE_OVER_MEAN_TO_SCALE;
     this.truncationAge = (int) Math.ceil(characteristicLife * Math.sqrt(LN_1000));
-    this.syntheticCohortOffsetYears = new BigDecimal(2.0 * mean / Math.PI)
+    int roundedOffset = new BigDecimal(2.0 * mean / Math.PI)
         .setScale(0, RoundingMode.HALF_UP)
         .intValueExact();
+    this.syntheticCohortOffsetYears = Math.max(1, roundedOffset);
   }
 
   /**
@@ -61,34 +57,6 @@ public final class WeibullSurvival {
       throw new IllegalArgumentException("Weibull retirement requires a positive mean lifetime in years");
     }
     return new WeibullSurvival(meanYears);
-  }
-
-  /**
-   * The mean lifetime in years supplied at construction.
-   *
-   * @return the mean lifetime in years
-   */
-  public BigDecimal getMeanYears() {
-    return meanYears;
-  }
-
-  /**
-   * The characteristic life &lambda; = &mu; &times; 2/&radic;&pi;, the age by
-   * which 63.2% of units have failed.
-   *
-   * @return the characteristic life in years
-   */
-  public BigDecimal getCharacteristicLife() {
-    return toBigDecimal(characteristicLife);
-  }
-
-  /**
-   * The median life &lambda;&radic;(ln 2) in years.
-   *
-   * @return the median life in years
-   */
-  public BigDecimal getMedianLife() {
-    return toBigDecimal(characteristicLife * Math.sqrt(LN_2));
   }
 
   /**
@@ -111,38 +79,41 @@ public final class WeibullSurvival {
    */
   public BigDecimal getSurvival(int age) {
     double ratio = age / characteristicLife;
-    return toBigDecimal(Math.exp(-(ratio * ratio)));
+    return BigDecimal.valueOf(Math.exp(-(ratio * ratio)));
   }
 
   /**
    * The conditional probability h(a) that a unit surviving to age <i>a</i>&minus;1
    * retires during its <i>a</i>-th year. At and beyond the truncation age this is
-   * 1.0 by the sweep rule.
+   * 1.0 by the sweep rule. Below age 1 no year of service has elapsed, so the hazard
+   * is 0.
    *
    * @param age the equipment age in years, starting at 1
    * @return the discrete annual hazard at that age
    */
   public BigDecimal getHazard(int age) {
+    if (age < 1) {
+      return BigDecimal.ZERO;
+    }
     if (age >= truncationAge) {
       return BigDecimal.ONE;
     }
     double priorSurvival = getSurvival(age - 1).doubleValue();
     double hazard = 1.0 - getSurvival(age).doubleValue() / priorSurvival;
-    return toBigDecimal(hazard);
+    return BigDecimal.valueOf(hazard);
   }
 
   /**
    * The steady-state mean fleet age for shape 2, round(2&mu;/&pi;) years, used to
    * place the synthetic prior-equipment cohort of the {@code assuming new}
-   * modifier.
+   * modifier. Floored at 1 year: a mean lifetime under about 0.79 years rounds to
+   * zero, and the engine steps annually so the youngest cohort it can express is a
+   * year old.
    *
-   * @return the synthetic cohort offset in years
+   * @return the synthetic cohort offset in years, at least 1
    */
   public int getSyntheticCohortOffsetYears() {
     return syntheticCohortOffsetYears;
   }
 
-  private static BigDecimal toBigDecimal(double value) {
-    return BigDecimal.valueOf(value);
-  }
 }

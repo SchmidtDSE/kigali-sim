@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Test;
 import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.SingleThreadEngine;
 import org.kigalisim.engine.number.EngineNumber;
+import org.kigalisim.engine.recalc.StreamUpdateBuilder;
 import org.kigalisim.engine.state.Scope;
 import org.kigalisim.engine.state.SimulationState;
 import org.kigalisim.engine.state.YearMatcher;
@@ -56,7 +57,7 @@ public class RetireWeibullOperationTest {
 
     PushDownMachine machine = new SingleThreadPushDownMachine(engine);
     RetireWeibullOperation operation =
-        new RetireWeibullOperation(new BigDecimal("20"), false);
+        new RetireWeibullOperation(new BigDecimal("20"), false, false);
 
     operation.execute(machine);
 
@@ -80,7 +81,7 @@ public class RetireWeibullOperationTest {
     ParsedDuring during = new ParsedDuring(Optional.of(start), Optional.empty());
 
     RetireWeibullOperation operation =
-        new RetireWeibullOperation(new BigDecimal("20"), false, during);
+        new RetireWeibullOperation(new BigDecimal("20"), false, false, during);
     operation.execute(machine);
 
     verify(engine, never()).retire(any(), any());
@@ -101,7 +102,7 @@ public class RetireWeibullOperationTest {
     engine.getStreamKeeper().setRetireCalculatedThisStep(engine.getScope(), true);
 
     RetireWeibullOperation operation =
-        new RetireWeibullOperation(new BigDecimal("20"), false);
+        new RetireWeibullOperation(new BigDecimal("20"), false, false);
 
     assertThrows(RuntimeException.class, () -> operation.execute(machine));
   }
@@ -118,7 +119,7 @@ public class RetireWeibullOperationTest {
     PushDownMachine machine = new SingleThreadPushDownMachine(engine);
 
     RetireWeibullOperation operation =
-        new RetireWeibullOperation(new BigDecimal("20"), false);
+        new RetireWeibullOperation(new BigDecimal("20"), false, false);
     operation.execute(machine);
 
     assertEquals(false, engine.getStreamKeeper().getHasReplacementThisStep(engine.getScope()),
@@ -136,7 +137,7 @@ public class RetireWeibullOperationTest {
     engine.setSubstance("sub");
     PushDownMachine machine = new SingleThreadPushDownMachine(engine);
 
-    engine.executeStreamUpdate(new org.kigalisim.engine.recalc.StreamUpdateBuilder()
+    engine.executeStreamUpdate(new StreamUpdateBuilder()
         .setName("priorEquipment")
         .setValue(new EngineNumber(new BigDecimal("1000"), "units"))
         .setYearMatcher(Optional.of(YearMatcher.unbounded()))
@@ -144,7 +145,7 @@ public class RetireWeibullOperationTest {
         .build());
 
     RetireWeibullOperation operation =
-        new RetireWeibullOperation(new BigDecimal("20"), true);
+        new RetireWeibullOperation(new BigDecimal("20"), true, false);
     operation.execute(machine);
 
     BigDecimal retired = engine.getStreamKeeper().getStream(engine.getScope(), "retired").getValue();
