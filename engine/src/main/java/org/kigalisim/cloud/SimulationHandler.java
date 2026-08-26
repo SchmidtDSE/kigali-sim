@@ -24,10 +24,13 @@ import org.kigalisim.lang.parse.ParseResult;
 import org.kigalisim.lang.program.ParsedProgram;
 
 /**
- * Lambda handler that accepts a QubecTalk script via query string and returns CSV output.
+ * Lambda handler that accepts a QubecTalk script via GET query string or POST body and
+ * returns CSV output.
  *
- * <p>Implements the AWS Lambda Function URL / API Gateway HTTP API contract. If one or more
- * comma-separated {@code simulation} names are provided, the handler runs the requested
+ * <p>Implements the AWS Lambda Function URL / API Gateway HTTP API contract. Parameters may
+ * be supplied as GET query string parameters or as an {@code application/x-www-form-urlencoded}
+ * POST body, the latter allowing larger scripts than a URL can comfortably carry. If one or
+ * more comma-separated {@code simulation} names are provided, the handler runs the requested
  * number of replicates of each named scenario in order and returns all results combined in a
  * single CSV response with {@code Content-Type: text/csv}. If {@code simulation} is omitted,
  * the script is validated only and a header-only CSV is returned with status 200.</p>
@@ -52,7 +55,8 @@ public class SimulationHandler
   /**
    * Handles an incoming Lambda HTTP event by running a QubecTalk simulation.
    *
-   * @param event The API Gateway V2 HTTP event containing query string parameters.
+   * @param event The API Gateway V2 HTTP event containing query string parameters and / or a
+   *     form-urlencoded POST body.
    * @param context The Lambda execution context (unused).
    * @return An API Gateway V2 HTTP response with either CSV output or a plain-text error.
    */
@@ -73,15 +77,14 @@ public class SimulationHandler
   /**
    * Handles an incoming Lambda HTTP event, allowing exceptions to propagate.
    *
-   * @param event The API Gateway V2 HTTP event containing query string parameters.
+   * @param event The API Gateway V2 HTTP event containing query string parameters and / or a
+   *     form-urlencoded POST body.
    * @return An API Gateway V2 HTTP response with either CSV output or a plain-text error.
    * @throws Exception if an unexpected error occurs during processing.
    */
   private APIGatewayV2HTTPResponse handleRequestUnsafe(
       APIGatewayV2HTTPEvent event) throws Exception {
-    InvocationParameters params = InvocationParametersFactory.build(
-        event.getQueryStringParameters()
-    );
+    InvocationParameters params = InvocationParametersFactory.build(event);
 
     Optional<String> script = params.getScript();
     if (!script.isPresent()) {

@@ -91,9 +91,19 @@ To support the community, a public community cloud endpoint is available. Unlike
 
 Endpoint: `https://bbaagift7g5fsza7xzxksl7uny0jjwvn.lambda-url.us-east-2.on.aws/`
 
-Example request (URL-encoded):
+Parameters may be sent either as GET query string parameters or as an `application/x-www-form-urlencoded` POST body using the same parameter names, allowing larger scripts to avoid the practical length limits of a URL. If a parameter is present in both, the POST body value takes precedence.
+
+Example GET request (URL-encoded):
 ```
 GET https://bbaagift7g5fsza7xzxksl7uny0jjwvn.lambda-url.us-east-2.on.aws/?script=start%20default%0A...%0Aend%20default%0A...&simulation=Business%20as%20Usual
+```
+
+Example POST request (form-encoded body), preferred for larger scripts:
+```
+POST https://bbaagift7g5fsza7xzxksl7uny0jjwvn.lambda-url.us-east-2.on.aws/
+Content-Type: application/x-www-form-urlencoded
+
+script=start%20default%0A...%0Aend%20default%0A...&simulation=Business%20as%20Usual
 ```
 
 The `simulation` parameter accepts comma-separated scenario names (e.g., `simulation=Scenario+One,Scenario+Two`) to run multiple simulations in a single call and receive their results combined in one CSV response.

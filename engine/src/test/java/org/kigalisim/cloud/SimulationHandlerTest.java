@@ -13,6 +13,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPResponse;
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -50,6 +52,25 @@ public class SimulationHandlerTest {
   private APIGatewayV2HTTPEvent buildEvent(Map<String, String> params) {
     return APIGatewayV2HTTPEvent.builder()
         .withQueryStringParameters(params)
+        .build();
+  }
+
+  /**
+   * Builds a minimal APIGatewayV2HTTPEvent simulating a form-urlencoded POST body built from
+   * the given parameters.
+   *
+   * @param params Parameters to encode into the POST body.
+   * @return A constructed event object with no query string parameters.
+   */
+  private APIGatewayV2HTTPEvent buildPostEvent(Map<String, String> params) {
+    String body = params.entrySet().stream()
+        .map(entry -> URLEncoder.encode(entry.getKey(), StandardCharsets.UTF_8)
+            + "="
+            + URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8))
+        .reduce((first, second) -> first + "&" + second)
+        .orElse("");
+    return APIGatewayV2HTTPEvent.builder()
+        .withBody(body)
         .build();
   }
 
@@ -391,6 +412,74 @@ public class SimulationHandlerTest {
         (oneReplicateRows - 1) * 3 + 1,
         response.getBody().split("\n").length,
         "Three replicates should produce three times the data rows plus one header"
+    );
+  }
+
+  /**
+   * Test that a script sent as a form-urlencoded POST body (no query string) runs correctly.
+   */
+  @Test
+  public void testScriptAsPostBodyReturns200() {
+    Map<String, String> params = new HashMap<>();
+    params.put("script", oneScenarioScript);
+    params.put("simulation", "Business as Usual");
+    APIGatewayV2HTTPEvent event = buildPostEvent(params);
+    APIGatewayV2HTTPResponse response = handler.handleRequest(event, null);
+    assertEquals(
+        200,
+        response.getStatusCode(),
+        "Script provided as POST body should return 200"
+    );
+    assertTrue(
+        response.getBody().contains("Business as Usual"),
+        "POST body response should contain simulation results"
+    );
+  }
+
+  /**
+   * Test that a missing script in both the query string and the POST body returns HTTP 400.
+   */
+  @Test
+  public void testMissingScriptInPostBodyReturns400() {
+    Map<String, String> params = new HashMap<>();
+    params.put("simulation", "Business as Usual");
+    APIGatewayV2HTTPEvent event = buildPostEvent(params);
+    APIGatewayV2HTTPResponse response = handler.handleRequest(event, null);
+    assertEquals(
+        400,
+        response.getStatusCode(),
+        "Missing script in POST body should return 400"
+    );
+  }
+
+  /**
+   * Test that a POST body parameter takes precedence over a query string parameter with the
+   * same name.
+   */
+  @Test
+  public void testPostBodyTakesPrecedenceOverQueryString() {
+    Map<String, String> bodyParams = new HashMap<>();
+    bodyParams.put("script", oneScenarioScript);
+    bodyParams.put("simulation", "Business as Usual");
+    String body = bodyParams.entrySet().stream()
+        .map(entry -> URLEncoder.encode(entry.getKey(), StandardCharsets.UTF_8)
+            + "="
+            + URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8))
+        .reduce((first, second) -> first + "&" + second)
+        .orElse("");
+
+    Map<String, String> queryParams = new HashMap<>();
+    queryParams.put("script", "not valid qubectalk");
+
+    APIGatewayV2HTTPEvent event = APIGatewayV2HTTPEvent.builder()
+        .withQueryStringParameters(queryParams)
+        .withBody(body)
+        .build();
+    APIGatewayV2HTTPResponse response = handler.handleRequest(event, null);
+    assertEquals(
+        200,
+        response.getStatusCode(),
+        "POST body script should take precedence over an invalid query string script"
     );
   }
 
