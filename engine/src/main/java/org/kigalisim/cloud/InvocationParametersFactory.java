@@ -6,8 +6,13 @@
 
 package org.kigalisim.cloud;
 
+import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -20,6 +25,31 @@ import java.util.stream.Collectors;
  * future requires changes only to this class and {@link InvocationParameters}.</p>
  */
 public class InvocationParametersFactory {
+
+  /**
+   * Builds an {@link InvocationParameters} from an incoming Lambda HTTP event.
+   *
+   * <p>Parameters may be supplied either as GET query string parameters or as a
+   * {@code application/x-www-form-urlencoded} POST body, allowing callers with larger
+   * scripts to avoid URL length limits by sending the script as a POST parameter instead.
+   * When a parameter is present in both the query string and the body, the body value
+   * takes precedence.</p>
+   *
+   * @param event The incoming API Gateway V2 HTTP event.
+   * @return A new {@link InvocationParameters} with the extracted values.
+   */
+  public static InvocationParameters build(APIGatewayV2HTTPEvent event) {
+    Map<String, String> combined = new HashMap<>();
+
+    Map<String, String> queryParams = event.getQueryStringParameters();
+    if (queryParams != null) {
+      combined.putAll(queryParams);
+    }
+
+    combined.putAll(parseFormBody(event));
+
+    return build(combined);
+  }
 
   /**
    * Builds an {@link InvocationParameters} from the given query string parameter map.
@@ -71,6 +101,39 @@ public class InvocationParametersFactory {
         simulations,
         replicates
     );
+  }
+
+  /**
+   * Parses an {@code application/x-www-form-urlencoded} request body into a parameter map.
+   *
+   * @param event The incoming API Gateway V2 HTTP event.
+   * @return A map of parameter names to values parsed from the body, empty if the body is
+   *     absent or blank.
+   */
+  private static Map<String, String> parseFormBody(APIGatewayV2HTTPEvent event) {
+    String body = event.getBody();
+    if (body == null || body.isBlank()) {
+      return Collections.emptyMap();
+    }
+
+    if (event.getIsBase64Encoded()) {
+      body = new String(Base64.getDecoder().decode(body), StandardCharsets.UTF_8);
+    }
+
+    Map<String, String> parsed = new HashMap<>();
+    for (String pair : body.split("&")) {
+      if (pair.isEmpty()) {
+        continue;
+      }
+      int separatorIndex = pair.indexOf('=');
+      String key = separatorIndex < 0 ? pair : pair.substring(0, separatorIndex);
+      String value = separatorIndex < 0 ? "" : pair.substring(separatorIndex + 1);
+      parsed.put(
+          URLDecoder.decode(key, StandardCharsets.UTF_8),
+          URLDecoder.decode(value, StandardCharsets.UTF_8)
+      );
+    }
+    return parsed;
   }
 
 }
