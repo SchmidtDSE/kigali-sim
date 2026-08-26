@@ -14,6 +14,14 @@ Finally, we want to again express our gratitude for your feedback and time.
 
 The following changes have been adopted and released.
 
+### Community endpoint expansion
+
+**Status**: Released August 26, 2026.
+
+**Classification**: Enhancement
+
+Added support for longer simulations to run at the community endpoint, primarily for AI assistants which cannot run Kigali Sim directly on their machine. This is automatic and documented for AI assistants, no user action needed.
+
 ### Exact-age retirement shortcut
 
 **Status**: Preview released August 24, 2026. Full release August 25, 2026.
