@@ -295,6 +295,19 @@ start default
       retire 6.7 % each year
       recharge 10 % with 0.12 kg / unit
     end substance
+
+    uses substance "R-600a"
+      enable domestic
+      enable import
+      equals 6 tCO2e / mt
+      equals 95 kwh / unit
+
+      initial charge with 0.05 kg / unit for domestic
+      initial charge with 0.05 kg / unit for import
+
+      retire 6.7 % each year
+      recharge 10 % with 0.05 kg / unit
+    end substance
   end application
 end default
 
@@ -308,12 +321,6 @@ start policy "HFC Phasedown"
 
       # Example: Age-dependent retirement (can be typed as a formula into a Basic Editor numeric field)
       # retire (get age as years) * 1 % each year during years 5 to onwards
-    end substance
-
-    uses substance "R-600a"
-      equals 6 tCO2e / mt
-      equals 95 kwh / unit
-      initial charge with 0.05 kg / unit for domestic
     end substance
   end application
 end policy
