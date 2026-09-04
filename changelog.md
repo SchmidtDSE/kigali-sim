@@ -14,6 +14,14 @@ Finally, we want to again express our gratitude for your feedback and time.
 
 The following changes have been adopted and released.
 
+### End of Life Recycling Emissions Attribution
+
+**Status**: Released September 4, 2026.
+
+**Classification**: Clarification
+
+Clarified that substance recovered and reused through recycling `at eol` is now netted against end of life emissions instead of servicing (recharge) emissions. Historically, all recycling, regardless of stage, offset the reported servicing emissions figure, an approach originally reasonable when recycling was primarily modeled at recharge. As `at eol` recycling has seen more use, this could leave end of life emissions fully unreduced by that recovered material while servicing emissions were driven negative to compensate, even in simulations with no recharge at all. Emissions are now offset at the stage the recycling actually happens: recycling `at recharge` continues to net against servicing emissions, while recycling `at eol` nets against end of life emissions, with both floored at zero. We have added tests to prevent regression.
+
 ### End of Life Recycling Fix
 
 **Status**: Released September 3, 2026.
