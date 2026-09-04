@@ -147,11 +147,12 @@ public class EngineResultSerializerTest {
      */
     @Test
     public void testGetsRechargeEmissions() {
-      // Expected: 1000 mt converted to tCO2e (500,000) - 5000 tCO2e (recycle consumption)
-      // = 495,000 tCO2e
+      // Expected: 1000 mt converted to tCO2e (500,000) - only the recharge-stage recycling
+      // (5 mt * 500 tCO2e/mt = 2,500 tCO2e) is netted out here, not the eol-stage half
+      // (which is netted against eolEmissions instead), so 500,000 - 2,500 = 497,500 tCO2e
       assertEquals(0, result.getRechargeEmissions().getValue()
-          .compareTo(BigDecimal.valueOf(495000)),
-          "Recharge emissions should be 495,000 tCO2e");
+          .compareTo(BigDecimal.valueOf(497500)),
+          "Recharge emissions should be 497,500 tCO2e");
       assertEquals("tCO2e", result.getRechargeEmissions().getUnits(),
           "Recharge emissions units should be tCO2e");
     }
@@ -161,9 +162,10 @@ public class EngineResultSerializerTest {
      */
     @Test
     public void testGetsEolEmissions() {
-      // Expected: 100 tCO2e
-      assertEquals(0, result.getEolEmissions().getValue().compareTo(BigDecimal.valueOf(100)),
-          "EOL emissions should be 100 tCO2e");
+      // Expected: 100 tCO2e gross - eol-stage recycling (5 mt * 500 tCO2e/mt = 2,500 tCO2e)
+      // netted out, clamped at 0 since recycling exceeds the gross figure in this test data
+      assertEquals(0, result.getEolEmissions().getValue().compareTo(BigDecimal.ZERO),
+          "EOL emissions should be 0 tCO2e once eol-stage recycling is netted out");
       assertEquals("tCO2e", result.getEolEmissions().getUnits(),
           "EOL emissions units should be tCO2e");
     }
