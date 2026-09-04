@@ -1864,4 +1864,79 @@ public class RecycleRecoverLiveTests {
     }
   }
 
+  /**
+   * Test that recover at eol with 0% induction holds equipment population steady
+   * across multiple years rather than growing without bound.
+   *
+   * <p>This is a regression test for a bug where the EOL recycling volume was
+   * calculated from the cumulative lifetime "retired" stream instead of the
+   * amount retired during the current year alone, causing recovered/reused
+   * material to compound year over year and grow the population indefinitely
+   * even under full (0%) induction displacement.</p>
+   */
+  @Test
+  public void testRecycleAtEolHoldsPopulationSteady() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/recycle_eol_steady_state.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run the scenario with recycling active from year 2 onward
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, "with recycle", progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // Population should hold at exactly 600 units every year from year 2 through year 6:
+    // each year's retirement (20% of 600 = 120 units) is fully recovered and reused,
+    // exactly replacing what retired rather than accumulating on top of it.
+    for (int year = 2; year <= 6; year++) {
+      EngineResult record = LiveTestsUtil.getResult(resultsList.stream(), year, "test", "test");
+      assertNotNull(record, "Should have result for test/test in year " + year);
+      assertEquals(600.0, record.getPopulation().getValue().doubleValue(), 0.0001,
+          "Population should stay steady at 600 units in year " + year);
+      assertEquals(120.0, record.getRecycle().getValue().doubleValue(), 0.0001,
+          "Recycled amount should equal exactly the amount retired that year (120 units) in year " + year);
+      assertEquals(0.0, record.getDomestic().getValue().doubleValue(), 0.0001,
+          "No virgin material should be needed once recycling fully displaces it in year " + year);
+    }
+  }
+
+  /**
+   * Test that recover at eol holds population steady even when the retiring cohort size
+   * varies year to year, including after a cohort created entirely by recycling itself
+   * reaches its own retirement age.
+   *
+   * <p>This is a regression test for a bug in {@code redistributeRecyclingToSales}
+   * (MutableSimulationState), which permanently added each year's recycled volume into the
+   * persisted domestic/import sales baseline without capping it at the stream's true
+   * last-specified target. When retiring cohort sizes varied (as with {@code retire N year old
+   * exact} applied to a historically varying sales schedule), that baseline could ratchet up to
+   * the historical peak retiring amount and stay pinned there, permanently demanding virgin
+   * top-up in later years even though 0% induction should hold population exactly constant.</p>
+   */
+  @Test
+  public void testRecycleAtEolHoldsPopulationSteadyWithVaryingCohorts() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/recycle_eol_exact_age_steady_state.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run the scenario with recycling active from year 7 onward
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, "with recycle", progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // Population should hold at exactly 2000 units every year from year 7 through year 17:
+    // each year's exact-age retirement (a historically varying amount, since sales grew from
+    // 100 to 600 units/year before the recover policy started) is fully recovered and reused,
+    // even once cohorts created entirely by recycling (from year 7 onward) begin retiring
+    // themselves starting in year 12. No virgin (domestic) material should be needed at all.
+    for (int year = 7; year <= 17; year++) {
+      EngineResult record = LiveTestsUtil.getResult(resultsList.stream(), year, "test", "test");
+      assertNotNull(record, "Should have result for test/test in year " + year);
+      assertEquals(2000.0, record.getPopulation().getValue().doubleValue(), 0.0001,
+          "Population should stay steady at 2000 units in year " + year);
+      assertEquals(0.0, record.getDomestic().getValue().doubleValue(), 0.0001,
+          "No virgin material should be needed once recycling fully displaces it in year " + year);
+    }
+  }
+
 }

@@ -1496,11 +1496,63 @@ public class MutableSimulationState implements SimulationState {
       BigDecimal newDomestic = domesticConverted.getValue().add(domesticAdd);
       BigDecimal newImport = importConverted.getValue().add(importAdd);
 
+      // Cap the restored baseline so it never exceeds the true target.
+      Optional<BigDecimal> domesticCapKg = getRedistributionCapKg(
+          parameterization,
+          "domestic",
+          distribution.getPercentDomestic()
+      );
+      if (domesticCapKg.isPresent()) {
+        newDomestic = newDomestic.min(domesticCapKg.get());
+      }
+
+      Optional<BigDecimal> importCapKg = getRedistributionCapKg(
+          parameterization,
+          "import",
+          distribution.getPercentImport()
+      );
+      if (importCapKg.isPresent()) {
+        newImport = newImport.min(importCapKg.get());
+      }
+
       // Set new amounts using direct stream setting to avoid circular dependency
       // Use setSimpleStream since this is internal redistribution logic
       setSimpleStream(useKey, "domestic", new EngineNumber(newDomestic, "kg"));
       setSimpleStream(useKey, "import", new EngineNumber(newImport, "kg"));
     }
+  }
+
+  /**
+   * Determine the mass-based cap, in kg, that a redistributed stream should never exceed.
+   *
+   * <p>Falls back to the stream's own last-specified value when mass-based (kg/mt), or to the
+   * "sales" last-specified value (scaled by this stream's share of the sales distribution) when
+   * the stream itself was not directly specified. Returns empty when neither is available or
+   * both are equipment-unit-based, since unit-based specifications are not reduced by recycling
+   * in the first place (see DemandAnalysisBuilder#calculateRequiredVirginMaterialUnitsBased) and
+   * so need no cap here.</p>
+   *
+   * @param parameterization The stream parameterization to read last-specified values from
+   * @param stream The stream to compute a cap for ("domestic" or "import")
+   * @param percentShare This stream's share of the sales distribution, used when falling back
+   *     to the "sales" last-specified value
+   * @return The cap in kg, or empty if no mass-based target is available
+   */
+  private Optional<BigDecimal> getRedistributionCapKg(StreamParameterization parameterization,
+      String stream, BigDecimal percentShare) {
+    if (parameterization.hasLastSpecifiedValue(stream)) {
+      EngineNumber lastSpecified = parameterization.getLastSpecifiedValue(stream);
+      if (!lastSpecified.hasEquipmentUnits()) {
+        return Optional.of(unitConverter.convert(lastSpecified, "kg").getValue());
+      }
+    } else if (parameterization.hasLastSpecifiedValue("sales")) {
+      EngineNumber lastSpecifiedSales = parameterization.getLastSpecifiedValue("sales");
+      if (!lastSpecifiedSales.hasEquipmentUnits()) {
+        BigDecimal salesKg = unitConverter.convert(lastSpecifiedSales, "kg").getValue();
+        return Optional.of(salesKg.multiply(percentShare));
+      }
+    }
+    return Optional.empty();
   }
 
   /**
