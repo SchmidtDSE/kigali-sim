@@ -1864,4 +1864,40 @@ public class RecycleRecoverLiveTests {
     }
   }
 
+  /**
+   * Test that recover at eol with 0% induction holds equipment population steady
+   * across multiple years rather than growing without bound.
+   *
+   * <p>This is a regression test for a bug where the EOL recycling volume was
+   * calculated from the cumulative lifetime "retired" stream instead of the
+   * amount retired during the current year alone, causing recovered/reused
+   * material to compound year over year and grow the population indefinitely
+   * even under full (0%) induction displacement.</p>
+   */
+  @Test
+  public void testRecycleAtEolHoldsPopulationSteady() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/recycle_eol_steady_state.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run the scenario with recycling active from year 2 onward
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, "with recycle", progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // Population should hold at exactly 600 units every year from year 2 through year 6:
+    // each year's retirement (20% of 600 = 120 units) is fully recovered and reused,
+    // exactly replacing what retired rather than accumulating on top of it.
+    for (int year = 2; year <= 6; year++) {
+      EngineResult record = LiveTestsUtil.getResult(resultsList.stream(), year, "test", "test");
+      assertNotNull(record, "Should have result for test/test in year " + year);
+      assertEquals(600.0, record.getPopulation().getValue().doubleValue(), 0.0001,
+          "Population should stay steady at 600 units in year " + year);
+      assertEquals(120.0, record.getRecycle().getValue().doubleValue(), 0.0001,
+          "Recycled amount should equal exactly the amount retired that year (120 units) in year " + year);
+      assertEquals(0.0, record.getDomestic().getValue().doubleValue(), 0.0001,
+          "No virgin material should be needed once recycling fully displaces it in year " + year);
+    }
+  }
+
 }
