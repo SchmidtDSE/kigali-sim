@@ -1939,4 +1939,40 @@ public class RecycleRecoverLiveTests {
     }
   }
 
+  /**
+   * Test that 100% recovery and reuse "at eol" nets eolEmissions down to zero rather than
+   * leaving eolEmissions at its full gross value while rechargeEmissions goes negative.
+   *
+   * <p>This is a regression test for a bug where the serializer subtracted the combined
+   * eol-stage and recharge-stage recycling volume from {@code rechargeEmissions} alone (see
+   * {@link org.kigalisim.engine.serializer.EngineResultSerializer}), while never netting
+   * {@code eolEmissions} against the recycling that happened at end-of-life. With a policy that
+   * only recovers "at eol", this made rechargeEmissions negative (since there was no recharge to
+   * offset against) while eolEmissions stayed fully unreduced, even though the recovered
+   * material displaces end-of-life emissions rather than recharge emissions.</p>
+   */
+  @Test
+  public void testRecycleAtEolNetsEolEmissionsNotRechargeEmissions() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/recycle_eol_exact_age_steady_state.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run the scenario with recycling active from year 7 onward
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, "with recycle", progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // From year 7 onward, 100% of retiring equipment's charge is recovered and reused "at eol",
+    // so eolEmissions should be fully netted to zero and rechargeEmissions (there being no
+    // recharge in this scenario) should never go negative.
+    for (int year = 7; year <= 17; year++) {
+      EngineResult record = LiveTestsUtil.getResult(resultsList.stream(), year, "test", "test");
+      assertNotNull(record, "Should have result for test/test in year " + year);
+      assertEquals(0.0, record.getEolEmissions().getValue().doubleValue(), 0.0001,
+          "EOL emissions should be fully netted to zero by 100% recovery/reuse in year " + year);
+      assertEquals(0.0, record.getRechargeEmissions().getValue().doubleValue(), 0.0001,
+          "Recharge emissions should not go negative from eol-stage recycling in year " + year);
+    }
+  }
+
 }
