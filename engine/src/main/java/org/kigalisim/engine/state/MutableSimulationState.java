@@ -1496,8 +1496,7 @@ public class MutableSimulationState implements SimulationState {
       BigDecimal newDomestic = domesticConverted.getValue().add(domesticAdd);
       BigDecimal newImport = importConverted.getValue().add(importAdd);
 
-      // Cap the restored baseline so it never exceeds the true target (see
-      // getRedistributionCapKg for why).
+      // Cap the restored baseline so it never exceeds the true target.
       Optional<BigDecimal> domesticCapKg = getRedistributionCapKg(
           parameterization,
           "domestic",
