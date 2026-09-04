@@ -1900,4 +1900,43 @@ public class RecycleRecoverLiveTests {
     }
   }
 
+  /**
+   * Test that recover at eol holds population steady even when the retiring cohort size
+   * varies year to year, including after a cohort created entirely by recycling itself
+   * reaches its own retirement age.
+   *
+   * <p>This is a regression test for a bug in {@code redistributeRecyclingToSales}
+   * (MutableSimulationState), which permanently added each year's recycled volume into the
+   * persisted domestic/import sales baseline without capping it at the stream's true
+   * last-specified target. When retiring cohort sizes varied (as with {@code retire N year old
+   * exact} applied to a historically varying sales schedule), that baseline could ratchet up to
+   * the historical peak retiring amount and stay pinned there, permanently demanding virgin
+   * top-up in later years even though 0% induction should hold population exactly constant.</p>
+   */
+  @Test
+  public void testRecycleAtEolHoldsPopulationSteadyWithVaryingCohorts() throws IOException {
+    // Load and parse the QTA file
+    String qtaPath = "../examples/recycle_eol_exact_age_steady_state.qta";
+    ParsedProgram program = KigaliSimFacade.parseAndInterpret(qtaPath);
+    assertNotNull(program, "Program should not be null");
+
+    // Run the scenario with recycling active from year 7 onward
+    Stream<EngineResult> results = KigaliSimFacade.runScenario(program, "with recycle", progress -> {});
+    List<EngineResult> resultsList = results.collect(Collectors.toList());
+
+    // Population should hold at exactly 2000 units every year from year 7 through year 17:
+    // each year's exact-age retirement (a historically varying amount, since sales grew from
+    // 100 to 600 units/year before the recover policy started) is fully recovered and reused,
+    // even once cohorts created entirely by recycling (from year 7 onward) begin retiring
+    // themselves starting in year 12. No virgin (domestic) material should be needed at all.
+    for (int year = 7; year <= 17; year++) {
+      EngineResult record = LiveTestsUtil.getResult(resultsList.stream(), year, "test", "test");
+      assertNotNull(record, "Should have result for test/test in year " + year);
+      assertEquals(2000.0, record.getPopulation().getValue().doubleValue(), 0.0001,
+          "Population should stay steady at 2000 units in year " + year);
+      assertEquals(0.0, record.getDomestic().getValue().doubleValue(), 0.0001,
+          "No virgin material should be needed once recycling fully displaces it in year " + year);
+    }
+  }
+
 }
