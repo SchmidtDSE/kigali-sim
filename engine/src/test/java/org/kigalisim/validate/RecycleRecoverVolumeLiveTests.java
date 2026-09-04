@@ -558,12 +558,17 @@ public class RecycleRecoverVolumeLiveTests {
     // With kg-based imports and cumulative recharge:
     // - Fixed annual import (100,000 kg) minus recharge costs leaves virgin material
     // - Recycling (50% recovery, 90% reuse) adds to total equipment supply
-    // - Policy scenario population exceeds BAU due to compounding recycling additions
-    // Note: Tolerance of 120.0 accounts for edge cases in priorEquipment invalidation
+    // - Policy scenario population exceeds BAU because recycled material displaces virgin
+    //   material one-for-one rather than reducing total supply
+    // Note: Tolerance of 120.0 accounts for edge cases in priorEquipment invalidation.
+    // The expected policy value below reflects capping the year-end recycling-to-sales
+    // redistribution at the stream's true last-specified target (100,000 kg here), fixing a bug
+    // where that redistribution could ratchet the persisted sales baseline above the true target
+    // and compound without bound across years.
     assertEquals(381807.4482284954, bauEquipmentYear5, 120.0,
         "BAU equipment population in year 5");
-    assertEquals(388207.907683154, policyEquipmentYear5, 120.0,
-        "Policy equipment population in year 5 (higher due to cumulative recharge timing with kg-based imports)");
+    assertEquals(384797.0938018376, policyEquipmentYear5, 120.0,
+        "Policy equipment population in year 5 (higher than BAU due to recycling adding to supply)");
   }
 
   /**

@@ -14,6 +14,14 @@ Finally, we want to again express our gratitude for your feedback and time.
 
 The following changes have been adopted and released.
 
+### End of Life Recycling Fix
+
+**Status**: Released September 3, 2026.
+
+**Classification**: Bug
+
+We regret that we introduced a bug in end of life recycling that caused it to run and report cumulatively when a year by year effect was expected. Only users with simulations including end of life recycling will have seen this issue. This had interactions with features released in 0.2.2. We are very sorry for this issue and have added tests to prevent regression. This will be released in 0.2.3 which is being released immediately to resolve the problem.
+
 ### Community endpoint expansion
 
 **Status**: Released August 26, 2026.

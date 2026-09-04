@@ -245,9 +245,12 @@ public class SalesRecalcStrategy implements RecalcStrategy {
    * Calculates end-of-life recycling volume from retired equipment.
    *
    * <p>This method determines the total substance volume available for recycling at
-   * equipment end-of-life by multiplying retired equipment units by the initial charge
-   * per unit. The result is passed to {@link #calculateRecyclingForStage} to apply
-   * recovery and yield rates.</p>
+   * equipment end-of-life by multiplying the number of units retired during the current
+   * year by the initial charge per unit. The "retired" stream is a lifetime cumulative
+   * counter (see {@link RetireRecalcStrategy}), so this year's retirement is isolated by
+   * subtracting "priorRetired" (the cumulative total as of the start of this year) from
+   * it, mirroring the delta calculation in {@link EolEmissionsRecalcStrategy}. The result
+   * is passed to {@link #calculateRecyclingForStage} to apply recovery and yield rates.</p>
    *
    * @param scopeEffective The use key scope for this calculation
    * @param simulationState The simulation state to query
@@ -259,12 +262,16 @@ public class SalesRecalcStrategy implements RecalcStrategy {
   private EngineNumber calculateEolRecyclingVolume(UseKey scopeEffective,
       SimulationState simulationState, OverridingConverterStateGetter stateGetter,
       UnitConverter unitConverter, EngineNumber initialCharge) {
-    EngineNumber retiredPopulationRaw = simulationState.getStream(scopeEffective, "retired");
-    EngineNumber retiredPopulation = unitConverter.convert(retiredPopulationRaw, "units");
+    EngineNumber currentRetiredRaw = simulationState.getStream(scopeEffective, "retired");
+    EngineNumber currentRetired = unitConverter.convert(currentRetiredRaw, "units");
+
+    EngineNumber priorRetiredRaw = simulationState.getStream(scopeEffective, "priorRetired");
+    EngineNumber priorRetired = unitConverter.convert(priorRetiredRaw, "units");
+
+    BigDecimal retiredThisYear = currentRetired.getValue().subtract(priorRetired.getValue());
+    EngineNumber retiredPopulation = new EngineNumber(retiredThisYear, "units");
 
     stateGetter.setPopulation(retiredPopulation);
-    EngineNumber eolVolumeRaw = simulationState.getStream(scopeEffective, "retired");
-    EngineNumber eolVolume = unitConverter.convert(eolVolumeRaw, "kg");
     BigDecimal eolVolumeKg = retiredPopulation.getValue().multiply(initialCharge.getValue());
     EngineNumber eolVolumeConverted = new EngineNumber(eolVolumeKg, "kg");
     stateGetter.clearPopulation();
