@@ -1496,20 +1496,22 @@ public class MutableSimulationState implements SimulationState {
       BigDecimal newDomestic = domesticConverted.getValue().add(domesticAdd);
       BigDecimal newImport = importConverted.getValue().add(importAdd);
 
-      // Cap the restored baseline at the stream's true last-specified target (when that
-      // target is mass-based) so this never restores more than was actually displaced from
-      // virgin material. Without this cap, a year where recycled volume exceeds the target
-      // (for example a target reduced to zero while recycling still creates new equipment)
-      // would permanently ratchet the baseline up to that recycled volume, compounding
-      // further in later years. See calculateEolRecyclingVolume in SalesRecalcStrategy for
-      // the related per-year-vs-cumulative issue this complements.
+      // Cap the restored baseline so it never exceeds the true target (see
+      // getRedistributionCapKg for why).
       Optional<BigDecimal> domesticCapKg = getRedistributionCapKg(
-          parameterization, "domestic", distribution.getPercentDomestic());
-      Optional<BigDecimal> importCapKg = getRedistributionCapKg(
-          parameterization, "import", distribution.getPercentImport());
+          parameterization,
+          "domestic",
+          distribution.getPercentDomestic()
+      );
       if (domesticCapKg.isPresent()) {
         newDomestic = newDomestic.min(domesticCapKg.get());
       }
+
+      Optional<BigDecimal> importCapKg = getRedistributionCapKg(
+          parameterization,
+          "import",
+          distribution.getPercentImport()
+      );
       if (importCapKg.isPresent()) {
         newImport = newImport.min(importCapKg.get());
       }
