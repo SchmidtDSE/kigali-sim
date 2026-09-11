@@ -108,8 +108,28 @@ public class EngineResultSerializer {
     EngineNumber populationNew = engine.getStreamFor(useKey, "newEquipment");
     builder.setPopulationNew(populationNew);
 
+    // Get consumption rate, needed below to net recycling out of eol and recharge emissions
+    EngineNumber consumptionByVolume = getConsumptionByVolume(
+        useKey,
+        unitConverter
+    );
+
+    // Offset EOL emissions by the substance recovered and reused at end-of-life, since
+    // that volume is displaced rather than emitted to atmosphere.
     EngineNumber eolEmissions = engine.getStreamFor(useKey, "eolEmissions");
-    builder.setEolEmissions(eolEmissions);
+    EngineNumber recycleEolRaw = engine.getStreamFor(useKey, "recycleEol");
+    EngineNumber recycleEolValue = unitConverter.convert(recycleEolRaw, "kg");
+    EngineNumber recycleEolConsumptionValue = getConsumptionForVolume(
+        recycleEolValue,
+        consumptionByVolume,
+        stateGetter,
+        unitConverter
+    );
+    EngineNumber eolEmissionsConvert = unitConverter.convert(eolEmissions, "tCO2e");
+    BigDecimal eolEmissionsOffsetValue = eolEmissionsConvert.getValue()
+        .subtract(recycleEolConsumptionValue.getValue())
+        .max(BigDecimal.ZERO);
+    builder.setEolEmissions(new EngineNumber(eolEmissionsOffsetValue, "tCO2e"));
 
     // Calculate initial charge emissions
     EngineNumber initialChargeEmissions = calculateInitialChargeEmissions(useKey);
@@ -141,12 +161,6 @@ public class EngineResultSerializer {
     // Use values directly - recycling already handled at stream level
     builder.setDomesticValue(manufactureValue);
     builder.setImportValue(importValue);
-
-    // Get consumption
-    EngineNumber consumptionByVolume = getConsumptionByVolume(
-        useKey,
-        unitConverter
-    );
 
     EngineNumber domesticConsumptionValue = getConsumptionForVolume(
         manufactureValue,
@@ -189,17 +203,29 @@ public class EngineResultSerializer {
     );
     builder.setRecycleConsumptionValue(recycleConsumptionValue);
 
-    // Offset recharge emissions
+    // Offset recharge emissions by the substance recovered and reused at recharge (servicing)
+    // time, since that volume is displaced rather than emitted to atmosphere. Recycling at
+    // end-of-life is netted against eolEmissions above instead, not here.
     EngineNumber rechargeEmissions = engine.getStreamFor(
         useKey,
         "rechargeEmissions"
+    );
+    EngineNumber recycleRechargeRaw = engine.getStreamFor(useKey, "recycleRecharge");
+    EngineNumber recycleRechargeValue = unitConverter.convert(recycleRechargeRaw, "kg");
+    EngineNumber recycleRechargeConsumptionValue = getConsumptionForVolume(
+        recycleRechargeValue,
+        consumptionByVolume,
+        stateGetter,
+        unitConverter
     );
     OverridingConverterStateGetter clearStateGetter =
         new OverridingConverterStateGetter(this.stateGetter);
     UnitConverter clearUnitConverter = new UnitConverter(clearStateGetter);
     EngineNumber rechargeEmissionsConvert = clearUnitConverter.convert(rechargeEmissions, "tCO2e");
-    EngineNumber rechargeEmissionsOffset = new EngineNumber(
-        rechargeEmissionsConvert.getValue().subtract(recycleConsumptionValue.getValue()), "tCO2e");
+    BigDecimal rechargeEmissionsOffsetValue = rechargeEmissionsConvert.getValue()
+        .subtract(recycleRechargeConsumptionValue.getValue())
+        .max(BigDecimal.ZERO);
+    EngineNumber rechargeEmissionsOffset = new EngineNumber(rechargeEmissionsOffsetValue, "tCO2e");
     builder.setRechargeEmissions(rechargeEmissionsOffset);
   }
 
