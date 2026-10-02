@@ -21,4 +21,13 @@ public interface Operation {
    */
   void execute(PushDownMachine machine);
 
+  /**
+   * Get the kind of this operation.
+   *
+   * @return The type of this operation or OTHER if not specified.
+   */
+  default OperationType getOperationType() {
+    return OperationType.OTHER;
+  }
+
 }

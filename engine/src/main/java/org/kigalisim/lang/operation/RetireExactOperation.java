@@ -87,6 +87,12 @@ public class RetireExactOperation implements Operation {
     return assumingNew;
   }
 
+  /** {@inheritDoc} */
+  @Override
+  public OperationType getOperationType() {
+    return OperationType.RETIRE_EXACT;
+  }
+
   /**
    * Execute the exact retire operation on the given push-down machine.
    *

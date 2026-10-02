@@ -80,4 +80,10 @@ public class SetOperation implements Operation {
   public String getStream() {
     return stream;
   }
+
+  /** {@inheritDoc} */
+  @Override
+  public OperationType getOperationType() {
+    return OperationType.SET;
+  }
 }
