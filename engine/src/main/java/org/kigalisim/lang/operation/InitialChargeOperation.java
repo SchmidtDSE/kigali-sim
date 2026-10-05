@@ -65,4 +65,12 @@ public class InitialChargeOperation implements Operation {
     Engine engine = machine.getEngine();
     engine.setInitialCharge(result, stream, yearMatcher);
   }
+
+  /** {@inheritDoc} */
+  @Override
+  public OperationStaticSemantics getStaticSemantics() {
+    return new OperationStaticSemanticsBuilder(OperationType.INITIAL_CHARGE)
+        .setStream(stream)
+        .build();
+  }
 }

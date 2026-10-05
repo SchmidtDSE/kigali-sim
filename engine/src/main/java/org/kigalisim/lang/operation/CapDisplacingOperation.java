@@ -82,10 +82,9 @@ public class CapDisplacingOperation implements Operation {
   /** {@inheritDoc} */
   @Override
   public OperationStaticSemantics getStaticSemantics() {
-    OperationStaticSemanticsBuilder builder = new OperationStaticSemanticsBuilder(
-      OperationType.CAP_DISPLACING
-    );
-    builder.setStream(stream);
-    return builder.build();
+    return new OperationStaticSemanticsBuilder(OperationType.CAP_DISPLACING)
+        .setSource(stream)
+        .setDestination(displaceTarget)
+        .build();
   }
 }

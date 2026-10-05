@@ -153,4 +153,13 @@ public class CapOperation implements Operation {
     Engine engine = machine.getEngine();
     engine.cap(stream, result, yearMatcher, displaceTarget.orElse(null), displacementType);
   }
+
+  /** {@inheritDoc} */
+  @Override
+  public OperationStaticSemantics getStaticSemantics() {
+    return new OperationStaticSemanticsBuilder(OperationType.CAP)
+        .setSource(stream)
+        .setDestination(displaceTarget.orElse(stream))
+        .build();
+  }
 }

@@ -23,6 +23,9 @@ import org.kigalisim.lang.time.ParsedDuring;
  */
 public class RetireOperation implements Operation {
 
+  private static final OperationStaticSemantics STATIC_SEMANTICS =
+      new OperationStaticSemantics(OperationType.RETIRE);
+
   private final Operation amountOperation;
   private final Optional<ParsedDuring> duringMaybe;
 
@@ -91,5 +94,11 @@ public class RetireOperation implements Operation {
    */
   private void handleMixedReplacement(Engine engine) {
     EngineSupportUtils.ensureConsistentReplacement(engine, false);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public OperationStaticSemantics getStaticSemantics() {
+    return STATIC_SEMANTICS;
   }
 }

@@ -16,6 +16,9 @@ import org.kigalisim.lang.machine.PushDownMachine;
  */
 public class ComparisonOperation implements Operation {
 
+  private static final OperationStaticSemantics STATIC_SEMANTICS =
+      new OperationStaticSemantics(OperationType.COMPARISON);
+
   private final Operation left;
   private final Operation right;
   private final String operator;
@@ -48,5 +51,11 @@ public class ComparisonOperation implements Operation {
       case "<=" -> machine.lessThanOrEqual();
       default -> throw new RuntimeException("Unknown comparison operator: " + operator);
     }
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public OperationStaticSemantics getStaticSemantics() {
+    return STATIC_SEMANTICS;
   }
 }

@@ -16,6 +16,9 @@ import org.kigalisim.lang.machine.PushDownMachine;
  */
 public class DefineVariableOperation implements Operation {
 
+  private static final OperationStaticSemantics STATIC_SEMANTICS =
+      new OperationStaticSemantics(OperationType.DEFINE_VARIABLE);
+
   private final String variableName;
   private final Operation valueOperation;
 
@@ -46,5 +49,11 @@ public class DefineVariableOperation implements Operation {
     machine.getEngine().defineVariable(variableName);
 
     machine.getEngine().setVariable(variableName, value);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public OperationStaticSemantics getStaticSemantics() {
+    return STATIC_SEMANTICS;
   }
 }

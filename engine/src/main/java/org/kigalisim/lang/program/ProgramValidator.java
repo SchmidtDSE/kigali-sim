@@ -10,12 +10,10 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import org.kigalisim.lang.operation.ChangeOperation;
+import java.util.Optional;
 import org.kigalisim.lang.operation.Operation;
+import org.kigalisim.lang.operation.OperationStaticSemantics;
 import org.kigalisim.lang.operation.OperationType;
-import org.kigalisim.lang.operation.RetireExactOperation;
-import org.kigalisim.lang.operation.RetireWeibullOperation;
-import org.kigalisim.lang.operation.SetOperation;
 
 /**
  * Static validator for cross-operation constraints that are only visible after a
@@ -27,6 +25,8 @@ import org.kigalisim.lang.operation.SetOperation;
 public final class ProgramValidator {
 
   private static final String DEFAULT_STANZA = "default";
+
+  private static final String PRIOR_EQUIPMENT = "priorEquipment";
 
   private static final String PRIOR_MESSAGE =
       "Weibull retirement requires equipment ages, which are derived from simulated sales. "
@@ -135,14 +135,17 @@ public final class ProgramValidator {
 
     for (Operation operation : operations) {
       OperationStaticSemantics staticSemantics = operation.getStaticSemantics();
+
       OperationType operationType = staticSemantics.getOperationType();
-      if (operationType == OperationType.RETIRE_WEIBULL) {
-        hasWeibullWithoutAssumingNew = !staticSemantics.getAssumePriorNew().orElse(false);
-      } else if (operationType == OperationType.RETIRE_EXACT) {
-        hasExactRetireWithoutAssumingNew = !staticSemantics.getAssumePriorNew().orElse(false);
+      Optional<String> stream = staticSemantics.getDestinationStream();
+      boolean assumingNew = staticSemantics.getAssumePriorNew().orElse(false);
+
+      if (operationType == OperationType.RETIRE_WEIBULL && !assumingNew) {
+        hasWeibullWithoutAssumingNew = true;
+      } else if (operationType == OperationType.RETIRE_EXACT && !assumingNew) {
+        hasExactRetireWithoutAssumingNew = true;
       } else if (operationType == OperationType.SET || operationType == OperationType.CHANGE) {
-        Optional<String> stream = staticSemantics.getDestinationStream();
-        setsPriorEquipment = "priorEquipment".equals(stream.get());
+        setsPriorEquipment |= PRIOR_EQUIPMENT.equals(stream.orElse(""));
       }
     }
 

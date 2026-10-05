@@ -18,6 +18,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.kigalisim.lang.machine.PushDownMachine;
 import org.kigalisim.lang.operation.Operation;
+import org.kigalisim.lang.operation.OperationStaticSemantics;
+import org.kigalisim.lang.operation.OperationType;
 
 /**
  * Tests for the ParsedProgram class.
@@ -157,6 +159,16 @@ public class ParsedProgramTest {
     @Override
     public void execute(PushDownMachine machine) {
       // Do nothing, this is just a stub for testing
+    }
+
+    /**
+     * Minimal static semantics for testing.
+     *
+     * @return Semantics indicating an operation outside the built-in set.
+     */
+    @Override
+    public OperationStaticSemantics getStaticSemantics() {
+      return new OperationStaticSemantics(OperationType.OTHER);
     }
   }
 }

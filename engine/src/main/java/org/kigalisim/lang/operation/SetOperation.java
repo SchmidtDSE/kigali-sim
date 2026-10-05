@@ -72,18 +72,11 @@ public class SetOperation implements Operation {
     engine.setStream(stream, result, Optional.ofNullable(yearMatcher));
   }
 
-  /**
-   * The name of the stream this operation sets.
-   *
-   * @return the stream name.
-   */
-  public String getStream() {
-    return stream;
-  }
-
   /** {@inheritDoc} */
   @Override
-  public OperationType getOperationType() {
-    return OperationType.SET;
+  public OperationStaticSemantics getStaticSemantics() {
+    return new OperationStaticSemanticsBuilder(OperationType.SET)
+        .setStream(stream)
+        .build();
   }
 }

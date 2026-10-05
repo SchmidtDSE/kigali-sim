@@ -73,21 +73,6 @@ public class RetireWeibullOperation implements Operation {
   }
 
   /**
-   * Whether prior equipment is treated as a pseudo-cohort of typical age.
-   *
-   * @return true if the {@code assuming new} modifier is set
-   */
-  public boolean getAssumingNew() {
-    return assumingNew;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public OperationType getOperationType() {
-    return OperationType.RETIRE_WEIBULL;
-  }
-
-  /**
    * Execute the Weibull retire operation on the given push-down machine.
    *
    * <p>Builds a year matcher from the optional during clause, skips execution if the
@@ -186,5 +171,13 @@ public class RetireWeibullOperation implements Operation {
     }
     return population.multiply(retireWeight)
         .divide(weightSum, MathContext.DECIMAL128);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public OperationStaticSemantics getStaticSemantics() {
+    return new OperationStaticSemanticsBuilder(OperationType.RETIRE_WEIBULL)
+        .setAssumePriorNew(assumingNew)
+        .build();
   }
 }

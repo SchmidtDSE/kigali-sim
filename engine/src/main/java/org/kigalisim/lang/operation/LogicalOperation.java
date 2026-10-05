@@ -16,6 +16,9 @@ import org.kigalisim.lang.machine.PushDownMachine;
  */
 public class LogicalOperation implements Operation {
 
+  private static final OperationStaticSemantics STATIC_SEMANTICS =
+      new OperationStaticSemantics(OperationType.LOGICAL);
+
   private final Operation left;
   private final Operation right;
   private final String operator;
@@ -45,5 +48,11 @@ public class LogicalOperation implements Operation {
       case "xor" -> machine.xor();
       default -> throw new RuntimeException("Unknown logical operator: " + operator);
     }
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public OperationStaticSemantics getStaticSemantics() {
+    return STATIC_SEMANTICS;
   }
 }

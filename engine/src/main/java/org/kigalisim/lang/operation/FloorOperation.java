@@ -153,4 +153,13 @@ public class FloorOperation implements Operation {
     Engine engine = machine.getEngine();
     engine.floor(stream, result, yearMatcher, displaceTarget.orElse(null), displacementType);
   }
+
+  /** {@inheritDoc} */
+  @Override
+  public OperationStaticSemantics getStaticSemantics() {
+    return new OperationStaticSemanticsBuilder(OperationType.FLOOR)
+        .setSource(stream)
+        .setDestination(displaceTarget.orElse(stream))
+        .build();
+  }
 }
