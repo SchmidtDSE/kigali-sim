@@ -134,22 +134,15 @@ public final class ProgramValidator {
     boolean setsPriorEquipment = false;
 
     for (Operation operation : operations) {
-      OperationType operationType = operation.getOperationType();
-      if (operationType == OperationType.RETIRE_WEIBULL
-          && !((RetireWeibullOperation) operation).getAssumingNew()) {
-        hasWeibullWithoutAssumingNew = true;
-      }
-      if (operationType == OperationType.RETIRE_EXACT
-          && !((RetireExactOperation) operation).getAssumingNew()) {
-        hasExactRetireWithoutAssumingNew = true;
-      }
-      if (operationType == OperationType.SET
-          && "priorEquipment".equals(((SetOperation) operation).getStream())) {
-        setsPriorEquipment = true;
-      }
-      if (operationType == OperationType.CHANGE
-          && "priorEquipment".equals(((ChangeOperation) operation).getStream())) {
-        setsPriorEquipment = true;
+      OperationStaticSemantics staticSemantics = operation.getStaticSemantics();
+      OperationType operationType = staticSemantics.getOperationType();
+      if (operationType == OperationType.RETIRE_WEIBULL) {
+        hasWeibullWithoutAssumingNew = !staticSemantics.getAssumePriorNew().orElse(false);
+      } else if (operationType == OperationType.RETIRE_EXACT) {
+        hasExactRetireWithoutAssumingNew = !staticSemantics.getAssumePriorNew().orElse(false);
+      } else if (operationType == OperationType.SET || operationType == OperationType.CHANGE) {
+        Optional<String> stream = staticSemantics.getDestinationStream();
+        setsPriorEquipment = "priorEquipment".equals(stream.get());
       }
     }
 

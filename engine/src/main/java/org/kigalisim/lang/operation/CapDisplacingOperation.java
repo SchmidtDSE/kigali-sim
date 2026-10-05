@@ -78,4 +78,14 @@ public class CapDisplacingOperation implements Operation {
     engine.cap(stream, result, yearMatcher, displaceTarget,
         DisplacementType.EQUIVALENT);
   }
+
+  /** {@inheritDoc} */
+  @Override
+  public OperationStaticSemantics getStaticSemantics() {
+    OperationStaticSemanticsBuilder builder = new OperationStaticSemanticsBuilder(
+      OperationType.CAP_DISPLACING
+    );
+    builder.setStream(stream);
+    return builder.build();
+  }
 }

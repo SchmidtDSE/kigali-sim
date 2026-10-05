@@ -13,6 +13,9 @@ package org.kigalisim.lang.operation;
  * Enum describing the kind of an operation.
  */
 public enum OperationType {
+  ADDITION,
+  CAP_DISPLACING,
+  CAP,
   /** Retirement following a Weibull survival curve. */
   RETIRE_WEIBULL,
   /** Retirement of the cohort at an exact age. */
