@@ -15,6 +15,10 @@ import org.kigalisim.lang.machine.PushDownMachine;
  */
 public class PreCalculatedOperation implements Operation {
 
+  private static final OperationStaticSemantics STATIC_SEMANTICS = new OperationStaticSemantics(
+    OperationType.PRE_CALCULATED
+  );
+
   private final EngineNumber result;
 
   /**
@@ -30,5 +34,11 @@ public class PreCalculatedOperation implements Operation {
   @Override
   public void execute(PushDownMachine engine) {
     engine.push(result);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public OperationStaticSemantics getStaticSemantics() {
+    return STATIC_SEMANTICS;
   }
 }

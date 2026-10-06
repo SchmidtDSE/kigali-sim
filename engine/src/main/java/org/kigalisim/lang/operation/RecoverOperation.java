@@ -26,6 +26,10 @@ import org.kigalisim.lang.time.ParsedDuring;
  */
 public class RecoverOperation implements Operation {
 
+  private static final OperationStaticSemantics STATIC_SEMANTICS = new OperationStaticSemantics(
+    OperationType.RECOVER
+  );
+
   /**
    * Enum representing the stage of recovery.
    */
@@ -245,5 +249,11 @@ public class RecoverOperation implements Operation {
       }
     }
     return inductionRate;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public OperationStaticSemantics getStaticSemantics() {
+    return STATIC_SEMANTICS;
   }
 }

@@ -13,6 +13,10 @@ import org.kigalisim.lang.machine.PushDownMachine;
  */
 public class PowerOperation implements Operation {
 
+  private static final OperationStaticSemantics STATIC_SEMANTICS = new OperationStaticSemantics(
+    OperationType.POWER
+  );
+
   private final Operation left;
   private final Operation right;
 
@@ -33,5 +37,11 @@ public class PowerOperation implements Operation {
     left.execute(machine);
     right.execute(machine);
     machine.power();
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public OperationStaticSemantics getStaticSemantics() {
+    return STATIC_SEMANTICS;
   }
 }

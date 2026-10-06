@@ -17,9 +17,18 @@ import org.kigalisim.lang.machine.PushDownMachine;
  */
 public class RemoveUnitsOperation implements Operation {
 
+  private static final OperationStaticSemantics STATIC_SEMANTICS = new OperationStaticSemantics(
+    OperationType.REMOVE_UNITS
+  );
+
   @Override
   public void execute(PushDownMachine machine) {
     machine.changeUnits("", true);
   }
 
+  /** {@inheritDoc} */
+  @Override
+  public OperationStaticSemantics getStaticSemantics() {
+    return STATIC_SEMANTICS;
+  }
 }

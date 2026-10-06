@@ -71,4 +71,12 @@ public class ReplaceOperation implements Operation {
     Engine engine = machine.getEngine();
     engine.replace(result, stream, destinationSubstance, yearMatcher);
   }
+
+  /** {@inheritDoc} */
+  @Override
+  public OperationStaticSemantics getStaticSemantics() {
+    return new OperationStaticSemanticsBuilder(OperationType.REPLACE)
+        .setStream(stream)
+        .build();
+  }
 }

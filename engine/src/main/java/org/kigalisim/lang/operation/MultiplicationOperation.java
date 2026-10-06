@@ -16,6 +16,10 @@ import org.kigalisim.lang.machine.PushDownMachine;
  */
 public class MultiplicationOperation implements Operation {
 
+  private static final OperationStaticSemantics STATIC_SEMANTICS = new OperationStaticSemantics(
+    OperationType.MULTIPLICATION
+  );
+
   private final Operation left;
   private final Operation right;
 
@@ -36,5 +40,11 @@ public class MultiplicationOperation implements Operation {
     left.execute(machine);
     right.execute(machine);
     machine.multiply();
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public OperationStaticSemantics getStaticSemantics() {
+    return STATIC_SEMANTICS;
   }
 }
