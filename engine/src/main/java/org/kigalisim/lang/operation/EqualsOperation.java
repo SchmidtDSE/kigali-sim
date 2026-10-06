@@ -22,8 +22,9 @@ import org.kigalisim.lang.time.ParsedDuring;
  */
 public class EqualsOperation implements Operation {
 
-  private static final OperationStaticSemantics STATIC_SEMANTICS =
-      new OperationStaticSemantics(OperationType.EQUALS);
+  private static final OperationStaticSemantics STATIC_SEMANTICS = new OperationStaticSemantics(
+    OperationType.EQUALS
+  );
 
   private final Operation valueOperation;
   private final Optional<ParsedDuring> duringMaybe;

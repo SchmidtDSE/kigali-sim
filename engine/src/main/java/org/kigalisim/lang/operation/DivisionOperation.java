@@ -16,8 +16,9 @@ import org.kigalisim.lang.machine.PushDownMachine;
  */
 public class DivisionOperation implements Operation {
 
-  private static final OperationStaticSemantics STATIC_SEMANTICS =
-      new OperationStaticSemantics(OperationType.DIVISION);
+  private static final OperationStaticSemantics STATIC_SEMANTICS = new OperationStaticSemantics(
+    OperationType.DIVISION
+  );
 
   private final Operation left;
   private final Operation right;
