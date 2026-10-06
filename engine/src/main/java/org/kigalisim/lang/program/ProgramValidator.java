@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import org.kigalisim.lang.operation.ChangeOperation;
 import org.kigalisim.lang.operation.Operation;
+import org.kigalisim.lang.operation.OperationType;
 import org.kigalisim.lang.operation.RetireExactOperation;
 import org.kigalisim.lang.operation.RetireWeibullOperation;
 import org.kigalisim.lang.operation.SetOperation;
@@ -133,16 +134,21 @@ public final class ProgramValidator {
     boolean setsPriorEquipment = false;
 
     for (Operation operation : operations) {
-      if (operation instanceof RetireWeibullOperation weibull && !weibull.getAssumingNew()) {
+      OperationType operationType = operation.getOperationType();
+      if (operationType == OperationType.RETIRE_WEIBULL
+          && !((RetireWeibullOperation) operation).getAssumingNew()) {
         hasWeibullWithoutAssumingNew = true;
       }
-      if (operation instanceof RetireExactOperation exact && !exact.getAssumingNew()) {
+      if (operationType == OperationType.RETIRE_EXACT
+          && !((RetireExactOperation) operation).getAssumingNew()) {
         hasExactRetireWithoutAssumingNew = true;
       }
-      if (operation instanceof SetOperation set && "priorEquipment".equals(set.getStream())) {
+      if (operationType == OperationType.SET
+          && "priorEquipment".equals(((SetOperation) operation).getStream())) {
         setsPriorEquipment = true;
       }
-      if (operation instanceof ChangeOperation change && "priorEquipment".equals(change.getStream())) {
+      if (operationType == OperationType.CHANGE
+          && "priorEquipment".equals(((ChangeOperation) operation).getStream())) {
         setsPriorEquipment = true;
       }
     }

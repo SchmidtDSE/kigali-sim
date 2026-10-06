@@ -79,4 +79,10 @@ public class ChangeOperation implements Operation {
   public String getStream() {
     return stream;
   }
+
+  /** {@inheritDoc} */
+  @Override
+  public OperationType getOperationType() {
+    return OperationType.CHANGE;
+  }
 }

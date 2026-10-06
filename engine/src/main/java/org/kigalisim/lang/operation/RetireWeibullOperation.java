@@ -81,6 +81,12 @@ public class RetireWeibullOperation implements Operation {
     return assumingNew;
   }
 
+  /** {@inheritDoc} */
+  @Override
+  public OperationType getOperationType() {
+    return OperationType.RETIRE_WEIBULL;
+  }
+
   /**
    * Execute the Weibull retire operation on the given push-down machine.
    *
