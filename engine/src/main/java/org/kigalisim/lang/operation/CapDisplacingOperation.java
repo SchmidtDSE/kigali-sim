@@ -10,7 +10,6 @@ import java.util.Optional;
 import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.state.YearMatcher;
-import org.kigalisim.engine.support.EngineSupportUtils;
 import org.kigalisim.lang.machine.PushDownMachine;
 import org.kigalisim.lang.time.ParsedDuring;
 
@@ -83,12 +82,9 @@ public class CapDisplacingOperation implements Operation {
   /** {@inheritDoc} */
   @Override
   public OperationStaticSemantics getStaticSemantics() {
-    OperationStaticSemanticsBuilder builder = new OperationStaticSemanticsBuilder(
-        OperationType.CAP_DISPLACING
-    ).addStream(stream);
-    if (EngineSupportUtils.STREAM_NAMES.contains(displaceTarget)) {
-      builder.addStream(displaceTarget);
-    }
-    return builder.build();
+    return new OperationStaticSemanticsBuilder(OperationType.CAP_DISPLACING)
+        .addStream(stream)
+        .addIfStream(displaceTarget)
+        .build();
   }
 }

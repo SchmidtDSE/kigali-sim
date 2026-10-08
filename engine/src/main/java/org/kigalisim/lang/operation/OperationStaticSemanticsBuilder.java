@@ -9,6 +9,7 @@ package org.kigalisim.lang.operation;
 import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.Set;
+import org.kigalisim.engine.support.EngineSupportUtils;
 
 
 /**
@@ -42,6 +43,22 @@ public class OperationStaticSemanticsBuilder {
    */
   public OperationStaticSemanticsBuilder addStream(String stream) {
     streams.add(stream);
+    return this;
+  }
+
+  /**
+   * Indicate that a name is included in the operation if it is a known stream.
+   *
+   * <p>Intended for names which may refer to either a stream or a substance, like a displacement
+   * target. Names which are not known streams are ignored.</p>
+   *
+   * @param name The name which may be a stream involved in the operation.
+   * @return This builder for chaining.
+   */
+  public OperationStaticSemanticsBuilder addIfStream(String name) {
+    if (EngineSupportUtils.STREAM_NAMES.contains(name)) {
+      streams.add(name);
+    }
     return this;
   }
 

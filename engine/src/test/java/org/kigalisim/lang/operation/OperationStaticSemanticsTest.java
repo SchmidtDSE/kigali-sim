@@ -213,4 +213,17 @@ public class OperationStaticSemanticsTest {
     assertEquals(OperationType.CAP_DISPLACING, semantics.getOperationType());
     assertEquals(Set.of("sales", "import"), semantics.getStreams());
   }
+
+  /**
+   * Test that the builder adds a name only if it is a known stream when using addIfStream.
+   */
+  @Test
+  public void testBuilderAddIfStream() {
+    OperationStaticSemantics semantics = new OperationStaticSemanticsBuilder(OperationType.CAP)
+        .addStream("sales")
+        .addIfStream("import")
+        .addIfStream("R-404A")
+        .build();
+    assertEquals(Set.of("sales", "import"), semantics.getStreams());
+  }
 }

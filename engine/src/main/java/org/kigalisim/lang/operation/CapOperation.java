@@ -10,7 +10,6 @@ import java.util.Optional;
 import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.state.YearMatcher;
-import org.kigalisim.engine.support.EngineSupportUtils;
 import org.kigalisim.lang.machine.PushDownMachine;
 import org.kigalisim.lang.time.ParsedDuring;
 
@@ -161,8 +160,7 @@ public class CapOperation implements Operation {
     OperationStaticSemanticsBuilder builder = new OperationStaticSemanticsBuilder(
         OperationType.CAP
     ).addStream(stream);
-    displaceTarget.filter(EngineSupportUtils.STREAM_NAMES::contains)
-        .ifPresent(builder::addStream);
+    displaceTarget.ifPresent(builder::addIfStream);
     return builder.build();
   }
 }
