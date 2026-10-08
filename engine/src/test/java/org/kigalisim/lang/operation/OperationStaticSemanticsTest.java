@@ -173,4 +173,44 @@ public class OperationStaticSemanticsTest {
     OperationStaticSemantics semantics = new OperationStaticSemantics(OperationType.SET, "sales");
     assertThrows(UnsupportedOperationException.class, () -> semantics.getStreams().add("import"));
   }
+
+  /**
+   * Test that cap and floor operations leave a substance displacement target out of the streams.
+   */
+  @Test
+  public void testSubstanceDisplacementTargetNotStream() {
+    Set<String> expected = Set.of("sales");
+    assertEquals(
+        expected,
+        new CapOperation("sales", valueOperation, "R-404A").getStaticSemantics().getStreams()
+    );
+    assertEquals(
+        expected,
+        new FloorOperation("sales", valueOperation, "R-404A").getStaticSemantics().getStreams()
+    );
+    assertEquals(
+        expected,
+        new CapDisplacingOperation("sales", valueOperation, "R-404A")
+            .getStaticSemantics().getStreams()
+    );
+    assertEquals(
+        expected,
+        new FloorDisplacingOperation("sales", valueOperation, "R-404A")
+            .getStaticSemantics().getStreams()
+    );
+  }
+
+  /**
+   * Test that the displacing cap operation reports a stream displacement target.
+   */
+  @Test
+  public void testCapDisplacingOperationStreamTarget() {
+    OperationStaticSemantics semantics = new CapDisplacingOperation(
+        "sales",
+        valueOperation,
+        "import"
+    ).getStaticSemantics();
+    assertEquals(OperationType.CAP_DISPLACING, semantics.getOperationType());
+    assertEquals(Set.of("sales", "import"), semantics.getStreams());
+  }
 }

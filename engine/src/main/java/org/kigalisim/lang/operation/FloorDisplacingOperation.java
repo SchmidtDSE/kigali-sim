@@ -10,6 +10,7 @@ import java.util.Optional;
 import org.kigalisim.engine.Engine;
 import org.kigalisim.engine.number.EngineNumber;
 import org.kigalisim.engine.state.YearMatcher;
+import org.kigalisim.engine.support.EngineSupportUtils;
 import org.kigalisim.lang.machine.PushDownMachine;
 import org.kigalisim.lang.time.ParsedDuring;
 
@@ -82,9 +83,12 @@ public class FloorDisplacingOperation implements Operation {
   /** {@inheritDoc} */
   @Override
   public OperationStaticSemantics getStaticSemantics() {
-    return new OperationStaticSemanticsBuilder(OperationType.FLOOR_DISPLACING)
-        .addStream(stream)
-        .addStream(displaceTarget)
-        .build();
+    OperationStaticSemanticsBuilder builder = new OperationStaticSemanticsBuilder(
+        OperationType.FLOOR_DISPLACING
+    ).addStream(stream);
+    if (EngineSupportUtils.STREAM_NAMES.contains(displaceTarget)) {
+      builder.addStream(displaceTarget);
+    }
+    return builder.build();
   }
 }
