@@ -17,7 +17,7 @@ import org.kigalisim.lang.machine.PushDownMachine;
 public class GetVariableOperation implements Operation {
 
   private static final OperationStaticSemantics STATIC_SEMANTICS = new OperationStaticSemantics(
-    OperationType.GET_VARIABLE
+      OperationType.GET_VARIABLE
   );
 
   private final String variableName;

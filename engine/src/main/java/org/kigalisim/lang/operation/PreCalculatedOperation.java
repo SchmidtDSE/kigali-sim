@@ -16,7 +16,7 @@ import org.kigalisim.lang.machine.PushDownMachine;
 public class PreCalculatedOperation implements Operation {
 
   private static final OperationStaticSemantics STATIC_SEMANTICS = new OperationStaticSemantics(
-    OperationType.PRE_CALCULATED
+      OperationType.PRE_CALCULATED
   );
 
   private final EngineNumber result;

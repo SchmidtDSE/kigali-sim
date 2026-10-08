@@ -76,7 +76,7 @@ public class SetOperation implements Operation {
   @Override
   public OperationStaticSemantics getStaticSemantics() {
     return new OperationStaticSemanticsBuilder(OperationType.SET)
-        .setStream(stream)
+        .addStream(stream)
         .build();
   }
 }

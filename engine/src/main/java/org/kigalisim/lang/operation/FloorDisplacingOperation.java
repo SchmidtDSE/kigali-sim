@@ -83,8 +83,8 @@ public class FloorDisplacingOperation implements Operation {
   @Override
   public OperationStaticSemantics getStaticSemantics() {
     return new OperationStaticSemanticsBuilder(OperationType.FLOOR_DISPLACING)
-        .setSource(stream)
-        .setDestination(displaceTarget)
+        .addStream(stream)
+        .addStream(displaceTarget)
         .build();
   }
 }

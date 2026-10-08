@@ -20,7 +20,7 @@ import org.kigalisim.lang.machine.PushDownMachine;
 public class ConditionalOperation implements Operation {
 
   private static final OperationStaticSemantics STATIC_SEMANTICS = new OperationStaticSemantics(
-    OperationType.CONDITIONAL
+      OperationType.CONDITIONAL
   );
 
   private final Operation condition;

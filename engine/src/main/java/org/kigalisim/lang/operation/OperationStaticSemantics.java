@@ -6,7 +6,10 @@
 
 package org.kigalisim.lang.operation;
 
+import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.Optional;
+import java.util.Set;
 
 
 /**
@@ -18,8 +21,7 @@ import java.util.Optional;
 public class OperationStaticSemantics {
 
   private final OperationType operationType;
-  private final Optional<String> sourceStream;
-  private final Optional<String> destinationStream;
+  private final Set<String> streams;
   private final Optional<Boolean> assumePriorNew;
 
   /**
@@ -28,24 +30,31 @@ public class OperationStaticSemantics {
    * @param operationType The type of operation for which the record is provided.
    */
   public OperationStaticSemantics(OperationType operationType) {
-    this(operationType, Optional.empty(), Optional.empty(), Optional.empty());
+    this(operationType, Set.of(), Optional.empty());
+  }
+
+  /**
+   * Create a record for an operation which involves a single stream.
+   *
+   * @param operationType The type of operation for which the record is provided.
+   * @param stream The name of the stream involved in the operation.
+   */
+  public OperationStaticSemantics(OperationType operationType, String stream) {
+    this(operationType, Set.of(stream), Optional.empty());
   }
 
   /**
    * Create a new record of statically inferred operation properties.
    *
    * @param operationType The type of operation for which the record is provided.
-   * @param sourceStream The name of the stream read by the operation or empty if not applicable.
-   * @param destinationStream The name of the stream modified by the operation or empty if not
-   *     applicable.
+   * @param streams The names of the streams included in the operation, copied on construction.
    * @param assumePriorNew Whether the operation treats prior equipment as a pseudo-cohort of
    *     typical age (the {@code assuming new} modifier) or empty if not applicable.
    */
-  public OperationStaticSemantics(OperationType operationType, Optional<String> sourceStream,
-      Optional<String> destinationStream, Optional<Boolean> assumePriorNew) {
+  public OperationStaticSemantics(OperationType operationType, Set<String> streams,
+      Optional<Boolean> assumePriorNew) {
     this.operationType = operationType;
-    this.sourceStream = sourceStream;
-    this.destinationStream = destinationStream;
+    this.streams = Collections.unmodifiableSet(new LinkedHashSet<>(streams));
     this.assumePriorNew = assumePriorNew;
   }
 
@@ -59,21 +68,12 @@ public class OperationStaticSemantics {
   }
 
   /**
-   * Get the stream read by the operation.
+   * Get the streams included in the operation.
    *
-   * @return The name of the stream read or empty if not applicable.
+   * @return Unmodifiable set of names of the streams involved, empty if none apply.
    */
-  public Optional<String> getSourceStream() {
-    return sourceStream;
-  }
-
-  /**
-   * Get the stream modified by the operation.
-   *
-   * @return The name of the stream modified or empty if not applicable.
-   */
-  public Optional<String> getDestinationStream() {
-    return destinationStream;
+  public Set<String> getStreams() {
+    return streams;
   }
 
   /**

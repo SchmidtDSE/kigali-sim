@@ -166,7 +166,7 @@ public class GetStreamOperation implements Operation {
   @Override
   public OperationStaticSemantics getStaticSemantics() {
     return new OperationStaticSemanticsBuilder(OperationType.GET_STREAM)
-        .setSource(streamName)
+        .addStream(streamName)
         .build();
   }
 }

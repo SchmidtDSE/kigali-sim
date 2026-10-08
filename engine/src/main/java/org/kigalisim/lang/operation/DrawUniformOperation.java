@@ -18,7 +18,7 @@ import org.kigalisim.lang.machine.PushDownMachine;
 public class DrawUniformOperation implements Operation {
 
   private static final OperationStaticSemantics STATIC_SEMANTICS = new OperationStaticSemantics(
-    OperationType.DRAW_UNIFORM
+      OperationType.DRAW_UNIFORM
   );
 
   private final Operation low;

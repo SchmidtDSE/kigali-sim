@@ -24,7 +24,7 @@ import org.kigalisim.lang.time.ParsedDuring;
 public class RetireOperation implements Operation {
 
   private static final OperationStaticSemantics STATIC_SEMANTICS = new OperationStaticSemantics(
-    OperationType.RETIRE
+      OperationType.RETIRE
   );
 
   private final Operation amountOperation;

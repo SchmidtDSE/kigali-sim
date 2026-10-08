@@ -70,7 +70,7 @@ public class InitialChargeOperation implements Operation {
   @Override
   public OperationStaticSemantics getStaticSemantics() {
     return new OperationStaticSemanticsBuilder(OperationType.INITIAL_CHARGE)
-        .setStream(stream)
+        .addStream(stream)
         .build();
   }
 }

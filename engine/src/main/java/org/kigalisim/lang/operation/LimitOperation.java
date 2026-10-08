@@ -17,7 +17,7 @@ import org.kigalisim.lang.machine.PushDownMachine;
 public class LimitOperation implements Operation {
 
   private static final OperationStaticSemantics STATIC_SEMANTICS = new OperationStaticSemantics(
-    OperationType.LIMIT
+      OperationType.LIMIT
   );
 
   private final Operation operand;

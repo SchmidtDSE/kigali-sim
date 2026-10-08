@@ -157,9 +157,10 @@ public class FloorOperation implements Operation {
   /** {@inheritDoc} */
   @Override
   public OperationStaticSemantics getStaticSemantics() {
-    return new OperationStaticSemanticsBuilder(OperationType.FLOOR)
-        .setSource(stream)
-        .setDestination(displaceTarget.orElse(stream))
-        .build();
+    OperationStaticSemanticsBuilder builder = new OperationStaticSemanticsBuilder(
+        OperationType.FLOOR
+    ).addStream(stream);
+    displaceTarget.ifPresent(builder::addStream);
+    return builder.build();
   }
 }

@@ -74,7 +74,7 @@ public class RechargeOperation implements Operation {
   @Override
   public OperationStaticSemantics getStaticSemantics() {
     return new OperationStaticSemanticsBuilder(OperationType.RECHARGE)
-        .setDestination(target)
+        .addStream(target)
         .build();
   }
 }

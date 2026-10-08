@@ -9,7 +9,6 @@ package org.kigalisim.lang.validation;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import org.kigalisim.lang.operation.Operation;
@@ -106,8 +105,7 @@ public class DuplicateValidator {
     for (Operation operation : substance.getOperations()) {
       OperationStaticSemantics staticSemantics = operation.getStaticSemantics();
       if (staticSemantics.getOperationType() == OperationType.ENABLE) {
-        Optional<String> streamName = staticSemantics.getDestinationStream();
-        streamName.ifPresent(equipmentTypes::add);
+        equipmentTypes.addAll(staticSemantics.getStreams());
       }
     }
 

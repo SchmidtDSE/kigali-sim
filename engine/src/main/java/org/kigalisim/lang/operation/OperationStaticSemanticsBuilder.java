@@ -6,7 +6,9 @@
 
 package org.kigalisim.lang.operation;
 
+import java.util.LinkedHashSet;
 import java.util.Optional;
+import java.util.Set;
 
 
 /**
@@ -18,8 +20,7 @@ import java.util.Optional;
 public class OperationStaticSemanticsBuilder {
 
   private final OperationType operationType;
-  private Optional<String> sourceStream;
-  private Optional<String> destinationStream;
+  private final Set<String> streams;
   private Optional<Boolean> assumePriorNew;
 
   /**
@@ -29,42 +30,18 @@ public class OperationStaticSemanticsBuilder {
    */
   public OperationStaticSemanticsBuilder(OperationType operationType) {
     this.operationType = operationType;
-    sourceStream = Optional.empty();
-    destinationStream = Optional.empty();
+    streams = new LinkedHashSet<>();
     assumePriorNew = Optional.empty();
   }
 
   /**
-   * Indicate that the operation both reads and modifies the given stream.
+   * Indicate that a stream is included in the operation.
    *
-   * @param stream The name of the stream used as both source and destination.
+   * @param stream The name of the stream involved in the operation.
    * @return This builder for chaining.
    */
-  public OperationStaticSemanticsBuilder setStream(String stream) {
-    sourceStream = Optional.of(stream);
-    destinationStream = Optional.of(stream);
-    return this;
-  }
-
-  /**
-   * Indicate the stream read by the operation.
-   *
-   * @param stream The name of the source stream.
-   * @return This builder for chaining.
-   */
-  public OperationStaticSemanticsBuilder setSource(String stream) {
-    sourceStream = Optional.of(stream);
-    return this;
-  }
-
-  /**
-   * Indicate the stream modified by the operation.
-   *
-   * @param stream The name of the destination stream.
-   * @return This builder for chaining.
-   */
-  public OperationStaticSemanticsBuilder setDestination(String stream) {
-    destinationStream = Optional.of(stream);
+  public OperationStaticSemanticsBuilder addStream(String stream) {
+    streams.add(stream);
     return this;
   }
 
@@ -87,8 +64,7 @@ public class OperationStaticSemanticsBuilder {
   public OperationStaticSemantics build() {
     return new OperationStaticSemantics(
         operationType,
-        sourceStream,
-        destinationStream,
+        streams,
         assumePriorNew
     );
   }

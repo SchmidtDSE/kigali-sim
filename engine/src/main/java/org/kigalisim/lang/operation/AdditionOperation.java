@@ -17,7 +17,7 @@ import org.kigalisim.lang.machine.PushDownMachine;
 public class AdditionOperation implements Operation {
 
   private static final OperationStaticSemantics STATIC_SEMANTICS = new OperationStaticSemantics(
-    OperationType.ADDITION
+      OperationType.ADDITION
   );
 
   private final Operation left;

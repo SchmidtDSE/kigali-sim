@@ -75,7 +75,7 @@ public class ChangeOperation implements Operation {
   @Override
   public OperationStaticSemantics getStaticSemantics() {
     return new OperationStaticSemanticsBuilder(OperationType.CHANGE)
-        .setStream(stream)
+        .addStream(stream)
         .build();
   }
 }

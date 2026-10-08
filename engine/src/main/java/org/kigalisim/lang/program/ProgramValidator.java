@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.Set;
 import org.kigalisim.lang.operation.Operation;
 import org.kigalisim.lang.operation.OperationStaticSemantics;
 import org.kigalisim.lang.operation.OperationType;
@@ -137,7 +137,7 @@ public final class ProgramValidator {
       OperationStaticSemantics staticSemantics = operation.getStaticSemantics();
 
       OperationType operationType = staticSemantics.getOperationType();
-      Optional<String> stream = staticSemantics.getDestinationStream();
+      Set<String> streams = staticSemantics.getStreams();
       boolean assumingNew = staticSemantics.getAssumePriorNew().orElse(false);
 
       if (operationType == OperationType.RETIRE_WEIBULL && !assumingNew) {
@@ -145,7 +145,7 @@ public final class ProgramValidator {
       } else if (operationType == OperationType.RETIRE_EXACT && !assumingNew) {
         hasExactRetireWithoutAssumingNew = true;
       } else if (operationType == OperationType.SET || operationType == OperationType.CHANGE) {
-        setsPriorEquipment |= PRIOR_EQUIPMENT.equals(stream.orElse(""));
+        setsPriorEquipment |= streams.contains(PRIOR_EQUIPMENT);
       }
     }
 

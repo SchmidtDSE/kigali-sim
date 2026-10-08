@@ -157,9 +157,10 @@ public class CapOperation implements Operation {
   /** {@inheritDoc} */
   @Override
   public OperationStaticSemantics getStaticSemantics() {
-    return new OperationStaticSemanticsBuilder(OperationType.CAP)
-        .setSource(stream)
-        .setDestination(displaceTarget.orElse(stream))
-        .build();
+    OperationStaticSemanticsBuilder builder = new OperationStaticSemanticsBuilder(
+        OperationType.CAP
+    ).addStream(stream);
+    displaceTarget.ifPresent(builder::addStream);
+    return builder.build();
   }
 }

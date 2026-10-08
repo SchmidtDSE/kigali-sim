@@ -17,7 +17,7 @@ import org.kigalisim.lang.machine.PushDownMachine;
 public class ComparisonOperation implements Operation {
 
   private static final OperationStaticSemantics STATIC_SEMANTICS = new OperationStaticSemantics(
-    OperationType.COMPARISON
+      OperationType.COMPARISON
   );
 
   private final Operation left;

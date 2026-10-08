@@ -17,7 +17,7 @@ import org.kigalisim.lang.machine.PushDownMachine;
 public class EqualityOperation implements Operation {
 
   private static final OperationStaticSemantics STATIC_SEMANTICS = new OperationStaticSemantics(
-    OperationType.EQUALITY
+      OperationType.EQUALITY
   );
 
   private final Operation left;

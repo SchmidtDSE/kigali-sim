@@ -61,7 +61,7 @@ public class EnableOperation implements Operation {
   @Override
   public OperationStaticSemantics getStaticSemantics() {
     return new OperationStaticSemanticsBuilder(OperationType.ENABLE)
-        .setStream(stream)
+        .addStream(stream)
         .build();
   }
 }
