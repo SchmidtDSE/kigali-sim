@@ -10,12 +10,10 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import org.kigalisim.lang.operation.ChangeOperation;
+import java.util.Set;
 import org.kigalisim.lang.operation.Operation;
+import org.kigalisim.lang.operation.OperationStaticSemantics;
 import org.kigalisim.lang.operation.OperationType;
-import org.kigalisim.lang.operation.RetireExactOperation;
-import org.kigalisim.lang.operation.RetireWeibullOperation;
-import org.kigalisim.lang.operation.SetOperation;
 
 /**
  * Static validator for cross-operation constraints that are only visible after a
@@ -27,6 +25,8 @@ import org.kigalisim.lang.operation.SetOperation;
 public final class ProgramValidator {
 
   private static final String DEFAULT_STANZA = "default";
+
+  private static final String PRIOR_EQUIPMENT = "priorEquipment";
 
   private static final String PRIOR_MESSAGE =
       "Weibull retirement requires equipment ages, which are derived from simulated sales. "
@@ -134,22 +134,18 @@ public final class ProgramValidator {
     boolean setsPriorEquipment = false;
 
     for (Operation operation : operations) {
-      OperationType operationType = operation.getOperationType();
-      if (operationType == OperationType.RETIRE_WEIBULL
-          && !((RetireWeibullOperation) operation).getAssumingNew()) {
+      OperationStaticSemantics staticSemantics = operation.getStaticSemantics();
+
+      OperationType operationType = staticSemantics.getOperationType();
+      Set<String> streams = staticSemantics.getStreams();
+      boolean assumingNew = staticSemantics.getAssumePriorNew().orElse(false);
+
+      if (operationType == OperationType.RETIRE_WEIBULL && !assumingNew) {
         hasWeibullWithoutAssumingNew = true;
-      }
-      if (operationType == OperationType.RETIRE_EXACT
-          && !((RetireExactOperation) operation).getAssumingNew()) {
+      } else if (operationType == OperationType.RETIRE_EXACT && !assumingNew) {
         hasExactRetireWithoutAssumingNew = true;
-      }
-      if (operationType == OperationType.SET
-          && "priorEquipment".equals(((SetOperation) operation).getStream())) {
-        setsPriorEquipment = true;
-      }
-      if (operationType == OperationType.CHANGE
-          && "priorEquipment".equals(((ChangeOperation) operation).getStream())) {
-        setsPriorEquipment = true;
+      } else if (operationType == OperationType.SET || operationType == OperationType.CHANGE) {
+        setsPriorEquipment |= streams.contains(PRIOR_EQUIPMENT);
       }
     }
 

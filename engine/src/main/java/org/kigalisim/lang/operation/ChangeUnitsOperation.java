@@ -18,6 +18,10 @@ import org.kigalisim.lang.machine.PushDownMachine;
  */
 public class ChangeUnitsOperation implements Operation {
 
+  private static final OperationStaticSemantics STATIC_SEMANTICS = new OperationStaticSemantics(
+      OperationType.CHANGE_UNITS
+  );
+
   private final Operation operand;
   private final String units;
 
@@ -39,4 +43,9 @@ public class ChangeUnitsOperation implements Operation {
     machine.changeUnits(units);
   }
 
+  /** {@inheritDoc} */
+  @Override
+  public OperationStaticSemantics getStaticSemantics() {
+    return STATIC_SEMANTICS;
+  }
 }

@@ -16,6 +16,10 @@ import org.kigalisim.lang.machine.PushDownMachine;
  */
 public class LimitOperation implements Operation {
 
+  private static final OperationStaticSemantics STATIC_SEMANTICS = new OperationStaticSemantics(
+      OperationType.LIMIT
+  );
+
   private final Operation operand;
   private final Optional<Operation> lowerBound;
   private final Optional<Operation> upperBound;
@@ -91,5 +95,11 @@ public class LimitOperation implements Operation {
 
     // Push the result
     machine.push(new EngineNumber(result, value.getUnits()));
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public OperationStaticSemantics getStaticSemantics() {
+    return STATIC_SEMANTICS;
   }
 }

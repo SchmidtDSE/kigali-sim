@@ -22,12 +22,14 @@ public interface Operation {
   void execute(PushDownMachine machine);
 
   /**
-   * Get the kind of this operation.
+   * Get a record describing this operation's semantics.
    *
-   * @return The type of this operation or OTHER if not specified.
+   * <p>Get a record describing this operation's semantics that are inferrable from its static
+   * expression in code. In other words, properties and effects which do not require inspection at
+   * time of executing the operation.</p>
+   *
+   * @return Inference of common static properties found for this operation.
    */
-  default OperationType getOperationType() {
-    return OperationType.OTHER;
-  }
+  OperationStaticSemantics getStaticSemantics();
 
 }

@@ -78,4 +78,13 @@ public class FloorDisplacingOperation implements Operation {
     engine.floor(stream, result, yearMatcher, displaceTarget,
         DisplacementType.EQUIVALENT);
   }
+
+  /** {@inheritDoc} */
+  @Override
+  public OperationStaticSemantics getStaticSemantics() {
+    return new OperationStaticSemanticsBuilder(OperationType.FLOOR_DISPLACING)
+        .addStream(stream)
+        .addIfStream(displaceTarget)
+        .build();
+  }
 }

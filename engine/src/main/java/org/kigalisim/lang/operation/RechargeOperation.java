@@ -69,4 +69,12 @@ public class RechargeOperation implements Operation {
     Engine engine = machine.getEngine();
     engine.recharge(volumeResult, intensityResult, yearMatcher, target);
   }
+
+  /** {@inheritDoc} */
+  @Override
+  public OperationStaticSemantics getStaticSemantics() {
+    return new OperationStaticSemanticsBuilder(OperationType.RECHARGE)
+        .addStream(target)
+        .build();
+  }
 }

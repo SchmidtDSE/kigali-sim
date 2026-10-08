@@ -45,15 +45,6 @@ public class EnableOperation implements Operation {
     duringMaybe = Optional.of(during);
   }
 
-  /**
-   * Get the name of the stream this operation enables.
-   *
-   * @return The stream name.
-   */
-  public String getStream() {
-    return stream;
-  }
-
   /** {@inheritDoc} */
   @Override
   public void execute(PushDownMachine machine) {
@@ -66,4 +57,11 @@ public class EnableOperation implements Operation {
     engine.enable(stream, Optional.ofNullable(yearMatcher));
   }
 
+  /** {@inheritDoc} */
+  @Override
+  public OperationStaticSemantics getStaticSemantics() {
+    return new OperationStaticSemanticsBuilder(OperationType.ENABLE)
+        .addStream(stream)
+        .build();
+  }
 }
