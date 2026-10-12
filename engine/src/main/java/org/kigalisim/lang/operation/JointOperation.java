@@ -14,6 +14,10 @@ import org.kigalisim.lang.machine.PushDownMachine;
  */
 public class JointOperation implements Operation {
 
+  private static final OperationStaticSemantics STATIC_SEMANTICS = new OperationStaticSemantics(
+      OperationType.JOINT
+  );
+
   private final Operation inner;
   private final Operation outer;
 
@@ -34,4 +38,9 @@ public class JointOperation implements Operation {
     outer.execute(machine);
   }
 
+  /** {@inheritDoc} */
+  @Override
+  public OperationStaticSemantics getStaticSemantics() {
+    return STATIC_SEMANTICS;
+  }
 }

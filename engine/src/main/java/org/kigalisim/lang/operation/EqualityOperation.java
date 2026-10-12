@@ -16,6 +16,10 @@ import org.kigalisim.lang.machine.PushDownMachine;
  */
 public class EqualityOperation implements Operation {
 
+  private static final OperationStaticSemantics STATIC_SEMANTICS = new OperationStaticSemantics(
+      OperationType.EQUALITY
+  );
+
   private final Operation left;
   private final Operation right;
   private final String operator;
@@ -48,5 +52,11 @@ public class EqualityOperation implements Operation {
       case "<=" -> machine.lessThanOrEqual();
       default -> throw new RuntimeException("Unknown equality operator: " + operator);
     }
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public OperationStaticSemantics getStaticSemantics() {
+    return STATIC_SEMANTICS;
   }
 }

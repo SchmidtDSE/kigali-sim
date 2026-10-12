@@ -71,18 +71,11 @@ public class ChangeOperation implements Operation {
     engine.changeStream(stream, result, yearMatcher);
   }
 
-  /**
-   * The name of the stream this operation changes.
-   *
-   * @return the stream name.
-   */
-  public String getStream() {
-    return stream;
-  }
-
   /** {@inheritDoc} */
   @Override
-  public OperationType getOperationType() {
-    return OperationType.CHANGE;
+  public OperationStaticSemantics getStaticSemantics() {
+    return new OperationStaticSemanticsBuilder(OperationType.CHANGE)
+        .addStream(stream)
+        .build();
   }
 }
