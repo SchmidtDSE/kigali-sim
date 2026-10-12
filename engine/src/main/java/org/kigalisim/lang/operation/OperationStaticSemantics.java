@@ -69,7 +69,7 @@ public class OperationStaticSemantics {
 
   /**
    * Get the streams targeted in the operation.
-   * 
+   *
    * <p>The set of streams which are included in this operation which can be interpreted as
    * analagous to "operands" of this operation which are streams. For example, the set command's
    * operand is the stream set. Meanwhile, the read command's operand is the stream read. Some
