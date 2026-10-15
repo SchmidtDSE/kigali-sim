@@ -76,6 +76,14 @@ application {
   mainClass = "org.kigalisim.KigaliSimCommander"
 }
 
+// Bundle the canonical repository-root documentation into the assistant package so that the
+// committed preamble can be joined with it at runtime without keeping a second copy in git.
+processResources {
+  from("../llms-full.txt") {
+    into "org/kigalisim/assistant"
+  }
+}
+
 // JUnit target for all tests.
 test {
   useJUnitPlatform()
