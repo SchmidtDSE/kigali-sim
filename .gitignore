@@ -15,6 +15,7 @@ archive_password.txt
 # Tasks directory (local development)
 tasks/
 task.md
+kigali_ai_background.md
 
 screenlog.*
 
