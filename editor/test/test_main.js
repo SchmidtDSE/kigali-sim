@@ -5,7 +5,10 @@
  */
 
 import {MainPresenter} from "main";
-import * as informational from "informational";
+import {
+  IntroductionPresenter,
+  PrivacyConfirmationPresenter,
+} from "informational";
 import {
   RunningIndicatorPresenter,
   ButtonPanelPresenter,
@@ -14,7 +17,7 @@ import {
 function buildMainTests() {
   QUnit.module("Main", function () {
     QUnit.test("IntroductionPresenter can be initialized", function (assert) {
-      const presenter = new informational.IntroductionPresenter();
+      const presenter = new IntroductionPresenter();
       assert.notEqual(presenter, null, "IntroductionPresenter should be initialized");
     });
 
@@ -95,21 +98,8 @@ function buildMainTests() {
     });
 
     QUnit.test("PrivacyConfirmationPresenter can be initialized", function (assert) {
-      const presenter = new informational.PrivacyConfirmationPresenter();
+      const presenter = new PrivacyConfirmationPresenter();
       assert.notEqual(presenter, null, "PrivacyConfirmationPresenter should be initialized");
-    });
-
-    QUnit.test("Removed AI presenters are no longer exported", function (assert) {
-      assert.equal(
-        informational.AIAssistantPresenter,
-        undefined,
-        "AIAssistantPresenter should have been removed from informational",
-      );
-      assert.equal(
-        informational.AIDesignerPresenter,
-        undefined,
-        "AIDesignerPresenter should have been removed from informational",
-      );
     });
   });
 }
