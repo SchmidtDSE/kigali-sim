@@ -303,35 +303,8 @@ We will need a text file which is committed to the git respoistory which will be
 **Summary:** Component 2 consolidates the scattered AI-assistant help into a single "AI Assistant" tab in `#editor-tabs`, replacing the two modal dialogs and their two launch buttons with one static `#ai-assistant-pane`. The pane merges the example prompt, documentation URLs, tutorial links, and the optional/privacy notes, with no login or chat inputs at this stage. The two dialogs (`#ai-assistant-dialog`, `#ai-designer-dialog`), two buttons (`#ai-designer-button` and the broken `#ai-assistant-button`), and the now-dead `AIAssistantPresenter` / `AIDesignerPresenter` classes with their `main.js` wiring were removed. The `prompt-code` CSS rule was retargeted to `#ai-assistant-pane .prompt-code`, and QUnit plus eslint pass.
 
 #### Component 3: Harness foundation
-Implement the basic structure described above. The objects are to be created:
 
- - `KigaliAssistant`
- - `KigaliAssistantBuilder`
- - `AssistantModel`
- - `AssistantModelWireStrategy`
- - `AssistantModelProtocolStrategy`
- - `AssistantModelResponse`
- - `AssistantToolStrategy`
- - `AssistantToolbelt`
- - `AssistantTurnStrategy`
- - `UntimedAssistantTurnStrategy`
- - `AssistantActionCallback`
- - `AssistantTurnCallback`
- - `AssistantResult`
- - `AssistantActionType`
- - `AssistantToolInvocation`
- - `AssistantModelQuery`
- - `AssistantRequestHandle`
- - `EndTurnTool`
- - `MessageUserTool`
- - `ChatLogStrategy`
- - `ChatLog`
- - `OpenAiCompatibleChatLog`
- - `InMemoryLogStrategy`
- - `AssistantWorkspace`
- - `AssistantFileTypeStrategy`
-
-Mock implementers of the model and tool strategies are used at this stage. Note that `ChatLog` should throw exception on not implemented for `getHumanTranscript` which will be implemented later.
+**Summary:** Component 3 implements the transport-agnostic harness skeleton: the `KigaliAssistant`/`KigaliAssistantBuilder` facade, a split `AssistantActionCallback`/`AssistantTurnCallback` callback API, and the `AssistantResult` DTO, plus the built-in `message_user` and `end_turn` tools with a read-only `AssistantToolbelt` (and mutable concrete implementation). The model layer separates transport from protocol with a mockable `AssistantModelWireStrategy` and a real `OpenAiModelProtocolStrategy` that assembles `tool_choice:"required"` requests and parses content, ordered tool calls, finish reason, and verbatim replayable assistant messages. A callback-driven `UntimedAssistantTurnStrategy` implements the specified turn loop, including multi-call batches, implicit plain-text `message_user` replies, unknown-tool and malformed-argument failures, and the `TURN_ACTIONS_EXCEEDED` guard. Chat persistence is provided by `OpenAiCompatibleChatLog` and `InMemoryLogStrategy`, while `AssistantWorkspace` and `AssistantFileTypeStrategy` remain interfaces only. The `com.github.cliftonlabs:json-simple:4.0.1` dependency was added (and credited in the README), and JUnit 5 tests exercise the real protocol strategy through a mocked wire strategy with captured provider fixtures, with `./gradlew test checkstyleMain checkstyleTest` and Spotless passing.
 
 #### Component 4: Workspace abstraction
 We will add a fully in-memory workspace with only Kigali Sim simulation files (`.qta`). This component should complete:

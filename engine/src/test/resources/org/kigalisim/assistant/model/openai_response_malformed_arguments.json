@@ -1,0 +1,28 @@
+{
+  "id": "chatcmpl-malformed",
+  "object": "chat.completion",
+  "model": "gpt-4o-mini",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_bad",
+            "type": "function",
+            "function": {"name": "message_user", "arguments": "{\"message\":"}
+          },
+          {
+            "id": "call_good",
+            "type": "function",
+            "function": {"name": "message_user", "arguments": "{\"message\":\"Good\"}"}
+          }
+        ]
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {"prompt_tokens": 1, "completion_tokens": 1, "total_tokens": 2}
+}
