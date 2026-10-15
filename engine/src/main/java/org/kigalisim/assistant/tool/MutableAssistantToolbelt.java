@@ -17,7 +17,7 @@ import java.util.Optional;
  *
  * <p>Duplicate names are rejected at insertion time so that lookup stays unambiguous.</p>
  */
-public final class MutableAssistantToolbelt implements AssistantToolbelt {
+public class MutableAssistantToolbelt implements AssistantToolbelt {
 
   private final Map<String, AssistantToolStrategy> tools = new LinkedHashMap<>();
 
@@ -38,8 +38,9 @@ public final class MutableAssistantToolbelt implements AssistantToolbelt {
     String name = Objects.requireNonNull(tool.getName(), "tool name");
     if (tools.containsKey(name)) {
       throw new IllegalArgumentException("A tool named '" + name + "' is already registered");
+    } else {
+      tools.put(name, tool);
     }
-    tools.put(name, tool);
   }
 
   @Override

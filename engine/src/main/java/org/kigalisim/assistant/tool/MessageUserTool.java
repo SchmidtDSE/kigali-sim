@@ -9,7 +9,7 @@ package org.kigalisim.assistant.tool;
 import com.github.cliftonlabs.json_simple.JsonArray;
 import com.github.cliftonlabs.json_simple.JsonObject;
 import org.kigalisim.assistant.callback.AssistantActionCallback;
-import org.kigalisim.assistant.result.AssistantResult;
+import org.kigalisim.assistant.result.AssistantResultFactory;
 
 /**
  * Delivers a markdown message from the assistant to the user.
@@ -17,7 +17,7 @@ import org.kigalisim.assistant.result.AssistantResult;
  * <p>The message text is delivered through the action callback so that a user interface can render
  * it, and it is also returned to the model as the tool result.</p>
  */
-public final class MessageUserTool implements AssistantToolStrategy {
+public class MessageUserTool implements AssistantToolStrategy {
 
   /**
    * The name by which the tool is offered to the model.
@@ -39,10 +39,13 @@ public final class MessageUserTool implements AssistantToolStrategy {
     JsonObject message = new JsonObject();
     message.put("type", "string");
     message.put("description", "The markdown message to show the user");
+
     JsonObject properties = new JsonObject();
     properties.put("message", message);
+
     JsonArray required = new JsonArray();
     required.add("message");
+
     JsonObject schema = new JsonObject();
     schema.put("type", "object");
     schema.put("properties", properties);
@@ -54,10 +57,11 @@ public final class MessageUserTool implements AssistantToolStrategy {
   public void execute(JsonObject call, AssistantActionCallback callback) {
     Object raw = call.get("message");
     if (raw instanceof String message && !message.isBlank()) {
-      callback.onActionComplete(AssistantResult.forToolCall(message));
+      callback.onActionComplete(AssistantResultFactory.forToolCall(message));
     } else {
       callback.onActionComplete(
-          AssistantResult.forToolCallError("Missing required parameter: message"));
+          AssistantResultFactory.forToolCallError("Missing required parameter: message")
+      );
     }
   }
 }

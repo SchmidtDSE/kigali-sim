@@ -12,7 +12,7 @@ package org.kigalisim.assistant.model;
  * <p>This object lets a user interface render a user's message optimistically. The same object is
  * delivered on results through {@code AssistantResult.getMessage()}.</p>
  */
-public final class AssistantModelQuery {
+public class AssistantModelQuery {
 
   private final String chatName;
   private final String context;

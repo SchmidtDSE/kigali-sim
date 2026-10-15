@@ -25,6 +25,7 @@ import org.kigalisim.assistant.model.AssistantModelQuery;
 import org.kigalisim.assistant.model.MockModelWireStrategy;
 import org.kigalisim.assistant.model.OpenAiModelProtocolStrategy;
 import org.kigalisim.assistant.result.AssistantResult;
+import org.kigalisim.assistant.result.AssistantResultFactory;
 import org.kigalisim.assistant.tool.AssistantToolbelt;
 
 /**
@@ -180,7 +181,7 @@ public class KigaliAssistantTest {
 
     RecordingCallback firstCallback = new RecordingCallback();
     assistant.sendMessage("chat", "first", firstCallback);
-    turnStrategy.captured.onTurnComplete(AssistantResult.forToolCall("done"));
+    turnStrategy.captured.onTurnComplete(AssistantResultFactory.forToolCall("done"));
     assertEquals(1, firstCallback.completions.size());
 
     RecordingCallback secondCallback = new RecordingCallback();

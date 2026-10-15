@@ -9,7 +9,7 @@ package org.kigalisim.assistant.model;
 import com.github.cliftonlabs.json_simple.JsonObject;
 import java.util.List;
 import org.kigalisim.assistant.callback.AssistantActionCallback;
-import org.kigalisim.assistant.result.AssistantResult;
+import org.kigalisim.assistant.result.AssistantResultFactory;
 import org.kigalisim.assistant.tool.AssistantToolStrategy;
 
 /**
@@ -20,7 +20,7 @@ import org.kigalisim.assistant.tool.AssistantToolStrategy;
  * {@link AssistantModelWireStrategy} and request formation / response parsing to an
  * {@link AssistantModelProtocolStrategy}.</p>
  */
-public final class AssistantModel {
+public class AssistantModel {
 
   private static final AssistantRequestHandle NO_OP_HANDLE = () -> {
   };
@@ -108,10 +108,10 @@ public final class AssistantModel {
         try {
           parsed = protocol.parseResponse(rawResponse.getRaw());
         } catch (RuntimeException e) {
-          callback.onActionComplete(AssistantResult.forLlmQueryError(describe(e)));
+          callback.onActionComplete(AssistantResultFactory.forLlmQueryError(describe(e)));
           return;
         }
-        callback.onActionComplete(AssistantResult.forLlmQuery(parsed));
+        callback.onActionComplete(AssistantResultFactory.forLlmQuery(parsed));
       } else {
         callback.onActionComplete(result);
       }
@@ -120,16 +120,16 @@ public final class AssistantModel {
     try {
       return wire.sendMessage(body, forwardingCallback);
     } catch (RuntimeException e) {
-      forwardingCallback.onActionComplete(AssistantResult.forLlmQueryError(describe(e)));
+      forwardingCallback.onActionComplete(AssistantResultFactory.forLlmQueryError(describe(e)));
       return NO_OP_HANDLE;
     }
   }
 
   /**
-   * Produces a concise description of a throwable.
+   * Describes a throwable, falling back to its class name when there is no message.
    *
    * @param throwable The throwable to describe.
-   * @return The throwable message or class name when the message is absent.
+   * @return The throwable message, or its class name as a fallback.
    */
   private static String describe(Throwable throwable) {
     String message = throwable.getMessage();

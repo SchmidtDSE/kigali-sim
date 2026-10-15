@@ -12,7 +12,7 @@ import java.util.Deque;
 import java.util.List;
 import java.util.function.Consumer;
 import org.kigalisim.assistant.callback.AssistantActionCallback;
-import org.kigalisim.assistant.result.AssistantResult;
+import org.kigalisim.assistant.result.AssistantResultFactory;
 
 /**
  * A hand written wire strategy which delivers queued outcomes inline.
@@ -33,7 +33,7 @@ public class MockModelWireStrategy implements AssistantModelWireStrategy {
    */
   public void enqueuePayload(String payload) {
     queue.add(callback -> callback.onActionComplete(
-        AssistantResult.forLlmQuery(AssistantModelResponse.forRawBody(payload))));
+        AssistantResultFactory.forLlmQuery(AssistantModelResponseFactory.forRawBody(payload))));
   }
 
   /**
@@ -42,7 +42,7 @@ public class MockModelWireStrategy implements AssistantModelWireStrategy {
    * @param error The error message.
    */
   public void enqueueError(String error) {
-    queue.add(callback -> callback.onActionComplete(AssistantResult.forLlmQueryError(error)));
+    queue.add(callback -> callback.onActionComplete(AssistantResultFactory.forLlmQueryError(error)));
   }
 
   /**

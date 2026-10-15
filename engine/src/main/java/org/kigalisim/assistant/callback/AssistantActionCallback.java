@@ -9,7 +9,7 @@ package org.kigalisim.assistant.callback;
 import org.kigalisim.assistant.result.AssistantResult;
 
 /**
- * Callback through which tools and strategies report the outcome of an action.
+ * Callback through which the outcome of an AI's tool use is reported.
  *
  * <p>An action is a single model query or a single tool call. This callback is intentionally
  * narrower than {@link AssistantTurnCallback} so that tools and model strategies cannot end a

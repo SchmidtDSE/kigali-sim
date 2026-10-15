@@ -20,14 +20,14 @@ public interface AssistantToolStrategy {
   /**
    * Gets the unique name of the tool.
    *
-   * @return The tool name.
+   * @return The tool name like {@code message_user}.
    */
   String getName();
 
   /**
    * Gets the description shown to the model.
    *
-   * @return The tool description.
+   * @return The tool description like "Send a markdown message to the user".
    */
   String getDescription();
 

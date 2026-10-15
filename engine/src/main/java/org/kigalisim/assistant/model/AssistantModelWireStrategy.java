@@ -14,7 +14,7 @@ import org.kigalisim.assistant.callback.AssistantActionCallback;
  * <p>A wire strategy does not build requests, does not know about tools, and does not parse
  * responses. Streaming is out of scope for this prototype: the complete body is delivered in a
  * single callback. Success is reported with a query result carrying
- * {@code AssistantModelResponse.forRawBody(raw)} while failure is reported with a failed query
+ * {@code AssistantModelResponseFactory.forRawBody(raw)} while failure is reported with a failed query
  * result.</p>
  */
 public interface AssistantModelWireStrategy {

@@ -17,12 +17,13 @@ import java.util.Objects;
 /**
  * A chat log strategy which keeps chats in memory.
  *
- * <p>Each chat is stored as a JSON array of wire messages. This is the default strategy and is safe
- * under TeaVM / WASM as well as the JVM.</p>
+ * <p>Each chat is stored as a JSON array of wire messages along with a cached parsed form so that
+ * appending does not re-deserialize the transcript on every call. This is the default strategy and
+ * is safe under TeaVM / WASM as well as the JVM.</p>
  */
-public final class InMemoryLogStrategy implements ChatLogStrategy {
+public class InMemoryLogStrategy implements ChatLogStrategy {
 
-  private final Map<String, String> chats = new LinkedHashMap<>();
+  private final Map<String, StoredChat> chats = new LinkedHashMap<>();
 
   /**
    * Constructs an empty in-memory log strategy.
@@ -36,34 +37,33 @@ public final class InMemoryLogStrategy implements ChatLogStrategy {
     if (chats.containsKey(name)) {
       throw new IllegalArgumentException("A chat named '" + name + "' already exists");
     }
-    chats.put(name, "[]");
+    chats.put(name, new StoredChat("[]", new JsonArray()));
     return name;
   }
 
   @Override
   public ChatLog readChat(String name) {
-    return new OpenAiCompatibleChatLog(requireChat(name));
+    return new OpenAiCompatibleChatLog(requireChat(name).getWire());
   }
 
   @Override
   public ChatLog appendChat(String chatName, String wireContents) {
-    String existing = requireChat(chatName);
-    JsonArray transcript = parseTranscript(chatName, existing);
+    StoredChat chat = requireChat(chatName);
+    JsonArray transcript = chat.getParsed(chatName);
     Object toAppend = parseAppendable(wireContents);
     if (toAppend instanceof JsonArray appendedArray) {
       transcript.addAll(appendedArray);
     } else {
       transcript.add(toAppend);
     }
-    String updated = Jsoner.serialize(transcript);
-    chats.put(chatName, updated);
-    return new OpenAiCompatibleChatLog(updated);
+    chat.setWire(Jsoner.serialize(transcript));
+    return new OpenAiCompatibleChatLog(chat.getWire());
   }
 
   @Override
   public ChatLog setChat(String chatName, String wireContents) {
     requireChat(chatName);
-    chats.put(chatName, wireContents);
+    chats.put(chatName, new StoredChat(wireContents, null));
     return new OpenAiCompatibleChatLog(wireContents);
   }
 
@@ -74,14 +74,14 @@ public final class InMemoryLogStrategy implements ChatLogStrategy {
   }
 
   /**
-   * Resolves a stored transcript or throws.
+   * Resolves a stored chat or throws.
    *
    * @param name The chat name.
-   * @return The stored wire transcript.
+   * @return The stored chat.
    * @throws NoSuchElementException If the chat does not exist.
    */
-  private String requireChat(String name) {
-    String existing = chats.get(name);
+  private StoredChat requireChat(String name) {
+    StoredChat existing = chats.get(name);
     if (existing == null) {
       throw new NoSuchElementException("No chat named '" + name + "'");
     }
@@ -89,13 +89,17 @@ public final class InMemoryLogStrategy implements ChatLogStrategy {
   }
 
   /**
-   * Parses the stored transcript into an array, defaulting to empty when malformed.
+   * Parses the stored transcript into an array.
+   *
+   * <p>Valid JSON which is not an array parses to an empty array. Malformed JSON is surfaced so
+   * that corrupt storage is not silently overwritten.</p>
    *
    * @param chatName The chat name used for error messages.
    * @param transcript The stored transcript text.
    * @return The parsed array.
+   * @throws IllegalStateException If the stored transcript is not valid JSON.
    */
-  private JsonArray parseTranscript(String chatName, String transcript) {
+  private static JsonArray parseTranscript(String chatName, String transcript) {
     try {
       Object parsed = Jsoner.deserialize(transcript);
       if (parsed instanceof JsonArray array) {
@@ -120,6 +124,57 @@ public final class InMemoryLogStrategy implements ChatLogStrategy {
     } catch (JsonException e) {
       throw new IllegalArgumentException(
           "Unable to parse chat contents to append: " + wireContents, e);
+    }
+  }
+
+  /**
+   * A stored transcript which caches its parsed form.
+   */
+  private static class StoredChat {
+
+    private String wire;
+    private JsonArray parsed;
+
+    /**
+     * Constructs stored chat state.
+     *
+     * @param wire The wire transcript.
+     * @param parsed The cached parsed transcript, or null when it has not been parsed yet.
+     */
+    private StoredChat(String wire, JsonArray parsed) {
+      this.wire = wire;
+      this.parsed = parsed;
+    }
+
+    /**
+     * Gets the wire transcript.
+     *
+     * @return The wire transcript.
+     */
+    private String getWire() {
+      return wire;
+    }
+
+    /**
+     * Replaces the wire transcript.
+     *
+     * @param wire The new wire transcript.
+     */
+    private void setWire(String wire) {
+      this.wire = wire;
+    }
+
+    /**
+     * Gets the parsed transcript, parsing it only when it has not been parsed before.
+     *
+     * @param chatName The chat name used for error messages.
+     * @return The parsed transcript.
+     */
+    private JsonArray getParsed(String chatName) {
+      if (parsed == null) {
+        parsed = parseTranscript(chatName, wire);
+      }
+      return parsed;
     }
   }
 }

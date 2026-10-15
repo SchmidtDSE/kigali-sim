@@ -20,6 +20,7 @@ import org.kigalisim.assistant.model.AssistantModel;
 import org.kigalisim.assistant.model.AssistantModelQuery;
 import org.kigalisim.assistant.model.AssistantModelResponse;
 import org.kigalisim.assistant.result.AssistantResult;
+import org.kigalisim.assistant.result.AssistantResultFactory;
 import org.kigalisim.assistant.tool.AssistantToolInvocation;
 import org.kigalisim.assistant.tool.AssistantToolStrategy;
 import org.kigalisim.assistant.tool.AssistantToolbelt;
@@ -37,7 +38,7 @@ import org.kigalisim.assistant.tool.MessageUserTool;
  * A plain-text reply is treated as an implicit {@code message_user} call followed by an end of
  * turn so that it reaches the user interface through the same path as any other message.</p>
  */
-public final class UntimedAssistantTurnStrategy implements AssistantTurnStrategy {
+public class UntimedAssistantTurnStrategy implements AssistantTurnStrategy {
 
   /**
    * The default maximum number of actions permitted within a single turn.
@@ -95,7 +96,7 @@ public final class UntimedAssistantTurnStrategy implements AssistantTurnStrategy
       history = parseHistory(log.getWireTranscript());
       chatLogStrategy.appendChat(chatName, Jsoner.serialize(userMessageObject));
     } catch (RuntimeException e) {
-      callback.onTurnComplete(AssistantResult.forLlmQueryError(describe(e)));
+      callback.onTurnComplete(AssistantResultFactory.forLlmQueryError(describe(e)));
       return new AssistantModelQuery(chatName, "", message, model);
     }
 
@@ -108,7 +109,8 @@ public final class UntimedAssistantTurnStrategy implements AssistantTurnStrategy
     } catch (RuntimeException e) {
       history.add(userMessageObject);
       AssistantModelQuery query = new AssistantModelQuery(chatName, "", message, model);
-      AssistantResult error = AssistantResult.forLlmQueryError(describe(e)).withMessage(query);
+      AssistantResult error =
+          AssistantResultFactory.forLlmQueryError(describe(e)).getWithMessage(query);
       reportAction(state, error);
       completeTurn(state, error);
       return query;
@@ -132,7 +134,7 @@ public final class UntimedAssistantTurnStrategy implements AssistantTurnStrategy
     try {
       model.sendMessage(context, result -> handleModelResult(state, query, result));
     } catch (RuntimeException e) {
-      completeTurn(state, AssistantResult.forLlmQueryError(describe(e)));
+      completeTurn(state, AssistantResultFactory.forLlmQueryError(describe(e)));
     }
   }
 
@@ -149,7 +151,7 @@ public final class UntimedAssistantTurnStrategy implements AssistantTurnStrategy
       return;
     }
 
-    AssistantResult reported = result.withMessage(query);
+    AssistantResult reported = result.getWithMessage(query);
     reportAction(state, reported);
 
     if (!result.getWasSuccessful()) {
@@ -160,7 +162,8 @@ public final class UntimedAssistantTurnStrategy implements AssistantTurnStrategy
     AssistantModelResponse response = result.getRawResponse().orElse(null);
     if (response == null) {
       completeTurn(
-          state, AssistantResult.forLlmQueryError("Model returned no response").withMessage(query));
+          state,
+          AssistantResultFactory.forLlmQueryError("Model returned no response").getWithMessage(query));
       return;
     }
 
@@ -190,7 +193,7 @@ public final class UntimedAssistantTurnStrategy implements AssistantTurnStrategy
     if (state.actions >= maxActions) {
       completeTurn(
           state,
-          AssistantResult.forTurnActionsExceeded(
+          AssistantResultFactory.forTurnActionsExceeded(
               "Turn exceeded the maximum of " + maxActions + " actions"));
       return;
     }
@@ -200,7 +203,7 @@ public final class UntimedAssistantTurnStrategy implements AssistantTurnStrategy
       nextContext = model.buildRequest(
           state.history, state.toolbelt.getTools(), systemContextProvider.getSystemContext(), null);
     } catch (RuntimeException e) {
-      completeTurn(state, AssistantResult.forLlmQueryError(describe(e)));
+      completeTurn(state, AssistantResultFactory.forLlmQueryError(describe(e)));
       return;
     }
 
@@ -221,7 +224,8 @@ public final class UntimedAssistantTurnStrategy implements AssistantTurnStrategy
     call.put("message", content);
     AssistantToolInvocation synthetic =
         new AssistantToolInvocation(MessageUserTool.NAME, "", call);
-    AssistantResult result = AssistantResult.forToolCall(content).withToolInvocation(synthetic);
+    AssistantResult result =
+        AssistantResultFactory.forToolCall(content).getWithToolInvocation(synthetic);
     state.actions++;
     reportAction(state, result);
     completeTurn(state, result);
@@ -243,7 +247,7 @@ public final class UntimedAssistantTurnStrategy implements AssistantTurnStrategy
       String error = "No tool named '" + name + "' is registered";
       appendToolMessage(state, invocation.getCallId(), error);
       return reportToolResult(
-          state, AssistantResult.forToolCallError(error).withToolInvocation(invocation));
+          state, AssistantResultFactory.forToolCallError(error).getWithToolInvocation(invocation));
     }
 
     AssistantToolStrategy tool = toolOptional.get();
@@ -254,18 +258,18 @@ public final class UntimedAssistantTurnStrategy implements AssistantTurnStrategy
       String error = describe(e);
       appendToolMessage(state, invocation.getCallId(), error);
       return reportToolResult(
-          state, AssistantResult.forToolCallError(error).withToolInvocation(invocation));
+          state, AssistantResultFactory.forToolCallError(error).getWithToolInvocation(invocation));
     }
 
     AssistantResult result = captured[0];
     if (result == null) {
       String error = "Tool '" + name + "' did not report a result";
       appendToolMessage(state, invocation.getCallId(), error);
-      result = AssistantResult.forToolCallError(error);
+      result = AssistantResultFactory.forToolCallError(error);
     } else {
       appendToolMessage(state, invocation.getCallId(), outputOf(result));
     }
-    return reportToolResult(state, result.withToolInvocation(invocation));
+    return reportToolResult(state, result.getWithToolInvocation(invocation));
   }
 
   /**
@@ -379,10 +383,10 @@ public final class UntimedAssistantTurnStrategy implements AssistantTurnStrategy
   }
 
   /**
-   * Produces a concise description of a throwable.
+   * Describes a throwable, falling back to its class name when there is no message.
    *
    * @param throwable The throwable to describe.
-   * @return The throwable message or class name when the message is absent.
+   * @return The throwable message, or its class name as a fallback.
    */
   private static String describe(Throwable throwable) {
     String message = throwable.getMessage();

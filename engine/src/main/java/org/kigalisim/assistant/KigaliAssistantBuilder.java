@@ -20,7 +20,7 @@ import org.kigalisim.assistant.workspace.AssistantWorkspace;
  * <p>The built-in tools are registered first so that they are always available. Additional tools
  * are added through {@link #addTool(AssistantToolStrategy)} and duplicate names are rejected.</p>
  */
-public final class KigaliAssistantBuilder {
+public class KigaliAssistantBuilder {
 
   private final MutableAssistantToolbelt toolbelt = new MutableAssistantToolbelt();
   private AssistantModel model;

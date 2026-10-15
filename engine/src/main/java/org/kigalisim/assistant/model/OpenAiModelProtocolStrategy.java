@@ -24,7 +24,7 @@ import org.kigalisim.assistant.tool.AssistantToolStrategy;
  * json-simple ({@code JsonObject}, {@code JsonArray}, and {@code Jsoner}), which is safe under
  * TeaVM / WASM.</p>
  */
-public final class OpenAiModelProtocolStrategy implements AssistantModelProtocolStrategy {
+public class OpenAiModelProtocolStrategy implements AssistantModelProtocolStrategy {
 
   private final String modelName;
 
@@ -66,15 +66,18 @@ public final class OpenAiModelProtocolStrategy implements AssistantModelProtocol
     system.put("role", "system");
     system.put("content", systemContext);
     messages.add(system);
+
     for (JsonObject message : history) {
       messages.add(message);
     }
+
     if (userMessage != null) {
       JsonObject user = new JsonObject();
       user.put("role", "user");
       user.put("content", userMessage);
       messages.add(user);
     }
+
     return messages;
   }
 
@@ -86,16 +89,20 @@ public final class OpenAiModelProtocolStrategy implements AssistantModelProtocol
    */
   private JsonArray buildTools(Iterable<AssistantToolStrategy> tools) {
     JsonArray definitions = new JsonArray();
+
     for (AssistantToolStrategy tool : tools) {
       JsonObject function = new JsonObject();
       function.put("name", tool.getName());
       function.put("description", tool.getDescription());
       function.put("parameters", tool.getParameterSchema());
+
       JsonObject definition = new JsonObject();
       definition.put("type", "function");
       definition.put("function", function);
+
       definitions.add(definition);
     }
+
     return definitions;
   }
 
@@ -111,14 +118,20 @@ public final class OpenAiModelProtocolStrategy implements AssistantModelProtocol
     Optional<String> content = Optional.ofNullable(asString(message.get("content")));
     Optional<String> finishReason = Optional.ofNullable(asString(choice.get("finish_reason")));
     List<AssistantToolInvocation> toolCalls = parseToolCalls(message);
-    return AssistantModelResponse.forParsed(
-        content, toolCalls, finishReason, message, rawBody);
+    return AssistantModelResponseFactory.forParsed(
+        content,
+        toolCalls,
+        finishReason,
+        message,
+        rawBody
+    );
   }
 
   @Override
   public String renderHumanTranscript(String wireTranscript) {
     throw new UnsupportedOperationException(
-        "Human transcript rendering is not implemented until the human transcript component");
+        "Human transcript rendering is not implemented until the human transcript component"
+    );
   }
 
   /**
@@ -160,10 +173,11 @@ public final class OpenAiModelProtocolStrategy implements AssistantModelProtocol
   }
 
   /**
-   * Parses tool arguments, tolerating malformed or non-object payloads.
+   * Parses tool arguments, requiring them to be a JSON object.
    *
    * @param argumentsRaw The arguments value as received.
-   * @return The parsed argument object, or an empty object when malformed.
+   * @return The parsed argument object.
+   * @throws IllegalStateException If the arguments are not a JSON object.
    */
   private JsonObject parseArguments(Object argumentsRaw) {
     if (argumentsRaw instanceof JsonObject arguments) {
@@ -173,12 +187,18 @@ public final class OpenAiModelProtocolStrategy implements AssistantModelProtocol
         Object parsed = Jsoner.deserialize(argumentsString);
         if (parsed instanceof JsonObject arguments) {
           return arguments;
+        } else {
+          throw new IllegalStateException(
+              "Tool arguments were not a JSON object: " + abbreviate(argumentsString));
         }
       } catch (JsonException e) {
-        return new JsonObject();
+        throw new IllegalStateException(
+            "Unable to parse tool arguments: " + abbreviate(argumentsString), e);
       }
+    } else {
+      throw new IllegalStateException(
+          "Tool arguments were not a JSON object: " + abbreviate(String.valueOf(argumentsRaw)));
     }
-    return new JsonObject();
   }
 
   /**

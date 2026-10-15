@@ -11,7 +11,7 @@ import com.github.cliftonlabs.json_simple.JsonObject;
 /**
  * A tool invocation requested by the language model.
  */
-public final class AssistantToolInvocation {
+public class AssistantToolInvocation {
 
   private final String toolName;
   private final String callId;
@@ -33,7 +33,7 @@ public final class AssistantToolInvocation {
   /**
    * Gets the name of the tool invoked.
    *
-   * @return The tool name.
+   * @return The tool name like {@code message_user}.
    */
   public String getToolName() {
     return toolName;
@@ -42,7 +42,7 @@ public final class AssistantToolInvocation {
   /**
    * Gets the provider-assigned identifier.
    *
-   * @return The call identifier.
+   * @return The call identifier like {@code call_abc123}.
    */
   public String getCallId() {
     return callId;

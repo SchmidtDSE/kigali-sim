@@ -18,10 +18,10 @@ import org.kigalisim.assistant.tool.AssistantToolInvocation;
  * outcome while the turn strategy attaches the query and tool invocation as it forwards a result
  * because it holds the query and knows which tool it dispatched.</p>
  *
- * <p>Instances are immutable. The {@code withMessage} and {@code withToolInvocation} methods
+ * <p>Instances are immutable. The {@code getWithMessage} and {@code getWithToolInvocation} methods
  * perform copy-on-write updates.</p>
  */
-public final class AssistantResult {
+public class AssistantResult {
 
   private final AssistantActionType actionType;
   private final Optional<AssistantModelQuery> message;
@@ -29,7 +29,7 @@ public final class AssistantResult {
   private final Optional<AssistantModelResponse> rawResponse;
   private final Optional<String> error;
 
-  private AssistantResult(
+  AssistantResult(
       AssistantActionType actionType,
       Optional<AssistantModelQuery> message,
       Optional<AssistantToolInvocation> toolInvocation,
@@ -43,87 +43,12 @@ public final class AssistantResult {
   }
 
   /**
-   * Creates a result describing a successful model query.
-   *
-   * @param response The parsed response.
-   * @return A successful query result.
-   */
-  public static AssistantResult forLlmQuery(AssistantModelResponse response) {
-    return new AssistantResult(
-        AssistantActionType.LLM_QUERY,
-        Optional.empty(),
-        Optional.empty(),
-        Optional.of(response),
-        Optional.empty());
-  }
-
-  /**
-   * Creates a result describing a failed model query.
-   *
-   * @param error The details of the failure.
-   * @return A failed query result.
-   */
-  public static AssistantResult forLlmQueryError(String error) {
-    return new AssistantResult(
-        AssistantActionType.LLM_QUERY,
-        Optional.empty(),
-        Optional.empty(),
-        Optional.empty(),
-        Optional.of(error));
-  }
-
-  /**
-   * Creates a result describing a successful tool call.
-   *
-   * @param output The textual output of the tool.
-   * @return A successful tool result.
-   */
-  public static AssistantResult forToolCall(String output) {
-    return new AssistantResult(
-        AssistantActionType.TOOL_CALL,
-        Optional.empty(),
-        Optional.empty(),
-        Optional.of(AssistantModelResponse.forToolOutput(output)),
-        Optional.empty());
-  }
-
-  /**
-   * Creates a result describing a failed tool call.
-   *
-   * @param error The details of the failure.
-   * @return A failed tool result.
-   */
-  public static AssistantResult forToolCallError(String error) {
-    return new AssistantResult(
-        AssistantActionType.TOOL_CALL,
-        Optional.empty(),
-        Optional.empty(),
-        Optional.empty(),
-        Optional.of(error));
-  }
-
-  /**
-   * Creates a terminal result for a turn ended by the maximum action guard.
-   *
-   * @param error The details of the guard violation.
-   * @return An unsuccessful turn-level result.
-   */
-  public static AssistantResult forTurnActionsExceeded(String error) {
-    return new AssistantResult(
-        AssistantActionType.TURN_ACTIONS_EXCEEDED,
-        Optional.empty(),
-        Optional.empty(),
-        Optional.empty(),
-        Optional.of(error));
-  }
-
-  /**
    * Creates a copy with the model query attached.
    *
    * @param query The query responsible for this result.
    * @return A copy carrying the query.
    */
-  public AssistantResult withMessage(AssistantModelQuery query) {
+  public AssistantResult getWithMessage(AssistantModelQuery query) {
     return new AssistantResult(actionType, Optional.of(query), toolInvocation, rawResponse, error);
   }
 
@@ -133,7 +58,7 @@ public final class AssistantResult {
    * @param invocation The invocation responsible for this result.
    * @return A copy carrying the invocation.
    */
-  public AssistantResult withToolInvocation(AssistantToolInvocation invocation) {
+  public AssistantResult getWithToolInvocation(AssistantToolInvocation invocation) {
     return new AssistantResult(actionType, message, Optional.of(invocation), rawResponse, error);
   }
 

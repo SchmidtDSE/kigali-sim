@@ -19,7 +19,7 @@ import org.kigalisim.assistant.tool.AssistantToolInvocation;
  * success envelope carrying only the raw body or by the protocol strategy once the body has been
  * parsed into content, tool calls, and a finish reason.</p>
  */
-public final class AssistantModelResponse {
+public class AssistantModelResponse {
 
   private final Optional<String> content;
   private final List<AssistantToolInvocation> toolCalls;
@@ -27,7 +27,7 @@ public final class AssistantModelResponse {
   private final JsonObject uninterpreted;
   private final String raw;
 
-  private AssistantModelResponse(
+  AssistantModelResponse(
       Optional<String> content,
       List<AssistantToolInvocation> toolCalls,
       Optional<String> finishReason,
@@ -38,52 +38,6 @@ public final class AssistantModelResponse {
     this.finishReason = finishReason;
     this.uninterpreted = uninterpreted;
     this.raw = raw;
-  }
-
-  /**
-   * Creates a success envelope carrying only the raw wire body.
-   *
-   * <p>This is what a wire strategy reports before parsing has taken place.</p>
-   *
-   * @param raw The raw body returned by the provider.
-   * @return A response carrying only the raw body.
-   */
-  public static AssistantModelResponse forRawBody(String raw) {
-    return new AssistantModelResponse(
-        Optional.empty(), List.of(), Optional.empty(), new JsonObject(), raw);
-  }
-
-  /**
-   * Creates a response representing the textual output of a tool.
-   *
-   * @param output The text produced by the tool.
-   * @return A response whose content and raw body are the tool output.
-   */
-  public static AssistantModelResponse forToolOutput(String output) {
-    return new AssistantModelResponse(
-        Optional.of(output), List.of(), Optional.empty(), new JsonObject(), output);
-  }
-
-  /**
-   * Creates a parsed response from the values extracted by a protocol strategy.
-   *
-   * <p>This factory is package private because parsing belongs to the protocol strategy.</p>
-   *
-   * @param content The assistant message content, if present.
-   * @param toolCalls The tool invocations requested by the assistant, in order.
-   * @param finishReason The provider finish reason, if present.
-   * @param uninterpreted The assistant message exactly as received for verbatim replay.
-   * @param raw The raw body returned by the provider.
-   * @return A fully parsed response.
-   */
-  static AssistantModelResponse forParsed(
-      Optional<String> content,
-      List<AssistantToolInvocation> toolCalls,
-      Optional<String> finishReason,
-      JsonObject uninterpreted,
-      String raw) {
-    return new AssistantModelResponse(
-        content, List.copyOf(toolCalls), finishReason, uninterpreted, raw);
   }
 
   /**

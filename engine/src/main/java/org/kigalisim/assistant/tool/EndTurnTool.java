@@ -8,7 +8,7 @@ package org.kigalisim.assistant.tool;
 
 import com.github.cliftonlabs.json_simple.JsonObject;
 import org.kigalisim.assistant.callback.AssistantActionCallback;
-import org.kigalisim.assistant.result.AssistantResult;
+import org.kigalisim.assistant.result.AssistantResultFactory;
 
 /**
  * Signals the turn strategy to conclude the current turn.
@@ -16,7 +16,7 @@ import org.kigalisim.assistant.result.AssistantResult;
  * <p>This tool does not end the turn itself. It reports an action result so that the batch has a
  * result to append, and the turn strategy concludes the turn once the whole batch is complete.</p>
  */
-public final class EndTurnTool implements AssistantToolStrategy {
+public class EndTurnTool implements AssistantToolStrategy {
 
   /**
    * The name by which the tool is offered to the model.
@@ -43,6 +43,6 @@ public final class EndTurnTool implements AssistantToolStrategy {
 
   @Override
   public void execute(JsonObject call, AssistantActionCallback callback) {
-    callback.onActionComplete(AssistantResult.forToolCall("Turn complete."));
+    callback.onActionComplete(AssistantResultFactory.forToolCall("Turn complete."));
   }
 }

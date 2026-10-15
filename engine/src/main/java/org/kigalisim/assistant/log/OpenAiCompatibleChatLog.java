@@ -15,7 +15,7 @@ import java.util.List;
  * transcript rendering is not implemented until the human transcript components, so
  * {@link #getHumanTranscript()} currently throws.</p>
  */
-public final class OpenAiCompatibleChatLog implements ChatLog {
+public class OpenAiCompatibleChatLog implements ChatLog {
 
   private final String wireTranscript;
 

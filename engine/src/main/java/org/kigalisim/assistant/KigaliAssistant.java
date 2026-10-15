@@ -16,6 +16,7 @@ import org.kigalisim.assistant.log.ChatLogStrategy;
 import org.kigalisim.assistant.model.AssistantModel;
 import org.kigalisim.assistant.model.AssistantModelQuery;
 import org.kigalisim.assistant.result.AssistantResult;
+import org.kigalisim.assistant.result.AssistantResultFactory;
 import org.kigalisim.assistant.tool.AssistantToolbelt;
 import org.kigalisim.assistant.workspace.AssistantWorkspace;
 
@@ -26,7 +27,7 @@ import org.kigalisim.assistant.workspace.AssistantWorkspace;
  * codebase. It delegates storage to the {@link ChatLogStrategy} and the turn loop to the
  * {@link AssistantTurnStrategy}. It appends to the chat log internally as the turn progresses.</p>
  */
-public final class KigaliAssistant {
+public class KigaliAssistant {
 
   private final AssistantModel model;
   private final AssistantTurnStrategy turnStrategy;
@@ -96,7 +97,7 @@ public final class KigaliAssistant {
     synchronized (inFlight) {
       if (inFlight.contains(chatName)) {
         callback.onTurnComplete(
-            AssistantResult.forLlmQueryError(
+            AssistantResultFactory.forLlmQueryError(
                 "A turn is already in flight for chat '" + chatName + "'"));
         return null;
       }
@@ -123,7 +124,7 @@ public final class KigaliAssistant {
     } catch (RuntimeException e) {
       inFlight.remove(chatName);
       if (!completed[0]) {
-        callback.onTurnComplete(AssistantResult.forLlmQueryError(describe(e)));
+        callback.onTurnComplete(AssistantResultFactory.forLlmQueryError(describe(e)));
       }
       return null;
     }
@@ -167,10 +168,10 @@ public final class KigaliAssistant {
   }
 
   /**
-   * Produces a concise description of a throwable.
+   * Describes a throwable, falling back to its class name when there is no message.
    *
    * @param throwable The throwable to describe.
-   * @return The throwable message or class name when the message is absent.
+   * @return The throwable message, or its class name as a fallback.
    */
   private static String describe(Throwable throwable) {
     String message = throwable.getMessage();
