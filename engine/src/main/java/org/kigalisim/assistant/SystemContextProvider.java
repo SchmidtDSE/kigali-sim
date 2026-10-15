@@ -64,8 +64,10 @@ public class SystemContextProvider {
       String preamble = readResource(preamblePath);
       String llmsFull = readResource(llmsFullPath);
       systemContext = preamble + SEPARATOR + llmsFull;
+      return systemContext;
+    } else {
+      return systemContext;
     }
-    return systemContext;
   }
 
   /**
@@ -80,8 +82,9 @@ public class SystemContextProvider {
       if (stream == null) {
         throw new IllegalStateException(
             "Required system context resource not found on classpath: " + path);
+      } else {
+        return new String(stream.readAllBytes(), StandardCharsets.UTF_8);
       }
-      return new String(stream.readAllBytes(), StandardCharsets.UTF_8);
     } catch (IOException e) {
       throw new IllegalStateException("Unable to read system context resource: " + path, e);
     }
