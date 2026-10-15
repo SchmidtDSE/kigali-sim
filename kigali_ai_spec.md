@@ -299,13 +299,8 @@ We will need a text file which is committed to the git respoistory which will be
 **Summary:** Component 1 adds the assistant's system context as a committed harness preamble (`engine/src/main/resources/org/kigalisim/assistant/system_context_preamble.md`) covering the sandbox constraints (no network, CLI, or filesystem), the tool-only `message_user` / `end_turn` protocol, the flat workspace, and provisional tool capabilities, with the canonical `llms-full.txt` appended. To keep the repo-root `llms-full.txt` as the single source of truth, `engine/build.gradle` bundles it into the assistant package at build time instead of committing a duplicate. `org.kigalisim.assistant.SystemContextProvider` reads both classpath resources as UTF-8, joins and caches them, and fails fast when either is missing. `SystemContextProviderTest` covers the preamble, bundled documentation, ordering, caching, and failure, and `./gradlew test checkstyleMain checkstyleTest` passes.
 
 #### Component 2: UI Reorganization
-At present, there is scattered information about using an AI assistant already present in the UI. See `index.html` and:
 
- - `#ai-designer-dialog`
- - `#ai-assistant-button`
- - `#ai-assistant-dialog`
-
-These buttons and dialogs should be removed with their information consolidated into a new tab (see `#editor-tabs`) titled AI Assistant. At this stage, no log in is needed.
+**Summary:** Component 2 consolidates the scattered AI-assistant help into a single "AI Assistant" tab in `#editor-tabs`, replacing the two modal dialogs and their two launch buttons with one static `#ai-assistant-pane`. The pane merges the example prompt, documentation URLs, tutorial links, and the optional/privacy notes, with no login or chat inputs at this stage. The two dialogs (`#ai-assistant-dialog`, `#ai-designer-dialog`), two buttons (`#ai-designer-button` and the broken `#ai-assistant-button`), and the now-dead `AIAssistantPresenter` / `AIDesignerPresenter` classes with their `main.js` wiring were removed. The `prompt-code` CSS rule was retargeted to `#ai-assistant-pane .prompt-code`, and QUnit plus eslint pass.
 
 #### Component 3: Harness foundation
 Implement the basic structure described above. The objects are to be created:
