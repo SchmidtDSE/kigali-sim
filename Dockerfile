@@ -1,5 +1,5 @@
-# Use Eclipse Temurin JDK 21 as base image
-FROM eclipse-temurin:21-jre
+# Use Eclipse Temurin JDK 25 as base image
+FROM eclipse-temurin:25-jre
 
 # Install wget for downloading the jar file
 RUN apt-get update && apt-get install -y wget

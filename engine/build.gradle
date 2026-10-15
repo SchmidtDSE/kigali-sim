@@ -25,8 +25,8 @@ eclipse {
 }
 
 java {
-  sourceCompatibility = JavaVersion.VERSION_21
-  targetCompatibility = JavaVersion.VERSION_21
+  sourceCompatibility = JavaVersion.VERSION_25
+  targetCompatibility = JavaVersion.VERSION_25
 }
 
 repositories {
@@ -48,8 +48,8 @@ dependencies {
   // Testing dependencies
   testImplementation(platform("org.junit:junit-bom:5.12.1"))
   testImplementation("org.junit.jupiter:junit-jupiter")
-  testImplementation("org.mockito:mockito-core:5.16.1")
-  testImplementation("org.mockito:mockito-junit-jupiter:5.16.1")
+  testImplementation("org.mockito:mockito-core:5.24.0")
+  testImplementation("org.mockito:mockito-junit-jupiter:5.24.0")
   testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
   // Command line parsing
@@ -142,6 +142,7 @@ task fatJar(type: Copy) {
 // War unversioned
 task warUnversioned(type: Copy) {
   dependsOn war
+  mustRunAfter fatJar
   from war.archiveFile
   into file("${buildDir}/libs")
   rename { "KigaliSim.war" }
