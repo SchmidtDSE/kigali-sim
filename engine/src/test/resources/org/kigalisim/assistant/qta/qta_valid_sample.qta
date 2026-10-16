@@ -1,0 +1,21 @@
+start default
+  define application "Refrigeration"
+    uses substance "HFC-134a"
+      enable domestic
+      initial charge with 1 kg / unit for domestic
+      set sales to 1 mt
+    end substance
+  end application
+end default
+
+start policy "P"
+  modify application "Refrigeration"
+    modify substance "HFC-134a"
+      cap sales to 80 % during years 1 to 5
+    end substance
+  end application
+end policy
+
+start simulations
+  simulate "BAU" from years 1 to 5
+end simulations

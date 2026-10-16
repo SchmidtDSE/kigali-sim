@@ -164,7 +164,7 @@ Both human readable and machine readable versions of this log are required. Ther
  - `String getWireTranscript()` which returns the stored (for example OpenAI-compatible) message array.
  - `List<HumanTranscriptElement> getHumanTranscript()` which derives the human readable transcript through the `AssistantModelProtocolStrategy`.
 
-We will have `OpenAiCompatibleChatLog` as the only implementer for now. Note that, in this design, the wire transcript is the single source of truth and the human transcript is derived from it. What the human transcript shows (user turns and assistant messages only, or tool activity as well) is decided at Component 13 once live model behavior can be observed. We will provide `InMemoryLogStrategy` which keeps chats in memory.
+We will have `OpenAiCompatibleChatLog` as the only implementer for now. Note that, in this design, the wire transcript is the single source of truth and the human transcript is derived from it. What the human transcript shows (user turns and assistant messages only, or tool activity as well) is decided at Component 9 once live model behavior can be observed. We will provide `InMemoryLogStrategy` which keeps chats in memory.
 
 The details of `HumanTranscriptElement` are left open but there should be a unique id for each element and some string representation in markdown.
 
@@ -307,20 +307,16 @@ We will need a text file which is committed to the git respoistory which will be
 **Summary:** Component 3 implements the transport-agnostic harness skeleton: the `KigaliAssistant`/`KigaliAssistantBuilder` facade, a split `AssistantActionCallback`/`AssistantTurnCallback` callback API, and the `AssistantResult` DTO, plus the built-in `message_user` and `end_turn` tools with a read-only `AssistantToolbelt` (and mutable concrete implementation). The model layer separates transport from protocol with a mockable `AssistantModelWireStrategy` and a real `OpenAiModelProtocolStrategy` that assembles `tool_choice:"required"` requests and parses content, ordered tool calls, finish reason, and verbatim replayable assistant messages. A callback-driven `UntimedAssistantTurnStrategy` implements the specified turn loop, including multi-call batches, implicit plain-text `message_user` replies, unknown-tool and malformed-argument failures, and the `TURN_ACTIONS_EXCEEDED` guard. Chat persistence is provided by `OpenAiCompatibleChatLog` and `InMemoryLogStrategy`, while `AssistantWorkspace` and `AssistantFileTypeStrategy` remain interfaces only. The `com.github.cliftonlabs:json-simple:4.0.1` dependency was added (and credited in the README), and JUnit 5 tests exercise the real protocol strategy through a mocked wire strategy with captured provider fixtures, with `./gradlew test checkstyleMain checkstyleTest` and Spotless passing.
 
 #### Component 4: Workspace abstraction
-We will add a fully in-memory workspace with only Kigali Sim simulation files (`.qta`). This component should complete:
 
- - `ListFilesTool`
- - `OutlineFileTool`
- - `ReadFileTool`
- - `EditFileTool`
-
-Other supporting classes can be implemented like `InMemoryWorkspace` and `QtaFileTypeStrategy`. For testing, we can create an in-memory workspace with an empty qta file and evaluate if the tools are able to list that file, edit the file, read the file, and outline that file.
+**Summary:** Component 4 adds the in-memory workspace layer and its four model-facing tools: `TextFileTypeStrategy` plus `QtaFileTypeStrategy` (top-level stanza metadata read from the ANTLR parse tree by `QtaStanzaVisitor`, with a tolerant line-scan fallback for partially edited source), `InMemoryWorkspace` (byte-array `LinkedHashMap` storage with extension dispatch and `IllegalArgumentException` / `NoSuchElementException` error semantics), and `AssistantWorkspaceBuilder` (QubecTalk registered by default), extending `AssistantWorkspace` with `listFiles()` and `outlineFile(String)`. `ListFilesTool`, `OutlineFileTool`, `ReadFileTool`, and `EditFileTool` validate JSON arguments and convert workspace and patch errors into `forToolCallError` results, with `EditFileTool` applying standard unified diffs through `io.github.java-diff-utils:java-diff-utils:4.17` (credited in the README) on the logging-free `UnifiedDiffUtils.parseUnifiedDiff` + `Patch.applyTo` path to stay TeaVM-safe. All new types remain under `org.kigalisim.assistant`, with eight new test classes (39 tests) covering the strategies, workspace, builder, each tool, and an end-to-end workspace-tools scenario. No `BinaryFileTypeStrategy`, disk/OPFS workspace, simulation validation, or WASM/UI wiring is included here, and `./gradlew test checkstyleMain checkstyleTest spotlessCheck` and `./gradlew war` pass (`war` is a build smoke check because the assistant is not yet reachable from `KigaliWasmSimFacade`).
 
 #### Component 5: Math in harness
-We will add support for `CalculateTool` with tests using a simple example expression.
+
+**Summary:** Component 5 adds the model-facing `calculate` tool (`org.kigalisim.assistant.tool.CalculateTool`) implementing `AssistantToolStrategy` with `NAME = "calculate"`, a JSON Schema for a single `expression` parameter, numeric extraction via `stripTrailingZeros().toPlainString()`, and non-throwing error handling through `forToolCall` / `forToolCallError`, plus ten `CalculateToolTest` cases. It adds `com.ezylang:EvalEx:3.7.0` to `engine/build.gradle` with a warning comment and the alphabetical Apache-2.0 EvalEx credit to `README.md`, leaving `KigaliAssistantBuilder` untouched so callers register the tool via `addTool(new CalculateTool())`. EvalEx is a temporary, deliberate dependency that is not TeaVM/WASM-safe and must be replaced with a portable evaluator before WASM integration (Component 15); `./gradlew war` passes only because the assistant is not yet reachable from `KigaliWasmSimFacade`. All new types remain under `org.kigalisim.assistant` with no assistant types leaking into the rest of the codebase. `./gradlew test checkstyleMain checkstyleTest spotlessCheck` passes (1462 tests, 0 failures, 0 errors) and `./gradlew war` passes.
 
 #### Component 6: Simulation execution
-We will add support for `ValidateSimulationTool` and `RunSimulationTool`. This requires designing a bridge into the rest of the Kigali Sim codebase and the results should be described in CSV text so that they can be transported to the LLM. In this process, we should be careful that types from the assistant package do not leak into the rest of the codebase. See `KigaliSimFacade`.
+
+**Summary:** Component 6 adds the model-facing `validate_simulation` and `run_simulation` tools (`ValidateSimulationTool`, `RunSimulationTool`) backed by a package-private `QtaSimulationSupport` bridge that reads `.qta` files from the Component 4 workspace and calls `KigaliSimFacade.parse` / `interpret` / `getDetailedErrorMessage` / `runScenario` / `convertResultsToCsv` entirely in memory, converting every workspace, parse, interpretation, and execution failure into a non-throwing `forToolCallError` result. `run_simulation` executes every scenario, renders one CSV table, optionally filtered to an inclusive `start_year` / `end_year` range, and truncates output at `DEFAULT_MAX_CSV_CHARACTERS = 100_000` on a newline boundary with an omission marker. Shared argument handling (missing-parameter checks and failed-call results) lives in `AssistantToolUtils`. All new types remain under `org.kigalisim.assistant` with no assistant types leaking into core, `KigaliAssistantBuilder` is untouched so callers register the tools, and scenario iteration order is not assumed because core `getScenarios()` returns an unordered map. The three new test classes (`ValidateSimulationToolTest`, `RunSimulationToolTest`, `SimulationToolsIntegrationTest`, 21 tests) cover valid, multi-scenario, no-scenario, malformed-argument, missing-file, syntax, interpretation, truncation, and workspace edit/repair paths, and `./gradlew test checkstyleMain checkstyleTest spotlessCheck` passes (1483 tests, 0 failures, 0 errors) with `./gradlew war` passing as a smoke check.
 
 #### Component 7: PDF files
 An example PDF file will be provided for use in tests. A `FileTypeStrategy` should be added for PDF files using Apache PDFBox.
@@ -328,11 +324,11 @@ An example PDF file will be provided for use in tests. A `FileTypeStrategy` shou
 #### Component 8: Office files
 An example PDF file will be provided for use in tests. A `FileTypeStrategy` should be added for PDF files using Apache POI.
 
-#### Component 11: Human transcript content
+#### Component 9: Human transcript content
 At this stage, human readable versions of the chat transcript are not yet available. 
 
 #### Component 10: Context document update
-The context document created in component 1 should be updated now that all of the available tools are completed.
+The context document created in component 1 should be updated now that all of the available tools are completed. We should remember that the LLM will not have access to the public web so this document needs to be quite complete, including with how to use the calculator, for example.
 
 #### Component 11: JVM strategies
 We should build out remaining classes which allow for running on the JVM. Specifically, `LocalDirectoryWorkspace` which should use a directory from file system as the workspace (again paths not supported for security reasons) as well as a new `LocalChatLogStrategy` that has one file per chat saved to a local directory.

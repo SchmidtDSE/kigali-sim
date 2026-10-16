@@ -48,6 +48,14 @@ dependencies {
   // JSON processing for the AI assistant (TeaVM-safe, no reflection)
   implementation("com.github.cliftonlabs:json-simple:4.0.1")
 
+  // Temporary expression evaluator for the assistant calculate tool. This is NOT TeaVM/WASM-safe
+  // (it reaches java.util.Date/Calendar.toInstant) and must be replaced with a portable
+  // evaluator before Component 15 wires the assistant into the WASM facade.
+  implementation("com.ezylang:EvalEx:3.7.0")
+
+  // Text diffing for assistant file edits (TeaVM-safe patch path)
+  implementation("io.github.java-diff-utils:java-diff-utils:4.17")
+
   // Testing dependencies
   testImplementation(platform("org.junit:junit-bom:5.12.1"))
   testImplementation("org.junit.jupiter:junit-jupiter")

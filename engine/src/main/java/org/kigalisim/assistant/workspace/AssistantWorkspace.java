@@ -6,6 +6,8 @@
 
 package org.kigalisim.assistant.workspace;
 
+import java.util.List;
+
 /**
  * Persistence and storage for a flat collection of files.
  *
@@ -63,6 +65,22 @@ public interface AssistantWorkspace {
    * @throws java.util.NoSuchElementException If the file or section does not exist.
    */
   String readFile(String filename, String section);
+
+  /**
+   * Lists the files in the workspace.
+   *
+   * @return The filenames in insertion order.
+   */
+  List<String> listFiles();
+
+  /**
+   * Lists the sections which can be requested from a file.
+   *
+   * @param filename The name of the file to outline.
+   * @return The format-specific section names in source order.
+   * @throws java.util.NoSuchElementException If the file does not exist.
+   */
+  List<String> outlineFile(String filename);
 
   /**
    * Writes a file in its entirety, overwriting prior contents.
