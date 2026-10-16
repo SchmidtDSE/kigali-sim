@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import org.kigalisim.assistant.callback.AssistantActionCallback;
+import org.kigalisim.assistant.result.AssistantResult;
 import org.kigalisim.assistant.result.AssistantResultBuilder;
 import org.kigalisim.assistant.workspace.AssistantWorkspace;
 
@@ -67,19 +68,19 @@ public class OutlineFileTool implements AssistantToolStrategy {
 
   @Override
   public void execute(JsonObject call, AssistantActionCallback callback) {
-    Object raw = call.get("filename");
-    if (!(raw instanceof String filename) || filename.isBlank()) {
-      callback.onActionComplete(
-          AssistantResultBuilder.forToolCallError("Missing required parameter: filename").build());
+    if (AssistantToolUtils.isMissing(call, "filename")) {
+      callback.onActionComplete(AssistantToolUtils.buildMissingParameterResult("filename"));
       return;
     }
+    String filename = AssistantToolUtils.getString(call, "filename");
     try {
       List<String> sections = workspace.outlineFile(filename);
-      callback.onActionComplete(
-          AssistantResultBuilder.forToolCall(String.join("\n", sections)).build());
+      String output = String.join("\n", sections);
+      AssistantResult result = AssistantResultBuilder.forToolCall(output).build();
+      callback.onActionComplete(result);
     } catch (NoSuchElementException e) {
-      callback.onActionComplete(
-          AssistantResultBuilder.forToolCallError(e.getMessage()).build());
+      AssistantResult result = AssistantResultBuilder.forToolCallError(e.getMessage()).build();
+      callback.onActionComplete(result);
     }
   }
 }

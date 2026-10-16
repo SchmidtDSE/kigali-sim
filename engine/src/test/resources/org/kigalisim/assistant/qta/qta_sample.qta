@@ -1,0 +1,19 @@
+start about
+  note "hello"
+end about
+
+start default
+  define application "Refrigeration"
+    uses substance "HFC-134a"
+      set sales to 1
+    end substance
+  end application
+end default
+
+start policy "P"
+  modify application "Refrigeration"
+end policy
+
+start simulations
+  simulate "BAU"
+end simulations

@@ -24,10 +24,11 @@ import org.junit.jupiter.api.Test;
  */
 public class InMemoryWorkspaceTest {
 
-  private static final String SAMPLE = String.join("\n",
-      "start default",
-      "  set sales to 1",
-      "end default");
+  private static final String SAMPLE = """
+      start default
+        set sales to 1
+      end default
+      """.stripTrailing();
 
   private InMemoryWorkspace workspace() {
     return new InMemoryWorkspace(List.of(new QtaFileTypeStrategy()));

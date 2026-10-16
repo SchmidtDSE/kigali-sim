@@ -27,6 +27,12 @@ import org.kigalisim.lang.program.ParsedProgram;
  */
 final class QtaSimulationSupport {
 
+  private static final String UNSUPPORTED_TEMPLATE =
+      "Only QubecTalk simulation files are supported; received '%s'";
+  private static final String PARSE_FAILED_TEMPLATE = "Failed to parse QubecTalk code:\n%s";
+  private static final String INTERPRET_FAILED_TEMPLATE =
+      "Failed to interpret QubecTalk code:\n%s";
+
   private QtaSimulationSupport() {
     // Utility class - prevent instantiation
   }
@@ -38,8 +44,10 @@ final class QtaSimulationSupport {
    * @return True when the filename ends with the QubecTalk extension, ignoring case.
    */
   static boolean isQta(String filename) {
-    return filename != null
-        && filename.toLowerCase(Locale.ROOT).endsWith(QtaFileTypeStrategy.EXTENSION);
+    if (filename == null) {
+      return false;
+    }
+    return filename.toLowerCase(Locale.ROOT).endsWith(QtaFileTypeStrategy.EXTENSION);
   }
 
   /**
@@ -61,18 +69,18 @@ final class QtaSimulationSupport {
     Objects.requireNonNull(callback, "callback");
 
     if (!isQta(filename)) {
-      reportError(callback,
-          "Only QubecTalk simulation files are supported; received '" + filename + "'");
+      String message = String.format(UNSUPPORTED_TEMPLATE, filename);
+      reportError(callback, message);
       return Optional.empty();
     }
 
     final String code;
     try {
       code = workspace.readFile(filename);
-    } catch (NoSuchElementException
-        | IllegalArgumentException
+    } catch (NoSuchElementException | IllegalArgumentException
         | UnsupportedOperationException e) {
-      reportError(callback, messageOf(e));
+      String message = getMessageOf(e);
+      reportError(callback, message);
       return Optional.empty();
     }
 
@@ -80,20 +88,23 @@ final class QtaSimulationSupport {
     try {
       parseResult = KigaliSimFacade.parse(code);
     } catch (RuntimeException e) {
-      reportError(callback, "Failed to parse QubecTalk code:\n" + messageOf(e));
+      String message = String.format(PARSE_FAILED_TEMPLATE, getMessageOf(e));
+      reportError(callback, message);
       return Optional.empty();
     }
 
     if (parseResult.hasErrors()) {
-      reportError(callback, "Failed to parse QubecTalk code:\n"
-          + KigaliSimFacade.getDetailedErrorMessage(parseResult));
+      String message = String.format(PARSE_FAILED_TEMPLATE,
+          KigaliSimFacade.getDetailedErrorMessage(parseResult));
+      reportError(callback, message);
       return Optional.empty();
     }
 
     try {
       return Optional.of(KigaliSimFacade.interpret(parseResult));
     } catch (RuntimeException e) {
-      reportError(callback, "Failed to interpret QubecTalk code:\n" + messageOf(e));
+      String message = String.format(INTERPRET_FAILED_TEMPLATE, getMessageOf(e));
+      reportError(callback, message);
       return Optional.empty();
     }
   }
@@ -114,7 +125,7 @@ final class QtaSimulationSupport {
    * @param e The throwable to describe.
    * @return The throwable message, or its class name when the message is null.
    */
-  static String messageOf(RuntimeException e) {
+  static String getMessageOf(RuntimeException e) {
     return e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage();
   }
 }

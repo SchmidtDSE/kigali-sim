@@ -13,13 +13,17 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.kigalisim.KigaliSimFacade;
+import org.kigalisim.lang.parse.ParseResult;
 
 /**
  * Outlines and extracts the top-level stanzas of a QubecTalk simulation.
  *
- * <p>A forgiving, line-oriented scanner is used rather than the full ANTLR parser so that the
- * assistant can still outline and read a file which is only partially edited. Nested constructs
- * such as {@code define} and {@code uses} blocks do not affect top-level stanza boundaries.</p>
+ * <p>Valid source is parsed with the canonical ANTLR grammar and the stanza metadata is read from
+ * the parse tree by {@link QtaStanzaVisitor}. Because the assistant may outline a file while it is
+ * only partially edited, an invalid source falls back to a tolerant, line-oriented scan so that
+ * top-level stanza boundaries can still be found. Nested constructs such as {@code define} and
+ * {@code uses} blocks do not affect top-level stanza boundaries.</p>
  */
 public class QtaFileTypeStrategy implements TextFileTypeStrategy {
 
@@ -30,11 +34,13 @@ public class QtaFileTypeStrategy implements TextFileTypeStrategy {
 
   private static final Pattern START_PATTERN = Pattern.compile(
       "^\\s*start\\s+(about|default|policy|simulations)\\b",
-      Pattern.CASE_INSENSITIVE);
+      Pattern.CASE_INSENSITIVE
+  );
 
   private static final Pattern END_PATTERN = Pattern.compile(
       "^\\s*end\\s+(about|default|policy|simulations)\\b",
-      Pattern.CASE_INSENSITIVE);
+      Pattern.CASE_INSENSITIVE
+  );
 
   @Override
   public Set<String> getFileExtensions() {
@@ -54,7 +60,7 @@ public class QtaFileTypeStrategy implements TextFileTypeStrategy {
   @Override
   public String interpret(String contents, String section) {
     List<String> lines = splitLines(contents);
-    for (Stanza stanza : parseStanzas(contents)) {
+    for (QtaStanza stanza : parseStanzas(contents)) {
       if (matchesSection(stanza, section)) {
         return String.join("\n", lines.subList(stanza.getStartLine(), stanza.getEndLine() + 1));
       }
@@ -65,7 +71,7 @@ public class QtaFileTypeStrategy implements TextFileTypeStrategy {
   @Override
   public List<String> outline(String contents) {
     List<String> sections = new ArrayList<>();
-    for (Stanza stanza : parseStanzas(contents)) {
+    for (QtaStanza stanza : parseStanzas(contents)) {
       sections.add(sectionName(stanza));
     }
     return sections;
@@ -74,12 +80,31 @@ public class QtaFileTypeStrategy implements TextFileTypeStrategy {
   /**
    * Parses the top-level stanzas of the simulation.
    *
+   * <p>The canonical parser and {@link QtaStanzaVisitor} are used when the source is valid. Invalid
+   * or partially edited source falls back to a tolerant line scan.</p>
+   *
    * @param contents The string contents of the simulation.
    * @return The stanzas in source order.
    */
-  private List<Stanza> parseStanzas(String contents) {
+  private List<QtaStanza> parseStanzas(String contents) {
+    ParseResult parseResult = KigaliSimFacade.parse(contents);
+    if (!parseResult.hasErrors() && parseResult.getProgram().isPresent()) {
+      QtaStanzaVisitor visitor = new QtaStanzaVisitor();
+      visitor.visit(parseResult.getProgram().get());
+      return visitor.getStanzas();
+    }
+    return scanStanzas(contents);
+  }
+
+  /**
+   * Tolerantly scans the top-level stanzas of partially edited source.
+   *
+   * @param contents The string contents of the simulation.
+   * @return The stanzas in source order.
+   */
+  private List<QtaStanza> scanStanzas(String contents) {
     List<String> lines = splitLines(contents);
-    List<Stanza> stanzas = new ArrayList<>();
+    List<QtaStanza> stanzas = new ArrayList<>();
     String activeKeyword = null;
     String activeName = null;
     int startLine = -1;
@@ -89,7 +114,7 @@ public class QtaFileTypeStrategy implements TextFileTypeStrategy {
       if (activeKeyword != null
           && endMatcher.find()
           && endMatcher.group(1).equalsIgnoreCase(activeKeyword)) {
-        stanzas.add(new Stanza(activeKeyword, activeName, startLine, i));
+        stanzas.add(new QtaStanza(activeKeyword, activeName, startLine, i));
         activeKeyword = null;
         activeName = null;
         startLine = -1;
@@ -98,7 +123,7 @@ public class QtaFileTypeStrategy implements TextFileTypeStrategy {
       Matcher startMatcher = START_PATTERN.matcher(line);
       if (startMatcher.find()) {
         if (activeKeyword != null) {
-          stanzas.add(new Stanza(activeKeyword, activeName, startLine, i - 1));
+          stanzas.add(new QtaStanza(activeKeyword, activeName, startLine, i - 1));
         }
         activeKeyword = startMatcher.group(1).toLowerCase(Locale.ROOT);
         activeName = "policy".equals(activeKeyword)
@@ -108,7 +133,7 @@ public class QtaFileTypeStrategy implements TextFileTypeStrategy {
       }
     }
     if (activeKeyword != null) {
-      stanzas.add(new Stanza(activeKeyword, activeName, startLine, lines.size() - 1));
+      stanzas.add(new QtaStanza(activeKeyword, activeName, startLine, lines.size() - 1));
     }
     return stanzas;
   }
@@ -135,7 +160,7 @@ public class QtaFileTypeStrategy implements TextFileTypeStrategy {
    * @param stanza The stanza.
    * @return The section token such as {@code policy "Permit"}.
    */
-  private String sectionName(Stanza stanza) {
+  private String sectionName(QtaStanza stanza) {
     if ("policy".equals(stanza.getKeyword())
         && stanza.getName() != null
         && !stanza.getName().isBlank()) {
@@ -151,7 +176,7 @@ public class QtaFileTypeStrategy implements TextFileTypeStrategy {
    * @param requested The requested section.
    * @return True when the request matches.
    */
-  private boolean matchesSection(Stanza stanza, String requested) {
+  private boolean matchesSection(QtaStanza stanza, String requested) {
     String requestedNormalized = normalize(requested);
     if (!"policy".equals(stanza.getKeyword())) {
       return stanza.getKeyword().equalsIgnoreCase(requestedNormalized);
@@ -189,47 +214,5 @@ public class QtaFileTypeStrategy implements TextFileTypeStrategy {
   private List<String> splitLines(String contents) {
     String normalized = contents.replace("\r\n", "\n").replace('\r', '\n');
     return List.of(normalized.split("\n", -1));
-  }
-
-  /**
-   * A top-level stanza found in a simulation.
-   */
-  private static final class Stanza {
-
-    private final String keyword;
-    private final String name;
-    private final int startLine;
-    private final int endLine;
-
-    /**
-     * Constructs a stanza.
-     *
-     * @param keyword The stanza keyword such as {@code default}.
-     * @param name The policy name when applicable, otherwise null.
-     * @param startLine The zero-based index of the opening line.
-     * @param endLine The zero-based index of the closing line, inclusive.
-     */
-    Stanza(String keyword, String name, int startLine, int endLine) {
-      this.keyword = keyword;
-      this.name = name;
-      this.startLine = startLine;
-      this.endLine = endLine;
-    }
-
-    String getKeyword() {
-      return keyword;
-    }
-
-    String getName() {
-      return name;
-    }
-
-    int getStartLine() {
-      return startLine;
-    }
-
-    int getEndLine() {
-      return endLine;
-    }
   }
 }

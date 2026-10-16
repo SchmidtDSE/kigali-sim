@@ -24,10 +24,11 @@ import org.kigalisim.assistant.tool.ReadFileTool;
  */
 public class WorkspaceToolsIntegrationTest {
 
-  private static final String BASELINE = String.join("\n",
-      "start default",
-      "  set sales to 1",
-      "end default");
+  private static final String BASELINE = """
+      start default
+        set sales to 1
+      end default
+      """.stripTrailing();
 
   private String execute(Object tool, JsonObject call) {
     List<AssistantResult> results = new ArrayList<>();
@@ -55,14 +56,15 @@ public class WorkspaceToolsIntegrationTest {
 
     assertEquals("simulation.qta", execute(new ListFilesTool(workspace), new JsonObject()));
 
-    String patch = String.join("\n",
-        "--- simulation.qta",
-        "+++ simulation.qta",
-        "@@ -1 +1,3 @@",
-        "-",
-        "+start default",
-        "+  set sales to 1",
-        "+end default");
+    String patch = """
+        --- simulation.qta
+        +++ simulation.qta
+        @@ -1 +1,3 @@
+        -
+        +start default
+        +  set sales to 1
+        +end default
+        """.stripTrailing();
     execute(new EditFileTool(workspace), callWith("simulation.qta", patch));
 
     assertEquals(BASELINE, execute(new ReadFileTool(workspace), callWith("simulation.qta")));

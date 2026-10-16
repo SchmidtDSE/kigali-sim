@@ -11,6 +11,7 @@ import com.github.cliftonlabs.json_simple.JsonObject;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import org.kigalisim.assistant.callback.AssistantActionCallback;
+import org.kigalisim.assistant.result.AssistantResult;
 import org.kigalisim.assistant.result.AssistantResultBuilder;
 import org.kigalisim.assistant.workspace.AssistantWorkspace;
 
@@ -71,22 +72,25 @@ public class ReadFileTool implements AssistantToolStrategy {
 
   @Override
   public void execute(JsonObject call, AssistantActionCallback callback) {
-    Object rawFilename = call.get("filename");
-    if (!(rawFilename instanceof String filename) || filename.isBlank()) {
-      callback.onActionComplete(
-          AssistantResultBuilder.forToolCallError("Missing required parameter: filename").build());
+    if (AssistantToolUtils.isMissing(call, "filename")) {
+      callback.onActionComplete(AssistantToolUtils.buildMissingParameterResult("filename"));
       return;
     }
-    Object rawSection = call.get("section");
-    String section = rawSection instanceof String value ? value : null;
+    String filename = AssistantToolUtils.getString(call, "filename");
+    String section = AssistantToolUtils.getString(call, "section");
+    boolean isUsingSection = section != null && !section.isBlank();
     try {
-      String output = section == null || section.isBlank()
-          ? workspace.readFile(filename)
-          : workspace.readFile(filename, section);
-      callback.onActionComplete(AssistantResultBuilder.forToolCall(output).build());
+      String output;
+      if (isUsingSection) {
+        output = workspace.readFile(filename, section);
+      } else {
+        output = workspace.readFile(filename);
+      }
+      AssistantResult result = AssistantResultBuilder.forToolCall(output).build();
+      callback.onActionComplete(result);
     } catch (NoSuchElementException e) {
-      callback.onActionComplete(
-          AssistantResultBuilder.forToolCallError(e.getMessage()).build());
+      AssistantResult result = AssistantResultBuilder.forToolCallError(e.getMessage()).build();
+      callback.onActionComplete(result);
     }
   }
 }

@@ -24,12 +24,13 @@ import org.kigalisim.assistant.workspace.AssistantWorkspaceBuilder;
  */
 public class OutlineFileToolTest {
 
-  private static final String SAMPLE = String.join("\n",
-      "start about",
-      "end about",
-      "",
-      "start default",
-      "end default");
+  private static final String SAMPLE = """
+      start about
+      end about
+
+      start default
+      end default
+      """.stripTrailing();
 
   /**
    * Test the tool constant and schema.

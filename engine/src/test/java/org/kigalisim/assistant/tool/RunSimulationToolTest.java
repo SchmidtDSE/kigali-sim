@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.kigalisim.KigaliSimFacade;
+import org.kigalisim.assistant.AssistantTestResources;
 import org.kigalisim.assistant.result.AssistantResult;
 import org.kigalisim.assistant.workspace.AssistantWorkspace;
 import org.kigalisim.assistant.workspace.AssistantWorkspaceBuilder;
@@ -26,87 +27,20 @@ import org.kigalisim.assistant.workspace.AssistantWorkspaceBuilder;
  */
 public class RunSimulationToolTest {
 
-  private static final String VALID = String.join("\n",
-      "start default",
-      "",
-      "  define application \"test\"",
-      "",
-      "    uses substance \"test\"",
-      "      enable domestic",
-      "      initial charge with 5 kg / unit for domestic",
-      "      set domestic to 100 mt",
-      "      equals 5 tCO2e / mt",
-      "    end substance",
-      "",
-      "  end application",
-      "",
-      "end default",
-      "",
-      "start simulations",
-      "",
-      "  simulate \"business as usual\" from years 1 to 3",
-      "",
-      "end simulations");
-
-  private static final String MULTI = String.join("\n",
-      "start default",
-      "",
-      "  define application \"test\"",
-      "",
-      "    uses substance \"test\"",
-      "      enable domestic",
-      "      initial charge with 5 kg / unit for domestic",
-      "      set domestic to 100 mt",
-      "      equals 5 tCO2e / mt",
-      "    end substance",
-      "",
-      "  end application",
-      "",
-      "end default",
-      "",
-      "start simulations",
-      "",
-      "  simulate \"business as usual\" from years 1 to 2",
-      "  simulate \"with permit\" from years 1 to 2",
-      "",
-      "end simulations");
-
-  private static final String NO_SCENARIOS = String.join("\n",
-      "start default",
-      "end default",
-      "",
-      "start simulations",
-      "end simulations");
-
   private static final String SYNTAX_ERROR = "this is not QubecTalk at all";
-
-  private static final String INTERPRET_ERROR = String.join("\n",
-      "start default",
-      "",
-      "  define application \"test\"",
-      "",
-      "    uses substance \"test\"",
-      "      enable domestic",
-      "      initial charge with 1 kg / unit for domestic",
-      "      set priorEquipment to 100 units during year 1",
-      "      retire 20 year old mean weibull",
-      "      equals 5 tCO2e / mt",
-      "    end substance",
-      "",
-      "  end application",
-      "",
-      "end default",
-      "",
-      "start simulations",
-      "",
-      "  simulate \"business as usual\" from years 1 to 5",
-      "",
-      "end simulations");
 
   private AssistantWorkspace workspaceWith(String filename, String contents) {
     AssistantWorkspace workspace = new AssistantWorkspaceBuilder().build();
     workspace.createFile(filename, contents);
     return workspace;
+  }
+
+  private AssistantWorkspace basicWorkspace() {
+    return workspaceWith("basic.qta", AssistantTestResources.readQta("basic.qta"));
+  }
+
+  private AssistantWorkspace multiWorkspace() {
+    return workspaceWith("multi.qta", AssistantTestResources.readQta("multi.qta"));
   }
 
   private JsonObject callWith(Object filename) {
@@ -133,22 +67,30 @@ public class RunSimulationToolTest {
   }
 
   /**
-   * Test the tool constant, description, and required parameter schema.
+   * Test the tool constant, description, and parameter schema.
    */
   @Test
   public void testNameDescriptionAndSchema() {
     RunSimulationTool tool = new RunSimulationTool(new AssistantWorkspaceBuilder().build());
     assertEquals("run_simulation", RunSimulationTool.NAME);
     assertEquals("run_simulation", tool.getName());
-    assertEquals("Run a QubecTalk simulation file and return the results as CSV text",
+    assertEquals(
+        "Run a QubecTalk simulation file and return the results as CSV text, optionally "
+            + "limited to a start and end year",
         tool.getDescription());
     JsonObject schema = tool.getParameterSchema();
     assertEquals("object", schema.get("type"));
     JsonObject properties = (JsonObject) schema.get("properties");
     JsonObject filename = (JsonObject) properties.get("filename");
     assertEquals("string", filename.get("type"));
+    JsonObject startYear = (JsonObject) properties.get("start_year");
+    assertEquals("integer", startYear.get("type"));
+    JsonObject endYear = (JsonObject) properties.get("end_year");
+    assertEquals("integer", endYear.get("type"));
     JsonArray required = (JsonArray) schema.get("required");
     assertTrue(required.contains("filename"));
+    assertFalse(required.contains("start_year"));
+    assertFalse(required.contains("end_year"));
   }
 
   /**
@@ -156,7 +98,7 @@ public class RunSimulationToolTest {
    */
   @Test
   public void testValidRun() {
-    AssistantWorkspace workspace = workspaceWith("basic.qta", VALID);
+    AssistantWorkspace workspace = basicWorkspace();
     AssistantResult result = execute(workspace, callWith("basic.qta"));
     assertTrue(result.getWasSuccessful(), result.getError().orElse("expected success"));
     String output = content(result);
@@ -171,7 +113,7 @@ public class RunSimulationToolTest {
    */
   @Test
   public void testAllScenarios() {
-    AssistantWorkspace workspace = workspaceWith("multi.qta", MULTI);
+    AssistantWorkspace workspace = multiWorkspace();
     AssistantResult result = execute(workspace, callWith("multi.qta"));
     assertTrue(result.getWasSuccessful(), result.getError().orElse("expected success"));
     String output = content(result);
@@ -184,7 +126,7 @@ public class RunSimulationToolTest {
    */
   @Test
   public void testShortRunUntouched() {
-    AssistantWorkspace workspace = workspaceWith("basic.qta", VALID);
+    AssistantWorkspace workspace = basicWorkspace();
     AssistantResult result = execute(workspace, callWith("basic.qta"));
     assertTrue(result.getWasSuccessful());
     assertFalse(content(result).contains("omitted"));
@@ -195,7 +137,7 @@ public class RunSimulationToolTest {
    */
   @Test
   public void testTruncation() {
-    AssistantWorkspace workspace = workspaceWith("basic.qta", VALID);
+    AssistantWorkspace workspace = basicWorkspace();
     String header = KigaliSimFacade.convertResultsToCsv(List.of());
     RunSimulationTool tool = new RunSimulationTool(workspace, header.length() + 10);
     AssistantResult result = execute(tool, callWith("basic.qta"));
@@ -206,11 +148,63 @@ public class RunSimulationToolTest {
   }
 
   /**
+   * Test that the optional year range filters the returned rows.
+   */
+  @Test
+  public void testYearRangeFiltering() {
+    AssistantWorkspace workspace = basicWorkspace();
+    JsonObject call = callWith("basic.qta");
+    call.put("start_year", 2);
+    call.put("end_year", 2);
+    AssistantResult result = execute(workspace, call);
+    assertTrue(result.getWasSuccessful(), result.getError().orElse("expected success"));
+    String output = content(result);
+    assertNotNull(output);
+    String[] lines = output.stripTrailing().split("\n");
+    assertTrue(lines.length > 1, "expected at least one data row");
+    for (int i = 1; i < lines.length; i++) {
+      assertEquals("2", lines[i].split(",")[2]);
+    }
+  }
+
+  /**
+   * Test that a start year alone drops earlier rows.
+   */
+  @Test
+  public void testStartYearOnly() {
+    AssistantWorkspace workspace = basicWorkspace();
+    JsonObject call = callWith("basic.qta");
+    call.put("start_year", "2");
+    AssistantResult result = execute(workspace, call);
+    assertTrue(result.getWasSuccessful(), result.getError().orElse("expected success"));
+    String output = content(result);
+    assertFalse(output.contains("business as usual,1,1,"));
+    assertTrue(output.contains("business as usual,1,2,"));
+  }
+
+  /**
+   * Test that bad year parameters are failed results.
+   */
+  @Test
+  public void testInvalidYearParameters() {
+    AssistantWorkspace workspace = basicWorkspace();
+
+    JsonObject nonNumeric = callWith("basic.qta");
+    nonNumeric.put("start_year", "later");
+    assertFalse(execute(workspace, nonNumeric).getWasSuccessful());
+
+    JsonObject reversed = callWith("basic.qta");
+    reversed.put("start_year", 3);
+    reversed.put("end_year", 1);
+    assertFalse(execute(workspace, reversed).getWasSuccessful());
+  }
+
+  /**
    * Test that missing, blank, and non-string filenames are failed results.
    */
   @Test
   public void testMissingFilename() {
-    AssistantWorkspace workspace = workspaceWith("basic.qta", VALID);
+    AssistantWorkspace workspace = basicWorkspace();
     assertFalse(execute(workspace, callWith(null)).getWasSuccessful());
     assertFalse(execute(workspace, callWith("   ")).getWasSuccessful());
     assertFalse(execute(workspace, callWith(5)).getWasSuccessful());
@@ -221,7 +215,7 @@ public class RunSimulationToolTest {
    */
   @Test
   public void testNonQtaFilename() {
-    AssistantWorkspace workspace = workspaceWith("basic.qta", VALID);
+    AssistantWorkspace workspace = basicWorkspace();
     AssistantResult result = execute(workspace, callWith("notes.txt"));
     assertFalse(result.getWasSuccessful());
     assertTrue(result.getError().orElse("").contains("QubecTalk"));
@@ -232,7 +226,7 @@ public class RunSimulationToolTest {
    */
   @Test
   public void testMissingFile() {
-    AssistantWorkspace workspace = workspaceWith("basic.qta", VALID);
+    AssistantWorkspace workspace = basicWorkspace();
     AssistantResult result = execute(workspace, callWith("missing.qta"));
     assertFalse(result.getWasSuccessful());
     assertTrue(result.getError().orElse("").contains("No file named"));
@@ -254,7 +248,8 @@ public class RunSimulationToolTest {
    */
   @Test
   public void testInterpretError() {
-    AssistantWorkspace workspace = workspaceWith("interpret.qta", INTERPRET_ERROR);
+    AssistantWorkspace workspace =
+        workspaceWith("interpret.qta", AssistantTestResources.readQta("interpret_error.qta"));
     AssistantResult result = execute(workspace, callWith("interpret.qta"));
     assertFalse(result.getWasSuccessful());
     assertTrue(result.getError().orElse("").contains("Failed to interpret QubecTalk code"));
@@ -265,7 +260,8 @@ public class RunSimulationToolTest {
    */
   @Test
   public void testNoScenarios() {
-    AssistantWorkspace workspace = workspaceWith("empty.qta", NO_SCENARIOS);
+    AssistantWorkspace workspace =
+        workspaceWith("empty.qta", AssistantTestResources.readQta("no_scenarios.qta"));
     AssistantResult result = execute(workspace, callWith("empty.qta"));
     assertFalse(result.getWasSuccessful());
     assertTrue(result.getError().orElse("").contains("defines no scenarios"));

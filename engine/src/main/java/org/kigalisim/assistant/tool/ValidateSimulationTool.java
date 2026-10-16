@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import org.kigalisim.assistant.callback.AssistantActionCallback;
+import org.kigalisim.assistant.result.AssistantResult;
 import org.kigalisim.assistant.result.AssistantResultBuilder;
 import org.kigalisim.assistant.workspace.AssistantWorkspace;
 import org.kigalisim.lang.program.ParsedProgram;
@@ -30,6 +31,8 @@ public class ValidateSimulationTool implements AssistantToolStrategy {
    * The name by which the tool is offered to the model.
    */
   public static final String NAME = "validate_simulation";
+
+  private static final String VALID_TEMPLATE = "Simulation '%s' is valid. %s";
 
   private final AssistantWorkspace workspace;
 
@@ -73,12 +76,11 @@ public class ValidateSimulationTool implements AssistantToolStrategy {
 
   @Override
   public void execute(JsonObject call, AssistantActionCallback callback) {
-    Object rawFilename = call.get("filename");
-    if (!(rawFilename instanceof String filename) || filename.isBlank()) {
-      callback.onActionComplete(
-          AssistantResultBuilder.forToolCallError("Missing required parameter: filename").build());
+    if (AssistantToolUtils.isMissing(call, "filename")) {
+      callback.onActionComplete(AssistantToolUtils.buildMissingParameterResult("filename"));
       return;
     }
+    String filename = AssistantToolUtils.getString(call, "filename");
 
     Optional<ParsedProgram> loaded = QtaSimulationSupport.load(workspace, filename, callback);
     if (loaded.isEmpty()) {
@@ -87,10 +89,15 @@ public class ValidateSimulationTool implements AssistantToolStrategy {
 
     List<String> scenarios = new ArrayList<>(loaded.get().getScenarios());
     Collections.sort(scenarios);
-    String scenarioSummary = scenarios.isEmpty()
-        ? "No scenarios are defined."
-        : "Scenarios: " + String.join(", ", scenarios) + ".";
-    String message = "Simulation '" + filename + "' is valid. " + scenarioSummary;
-    callback.onActionComplete(AssistantResultBuilder.forToolCall(message).build());
+    boolean hasScenarios = !scenarios.isEmpty();
+    String scenarioSummary;
+    if (hasScenarios) {
+      scenarioSummary = "Scenarios: " + String.join(", ", scenarios) + ".";
+    } else {
+      scenarioSummary = "No scenarios are defined.";
+    }
+    String message = String.format(VALID_TEMPLATE, filename, scenarioSummary);
+    AssistantResult result = AssistantResultBuilder.forToolCall(message).build();
+    callback.onActionComplete(result);
   }
 }

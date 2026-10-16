@@ -14,6 +14,7 @@ import com.github.cliftonlabs.json_simple.JsonObject;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.kigalisim.assistant.AssistantTestResources;
 import org.kigalisim.assistant.result.AssistantResult;
 import org.kigalisim.assistant.tool.EditFileTool;
 import org.kigalisim.assistant.tool.RunSimulationTool;
@@ -23,22 +24,6 @@ import org.kigalisim.assistant.tool.ValidateSimulationTool;
  * Exercises the simulation tools together over an in-memory workspace.
  */
 public class SimulationToolsIntegrationTest {
-
-  private static final String BASELINE = String.join("\n",
-      "start default",
-      "  define application \"test\"",
-      "    uses substance \"test\"",
-      "      enable domestic",
-      "      initial charge with 5 kg / unit for domestic",
-      "      set domestic to 100 units",
-      "      equals 5 tCO2e / mt",
-      "    end substance",
-      "  end application",
-      "end default",
-      "",
-      "start simulations",
-      "  simulate \"business as usual\" from years 1 to 2",
-      "end simulations");
 
   private JsonObject callWith(String filename) {
     JsonObject call = new JsonObject();
@@ -83,38 +68,41 @@ public class SimulationToolsIntegrationTest {
   @Test
   public void testValidateEditRunFlow() {
     AssistantWorkspace workspace = new AssistantWorkspaceBuilder().build();
-    workspace.createFile("simulation.qta", BASELINE);
+    workspace.createFile(
+        "simulation.qta", AssistantTestResources.readQta("integration_baseline.qta"));
 
     AssistantResult valid = validate(workspace);
     assertTrue(valid.getWasSuccessful(), valid.getError().orElse("expected success"));
     assertTrue(content(valid).contains("business as usual"));
 
-    String breakPatch = String.join("\n",
-        "--- simulation.qta",
-        "+++ simulation.qta",
-        "@@ -3,5 +3,5 @@",
-        "     uses substance \"test\"",
-        "       enable domestic",
-        "       initial charge with 5 kg / unit for domestic",
-        "-      set domestic to 100 units",
-        "+      set domestic to ???",
-        "       equals 5 tCO2e / mt");
+    String breakPatch = """
+        --- simulation.qta
+        +++ simulation.qta
+        @@ -3,5 +3,5 @@
+             uses substance "test"
+               enable domestic
+               initial charge with 5 kg / unit for domestic
+        -      set domestic to 100 units
+        +      set domestic to ???
+               equals 5 tCO2e / mt
+        """.stripTrailing();
     AssistantResult broken = edit(workspace, breakPatch);
     assertTrue(broken.getWasSuccessful(), broken.getError().orElse("expected edit to apply"));
 
     AssistantResult invalid = validate(workspace);
     assertFalse(invalid.getWasSuccessful());
 
-    String repairPatch = String.join("\n",
-        "--- simulation.qta",
-        "+++ simulation.qta",
-        "@@ -3,5 +3,5 @@",
-        "     uses substance \"test\"",
-        "       enable domestic",
-        "       initial charge with 5 kg / unit for domestic",
-        "-      set domestic to ???",
-        "+      set domestic to 100 units",
-        "       equals 5 tCO2e / mt");
+    String repairPatch = """
+        --- simulation.qta
+        +++ simulation.qta
+        @@ -3,5 +3,5 @@
+             uses substance "test"
+               enable domestic
+               initial charge with 5 kg / unit for domestic
+        -      set domestic to ???
+        +      set domestic to 100 units
+               equals 5 tCO2e / mt
+        """.stripTrailing();
     AssistantResult repaired = edit(workspace, repairPatch);
     assertTrue(repaired.getWasSuccessful(), repaired.getError().orElse("expected edit to apply"));
 

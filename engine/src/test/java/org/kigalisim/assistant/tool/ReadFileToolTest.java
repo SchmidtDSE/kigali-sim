@@ -24,12 +24,13 @@ import org.kigalisim.assistant.workspace.AssistantWorkspaceBuilder;
  */
 public class ReadFileToolTest {
 
-  private static final String SAMPLE = String.join("\n",
-      "start about",
-      "end about",
-      "",
-      "start default",
-      "end default");
+  private static final String SAMPLE = """
+      start about
+      end about
+
+      start default
+      end default
+      """.stripTrailing();
 
   private AssistantWorkspace workspaceWithSample() {
     AssistantWorkspace workspace = new AssistantWorkspaceBuilder().build();

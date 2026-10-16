@@ -69,18 +69,20 @@ public class EditFileToolTest {
   @Test
   public void testReplacement() {
     AssistantWorkspace workspace = workspaceWith("start default\n  set sales to 1\nend default");
-    String patch = String.join("\n",
-        "--- simulation.qta",
-        "+++ simulation.qta",
-        "@@ -1,3 +1,3 @@",
-        " start default",
-        "-  set sales to 1",
-        "+  set sales to 2",
-        " end default");
+    String patch = """
+        --- simulation.qta
+        +++ simulation.qta
+        @@ -1,3 +1,3 @@
+         start default
+        -  set sales to 1
+        +  set sales to 2
+         end default
+        """.stripTrailing();
     AssistantResult result = edit(workspace, callWith("simulation.qta", patch));
 
     assertTrue(result.getWasSuccessful());
-    assertEquals("start default\n  set sales to 2\nend default",
+    assertEquals(
+        "start default\n  set sales to 2\nend default",
         workspace.readFile("simulation.qta"));
   }
 
@@ -90,17 +92,19 @@ public class EditFileToolTest {
   @Test
   public void testInsertion() {
     AssistantWorkspace workspace = workspaceWith("start default\nend default");
-    String patch = String.join("\n",
-        "--- simulation.qta",
-        "+++ simulation.qta",
-        "@@ -1,2 +1,3 @@",
-        " start default",
-        "+  set sales to 1",
-        " end default");
+    String patch = """
+        --- simulation.qta
+        +++ simulation.qta
+        @@ -1,2 +1,3 @@
+         start default
+        +  set sales to 1
+         end default
+        """.stripTrailing();
     AssistantResult result = edit(workspace, callWith("simulation.qta", patch));
 
     assertTrue(result.getWasSuccessful());
-    assertEquals("start default\n  set sales to 1\nend default",
+    assertEquals(
+        "start default\n  set sales to 1\nend default",
         workspace.readFile("simulation.qta"));
   }
 
@@ -110,13 +114,14 @@ public class EditFileToolTest {
   @Test
   public void testDeletion() {
     AssistantWorkspace workspace = workspaceWith("start default\n  set sales to 1\nend default");
-    String patch = String.join("\n",
-        "--- simulation.qta",
-        "+++ simulation.qta",
-        "@@ -1,3 +1,2 @@",
-        " start default",
-        "-  set sales to 1",
-        " end default");
+    String patch = """
+        --- simulation.qta
+        +++ simulation.qta
+        @@ -1,3 +1,2 @@
+         start default
+        -  set sales to 1
+         end default
+        """.stripTrailing();
     AssistantResult result = edit(workspace, callWith("simulation.qta", patch));
 
     assertTrue(result.getWasSuccessful());
@@ -144,12 +149,13 @@ public class EditFileToolTest {
     AssistantResult headerless = edit(workspace, callWith("simulation.qta", "just some text"));
     assertFalse(headerless.getWasSuccessful());
 
-    String mismatch = String.join("\n",
-        "--- simulation.qta",
-        "+++ simulation.qta",
-        "@@ -1,1 +1,1 @@",
-        "-nonexistent line",
-        "+something else");
+    String mismatch = """
+        --- simulation.qta
+        +++ simulation.qta
+        @@ -1,1 +1,1 @@
+        -nonexistent line
+        +something else
+        """.stripTrailing();
     AssistantResult failed = edit(workspace, callWith("simulation.qta", mismatch));
     assertFalse(failed.getWasSuccessful());
   }

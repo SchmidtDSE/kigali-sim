@@ -16,6 +16,7 @@ import java.util.Locale;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import org.kigalisim.assistant.callback.AssistantActionCallback;
+import org.kigalisim.assistant.result.AssistantResult;
 import org.kigalisim.assistant.result.AssistantResultBuilder;
 import org.kigalisim.assistant.workspace.AssistantWorkspace;
 import org.kigalisim.assistant.workspace.QtaFileTypeStrategy;
@@ -32,6 +33,13 @@ public class EditFileTool implements AssistantToolStrategy {
    * The name by which the tool is offered to the model.
    */
   public static final String NAME = "edit_file";
+
+  private static final String ONLY_QTA_TEMPLATE =
+      "Only QubecTalk simulation files can be edited; received '%s'";
+  private static final String NO_HUNKS_MESSAGE =
+      "The patch could not be applied: include --- / +++ headers and @@ hunks";
+  private static final String PATCH_FAILED_TEMPLATE = "The patch could not be applied: %s";
+  private static final String APPLIED_TEMPLATE = "Applied %d hunk(s) to %s (%d lines).";
 
   private final AssistantWorkspace workspace;
 
@@ -81,31 +89,33 @@ public class EditFileTool implements AssistantToolStrategy {
 
   @Override
   public void execute(JsonObject call, AssistantActionCallback callback) {
-    Object rawFilename = call.get("filename");
-    if (!(rawFilename instanceof String filename) || filename.isBlank()) {
-      callback.onActionComplete(
-          AssistantResultBuilder.forToolCallError("Missing required parameter: filename").build());
+    if (AssistantToolUtils.isMissing(call, "filename")) {
+      callback.onActionComplete(AssistantToolUtils.buildMissingParameterResult("filename"));
       return;
     }
-    Object rawPatch = call.get("patch");
-    if (!(rawPatch instanceof String patch)) {
-      callback.onActionComplete(
-          AssistantResultBuilder.forToolCallError("Missing required parameter: patch").build());
+    String filename = AssistantToolUtils.getString(call, "filename");
+
+    String patch = AssistantToolUtils.getString(call, "patch");
+    if (patch == null) {
+      callback.onActionComplete(AssistantToolUtils.buildMissingParameterResult("patch"));
       return;
     }
+
     if (!filename.toLowerCase(Locale.ROOT).endsWith(QtaFileTypeStrategy.EXTENSION)) {
-      callback.onActionComplete(AssistantResultBuilder.forToolCallError(
-          "Only QubecTalk simulation files can be edited; received '" + filename + "'").build());
+      String message = String.format(ONLY_QTA_TEMPLATE, filename);
+      AssistantResult result = AssistantResultBuilder.forToolCallError(message).build();
+      callback.onActionComplete(result);
       return;
     }
     try {
       applyEdit(filename, patch, callback);
     } catch (NoSuchElementException e) {
-      callback.onActionComplete(
-          AssistantResultBuilder.forToolCallError(e.getMessage()).build());
+      AssistantResult result = AssistantResultBuilder.forToolCallError(e.getMessage()).build();
+      callback.onActionComplete(result);
     } catch (PatchFailedException e) {
-      callback.onActionComplete(AssistantResultBuilder.forToolCallError(
-          "The patch could not be applied: " + e.getMessage()).build());
+      String message = String.format(PATCH_FAILED_TEMPLATE, e.getMessage());
+      AssistantResult result = AssistantResultBuilder.forToolCallError(message).build();
+      callback.onActionComplete(result);
     }
   }
 
@@ -126,15 +136,16 @@ public class EditFileTool implements AssistantToolStrategy {
     Patch<String> parsed = UnifiedDiffUtils.parseUnifiedDiff(patchLines);
     int hunks = parsed.getDeltas().size();
     if (hunks == 0) {
-      callback.onActionComplete(AssistantResultBuilder.forToolCallError(
-          "The patch could not be applied: include --- / +++ headers and @@ hunks").build());
+      AssistantResult result =
+          AssistantResultBuilder.forToolCallError(NO_HUNKS_MESSAGE).build();
+      callback.onActionComplete(result);
       return;
     }
     List<String> revised = parsed.applyTo(originalLines);
     workspace.writeFile(filename, String.join("\n", revised));
-    String message = "Applied " + hunks + " hunk(s) to " + filename + " ("
-        + revised.size() + " lines).";
-    callback.onActionComplete(AssistantResultBuilder.forToolCall(message).build());
+    String message = String.format(APPLIED_TEMPLATE, hunks, filename, revised.size());
+    AssistantResult result = AssistantResultBuilder.forToolCall(message).build();
+    callback.onActionComplete(result);
   }
 
   /**

@@ -49,8 +49,14 @@ public class ListFilesToolTest {
 
     assertEquals(1, results.size());
     assertTrue(results.get(0).getWasSuccessful());
-    assertEquals("a.qta\nb.qta",
-        results.get(0).getRawResponse().orElseThrow().getContent().orElse(null));
+    assertEquals(
+        "a.qta\nb.qta",
+        results.get(0)
+            .getRawResponse()
+            .orElseThrow()
+            .getContent()
+            .orElse(null)
+    );
   }
 
   /**
@@ -63,7 +69,13 @@ public class ListFilesToolTest {
     tool.execute(new JsonObject(), results::add);
 
     assertEquals(1, results.size());
-    assertEquals("No files in the workspace.",
-        results.get(0).getRawResponse().orElseThrow().getContent().orElse(null));
+    assertEquals(
+        "No files in the workspace.",
+        results.get(0)
+            .getRawResponse()
+            .orElseThrow()
+            .getContent()
+            .orElse(null)
+    );
   }
 }

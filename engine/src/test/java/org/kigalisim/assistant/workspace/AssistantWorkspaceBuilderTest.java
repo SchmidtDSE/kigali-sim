@@ -23,7 +23,10 @@ public class AssistantWorkspaceBuilderTest {
   @Test
   public void testDefaultQtaStrategy() {
     AssistantWorkspace workspace = new AssistantWorkspaceBuilder().build();
-    workspace.createFile("simulation.qta", "start default\nend default");
+    workspace.createFile("simulation.qta", """
+        start default
+        end default
+        """.stripTrailing());
     assertEquals(List.of("simulation.qta"), workspace.listFiles());
     assertEquals(List.of("default"), workspace.outlineFile("simulation.qta"));
   }

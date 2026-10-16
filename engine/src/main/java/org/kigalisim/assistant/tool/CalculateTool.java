@@ -62,12 +62,11 @@ public class CalculateTool implements AssistantToolStrategy {
 
   @Override
   public void execute(JsonObject call, AssistantActionCallback callback) {
-    Object raw = call.get("expression");
-    if (!(raw instanceof String expression) || expression.isBlank()) {
-      callback.onActionComplete(
-          AssistantResultBuilder.forToolCallError("Missing required parameter: expression").build());
+    if (AssistantToolUtils.isMissing(call, "expression")) {
+      callback.onActionComplete(AssistantToolUtils.buildMissingParameterResult("expression"));
       return;
     }
+    String expression = AssistantToolUtils.getString(call, "expression");
 
     try {
       EvaluationValue value = new Expression(expression, configuration).evaluate();

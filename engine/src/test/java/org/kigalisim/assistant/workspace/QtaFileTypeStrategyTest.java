@@ -14,32 +14,12 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
+import org.kigalisim.assistant.AssistantTestResources;
 
 /**
  * Tests for the QtaFileTypeStrategy class.
  */
 public class QtaFileTypeStrategyTest {
-
-  private static final String SAMPLE = String.join("\n",
-      "start about",
-      "  note \"hello\"",
-      "end about",
-      "",
-      "start default",
-      "  define application \"Refrigeration\"",
-      "    uses substance \"HFC-134a\"",
-      "      set sales to 1",
-      "    end substance",
-      "  end application",
-      "end default",
-      "",
-      "start policy \"P\"",
-      "  modify application \"Refrigeration\"",
-      "end policy",
-      "",
-      "start simulations",
-      "  simulate \"BAU\"",
-      "end simulations");
 
   private final QtaFileTypeStrategy strategy = new QtaFileTypeStrategy();
 
@@ -58,7 +38,8 @@ public class QtaFileTypeStrategyTest {
    */
   @Test
   public void testInterpretWholeFile() {
-    assertEquals(SAMPLE, strategy.interpret(SAMPLE));
+    String sample = AssistantTestResources.readQta("qta_sample.qta");
+    assertEquals(sample, strategy.interpret(sample));
   }
 
   /**
@@ -66,9 +47,10 @@ public class QtaFileTypeStrategyTest {
    */
   @Test
   public void testOutline() {
+    String sample = AssistantTestResources.readQta("qta_sample.qta");
     assertEquals(
         List.of("about", "default", "policy \"P\"", "simulations"),
-        strategy.outline(SAMPLE));
+        strategy.outline(sample));
   }
 
   /**
@@ -76,14 +58,24 @@ public class QtaFileTypeStrategyTest {
    */
   @Test
   public void testInterpretSimpleSections() {
-    assertEquals(
-        String.join("\n", "start default", "  define application \"Refrigeration\"",
-            "    uses substance \"HFC-134a\"", "      set sales to 1", "    end substance",
-            "  end application", "end default"),
-        strategy.interpret(SAMPLE, "default"));
-    assertEquals(
-        String.join("\n", "start about", "  note \"hello\"", "end about"),
-        strategy.interpret(SAMPLE, "ABOUT"));
+    String sample = AssistantTestResources.readQta("qta_sample.qta");
+    String expectedAbout = """
+        start about
+          note "hello"
+        end about
+        """.stripTrailing();
+    assertEquals(expectedAbout, strategy.interpret(sample, "ABOUT"));
+
+    String expectedDefault = """
+        start default
+          define application "Refrigeration"
+            uses substance "HFC-134a"
+              set sales to 1
+            end substance
+          end application
+        end default
+        """.stripTrailing();
+    assertEquals(expectedDefault, strategy.interpret(sample, "default"));
   }
 
   /**
@@ -91,12 +83,16 @@ public class QtaFileTypeStrategyTest {
    */
   @Test
   public void testInterpretPolicyAliases() {
-    String expected = String.join("\n", "start policy \"P\"",
-        "  modify application \"Refrigeration\"", "end policy");
-    assertEquals(expected, strategy.interpret(SAMPLE, "policy \"P\""));
-    assertEquals(expected, strategy.interpret(SAMPLE, "policy P"));
-    assertEquals(expected, strategy.interpret(SAMPLE, "\"P\""));
-    assertEquals(expected, strategy.interpret(SAMPLE, " P "));
+    String sample = AssistantTestResources.readQta("qta_sample.qta");
+    String expected = """
+        start policy "P"
+          modify application "Refrigeration"
+        end policy
+        """.stripTrailing();
+    assertEquals(expected, strategy.interpret(sample, "policy \"P\""));
+    assertEquals(expected, strategy.interpret(sample, "policy P"));
+    assertEquals(expected, strategy.interpret(sample, "\"P\""));
+    assertEquals(expected, strategy.interpret(sample, " P "));
   }
 
   /**
@@ -104,7 +100,8 @@ public class QtaFileTypeStrategyTest {
    */
   @Test
   public void testInterpretMissingSection() {
-    assertThrows(NoSuchElementException.class, () -> strategy.interpret(SAMPLE, "nope"));
+    String sample = AssistantTestResources.readQta("qta_sample.qta");
+    assertThrows(NoSuchElementException.class, () -> strategy.interpret(sample, "nope"));
   }
 
   /**
@@ -113,9 +110,12 @@ public class QtaFileTypeStrategyTest {
   @Test
   public void testInterpretNormalizesLineEndings() {
     String windows = "start default\r\n  set sales to 1\r\nend default";
-    assertEquals(
-        String.join("\n", "start default", "  set sales to 1", "end default"),
-        strategy.interpret(windows, "default"));
+    String expected = """
+        start default
+          set sales to 1
+        end default
+        """.stripTrailing();
+    assertEquals(expected, strategy.interpret(windows, "default"));
   }
 
   /**
@@ -123,7 +123,10 @@ public class QtaFileTypeStrategyTest {
    */
   @Test
   public void testUnterminatedStanza() {
-    String unterminated = "start default\n  set sales to 1";
+    String unterminated = """
+        start default
+          set sales to 1
+        """.stripTrailing();
     assertEquals(List.of("default"), strategy.outline(unterminated));
     assertEquals(unterminated, strategy.interpret(unterminated, "default"));
   }
@@ -133,7 +136,32 @@ public class QtaFileTypeStrategyTest {
    */
   @Test
   public void testPolicyWithTrailingComment() {
-    String commented = "start policy \"P\" # my policy\nend policy";
+    String commented = """
+        start policy "P" # my policy
+        end policy
+        """.stripTrailing();
     assertEquals(List.of("policy \"P\""), strategy.outline(commented));
+  }
+
+  /**
+   * Test that a valid program is outlined and read through the ANTLR visitor.
+   */
+  @Test
+  public void testOutlineAndInterpretValidProgram() {
+    String sample = AssistantTestResources.readQta("qta_valid_sample.qta");
+    assertEquals(
+        List.of("default", "policy \"P\"", "simulations"),
+        strategy.outline(sample));
+
+    String expectedPolicy = """
+        start policy "P"
+          modify application "Refrigeration"
+            modify substance "HFC-134a"
+              cap sales to 80 % during years 1 to 5
+            end substance
+          end application
+        end policy
+        """.stripTrailing();
+    assertEquals(expectedPolicy, strategy.interpret(sample, "P"));
   }
 }

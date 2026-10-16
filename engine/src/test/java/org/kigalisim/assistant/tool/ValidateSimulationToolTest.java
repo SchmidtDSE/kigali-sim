@@ -16,6 +16,7 @@ import com.github.cliftonlabs.json_simple.JsonObject;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.kigalisim.assistant.AssistantTestResources;
 import org.kigalisim.assistant.result.AssistantResult;
 import org.kigalisim.assistant.workspace.AssistantWorkspace;
 import org.kigalisim.assistant.workspace.AssistantWorkspaceBuilder;
@@ -25,87 +26,16 @@ import org.kigalisim.assistant.workspace.AssistantWorkspaceBuilder;
  */
 public class ValidateSimulationToolTest {
 
-  private static final String VALID = String.join("\n",
-      "start default",
-      "",
-      "  define application \"test\"",
-      "",
-      "    uses substance \"test\"",
-      "      enable domestic",
-      "      initial charge with 5 kg / unit for domestic",
-      "      set domestic to 100 mt",
-      "      equals 5 tCO2e / mt",
-      "    end substance",
-      "",
-      "  end application",
-      "",
-      "end default",
-      "",
-      "start simulations",
-      "",
-      "  simulate \"business as usual\" from years 1 to 3",
-      "",
-      "end simulations");
-
-  private static final String MULTI = String.join("\n",
-      "start default",
-      "",
-      "  define application \"test\"",
-      "",
-      "    uses substance \"test\"",
-      "      enable domestic",
-      "      initial charge with 5 kg / unit for domestic",
-      "      set domestic to 100 mt",
-      "      equals 5 tCO2e / mt",
-      "    end substance",
-      "",
-      "  end application",
-      "",
-      "end default",
-      "",
-      "start simulations",
-      "",
-      "  simulate \"business as usual\" from years 1 to 3",
-      "  simulate \"with permit\" from years 1 to 3",
-      "",
-      "end simulations");
-
-  private static final String NO_SCENARIOS = String.join("\n",
-      "start default",
-      "end default",
-      "",
-      "start simulations",
-      "end simulations");
-
   private static final String SYNTAX_ERROR = "this is not QubecTalk at all";
-
-  private static final String INTERPRET_ERROR = String.join("\n",
-      "start default",
-      "",
-      "  define application \"test\"",
-      "",
-      "    uses substance \"test\"",
-      "      enable domestic",
-      "      initial charge with 1 kg / unit for domestic",
-      "      set priorEquipment to 100 units during year 1",
-      "      retire 20 year old mean weibull",
-      "      equals 5 tCO2e / mt",
-      "    end substance",
-      "",
-      "  end application",
-      "",
-      "end default",
-      "",
-      "start simulations",
-      "",
-      "  simulate \"business as usual\" from years 1 to 5",
-      "",
-      "end simulations");
 
   private AssistantWorkspace workspaceWith(String filename, String contents) {
     AssistantWorkspace workspace = new AssistantWorkspaceBuilder().build();
     workspace.createFile(filename, contents);
     return workspace;
+  }
+
+  private AssistantWorkspace basicWorkspace() {
+    return workspaceWith("basic.qta", AssistantTestResources.readQta("basic.qta"));
   }
 
   private JsonObject callWith(Object filename) {
@@ -153,14 +83,14 @@ public class ValidateSimulationToolTest {
    */
   @Test
   public void testValidProgram() {
-    AssistantWorkspace workspace = workspaceWith("basic.qta", VALID);
+    AssistantWorkspace workspace = basicWorkspace();
     AssistantResult result = execute(workspace, callWith("basic.qta"));
     assertTrue(result.getWasSuccessful(), result.getError().orElse("expected success"));
-    String content = content(result);
-    assertNotNull(content);
-    assertTrue(content.contains("basic.qta"));
-    assertTrue(content.contains("valid"));
-    assertTrue(content.contains("business as usual"));
+    String output = content(result);
+    assertNotNull(output);
+    assertTrue(output.contains("basic.qta"));
+    assertTrue(output.contains("valid"));
+    assertTrue(output.contains("business as usual"));
   }
 
   /**
@@ -168,7 +98,8 @@ public class ValidateSimulationToolTest {
    */
   @Test
   public void testMultipleScenarios() {
-    AssistantWorkspace workspace = workspaceWith("multi.qta", MULTI);
+    AssistantWorkspace workspace =
+        workspaceWith("multi.qta", AssistantTestResources.readQta("multi.qta"));
     AssistantResult result = execute(workspace, callWith("multi.qta"));
     assertTrue(result.getWasSuccessful(), result.getError().orElse("expected success"));
     assertEquals(
@@ -181,7 +112,8 @@ public class ValidateSimulationToolTest {
    */
   @Test
   public void testNoScenariosIsValid() {
-    AssistantWorkspace workspace = workspaceWith("empty.qta", NO_SCENARIOS);
+    AssistantWorkspace workspace =
+        workspaceWith("empty.qta", AssistantTestResources.readQta("no_scenarios.qta"));
     AssistantResult result = execute(workspace, callWith("empty.qta"));
     assertTrue(result.getWasSuccessful(), result.getError().orElse("expected success"));
     assertTrue(content(result).contains("No scenarios"));
@@ -192,7 +124,7 @@ public class ValidateSimulationToolTest {
    */
   @Test
   public void testMissingFilename() {
-    AssistantWorkspace workspace = workspaceWith("basic.qta", VALID);
+    AssistantWorkspace workspace = basicWorkspace();
     assertFalse(execute(workspace, callWith(null)).getWasSuccessful());
     assertFalse(execute(workspace, callWith("   ")).getWasSuccessful());
     assertFalse(execute(workspace, callWith(5)).getWasSuccessful());
@@ -203,7 +135,7 @@ public class ValidateSimulationToolTest {
    */
   @Test
   public void testNonQtaFilename() {
-    AssistantWorkspace workspace = workspaceWith("basic.qta", VALID);
+    AssistantWorkspace workspace = basicWorkspace();
     AssistantResult result = execute(workspace, callWith("notes.txt"));
     assertFalse(result.getWasSuccessful());
     assertTrue(result.getError().orElse("").contains("QubecTalk"));
@@ -214,7 +146,7 @@ public class ValidateSimulationToolTest {
    */
   @Test
   public void testMissingFile() {
-    AssistantWorkspace workspace = workspaceWith("basic.qta", VALID);
+    AssistantWorkspace workspace = basicWorkspace();
     AssistantResult result = execute(workspace, callWith("missing.qta"));
     assertFalse(result.getWasSuccessful());
     assertTrue(result.getError().orElse("").contains("No file named"));
@@ -238,7 +170,8 @@ public class ValidateSimulationToolTest {
    */
   @Test
   public void testInterpretError() {
-    AssistantWorkspace workspace = workspaceWith("interpret.qta", INTERPRET_ERROR);
+    AssistantWorkspace workspace =
+        workspaceWith("interpret.qta", AssistantTestResources.readQta("interpret_error.qta"));
     AssistantResult result = execute(workspace, callWith("interpret.qta"));
     assertFalse(result.getWasSuccessful());
     assertTrue(result.getError().orElse("").contains("Failed to interpret QubecTalk code"));

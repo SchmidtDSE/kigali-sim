@@ -8,7 +8,6 @@ package org.kigalisim.assistant.workspace;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -24,6 +23,16 @@ import java.util.Objects;
  * safe under TeaVM / WASM as well as the JVM.</p>
  */
 public class InMemoryWorkspace implements AssistantWorkspace {
+
+  private static final String DUPLICATE_STRATEGY_TEMPLATE =
+      "Duplicate file type strategy for extension '%s'";
+  private static final String FILE_EXISTS_TEMPLATE = "A file named '%s' already exists";
+  private static final String NO_SECTION_TEMPLATE = "No section '%s' in file '%s'";
+  private static final String NO_FILE_TEMPLATE = "No file named '%s'";
+  private static final String UNSUPPORTED_EXTENSION_TEMPLATE =
+      "Unsupported file extension for '%s'";
+  private static final String NOT_STRING_NATIVE_TEMPLATE =
+      "File '%s' is not a string-native file type";
 
   private final Map<String, StoredFile> files = new LinkedHashMap<>();
   private final Map<String, AssistantFileTypeStrategy> strategies = new LinkedHashMap<>();
@@ -41,8 +50,8 @@ public class InMemoryWorkspace implements AssistantWorkspace {
       for (String extension : strategy.getFileExtensions()) {
         String key = normalizeExtension(extension);
         if (strategies.containsKey(key)) {
-          throw new IllegalArgumentException(
-              "Duplicate file type strategy for extension '" + extension + "'");
+          String message = String.format(DUPLICATE_STRATEGY_TEMPLATE, extension);
+          throw new IllegalArgumentException(message);
         }
         strategies.put(key, strategy);
       }
@@ -70,10 +79,11 @@ public class InMemoryWorkspace implements AssistantWorkspace {
     Objects.requireNonNull(filename, "filename");
     Objects.requireNonNull(contents, "contents");
     if (files.containsKey(filename)) {
-      throw new IllegalArgumentException("A file named '" + filename + "' already exists");
+      String message = String.format(FILE_EXISTS_TEMPLATE, filename);
+      throw new IllegalArgumentException(message);
     }
     requireStrategy(filename);
-    files.put(filename, new StoredFile(Arrays.copyOf(contents, contents.length)));
+    files.put(filename, new StoredFile(contents));
     return filename;
   }
 
@@ -90,8 +100,8 @@ public class InMemoryWorkspace implements AssistantWorkspace {
     try {
       return strategy.interpret(decode(file), section);
     } catch (NoSuchElementException e) {
-      throw new NoSuchElementException(
-          "No section '" + section + "' in file '" + filename + "'");
+      String message = String.format(NO_SECTION_TEMPLATE, section, filename);
+      throw new NoSuchElementException(message);
     }
   }
 
@@ -126,7 +136,8 @@ public class InMemoryWorkspace implements AssistantWorkspace {
     Objects.requireNonNull(filename, "filename");
     StoredFile file = files.get(filename);
     if (file == null) {
-      throw new NoSuchElementException("No file named '" + filename + "'");
+      String message = String.format(NO_FILE_TEMPLATE, filename);
+      throw new NoSuchElementException(message);
     }
     return file;
   }
@@ -141,8 +152,8 @@ public class InMemoryWorkspace implements AssistantWorkspace {
   private AssistantFileTypeStrategy requireStrategy(String filename) {
     AssistantFileTypeStrategy strategy = strategies.get(getExtension(filename));
     if (strategy == null) {
-      throw new IllegalArgumentException(
-          "Unsupported file extension for '" + filename + "'");
+      String message = String.format(UNSUPPORTED_EXTENSION_TEMPLATE, filename);
+      throw new IllegalArgumentException(message);
     }
     return strategy;
   }
@@ -161,7 +172,7 @@ public class InMemoryWorkspace implements AssistantWorkspace {
       return textStrategy;
     }
     throw new UnsupportedOperationException(
-        "File '" + filename + "' is not a string-native file type");
+        String.format(NOT_STRING_NATIVE_TEMPLATE, filename));
   }
 
   /**
@@ -196,31 +207,5 @@ public class InMemoryWorkspace implements AssistantWorkspace {
    */
   private String normalizeExtension(String extension) {
     return extension.toLowerCase(Locale.ROOT);
-  }
-
-  /**
-   * A file held in memory as bytes.
-   */
-  private static final class StoredFile {
-
-    private final byte[] contents;
-
-    /**
-     * Constructs a stored file.
-     *
-     * @param contents The file contents.
-     */
-    StoredFile(byte[] contents) {
-      this.contents = contents;
-    }
-
-    /**
-     * Gets a defensive copy of the contents.
-     *
-     * @return The file contents.
-     */
-    byte[] getContents() {
-      return Arrays.copyOf(contents, contents.length);
-    }
   }
 }
