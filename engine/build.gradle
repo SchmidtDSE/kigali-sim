@@ -48,6 +48,9 @@ dependencies {
   // JSON processing for the AI assistant (TeaVM-safe, no reflection)
   implementation("com.github.cliftonlabs:json-simple:4.0.1")
 
+  // Text diffing for assistant file edits (TeaVM-safe patch path)
+  implementation("io.github.java-diff-utils:java-diff-utils:4.17")
+
   // Testing dependencies
   testImplementation(platform("org.junit:junit-bom:5.12.1"))
   testImplementation("org.junit.jupiter:junit-jupiter")
