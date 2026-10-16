@@ -1,0 +1,23 @@
+{
+  "id": "chatcmpl-abc",
+  "object": "chat.completion",
+  "model": "gpt-4o-mini",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_abc123",
+            "type": "function",
+            "function": {"name": "message_user", "arguments": "{\"message\":\"Hello\"}"}
+          }
+        ]
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {"prompt_tokens": 1, "completion_tokens": 1, "total_tokens": 2}
+}

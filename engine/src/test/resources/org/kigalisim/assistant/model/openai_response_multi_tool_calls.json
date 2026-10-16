@@ -1,0 +1,28 @@
+{
+  "id": "chatcmpl-multi",
+  "object": "chat.completion",
+  "model": "gpt-4o-mini",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_first",
+            "type": "function",
+            "function": {"name": "message_user", "arguments": "{\"message\":\"First\"}"}
+          },
+          {
+            "id": "call_second",
+            "type": "function",
+            "function": {"name": "end_turn", "arguments": "{}"}
+          }
+        ]
+      },
+      "finish_reason": "tool_calls"
+    }
+  ],
+  "usage": {"prompt_tokens": 1, "completion_tokens": 1, "total_tokens": 2}
+}
