@@ -164,7 +164,7 @@ Both human readable and machine readable versions of this log are required. Ther
  - `String getWireTranscript()` which returns the stored (for example OpenAI-compatible) message array.
  - `List<HumanTranscriptElement> getHumanTranscript()` which derives the human readable transcript through the `AssistantModelProtocolStrategy`.
 
-We will have `OpenAiCompatibleChatLog` as the only implementer for now. Note that, in this design, the wire transcript is the single source of truth and the human transcript is derived from it. What the human transcript shows (user turns and assistant messages only, or tool activity as well) is decided at Component 13 once live model behavior can be observed. We will provide `InMemoryLogStrategy` which keeps chats in memory.
+We will have `OpenAiCompatibleChatLog` as the only implementer for now. Note that, in this design, the wire transcript is the single source of truth and the human transcript is derived from it. What the human transcript shows (user turns and assistant messages only, or tool activity as well) is decided at Component 9 once live model behavior can be observed. We will provide `InMemoryLogStrategy` which keeps chats in memory.
 
 The details of `HumanTranscriptElement` are left open but there should be a unique id for each element and some string representation in markdown.
 
@@ -311,7 +311,44 @@ We will need a text file which is committed to the git respoistory which will be
 **Summary:** Component 4 adds the in-memory workspace layer and its four model-facing tools: `TextFileTypeStrategy` plus the forgiving line-scanner `QtaFileTypeStrategy`, `InMemoryWorkspace` (byte-array `LinkedHashMap` storage with extension dispatch and `IllegalArgumentException` / `NoSuchElementException` error semantics), and `AssistantWorkspaceBuilder` (QubecTalk registered by default), extending `AssistantWorkspace` with `listFiles()` and `outlineFile(String)`. `ListFilesTool`, `OutlineFileTool`, `ReadFileTool`, and `EditFileTool` validate JSON arguments and convert workspace and patch errors into `forToolCallError` results, with `EditFileTool` applying standard unified diffs through `io.github.java-diff-utils:java-diff-utils:4.17` (credited in the README) on the logging-free `UnifiedDiffUtils.parseUnifiedDiff` + `Patch.applyTo` path to stay TeaVM-safe. All new types remain under `org.kigalisim.assistant`, with eight new test classes (39 tests) covering the strategies, workspace, builder, each tool, and an end-to-end workspace-tools scenario. No `BinaryFileTypeStrategy`, disk/OPFS workspace, simulation validation, or WASM/UI wiring is included here, and `./gradlew test checkstyleMain checkstyleTest spotlessCheck` and `./gradlew war` pass (`war` is a build smoke check because the assistant is not yet reachable from `KigaliWasmSimFacade`).
 
 #### Component 5: Math in harness
-We will add support for `CalculateTool` with tests using a simple example expression.
+
+**Decision (approved):** Use EvalEx `com.ezylang:EvalEx:3.7.0` to unblock this component, accepting that it is **not TeaVM/WASM-compatible**. Evaluating even a single expression fails a TeaVM 0.15.0 WasmGC build with `Method java.util.Date.toInstant()Ljava/time/Instant; was not found` / `Method java.util.Calendar.toInstant()Ljava/time/Instant; was not found`, raised from `DateTimeConverter.convert` via `DefaultEvaluationValueConverter.convertObject` -> `EvaluationValue.of` -> `Expression.convertValue` (reproduced in `/tmp/evalex-teavm`). This is unavoidable through the public API because `ExpressionConfiguration` field-initializes a `DefaultEvaluationValueConverter` and `EvaluationValue.of` always routes through it. It is acceptable for now because no assistant class is reachable from `KigaliWasmSimFacade`, so `./gradlew war` still passes and the failure will not surface until Component 15. **This dependency is temporary and will be replaced with a TeaVM-safe evaluator before WASM integration.** `com.ezylang:EvalEx:3.7.0` is 98 days old as of 2026-10-16 (Maven Central `lastUpdated=20260710152930`; no newer release) and declares no runtime dependencies (provided Lombok only).
+
+**Problem statement:** The model needs a `calculate` tool so it can evaluate a single mathematical expression (for example unit conversions or back-of-envelope arithmetic while assembling a simulation) and receive the numeric result as tool output. This must follow the existing tool pattern in `org.kigalisim.assistant.tool` (`AssistantToolStrategy`, `JsonObject` JSON Schema, `AssistantResultBuilder.forToolCall` / `forToolCallError`). The EvalEx dependency makes the reachable WASM build fail at Component 15; that breakage is knowingly deferred, and `war` passing now is only because the assistant is not yet reachable from the WASM facade.
+
+**Implementation steps:**
+
+ - **`engine/build.gradle`** — add `implementation("com.ezylang:EvalEx:3.7.0")` beside the json-simple dependency, with a comment noting it is a temporary dependency that is not TeaVM/WASM-safe and must be replaced before Component 15.
+ - **`README.md`** — add an Apache-2.0 credit in the alphabetical "Open Source" list, after the ESLint entry and before JSDoc: `- [EvalEx](https://ezylang.github.io/EvalEx/) under [Apache-2.0](https://github.com/ezylang/EvalEx/blob/main/LICENSE).`
+ - **`engine/src/main/java/org/kigalisim/assistant/tool/CalculateTool.java`** (new; all types stay under `org.kigalisim.assistant`):
+   - Implements `AssistantToolStrategy`; `public static final String NAME = "calculate";`.
+   - Holds one embedded, shared `private final ExpressionConfiguration configuration = ExpressionConfiguration.defaultConfiguration();` (immutable in EvalEx and safe to reuse; do not cache `Expression` instances).
+   - `getName()` returns `NAME`; `getDescription()` returns e.g. `"Evaluate a single mathematical expression and return the numeric result"`.
+   - `getParameterSchema()` returns `{"type":"object","properties":{"expression":{"type":"string","description":"The mathematical expression to evaluate, e.g. (1 + 2) * 3"}},"required":["expression"]}`.
+   - `execute(JsonObject call, AssistantActionCallback callback)`:
+     - Read `call.get("expression")`; if it is not a `String` or is blank, report `AssistantResultBuilder.forToolCallError("Missing required parameter: expression").build()` and return.
+     - Evaluate with `EvaluationValue value = new Expression(expression, configuration).evaluate();`.
+     - If `!value.isNumberValue()`, report `forToolCallError("The expression did not evaluate to a number: " + expression)`.
+     - Otherwise report `AssistantResultBuilder.forToolCall(value.getNumberValue().stripTrailingZeros().toPlainString()).build()`.
+     - Catch `EvaluationException | ParseException` (the latter checked), plus `ArithmeticException | IllegalArgumentException`, and report `forToolCallError(e.getMessage())`; the tool must not throw. (Division by zero arrives as `EvaluationException("Division by zero")`; malformed input as `ParseException`.)
+   - Do **not** modify `KigaliAssistantBuilder`: `calculate` is an "other tool" registered by callers via `addTool(new CalculateTool())`, exactly like the Component 4 workspace tools.
+ - **`engine/src/test/java/org/kigalisim/assistant/tool/CalculateToolTest.java`** (new):
+   - `testNameAndSchema`: `NAME == "calculate"`, `getName()` matches, schema `type == "object"`, `properties.expression.type == "string"`, `required` contains `expression`.
+   - `testSimpleExpression`: `2 + 3 * 4` -> `"14"`.
+   - `testDecimalAndParentheses`: `(1 + 2) / 4` -> `"0.75"`.
+   - `testPower`: `2 ^ 10` -> `"1024"`.
+   - `testMissingExpression`: empty `JsonObject` -> one failed result mentioning `expression`.
+   - `testBlankExpression`: `"   "` -> failure.
+   - `testNonStringExpression`: `5` (Integer) -> failure.
+   - `testMalformedExpression`: `"2 +"` -> failure (`getWasSuccessful()` false).
+   - `testDivisionByZero`: `"1 / 0"` -> failure whose error contains `Division by zero`.
+   - `testNonNumericResult`: `"1 == 1"` -> failure mentioning non-numeric.
+   - Follow `MessageUserToolTest` / `ListFilesToolTest` style: collect into `ArrayList<AssistantResult>` via `tool.execute(call, results::add)`, assert `getWasSuccessful()` and `getRawResponse().orElseThrow().getContent().orElse(null)` on success, `getError()` on failure.
+
+**Out of scope:** registering `calculate` in `KigaliAssistantBuilder` or the system context preamble; symbolic variables, custom functions, and multi-expression programs; any change to existing tools, workspace, model, or turn-loop code; and no `org.kigalisim` core types are touched or imported. Replacing EvalEx with a TeaVM-safe evaluator is explicitly deferred to a later component (before WASM integration), not done here.
+
+**Verification:** run `./gradlew test checkstyleMain checkstyleTest spotlessCheck` and `./gradlew war`. Record that `war` passes only because the assistant is not yet reachable from `KigaliWasmSimFacade`; EvalEx will break WasmGC at Component 15 unless replaced.
+
 
 #### Component 6: Simulation execution
 We will add support for `ValidateSimulationTool` and `RunSimulationTool`. This requires designing a bridge into the rest of the Kigali Sim codebase and the results should be described in CSV text so that they can be transported to the LLM. In this process, we should be careful that types from the assistant package do not leak into the rest of the codebase. See `KigaliSimFacade`.
@@ -322,11 +359,11 @@ An example PDF file will be provided for use in tests. A `FileTypeStrategy` shou
 #### Component 8: Office files
 An example PDF file will be provided for use in tests. A `FileTypeStrategy` should be added for PDF files using Apache POI.
 
-#### Component 11: Human transcript content
+#### Component 9: Human transcript content
 At this stage, human readable versions of the chat transcript are not yet available. 
 
 #### Component 10: Context document update
-The context document created in component 1 should be updated now that all of the available tools are completed.
+The context document created in component 1 should be updated now that all of the available tools are completed. We should remember that the LLM will not have access to the public web so this document needs to be quite complete, including with how to use the calculator, for example.
 
 #### Component 11: JVM strategies
 We should build out remaining classes which allow for running on the JVM. Specifically, `LocalDirectoryWorkspace` which should use a directory from file system as the workspace (again paths not supported for security reasons) as well as a new `LocalChatLogStrategy` that has one file per chat saved to a local directory.
