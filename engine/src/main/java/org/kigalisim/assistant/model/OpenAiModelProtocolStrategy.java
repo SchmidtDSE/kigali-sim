@@ -173,11 +173,10 @@ public class OpenAiModelProtocolStrategy implements AssistantModelProtocolStrate
   }
 
   /**
-   * Parses tool arguments, requiring them to be a JSON object.
+   * Parses tool arguments, falling back to an empty object when they are malformed.
    *
    * @param argumentsRaw The arguments value as received.
-   * @return The parsed argument object.
-   * @throws IllegalStateException If the arguments are not a JSON object.
+   * @return The parsed argument object, or an empty object when malformed.
    */
   private JsonObject parseArguments(Object argumentsRaw) {
     if (argumentsRaw instanceof JsonObject arguments) {
@@ -187,18 +186,12 @@ public class OpenAiModelProtocolStrategy implements AssistantModelProtocolStrate
         Object parsed = Jsoner.deserialize(argumentsString);
         if (parsed instanceof JsonObject arguments) {
           return arguments;
-        } else {
-          throw new IllegalStateException(
-              "Tool arguments were not a JSON object: " + abbreviate(argumentsString));
         }
       } catch (JsonException e) {
-        throw new IllegalStateException(
-            "Unable to parse tool arguments: " + abbreviate(argumentsString), e);
+        return new JsonObject();
       }
-    } else {
-      throw new IllegalStateException(
-          "Tool arguments were not a JSON object: " + abbreviate(String.valueOf(argumentsRaw)));
     }
+    return new JsonObject();
   }
 
   /**

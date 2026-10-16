@@ -164,15 +164,20 @@ public class OpenAiModelProtocolStrategyTest {
   }
 
   /**
-   * Test that malformed arguments cause parsing to fail.
+   * Test that malformed arguments become an empty object without failing the parse.
    *
    * @throws IOException If the fixture cannot be read.
    */
   @Test
-  public void testParseMalformedArgumentsThrows() throws IOException {
+  public void testParseMalformedArguments() throws IOException {
     OpenAiModelProtocolStrategy strategy = new OpenAiModelProtocolStrategy("test-model");
-    String raw = readFixture("openai_response_malformed_arguments.json");
-    assertThrows(IllegalStateException.class, () -> strategy.parseResponse(raw));
+    AssistantModelResponse response =
+        strategy.parseResponse(readFixture("openai_response_malformed_arguments.json"));
+
+    assertEquals(2, response.getToolCalls().size(), "Both calls should still parse");
+    assertTrue(response.getToolCalls().get(0).getCall().isEmpty(),
+        "Malformed arguments should become an empty object");
+    assertEquals("Good", response.getToolCalls().get(1).getCall().get("message"));
   }
 
   /**

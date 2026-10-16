@@ -274,20 +274,24 @@ public class UntimedAssistantTurnStrategyTest {
   }
 
   /**
-   * Test that malformed tool arguments fail the query rather than being silently ignored.
+   * Test that malformed tool arguments produce a failed tool call without failing the turn.
    */
   @Test
-  public void testMalformedArgumentsFailQuery() {
+  public void testMalformedArgumentsProduceFailure() {
     Harness harness = new Harness(25);
     JsonArray firstCalls = new JsonArray();
     firstCalls.add(toolCall("call_bad", "message_user", "{\"message\":"));
     harness.wire.enqueuePayload(buildResponse(assistantMessage(firstCalls, null), "tool_calls"));
 
+    JsonArray secondCalls = new JsonArray();
+    secondCalls.add(toolCall("call_end", "end_turn", "{}"));
+    harness.wire.enqueuePayload(buildResponse(assistantMessage(secondCalls, null), "tool_calls"));
+
     harness.strategy.runTurn(harness.toolbelt, "chat", "hi", harness.callback);
 
     List<AssistantResult> actions = harness.callback.actions;
-    assertEquals(1, actions.size(), "Malformed arguments should fail the model query");
-    assertFalse(actions.get(0).getWasSuccessful(), "Malformed arguments should fail");
+    assertFalse(actions.get(1).getWasSuccessful(), "Malformed arguments should fail");
+    assertTrue(actions.get(1).getToolInvocation().orElseThrow().getCall().isEmpty());
     assertEquals(1, harness.callback.completions.size());
   }
 
