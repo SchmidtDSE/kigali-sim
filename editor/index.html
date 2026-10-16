@@ -162,43 +162,6 @@
             <a href="#" class="close-button primary">Close</a>
           </div>
         </dialog>
-        <dialog id="ai-assistant-dialog">
-          <h2>AI Assistant</h2>
-          <p>AI assistants can help you build Kigali Sim simulations by reading and writing QubecTalk code. Direct your assistant to read our documentation and then provide your code for help. For a step-by-step guide, see <a href="/guide/tutorial_11.html" target="_blank">Tutorial 11: AI Coding Assistants</a>.</p>
-          <p><strong>Documentation URLs:</strong></p>
-          <ul>
-            <li><a href="https://kigalisim.org/llms-full.txt?v=20260826" target="_blank">https://kigalisim.org/llms-full.txt?v=20260826</a> — comprehensive documentation (recommended)</li>
-            <li><a href="https://kigalisim.org/llms.txt?v=20260826" target="_blank">https://kigalisim.org/llms.txt?v=20260826</a> — index with links to tutorials and references</li>
-          </ul>
-          <details>
-            <summary>More details</summary>
-            <p><strong>Version Parameters:</strong> The version parameter (e.g., ?v=20260826) is optional but recommended. It helps ensure your AI assistant accesses the latest documentation by avoiding cached versions.</p>
-            <p><strong>Tip:</strong> For LLMs which cannot access the internet, you can <a href="/llms-full.txt" download>download llms-full.txt</a> and provide it as an attachment to your AI assistant.</p>
-            <p><strong>Note:</strong> Using AI assistants is entirely optional. Their use is subject to their respective terms of service and privacy policies.</p>
-            <p><strong>Privacy:</strong> Using an AI assistant may involve disclosing information about your simulation to the AI and its cloud provider. Be sure to check their privacy policies and any policies negotiated by your organization.</p>
-          </details>
-          <div class="dialog-buttons bold-buttons">
-            <a href="#" class="close-button primary">Close</a>
-          </div>
-        </dialog>
-
-        <dialog id="ai-designer-dialog">
-          <h2>AI Assistant</h2>
-          <p>AI assistants can help you build Kigali Sim simulations. Start a chat with any AI assistant and send a message like this:</p>
-          <pre class="prompt-code"><code>Hello! I would like help with building a Kigali Sim simulation. Please read https://kigalisim.org/llms-full.txt?v=20260826 to learn more. Please stick to only features compatible with the UI editor.</code></pre>
-          <p>For a step-by-step walkthrough, see <a href="/guide/tutorial_03a.html" target="_blank">Tutorial 3a: Multiple Substances with AI</a>.</p>
-          <details>
-            <summary>More details</summary>
-            <p>You can use any AI assistant. For example, we use <a href="https://claude.ai/" target="_blank">Claude</a>. Copy the AI's code suggestions into the <strong>Editor</strong> tab to use them in your simulation.</p>
-            <p><strong>Tip:</strong> For LLMs which cannot access the internet, you can <a href="/llms-full.txt" download>download llms-full.txt</a> and provide it as an attachment to your AI assistant.</p>
-            <p><strong>Privacy:</strong> Using an AI assistant may involve disclosing information about your simulation to the AI and its cloud provider. Be sure to check their privacy policies and any policies negotiated by your organization.</p>
-            <p><strong>Note:</strong> Using AI assistants is entirely optional. Their use is subject to their respective terms of service and privacy policies.</p>
-          </details>
-          <div class="dialog-buttons bold-buttons">
-            <a href="#" class="close-button primary">Close</a>
-          </div>
-        </dialog>
-
         <dialog id="duplicate-entity-dialog">
           <h2>Duplicate Entity</h2>
           <p>Create a copy of an existing entity with a new name.</p>
@@ -346,6 +309,7 @@
             <ul id="editor-tabs" data-tabs>
               <li><a data-tabby-default href="#ui-editor-pane" data-tippy-content="Develop your model through a &quot;user interface&quot; or, in other words, clicking buttons and filling out forms and wizards.">Designer</a></li>
               <li><a href="#code-editor-pane" data-tippy-content="Develop your model through code using the bespoke and easy to use QubecTalk programming language designed just for Kigali Sim.">Editor</a></li>
+              <li><a href="#ai-assistant-pane" data-tippy-content="Learn how to use AI assistants with Kigali Sim simulations.">AI Assistant</a></li>
             </ul>
             <div id="ui-editor-pane">
               <div class="available-contents">
@@ -1161,10 +1125,6 @@
                      data-tippy-content="Create a copy of an existing application, policy, simulation, or substance with a new name">
                     Duplicate
                   </a>
-                  <a href="#ai-designer-dialog" id="ai-designer-button" class="secondary" 
-                     data-tippy-content="Learn how to use AI assistants with KigaliSim simulations">
-                    AI Assistant
-                  </a>
                 </div>
                 <div class="advanced-link-pane">
                   Need more control? Switch to the
@@ -1189,7 +1149,6 @@
               <div id="code-buttons-panel" class="buttons-panel code-buttons-grid">
                 <div id="available-panel">
                   <a class="primary" id="run-button" href="#loading">Run</a>
-                  <a class="secondary" id="ai-assistant-button" href="#ai-dialog">AI Assistant</a>
                 </div>
                 <div id="auto-run-panel">
                   <label for="auto-run-check">Automatically re-run when code is changed</label>
@@ -1197,6 +1156,36 @@
                 </div>
                 <div id="loading">Loading please wait...</div>
               </div>
+            </div>
+            <div id="ai-assistant-pane">
+              <h2>AI Assistant</h2>
+              <p>
+                AI assistants can help you build Kigali Sim simulations by reading and writing
+                QubecTalk code. They can also help if you would like to stick to only features
+                compatible with the UI editor. Direct your assistant to read our documentation and
+                then provide or paste your code for help.
+              </p>
+              <p>Start a chat with any AI assistant and send a message like this:</p>
+              <pre class="prompt-code"><code>Hello! I would like help with building a Kigali Sim simulation. Please read https://kigalisim.org/llms-full.txt?v=20260826 to learn more. Please stick to only features compatible with the UI editor.</code></pre>
+              <p><strong>Documentation URLs:</strong></p>
+              <ul>
+                <li><a href="https://kigalisim.org/llms-full.txt?v=20260826" target="_blank">https://kigalisim.org/llms-full.txt?v=20260826</a> — comprehensive documentation (recommended)</li>
+                <li><a href="https://kigalisim.org/llms.txt?v=20260826" target="_blank">https://kigalisim.org/llms.txt?v=20260826</a> — index with links to tutorials and references</li>
+              </ul>
+              <p>
+                For step-by-step guides, see
+                <a href="/guide/tutorial_11.html" target="_blank">Tutorial 11: AI Coding Assistants</a>
+                and
+                <a href="/guide/tutorial_03a.html" target="_blank">Tutorial 3a: Multiple Substances with AI</a>.
+              </p>
+              <details>
+                <summary>More details</summary>
+                <p><strong>Version Parameters:</strong> The version parameter (e.g., ?v=20260826) is optional but recommended. It helps ensure your AI assistant accesses the latest documentation by avoiding cached versions.</p>
+                <p><strong>Tip:</strong> For LLMs which cannot access the internet, you can <a href="/llms-full.txt" download>download llms-full.txt</a> and provide it as an attachment to your AI assistant.</p>
+                <p>You can use any AI assistant. For example, we use <a href="https://claude.ai/" target="_blank">Claude</a>. Copy the AI's code suggestions into the <strong>Editor</strong> tab to use them in your simulation.</p>
+                <p><strong>Note:</strong> Using AI assistants is entirely optional. Their use is subject to their respective terms of service and privacy policies.</p>
+                <p><strong>Privacy:</strong> Using an AI assistant may involve disclosing information about your simulation to the AI and its cloud provider. Be sure to check their privacy policies and any policies negotiated by your organization.</p>
+              </details>
             </div>
           </section>
           <section id="results">

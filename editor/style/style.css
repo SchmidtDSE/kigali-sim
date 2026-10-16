@@ -1028,8 +1028,8 @@ dialog .checkbox-list label {
   font-weight: normal;
 }
 
-/* Wrap prompt code block in AI designer dialog */
-#ai-designer-dialog .prompt-code {
+/* Wrap prompt code block in AI assistant tab */
+#ai-assistant-pane .prompt-code {
   white-space: pre-wrap;
   word-break: break-word;
 }

@@ -324,6 +324,7 @@ We thank the following Open Source libraries and resources:
 - [D3](https://d3js.org/) under [ISC](https://github.com/d3/d3/blob/main/LICENSE).
 - [ESLint]((https://eslint.org/)) under [MIT](https://github.com/eslint/eslint/blob/main/LICENSE).
 - [JSDoc](https://jsdoc.app/) under [Apache-2.0](https://github.com/jsdoc/jsdoc/blob/main/LICENSE).
+- [json-simple](https://cliftonlabs.github.io/json-simple/) under [Apache-2.0](https://github.com/cliftonlabs/json-simple/blob/master/LICENSE).
 - [Papa Parse](https://www.papaparse.com/) under [MIT](https://github.com/mholt/PapaParse/blob/master/LICENSE).
 - [Popper](https://popper.js.org/) under [MIT](https://github.com/floating-ui/floating-ui/blob/master/LICENSE).
 - [Prism.js](https://prismjs.com/) under [MIT](https://github.com/PrismJS/prism/blob/v2/LICENSE).

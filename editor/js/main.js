@@ -18,8 +18,6 @@ import {RunningIndicatorPresenter, ButtonPanelPresenter, TooltipPresenter} from 
 import {
   IntroductionPresenter,
   PrivacyConfirmationPresenter,
-  AIAssistantPresenter,
-  AIDesignerPresenter,
 } from "informational";
 
 const HELP_TEXT = "Would you like our help in resolving this issue?";
@@ -748,8 +746,6 @@ function main() {
   const onLoad = () => {
     const mainPresenter = new MainPresenter();
     const privacyPresenter = new PrivacyConfirmationPresenter();
-    const aiAssistantPresenter = new AIAssistantPresenter();
-    const aiDesignerPresenter = new AIDesignerPresenter();
     const introPresenter = new IntroductionPresenter(mainPresenter._localStorageKeeper);
 
     const showApp = async () => {
