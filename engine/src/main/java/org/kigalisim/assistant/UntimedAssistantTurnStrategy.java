@@ -20,7 +20,7 @@ import org.kigalisim.assistant.model.AssistantModel;
 import org.kigalisim.assistant.model.AssistantModelQuery;
 import org.kigalisim.assistant.model.AssistantModelResponse;
 import org.kigalisim.assistant.result.AssistantResult;
-import org.kigalisim.assistant.result.AssistantResultFactory;
+import org.kigalisim.assistant.result.AssistantResultBuilder;
 import org.kigalisim.assistant.tool.AssistantToolInvocation;
 import org.kigalisim.assistant.tool.AssistantToolStrategy;
 import org.kigalisim.assistant.tool.AssistantToolbelt;
@@ -96,7 +96,7 @@ public class UntimedAssistantTurnStrategy implements AssistantTurnStrategy {
       history = parseHistory(log.getWireTranscript());
       chatLogStrategy.appendChat(chatName, Jsoner.serialize(userMessageObject));
     } catch (RuntimeException e) {
-      callback.onTurnComplete(AssistantResultFactory.forLlmQueryError(describe(e)));
+      callback.onTurnComplete(AssistantResultBuilder.forLlmQueryError(describe(e)).build());
       return new AssistantModelQuery(chatName, "", message, model);
     }
 
@@ -105,12 +105,16 @@ public class UntimedAssistantTurnStrategy implements AssistantTurnStrategy {
     String context;
     try {
       context = model.buildRequest(
-          history, toolbelt.getTools(), systemContextProvider.getSystemContext(), message);
+          history,
+          toolbelt.getTools(),
+          systemContextProvider.getSystemContext(),
+          message
+      );
     } catch (RuntimeException e) {
       history.add(userMessageObject);
       AssistantModelQuery query = new AssistantModelQuery(chatName, "", message, model);
       AssistantResult error =
-          AssistantResultFactory.forLlmQueryError(describe(e)).getWithMessage(query);
+          AssistantResultBuilder.forLlmQueryError(describe(e)).withMessage(query).build();
       reportAction(state, error);
       completeTurn(state, error);
       return query;
@@ -130,11 +134,11 @@ public class UntimedAssistantTurnStrategy implements AssistantTurnStrategy {
    * @param context The assembled request body.
    */
   private void sendQuery(TurnState state, AssistantModelQuery query, String context) {
-    state.actions++;
+    state.incrementActions();
     try {
       model.sendMessage(context, result -> handleModelResult(state, query, result));
     } catch (RuntimeException e) {
-      completeTurn(state, AssistantResultFactory.forLlmQueryError(describe(e)));
+      completeTurn(state, AssistantResultBuilder.forLlmQueryError(describe(e)).build());
     }
   }
 
@@ -146,12 +150,14 @@ public class UntimedAssistantTurnStrategy implements AssistantTurnStrategy {
    * @param result The result reported by the model.
    */
   private void handleModelResult(
-      TurnState state, AssistantModelQuery query, AssistantResult result) {
-    if (state.completed) {
+      TurnState state,
+      AssistantModelQuery query,
+      AssistantResult result) {
+    if (state.getCompleted()) {
       return;
     }
 
-    AssistantResult reported = result.getWithMessage(query);
+    AssistantResult reported = new AssistantResultBuilder(result).withMessage(query).build();
     reportAction(state, reported);
 
     if (!result.getWasSuccessful()) {
@@ -161,9 +167,11 @@ public class UntimedAssistantTurnStrategy implements AssistantTurnStrategy {
 
     AssistantModelResponse response = result.getRawResponse().orElse(null);
     if (response == null) {
-      completeTurn(
-          state,
-          AssistantResultFactory.forLlmQueryError("Model returned no response").getWithMessage(query));
+      AssistantResult missing =
+          AssistantResultBuilder.forLlmQueryError("Model returned no response")
+              .withMessage(query)
+              .build();
+      completeTurn(state, missing);
       return;
     }
 
@@ -190,25 +198,32 @@ public class UntimedAssistantTurnStrategy implements AssistantTurnStrategy {
       return;
     }
 
-    if (state.actions >= maxActions) {
-      completeTurn(
-          state,
-          AssistantResultFactory.forTurnActionsExceeded(
-              "Turn exceeded the maximum of " + maxActions + " actions"));
+    if (state.getActions() >= maxActions) {
+      AssistantResult exceeded = AssistantResultBuilder.forTurnActionsExceeded(
+          "Turn exceeded the maximum of " + maxActions + " actions").build();
+      completeTurn(state, exceeded);
       return;
     }
 
     String nextContext;
     try {
       nextContext = model.buildRequest(
-          state.history, state.toolbelt.getTools(), systemContextProvider.getSystemContext(), null);
+          state.getHistory(),
+          state.getToolbelt().getTools(),
+          systemContextProvider.getSystemContext(),
+          null
+      );
     } catch (RuntimeException e) {
-      completeTurn(state, AssistantResultFactory.forLlmQueryError(describe(e)));
+      completeTurn(state, AssistantResultBuilder.forLlmQueryError(describe(e)).build());
       return;
     }
 
-    AssistantModelQuery nextQuery =
-        new AssistantModelQuery(state.chatName, nextContext, state.userMessage, model);
+    AssistantModelQuery nextQuery = new AssistantModelQuery(
+        state.getChatName(),
+        nextContext,
+        state.getUserMessage(),
+        model
+    );
     sendQuery(state, nextQuery, nextContext);
   }
 
@@ -222,11 +237,14 @@ public class UntimedAssistantTurnStrategy implements AssistantTurnStrategy {
     String content = response.getContent().orElse("");
     JsonObject call = new JsonObject();
     call.put("message", content);
-    AssistantToolInvocation synthetic =
-        new AssistantToolInvocation(MessageUserTool.NAME, "", call);
+    AssistantToolInvocation synthetic = new AssistantToolInvocation(
+        MessageUserTool.NAME,
+        "",
+        call
+    );
     AssistantResult result =
-        AssistantResultFactory.forToolCall(content).getWithToolInvocation(synthetic);
-    state.actions++;
+        AssistantResultBuilder.forToolCall(content).withToolInvocation(synthetic).build();
+    state.incrementActions();
     reportAction(state, result);
     completeTurn(state, result);
   }
@@ -239,15 +257,16 @@ public class UntimedAssistantTurnStrategy implements AssistantTurnStrategy {
    * @return The result with the invocation attached.
    */
   private AssistantResult executeTool(TurnState state, AssistantToolInvocation invocation) {
-    state.actions++;
+    state.incrementActions();
     String name = invocation.getToolName();
-    Optional<AssistantToolStrategy> toolOptional = state.toolbelt.getTool(name);
+    Optional<AssistantToolStrategy> toolOptional = state.getToolbelt().getTool(name);
 
     if (toolOptional.isEmpty()) {
       String error = "No tool named '" + name + "' is registered";
       appendToolMessage(state, invocation.getCallId(), error);
-      return reportToolResult(
-          state, AssistantResultFactory.forToolCallError(error).getWithToolInvocation(invocation));
+      AssistantResult missing =
+          AssistantResultBuilder.forToolCallError(error).withToolInvocation(invocation).build();
+      return reportToolResult(state, missing);
     }
 
     AssistantToolStrategy tool = toolOptional.get();
@@ -257,19 +276,22 @@ public class UntimedAssistantTurnStrategy implements AssistantTurnStrategy {
     } catch (RuntimeException e) {
       String error = describe(e);
       appendToolMessage(state, invocation.getCallId(), error);
-      return reportToolResult(
-          state, AssistantResultFactory.forToolCallError(error).getWithToolInvocation(invocation));
+      AssistantResult failure =
+          AssistantResultBuilder.forToolCallError(error).withToolInvocation(invocation).build();
+      return reportToolResult(state, failure);
     }
 
     AssistantResult result = captured[0];
     if (result == null) {
       String error = "Tool '" + name + "' did not report a result";
       appendToolMessage(state, invocation.getCallId(), error);
-      result = AssistantResultFactory.forToolCallError(error);
+      result = AssistantResultBuilder.forToolCallError(error).build();
     } else {
       appendToolMessage(state, invocation.getCallId(), outputOf(result));
     }
-    return reportToolResult(state, result.getWithToolInvocation(invocation));
+    AssistantResult reported =
+        new AssistantResultBuilder(result).withToolInvocation(invocation).build();
+    return reportToolResult(state, reported);
   }
 
   /**
@@ -319,8 +341,8 @@ public class UntimedAssistantTurnStrategy implements AssistantTurnStrategy {
    * @param message The message to append.
    */
   private void appendToLog(TurnState state, JsonObject message) {
-    chatLogStrategy.appendChat(state.chatName, Jsoner.serialize(message));
-    state.history.add(message);
+    chatLogStrategy.appendChat(state.getChatName(), Jsoner.serialize(message));
+    state.getHistory().add(message);
   }
 
   /**
@@ -330,7 +352,7 @@ public class UntimedAssistantTurnStrategy implements AssistantTurnStrategy {
    * @param result The result to report.
    */
   private void reportAction(TurnState state, AssistantResult result) {
-    state.callback.onActionComplete(result);
+    state.getCallback().onActionComplete(result);
   }
 
   /**
@@ -340,10 +362,12 @@ public class UntimedAssistantTurnStrategy implements AssistantTurnStrategy {
    * @param result The terminal result.
    */
   private void completeTurn(TurnState state, AssistantResult result) {
-    if (!state.completed) {
-      state.completed = true;
-      state.callback.onTurnComplete(result);
+    if (state.getCompleted()) {
+      return;
     }
+
+    state.markCompleted();
+    state.getCallback().onTurnComplete(result);
   }
 
   /**
@@ -394,42 +418,6 @@ public class UntimedAssistantTurnStrategy implements AssistantTurnStrategy {
       return throwable.getClass().getName();
     } else {
       return message;
-    }
-  }
-
-  /**
-   * Mutable state for a single turn.
-   */
-  private static final class TurnState {
-
-    private final AssistantToolbelt toolbelt;
-    private final String chatName;
-    private final String userMessage;
-    private final AssistantTurnCallback callback;
-    private final List<JsonObject> history;
-    private int actions;
-    private boolean completed;
-
-    /**
-     * Constructs turn state.
-     *
-     * @param toolbelt The tools available to the assistant.
-     * @param chatName The chat name.
-     * @param userMessage The user message which started the turn.
-     * @param callback The callback which observes the turn.
-     * @param history The in-memory message history.
-     */
-    private TurnState(
-        AssistantToolbelt toolbelt,
-        String chatName,
-        String userMessage,
-        AssistantTurnCallback callback,
-        List<JsonObject> history) {
-      this.toolbelt = toolbelt;
-      this.chatName = chatName;
-      this.userMessage = userMessage;
-      this.callback = callback;
-      this.history = history;
     }
   }
 }

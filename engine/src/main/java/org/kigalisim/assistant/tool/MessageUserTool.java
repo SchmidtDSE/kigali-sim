@@ -9,7 +9,8 @@ package org.kigalisim.assistant.tool;
 import com.github.cliftonlabs.json_simple.JsonArray;
 import com.github.cliftonlabs.json_simple.JsonObject;
 import org.kigalisim.assistant.callback.AssistantActionCallback;
-import org.kigalisim.assistant.result.AssistantResultFactory;
+import org.kigalisim.assistant.result.AssistantResult;
+import org.kigalisim.assistant.result.AssistantResultBuilder;
 
 /**
  * Delivers a markdown message from the assistant to the user.
@@ -57,11 +58,11 @@ public class MessageUserTool implements AssistantToolStrategy {
   public void execute(JsonObject call, AssistantActionCallback callback) {
     Object raw = call.get("message");
     if (raw instanceof String message && !message.isBlank()) {
-      callback.onActionComplete(AssistantResultFactory.forToolCall(message));
+      callback.onActionComplete(AssistantResultBuilder.forToolCall(message).build());
     } else {
-      callback.onActionComplete(
-          AssistantResultFactory.forToolCallError("Missing required parameter: message")
-      );
+      AssistantResult missing = AssistantResultBuilder.forToolCallError(
+          "Missing required parameter: message").build();
+      callback.onActionComplete(missing);
     }
   }
 }

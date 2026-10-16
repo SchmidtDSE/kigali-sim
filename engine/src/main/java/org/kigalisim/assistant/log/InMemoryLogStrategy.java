@@ -89,30 +89,6 @@ public class InMemoryLogStrategy implements ChatLogStrategy {
   }
 
   /**
-   * Parses the stored transcript into an array.
-   *
-   * <p>Valid JSON which is not an array parses to an empty array. Malformed JSON is surfaced so
-   * that corrupt storage is not silently overwritten.</p>
-   *
-   * @param chatName The chat name used for error messages.
-   * @param transcript The stored transcript text.
-   * @return The parsed array.
-   * @throws IllegalStateException If the stored transcript is not valid JSON.
-   */
-  private static JsonArray parseTranscript(String chatName, String transcript) {
-    try {
-      Object parsed = Jsoner.deserialize(transcript);
-      if (parsed instanceof JsonArray array) {
-        return array;
-      }
-      return new JsonArray();
-    } catch (JsonException e) {
-      throw new IllegalStateException(
-          "Stored transcript for chat '" + chatName + "' is not valid JSON", e);
-    }
-  }
-
-  /**
    * Parses the contents to append.
    *
    * @param wireContents The message or array of messages to append.
@@ -123,58 +99,9 @@ public class InMemoryLogStrategy implements ChatLogStrategy {
       return Jsoner.deserialize(wireContents);
     } catch (JsonException e) {
       throw new IllegalArgumentException(
-          "Unable to parse chat contents to append: " + wireContents, e);
-    }
-  }
-
-  /**
-   * A stored transcript which caches its parsed form.
-   */
-  private static class StoredChat {
-
-    private String wire;
-    private JsonArray parsed;
-
-    /**
-     * Constructs stored chat state.
-     *
-     * @param wire The wire transcript.
-     * @param parsed The cached parsed transcript, or null when it has not been parsed yet.
-     */
-    private StoredChat(String wire, JsonArray parsed) {
-      this.wire = wire;
-      this.parsed = parsed;
-    }
-
-    /**
-     * Gets the wire transcript.
-     *
-     * @return The wire transcript.
-     */
-    private String getWire() {
-      return wire;
-    }
-
-    /**
-     * Replaces the wire transcript.
-     *
-     * @param wire The new wire transcript.
-     */
-    private void setWire(String wire) {
-      this.wire = wire;
-    }
-
-    /**
-     * Gets the parsed transcript, parsing it only when it has not been parsed before.
-     *
-     * @param chatName The chat name used for error messages.
-     * @return The parsed transcript.
-     */
-    private JsonArray getParsed(String chatName) {
-      if (parsed == null) {
-        parsed = parseTranscript(chatName, wire);
-      }
-      return parsed;
+          "Unable to parse chat contents to append: " + wireContents,
+          e
+      );
     }
   }
 }

@@ -27,7 +27,19 @@ public class AssistantModelResponse {
   private final JsonObject uninterpreted;
   private final String raw;
 
-  AssistantModelResponse(
+  /**
+   * Constructs a response.
+   *
+   * <p>Most callers should use {@link AssistantModelResponseFactory} instead of constructing
+   * responses directly.</p>
+   *
+   * @param content The textual content of the assistant message, or empty when none was supplied.
+   * @param toolCalls The tool invocations requested by the assistant, in order.
+   * @param finishReason The provider-reported finish reason, or empty when none was supplied.
+   * @param uninterpreted The assistant message exactly as received for verbatim replay.
+   * @param raw The raw body returned by the provider.
+   */
+  public AssistantModelResponse(
       Optional<String> content,
       List<AssistantToolInvocation> toolCalls,
       Optional<String> finishReason,

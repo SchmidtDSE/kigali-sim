@@ -28,7 +28,10 @@ public class AssistantModelQuery {
    * @param model The model which will service the query.
    */
   public AssistantModelQuery(
-      String chatName, String context, String message, AssistantModel model) {
+      String chatName,
+      String context,
+      String message,
+      AssistantModel model) {
     this.chatName = chatName;
     this.context = context;
     this.message = message;

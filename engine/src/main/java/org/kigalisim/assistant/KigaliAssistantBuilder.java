@@ -99,6 +99,16 @@ public class KigaliAssistantBuilder {
    * @throws IllegalStateException If the model, turn strategy, or chat log strategy is unset.
    */
   public KigaliAssistant build() {
+    checkReadyToBuild();
+    return new KigaliAssistant(model, turnStrategy, chatLogStrategy, toolbelt, workspace);
+  }
+
+  /**
+   * Fails unless the collaborators which cannot be defaulted have been set.
+   *
+   * @throws IllegalStateException If the model, turn strategy, or chat log strategy is unset.
+   */
+  private void checkReadyToBuild() {
     if (model == null) {
       throw new IllegalStateException("An AssistantModel must be set before building");
     }
@@ -108,6 +118,5 @@ public class KigaliAssistantBuilder {
     if (chatLogStrategy == null) {
       throw new IllegalStateException("A ChatLogStrategy must be set before building");
     }
-    return new KigaliAssistant(model, turnStrategy, chatLogStrategy, toolbelt, workspace);
   }
 }

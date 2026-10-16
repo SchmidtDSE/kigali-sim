@@ -1,5 +1,5 @@
 /**
- * Unit tests for the AssistantResult class.
+ * Tests for the AssistantResult class and its builder.
  *
  * @license BSD-3-Clause
  */
@@ -20,7 +20,7 @@ import org.kigalisim.assistant.model.OpenAiModelProtocolStrategy;
 import org.kigalisim.assistant.tool.AssistantToolInvocation;
 
 /**
- * Tests for the AssistantResult class.
+ * Tests for the AssistantResult class and its builder.
  */
 public class AssistantResultTest {
 
@@ -44,7 +44,7 @@ public class AssistantResultTest {
   @Test
   public void testForLlmQuery() {
     AssistantModelResponse response = AssistantModelResponseFactory.forRawBody("{}");
-    AssistantResult result = AssistantResultFactory.forLlmQuery(response);
+    AssistantResult result = AssistantResultBuilder.forLlmQuery(response).build();
 
     assertEquals(AssistantActionType.LLM_QUERY, result.getActionType());
     assertTrue(result.getWasSuccessful());
@@ -58,7 +58,7 @@ public class AssistantResultTest {
    */
   @Test
   public void testForLlmQueryError() {
-    AssistantResult result = AssistantResultFactory.forLlmQueryError("boom");
+    AssistantResult result = AssistantResultBuilder.forLlmQueryError("boom").build();
 
     assertEquals(AssistantActionType.LLM_QUERY, result.getActionType());
     assertFalse(result.getWasSuccessful());
@@ -71,7 +71,7 @@ public class AssistantResultTest {
    */
   @Test
   public void testForToolCall() {
-    AssistantResult result = AssistantResultFactory.forToolCall("output");
+    AssistantResult result = AssistantResultBuilder.forToolCall("output").build();
 
     assertEquals(AssistantActionType.TOOL_CALL, result.getActionType());
     assertTrue(result.getWasSuccessful());
@@ -83,7 +83,7 @@ public class AssistantResultTest {
    */
   @Test
   public void testForToolCallError() {
-    AssistantResult result = AssistantResultFactory.forToolCallError("bad args");
+    AssistantResult result = AssistantResultBuilder.forToolCallError("bad args").build();
     assertFalse(result.getWasSuccessful());
     assertEquals("bad args", result.getError().orElseThrow());
   }
@@ -93,7 +93,7 @@ public class AssistantResultTest {
    */
   @Test
   public void testForTurnActionsExceeded() {
-    AssistantResult result = AssistantResultFactory.forTurnActionsExceeded("too many");
+    AssistantResult result = AssistantResultBuilder.forTurnActionsExceeded("too many").build();
     assertEquals(AssistantActionType.TURN_ACTIONS_EXCEEDED, result.getActionType());
     assertFalse(result.getWasSuccessful());
     assertEquals("too many", result.getError().orElseThrow());
@@ -104,11 +104,11 @@ public class AssistantResultTest {
    */
   @Test
   public void testWithMessageIsCopyOnWrite() {
-    AssistantResult original =
-        AssistantResultFactory.forLlmQuery(AssistantModelResponseFactory.forRawBody("{}"));
+    AssistantResult original = AssistantResultBuilder.forLlmQuery(
+        AssistantModelResponseFactory.forRawBody("{}")).build();
     AssistantModelQuery query =
         new AssistantModelQuery("chat", "context", "user", buildModel());
-    AssistantResult updated = original.getWithMessage(query);
+    AssistantResult updated = new AssistantResultBuilder(original).withMessage(query).build();
 
     assertTrue(original.getMessage().isEmpty());
     assertEquals(query, updated.getMessage().orElseThrow());
@@ -122,10 +122,11 @@ public class AssistantResultTest {
    */
   @Test
   public void testWithToolInvocationIsCopyOnWrite() {
-    AssistantResult original = AssistantResultFactory.forToolCall("output");
+    AssistantResult original = AssistantResultBuilder.forToolCall("output").build();
     AssistantToolInvocation invocation =
         new AssistantToolInvocation("echo", "call_1", new JsonObject());
-    AssistantResult updated = original.getWithToolInvocation(invocation);
+    AssistantResult updated =
+        new AssistantResultBuilder(original).withToolInvocation(invocation).build();
 
     assertTrue(original.getToolInvocation().isEmpty());
     assertEquals(invocation, updated.getToolInvocation().orElseThrow());

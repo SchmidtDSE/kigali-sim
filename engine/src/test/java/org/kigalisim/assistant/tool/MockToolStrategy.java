@@ -10,7 +10,7 @@ import com.github.cliftonlabs.json_simple.JsonObject;
 import java.util.ArrayList;
 import java.util.List;
 import org.kigalisim.assistant.callback.AssistantActionCallback;
-import org.kigalisim.assistant.result.AssistantResultFactory;
+import org.kigalisim.assistant.result.AssistantResultBuilder;
 
 /**
  * A configurable tool strategy which records the calls it receives.
@@ -79,6 +79,6 @@ public class MockToolStrategy implements AssistantToolStrategy {
     if (exception != null) {
       throw exception;
     }
-    callback.onActionComplete(AssistantResultFactory.forToolCall(output));
+    callback.onActionComplete(AssistantResultBuilder.forToolCall(output).build());
   }
 }

@@ -16,7 +16,7 @@ import org.kigalisim.assistant.log.ChatLogStrategy;
 import org.kigalisim.assistant.model.AssistantModel;
 import org.kigalisim.assistant.model.AssistantModelQuery;
 import org.kigalisim.assistant.result.AssistantResult;
-import org.kigalisim.assistant.result.AssistantResultFactory;
+import org.kigalisim.assistant.result.AssistantResultBuilder;
 import org.kigalisim.assistant.tool.AssistantToolbelt;
 import org.kigalisim.assistant.workspace.AssistantWorkspace;
 
@@ -34,7 +34,7 @@ public class KigaliAssistant {
   private final ChatLogStrategy chatLogStrategy;
   private final AssistantToolbelt toolbelt;
   private final AssistantWorkspace workspace;
-  private final Set<String> inFlight = Collections.synchronizedSet(new HashSet<>());
+  private final Set<String> inFlight;
 
   /**
    * Constructs an assistant from its collaborators.
@@ -56,6 +56,7 @@ public class KigaliAssistant {
     this.chatLogStrategy = chatLogStrategy;
     this.toolbelt = toolbelt;
     this.workspace = workspace;
+    this.inFlight = Collections.synchronizedSet(new HashSet<>());
   }
 
   /**
@@ -82,24 +83,36 @@ public class KigaliAssistant {
   /**
    * Sends a message and starts a turn.
    *
-   * <p>The returned query lets the user interface render the user's message optimistically. If a
-   * turn is already in flight for the requested chat the supplied callback receives a failed
-   * terminal result immediately and null is returned; other chats are unaffected.</p>
+   * <p>The returned query lets the user interface render the user's message optimistically. The
+   * result is empty when the message was rejected because a turn is already in flight for the
+   * requested chat, or when the turn strategy threw while starting the turn. In both of those
+   * cases the supplied callback has already received a failed terminal result before the empty
+   * value is returned, and other chats are unaffected.</p>
+   *
+   * <p>An empty result is deliberate rather than an exception: the callback is the authoritative
+   * outcome channel — it behaves identically on the JVM and on the WASM / TeaVM event loop — and
+   * it has already reported the rejection, so throwing as well would double-report the same
+   * outcome on two channels. The return value exists only for optimistic rendering, so an empty
+   * value means there is no query to render, not that something failed. Compare with
+   * {@link #createChat(String)} and {@link #readChat(String)}, which throw because they are
+   * synchronous and have no callback channel.</p>
    *
    * @param chatName The name of the chat to which the message belongs.
    * @param message The user message.
    * @param callback The callback which observes progress and completion.
-   * @return The query for the first request, or null when the message was rejected.
+   * @return The query for the first request, or empty when the message was rejected.
    * @throws java.util.NoSuchElementException If the chat does not exist.
    */
-  public AssistantModelQuery sendMessage(
-      String chatName, String message, AssistantTurnCallback callback) {
+  public Optional<AssistantModelQuery> sendMessage(
+      String chatName,
+      String message,
+      AssistantTurnCallback callback) {
     synchronized (inFlight) {
       if (inFlight.contains(chatName)) {
-        callback.onTurnComplete(
-            AssistantResultFactory.forLlmQueryError(
-                "A turn is already in flight for chat '" + chatName + "'"));
-        return null;
+        AssistantResult rejection = AssistantResultBuilder.forLlmQueryError(
+            "A turn is already in flight for chat '" + chatName + "'").build();
+        callback.onTurnComplete(rejection);
+        return Optional.empty();
       }
       inFlight.add(chatName);
     }
@@ -120,13 +133,14 @@ public class KigaliAssistant {
     };
 
     try {
-      return turnStrategy.runTurn(toolbelt, chatName, message, wrapped);
+      AssistantModelQuery query = turnStrategy.runTurn(toolbelt, chatName, message, wrapped);
+      return Optional.ofNullable(query);
     } catch (RuntimeException e) {
       inFlight.remove(chatName);
       if (!completed[0]) {
-        callback.onTurnComplete(AssistantResultFactory.forLlmQueryError(describe(e)));
+        callback.onTurnComplete(AssistantResultBuilder.forLlmQueryError(describe(e)).build());
       }
-      return null;
+      return Optional.empty();
     }
   }
 

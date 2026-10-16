@@ -18,8 +18,8 @@ import org.kigalisim.assistant.tool.AssistantToolInvocation;
  * outcome while the turn strategy attaches the query and tool invocation as it forwards a result
  * because it holds the query and knows which tool it dispatched.</p>
  *
- * <p>Instances are immutable. The {@code getWithMessage} and {@code getWithToolInvocation} methods
- * perform copy-on-write updates.</p>
+ * <p>Instances are immutable. Copies carrying an attached model query or tool invocation are
+ * produced through {@link AssistantResultBuilder} rather than through mutating methods.</p>
  */
 public class AssistantResult {
 
@@ -29,7 +29,19 @@ public class AssistantResult {
   private final Optional<AssistantModelResponse> rawResponse;
   private final Optional<String> error;
 
-  AssistantResult(
+  /**
+   * Constructs a result.
+   *
+   * <p>Most callers should use {@link AssistantResultBuilder} instead of constructing results
+   * directly.</p>
+   *
+   * @param actionType The type of action taken.
+   * @param message The query sent to the model, or empty if not an LLM query.
+   * @param toolInvocation The tool invocation, or empty if not a tool call.
+   * @param rawResponse The parsed response or tool output, or empty on error.
+   * @param error The error details, or empty when the action succeeded.
+   */
+  public AssistantResult(
       AssistantActionType actionType,
       Optional<AssistantModelQuery> message,
       Optional<AssistantToolInvocation> toolInvocation,
@@ -40,26 +52,6 @@ public class AssistantResult {
     this.toolInvocation = toolInvocation;
     this.rawResponse = rawResponse;
     this.error = error;
-  }
-
-  /**
-   * Creates a copy with the model query attached.
-   *
-   * @param query The query responsible for this result.
-   * @return A copy carrying the query.
-   */
-  public AssistantResult getWithMessage(AssistantModelQuery query) {
-    return new AssistantResult(actionType, Optional.of(query), toolInvocation, rawResponse, error);
-  }
-
-  /**
-   * Creates a copy with the tool invocation attached.
-   *
-   * @param invocation The invocation responsible for this result.
-   * @return A copy carrying the invocation.
-   */
-  public AssistantResult getWithToolInvocation(AssistantToolInvocation invocation) {
-    return new AssistantResult(actionType, message, Optional.of(invocation), rawResponse, error);
   }
 
   /**

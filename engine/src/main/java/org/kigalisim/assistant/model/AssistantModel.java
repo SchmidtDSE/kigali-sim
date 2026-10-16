@@ -9,7 +9,7 @@ package org.kigalisim.assistant.model;
 import com.github.cliftonlabs.json_simple.JsonObject;
 import java.util.List;
 import org.kigalisim.assistant.callback.AssistantActionCallback;
-import org.kigalisim.assistant.result.AssistantResultFactory;
+import org.kigalisim.assistant.result.AssistantResultBuilder;
 import org.kigalisim.assistant.tool.AssistantToolStrategy;
 
 /**
@@ -22,8 +22,7 @@ import org.kigalisim.assistant.tool.AssistantToolStrategy;
  */
 public class AssistantModel {
 
-  private static final AssistantRequestHandle NO_OP_HANDLE = () -> {
-  };
+  private static final AssistantRequestHandle NO_OP_HANDLE = () -> {};
 
   private final AssistantModelWireStrategy wire;
   private final AssistantModelProtocolStrategy protocol;
@@ -108,10 +107,11 @@ public class AssistantModel {
         try {
           parsed = protocol.parseResponse(rawResponse.getRaw());
         } catch (RuntimeException e) {
-          callback.onActionComplete(AssistantResultFactory.forLlmQueryError(describe(e)));
+          callback.onActionComplete(
+              AssistantResultBuilder.forLlmQueryError(describe(e)).build());
           return;
         }
-        callback.onActionComplete(AssistantResultFactory.forLlmQuery(parsed));
+        callback.onActionComplete(AssistantResultBuilder.forLlmQuery(parsed).build());
       } else {
         callback.onActionComplete(result);
       }
@@ -120,7 +120,8 @@ public class AssistantModel {
     try {
       return wire.sendMessage(body, forwardingCallback);
     } catch (RuntimeException e) {
-      forwardingCallback.onActionComplete(AssistantResultFactory.forLlmQueryError(describe(e)));
+      forwardingCallback.onActionComplete(
+          AssistantResultBuilder.forLlmQueryError(describe(e)).build());
       return NO_OP_HANDLE;
     }
   }

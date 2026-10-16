@@ -36,6 +36,7 @@ public class OpenAiCompatibleChatLog implements ChatLog {
   @Override
   public List<HumanTranscriptElement> getHumanTranscript() {
     throw new UnsupportedOperationException(
-        "Human transcript rendering is not implemented until the human transcript component");
+        "Human transcript rendering is not implemented until the human transcript component"
+    );
   }
 }

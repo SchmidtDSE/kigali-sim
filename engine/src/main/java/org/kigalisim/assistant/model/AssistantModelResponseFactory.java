@@ -21,6 +21,15 @@ import org.kigalisim.assistant.tool.AssistantToolInvocation;
 public class AssistantModelResponseFactory {
 
   /**
+   * Constructs a factory.
+   *
+   * <p>Marked private so that a factory is not created by accident; the static creators are the
+   * intended entry points.</p>
+   */
+  private AssistantModelResponseFactory() {
+  }
+
+  /**
    * Creates a success envelope carrying only the raw wire body.
    *
    * <p>This is what a wire strategy reports before parsing has taken place.</p>

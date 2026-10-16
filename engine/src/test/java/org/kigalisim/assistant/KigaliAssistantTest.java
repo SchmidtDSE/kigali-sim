@@ -9,13 +9,13 @@ package org.kigalisim.assistant;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.kigalisim.assistant.callback.AssistantTurnCallback;
 import org.kigalisim.assistant.log.ChatLog;
@@ -25,7 +25,7 @@ import org.kigalisim.assistant.model.AssistantModelQuery;
 import org.kigalisim.assistant.model.MockModelWireStrategy;
 import org.kigalisim.assistant.model.OpenAiModelProtocolStrategy;
 import org.kigalisim.assistant.result.AssistantResult;
-import org.kigalisim.assistant.result.AssistantResultFactory;
+import org.kigalisim.assistant.result.AssistantResultBuilder;
 import org.kigalisim.assistant.tool.AssistantToolbelt;
 
 /**
@@ -133,11 +133,11 @@ public class KigaliAssistantTest {
     logStrategy.createChat("chat");
 
     RecordingCallback callback = new RecordingCallback();
-    AssistantModelQuery query = assistant.sendMessage("chat", "hello", callback);
+    Optional<AssistantModelQuery> query = assistant.sendMessage("chat", "hello", callback);
 
-    assertNotNull(query);
-    assertEquals("chat", query.getChatName());
-    assertEquals("hello", query.getMessage());
+    assertTrue(query.isPresent());
+    assertEquals("chat", query.get().getChatName());
+    assertEquals("hello", query.get().getMessage());
     assertNotNull(turnStrategy.captured);
   }
 
@@ -154,18 +154,19 @@ public class KigaliAssistantTest {
     logStrategy.createChat("other");
 
     RecordingCallback firstCallback = new RecordingCallback();
-    AssistantModelQuery first = assistant.sendMessage("chat", "first", firstCallback);
-    assertNotNull(first);
+    Optional<AssistantModelQuery> first = assistant.sendMessage("chat", "first", firstCallback);
+    assertTrue(first.isPresent());
 
     RecordingCallback secondCallback = new RecordingCallback();
-    AssistantModelQuery second = assistant.sendMessage("chat", "second", secondCallback);
-    assertNull(second, "Rejected message should return null");
+    Optional<AssistantModelQuery> second =
+        assistant.sendMessage("chat", "second", secondCallback);
+    assertTrue(second.isEmpty(), "Rejected message should return empty");
     assertEquals(1, secondCallback.completions.size());
     assertFalse(secondCallback.completions.get(0).getWasSuccessful());
 
     RecordingCallback otherCallback = new RecordingCallback();
-    AssistantModelQuery other = assistant.sendMessage("other", "other", otherCallback);
-    assertNotNull(other, "Other chats should be unaffected");
+    Optional<AssistantModelQuery> other = assistant.sendMessage("other", "other", otherCallback);
+    assertTrue(other.isPresent(), "Other chats should be unaffected");
   }
 
   /**
@@ -181,12 +182,13 @@ public class KigaliAssistantTest {
 
     RecordingCallback firstCallback = new RecordingCallback();
     assistant.sendMessage("chat", "first", firstCallback);
-    turnStrategy.captured.onTurnComplete(AssistantResultFactory.forToolCall("done"));
+    turnStrategy.captured.onTurnComplete(AssistantResultBuilder.forToolCall("done").build());
     assertEquals(1, firstCallback.completions.size());
 
     RecordingCallback secondCallback = new RecordingCallback();
-    AssistantModelQuery second = assistant.sendMessage("chat", "second", secondCallback);
-    assertNotNull(second, "Chat should be usable after completion");
+    Optional<AssistantModelQuery> second =
+        assistant.sendMessage("chat", "second", secondCallback);
+    assertTrue(second.isPresent(), "Chat should be usable after completion");
     assertTrue(secondCallback.completions.isEmpty());
   }
 }
