@@ -312,43 +312,7 @@ We will need a text file which is committed to the git respoistory which will be
 
 #### Component 5: Math in harness
 
-**Decision (approved):** Use EvalEx `com.ezylang:EvalEx:3.7.0` to unblock this component, accepting that it is **not TeaVM/WASM-compatible**. Evaluating even a single expression fails a TeaVM 0.15.0 WasmGC build with `Method java.util.Date.toInstant()Ljava/time/Instant; was not found` / `Method java.util.Calendar.toInstant()Ljava/time/Instant; was not found`, raised from `DateTimeConverter.convert` via `DefaultEvaluationValueConverter.convertObject` -> `EvaluationValue.of` -> `Expression.convertValue` (reproduced in `/tmp/evalex-teavm`). This is unavoidable through the public API because `ExpressionConfiguration` field-initializes a `DefaultEvaluationValueConverter` and `EvaluationValue.of` always routes through it. It is acceptable for now because no assistant class is reachable from `KigaliWasmSimFacade`, so `./gradlew war` still passes and the failure will not surface until Component 15. **This dependency is temporary and will be replaced with a TeaVM-safe evaluator before WASM integration.** `com.ezylang:EvalEx:3.7.0` is 98 days old as of 2026-10-16 (Maven Central `lastUpdated=20260710152930`; no newer release) and declares no runtime dependencies (provided Lombok only).
-
-**Problem statement:** The model needs a `calculate` tool so it can evaluate a single mathematical expression (for example unit conversions or back-of-envelope arithmetic while assembling a simulation) and receive the numeric result as tool output. This must follow the existing tool pattern in `org.kigalisim.assistant.tool` (`AssistantToolStrategy`, `JsonObject` JSON Schema, `AssistantResultBuilder.forToolCall` / `forToolCallError`). The EvalEx dependency makes the reachable WASM build fail at Component 15; that breakage is knowingly deferred, and `war` passing now is only because the assistant is not yet reachable from the WASM facade.
-
-**Implementation steps:**
-
- - **`engine/build.gradle`** — add `implementation("com.ezylang:EvalEx:3.7.0")` beside the json-simple dependency, with a comment noting it is a temporary dependency that is not TeaVM/WASM-safe and must be replaced before Component 15.
- - **`README.md`** — add an Apache-2.0 credit in the alphabetical "Open Source" list, after the ESLint entry and before JSDoc: `- [EvalEx](https://ezylang.github.io/EvalEx/) under [Apache-2.0](https://github.com/ezylang/EvalEx/blob/main/LICENSE).`
- - **`engine/src/main/java/org/kigalisim/assistant/tool/CalculateTool.java`** (new; all types stay under `org.kigalisim.assistant`):
-   - Implements `AssistantToolStrategy`; `public static final String NAME = "calculate";`.
-   - Holds one embedded, shared `private final ExpressionConfiguration configuration = ExpressionConfiguration.defaultConfiguration();` (immutable in EvalEx and safe to reuse; do not cache `Expression` instances).
-   - `getName()` returns `NAME`; `getDescription()` returns e.g. `"Evaluate a single mathematical expression and return the numeric result"`.
-   - `getParameterSchema()` returns `{"type":"object","properties":{"expression":{"type":"string","description":"The mathematical expression to evaluate, e.g. (1 + 2) * 3"}},"required":["expression"]}`.
-   - `execute(JsonObject call, AssistantActionCallback callback)`:
-     - Read `call.get("expression")`; if it is not a `String` or is blank, report `AssistantResultBuilder.forToolCallError("Missing required parameter: expression").build()` and return.
-     - Evaluate with `EvaluationValue value = new Expression(expression, configuration).evaluate();`.
-     - If `!value.isNumberValue()`, report `forToolCallError("The expression did not evaluate to a number: " + expression)`.
-     - Otherwise report `AssistantResultBuilder.forToolCall(value.getNumberValue().stripTrailingZeros().toPlainString()).build()`.
-     - Catch `EvaluationException | ParseException` (the latter checked), plus `ArithmeticException | IllegalArgumentException`, and report `forToolCallError(e.getMessage())`; the tool must not throw. (Division by zero arrives as `EvaluationException("Division by zero")`; malformed input as `ParseException`.)
-   - Do **not** modify `KigaliAssistantBuilder`: `calculate` is an "other tool" registered by callers via `addTool(new CalculateTool())`, exactly like the Component 4 workspace tools.
- - **`engine/src/test/java/org/kigalisim/assistant/tool/CalculateToolTest.java`** (new):
-   - `testNameAndSchema`: `NAME == "calculate"`, `getName()` matches, schema `type == "object"`, `properties.expression.type == "string"`, `required` contains `expression`.
-   - `testSimpleExpression`: `2 + 3 * 4` -> `"14"`.
-   - `testDecimalAndParentheses`: `(1 + 2) / 4` -> `"0.75"`.
-   - `testPower`: `2 ^ 10` -> `"1024"`.
-   - `testMissingExpression`: empty `JsonObject` -> one failed result mentioning `expression`.
-   - `testBlankExpression`: `"   "` -> failure.
-   - `testNonStringExpression`: `5` (Integer) -> failure.
-   - `testMalformedExpression`: `"2 +"` -> failure (`getWasSuccessful()` false).
-   - `testDivisionByZero`: `"1 / 0"` -> failure whose error contains `Division by zero`.
-   - `testNonNumericResult`: `"1 == 1"` -> failure mentioning non-numeric.
-   - Follow `MessageUserToolTest` / `ListFilesToolTest` style: collect into `ArrayList<AssistantResult>` via `tool.execute(call, results::add)`, assert `getWasSuccessful()` and `getRawResponse().orElseThrow().getContent().orElse(null)` on success, `getError()` on failure.
-
-**Out of scope:** registering `calculate` in `KigaliAssistantBuilder` or the system context preamble; symbolic variables, custom functions, and multi-expression programs; any change to existing tools, workspace, model, or turn-loop code; and no `org.kigalisim` core types are touched or imported. Replacing EvalEx with a TeaVM-safe evaluator is explicitly deferred to a later component (before WASM integration), not done here.
-
-**Verification:** run `./gradlew test checkstyleMain checkstyleTest spotlessCheck` and `./gradlew war`. Record that `war` passes only because the assistant is not yet reachable from `KigaliWasmSimFacade`; EvalEx will break WasmGC at Component 15 unless replaced.
-
+**Summary:** Component 5 adds the model-facing `calculate` tool (`org.kigalisim.assistant.tool.CalculateTool`) implementing `AssistantToolStrategy` with `NAME = "calculate"`, a JSON Schema for a single `expression` parameter, numeric extraction via `stripTrailingZeros().toPlainString()`, and non-throwing error handling through `forToolCall` / `forToolCallError`, plus ten `CalculateToolTest` cases. It adds `com.ezylang:EvalEx:3.7.0` to `engine/build.gradle` with a warning comment and the alphabetical Apache-2.0 EvalEx credit to `README.md`, leaving `KigaliAssistantBuilder` untouched so callers register the tool via `addTool(new CalculateTool())`. EvalEx is a temporary, deliberate dependency that is not TeaVM/WASM-safe and must be replaced with a portable evaluator before WASM integration (Component 15); `./gradlew war` passes only because the assistant is not yet reachable from `KigaliWasmSimFacade`. All new types remain under `org.kigalisim.assistant` with no assistant types leaking into the rest of the codebase. `./gradlew test checkstyleMain checkstyleTest spotlessCheck` passes (1462 tests, 0 failures, 0 errors) and `./gradlew war` passes.
 
 #### Component 6: Simulation execution
 We will add support for `ValidateSimulationTool` and `RunSimulationTool`. This requires designing a bridge into the rest of the Kigali Sim codebase and the results should be described in CSV text so that they can be transported to the LLM. In this process, we should be careful that types from the assistant package do not leak into the rest of the codebase. See `KigaliSimFacade`.
