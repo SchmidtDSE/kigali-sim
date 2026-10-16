@@ -9,6 +9,7 @@ package org.kigalisim.assistant.model;
 import com.github.cliftonlabs.json_simple.JsonObject;
 import java.util.List;
 import org.kigalisim.assistant.callback.AssistantActionCallback;
+import org.kigalisim.assistant.result.AssistantResult;
 import org.kigalisim.assistant.result.AssistantResultBuilder;
 import org.kigalisim.assistant.tool.AssistantToolStrategy;
 
@@ -102,16 +103,7 @@ public class AssistantModel {
     AssistantActionCallback forwardingCallback = result -> {
       boolean wireSucceeded = result.getWasSuccessful() && result.getRawResponse().isPresent();
       if (wireSucceeded) {
-        AssistantModelResponse rawResponse = result.getRawResponse().get();
-        AssistantModelResponse parsed;
-        try {
-          parsed = protocol.parseResponse(rawResponse.getRaw());
-        } catch (RuntimeException e) {
-          callback.onActionComplete(
-              AssistantResultBuilder.forLlmQueryError(describe(e)).build());
-          return;
-        }
-        callback.onActionComplete(AssistantResultBuilder.forLlmQuery(parsed).build());
+        sendMessageWireSucceeded(result, callback);
       } else {
         callback.onActionComplete(result);
       }
@@ -120,10 +112,34 @@ public class AssistantModel {
     try {
       return wire.sendMessage(body, forwardingCallback);
     } catch (RuntimeException e) {
-      forwardingCallback.onActionComplete(
-          AssistantResultBuilder.forLlmQueryError(describe(e)).build());
+      AssistantResult failure = AssistantResultBuilder.forLlmQueryError(describe(e)).build();
+      forwardingCallback.onActionComplete(failure);
       return NO_OP_HANDLE;
     }
+  }
+
+  /**
+   * Forwards a successful transport outcome, parsing the raw body on the way.
+   *
+   * <p>Any exception thrown while parsing becomes a failed query result so that a malformed
+   * provider payload is reported rather than crashing the turn.</p>
+   *
+   * @param result The successful result reported by the wire strategy.
+   * @param callback The callback invoked with the parsed outcome.
+   */
+  private void sendMessageWireSucceeded(
+      AssistantResult result, AssistantActionCallback callback) {
+    AssistantModelResponse rawResponse = result.getRawResponse().orElseThrow();
+    AssistantModelResponse parsed;
+    try {
+      parsed = protocol.parseResponse(rawResponse.getRaw());
+    } catch (RuntimeException e) {
+      AssistantResult failure = AssistantResultBuilder.forLlmQueryError(describe(e)).build();
+      callback.onActionComplete(failure);
+      return;
+    }
+    AssistantResult parsedResult = AssistantResultBuilder.forLlmQuery(parsed).build();
+    callback.onActionComplete(parsedResult);
   }
 
   /**

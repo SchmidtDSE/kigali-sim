@@ -31,11 +31,11 @@ public class AssistantResultTest {
    */
   private AssistantModel buildModel() {
     return new AssistantModel(
-        (body, callback) -> () -> {
-        },
+        (body, callback) -> () -> {},
         new OpenAiModelProtocolStrategy("test"),
         "test",
-        "test-service");
+        "test-service"
+    );
   }
 
   /**
@@ -123,10 +123,14 @@ public class AssistantResultTest {
   @Test
   public void testWithToolInvocationIsCopyOnWrite() {
     AssistantResult original = AssistantResultBuilder.forToolCall("output").build();
-    AssistantToolInvocation invocation =
-        new AssistantToolInvocation("echo", "call_1", new JsonObject());
-    AssistantResult updated =
-        new AssistantResultBuilder(original).withToolInvocation(invocation).build();
+    AssistantToolInvocation invocation = new AssistantToolInvocation(
+        "echo",
+        "call_1",
+        new JsonObject()
+    );
+    AssistantResult updated = new AssistantResultBuilder(original)
+        .withToolInvocation(invocation)
+        .build();
 
     assertTrue(original.getToolInvocation().isEmpty());
     assertEquals(invocation, updated.getToolInvocation().orElseThrow());

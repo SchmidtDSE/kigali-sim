@@ -32,6 +32,17 @@ public class KigaliAssistantBuilder {
    * Constructs a builder with the built-in tools registered first.
    */
   public KigaliAssistantBuilder() {
+    addDefaultTools();
+  }
+
+  /**
+   * Registers the tools required by the harness itself.
+   *
+   * <p>These are registered before any additional tool so that the turn loop can always speak to
+   * the user through {@code message_user} and conclude a turn through {@code end_turn}, no matter
+   * which additional tools a caller registers afterwards.</p>
+   */
+  private void addDefaultTools() {
     toolbelt.addTool(new EndTurnTool());
     toolbelt.addTool(new MessageUserTool());
   }

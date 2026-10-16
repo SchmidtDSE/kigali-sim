@@ -100,10 +100,9 @@ public class KigaliAssistantBuilderTest {
         new KigaliAssistantBuilder().setModel(buildModel());
     assertThrows(IllegalStateException.class, missingTurn::build);
 
-    KigaliAssistantBuilder missingLog =
-        new KigaliAssistantBuilder()
-            .setModel(buildModel())
-            .setTurnStrategy((toolbelt, chatName, message, callback) -> null);
+    KigaliAssistantBuilder missingLog = new KigaliAssistantBuilder()
+        .setModel(buildModel())
+        .setTurnStrategy((toolbelt, chatName, message, callback) -> null);
     assertThrows(IllegalStateException.class, missingLog::build);
   }
 

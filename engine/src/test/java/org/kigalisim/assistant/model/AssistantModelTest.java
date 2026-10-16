@@ -51,7 +51,11 @@ public class AssistantModelTest {
    */
   private AssistantModel buildModel(MockModelWireStrategy wire) {
     return new AssistantModel(
-        wire, new OpenAiModelProtocolStrategy("test-model"), "test-model", "test-service");
+        wire,
+        new OpenAiModelProtocolStrategy("test-model"),
+        "test-model",
+        "test-service"
+    );
   }
 
   /**

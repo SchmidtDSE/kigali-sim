@@ -12,6 +12,7 @@ import java.util.Deque;
 import java.util.List;
 import java.util.function.Consumer;
 import org.kigalisim.assistant.callback.AssistantActionCallback;
+import org.kigalisim.assistant.result.AssistantResult;
 import org.kigalisim.assistant.result.AssistantResultBuilder;
 
 /**
@@ -32,9 +33,9 @@ public class MockModelWireStrategy implements AssistantModelWireStrategy {
    * @param payload The raw provider payload.
    */
   public void enqueuePayload(String payload) {
-    queue.add(callback -> callback.onActionComplete(
-        AssistantResultBuilder.forLlmQuery(
-            AssistantModelResponseFactory.forRawBody(payload)).build()));
+    AssistantModelResponse response = AssistantModelResponseFactory.forRawBody(payload);
+    AssistantResult result = AssistantResultBuilder.forLlmQuery(response).build();
+    queue.add(callback -> callback.onActionComplete(result));
   }
 
   /**
@@ -43,8 +44,8 @@ public class MockModelWireStrategy implements AssistantModelWireStrategy {
    * @param error The error message.
    */
   public void enqueueError(String error) {
-    queue.add(callback -> callback.onActionComplete(
-        AssistantResultBuilder.forLlmQueryError(error).build()));
+    AssistantResult result = AssistantResultBuilder.forLlmQueryError(error).build();
+    queue.add(callback -> callback.onActionComplete(result));
   }
 
   /**
