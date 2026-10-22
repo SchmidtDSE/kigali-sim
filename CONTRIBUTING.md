@@ -104,7 +104,7 @@ Please reach out if you have further questions about these guidelines or want to
 ## Scope
 There are some limitations of scope for this project:
 
- - The Java engine must remain compatible with Java 21+ to support TeaVM compilation to WebAssembly but earlier versions are not guaranteed to be supported.
+ - The Java engine must remain compatible with Java 25+ to support TeaVM compilation to WebAssembly but earlier versions are not guaranteed to be supported.
  - Breaking changes to the QubecTalk language syntax should be discussed in an issue before implementation and require community input.
  - We must maintain both the browser-based application and standalone JAR/Docker execution paths but other execution modalities are currently out of scope.
  - Energy consumption can be modeled but energy mix for secondary emissions is currently considered out of scope.

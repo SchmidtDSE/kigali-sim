@@ -2,7 +2,7 @@ FROM debian:bookworm-slim AS base
 
 # Copy JDK from Eclipse Temurin
 ENV JAVA_HOME=/opt/java/openjdk
-COPY --from=eclipse-temurin:21-jdk $JAVA_HOME $JAVA_HOME
+COPY --from=eclipse-temurin:25-jdk $JAVA_HOME $JAVA_HOME
 ENV PATH="${JAVA_HOME}/bin:${PATH}"
 
 # Install system dependencies needed for development

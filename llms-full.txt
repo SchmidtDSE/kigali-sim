@@ -409,7 +409,7 @@ When asked to run a simulation, choose the method below based on your capabiliti
 
 The JAR engine runs simulations entirely on the local machine. Because no data is transmitted to a remote server, this is the preferred method for running simulations whenever Java is available.
 
-Download the pre-built JAR from https://kigalisim.org/kigalisim-fat.jar. A JRE (Java 21+) is required; [Adoptium](https://adoptium.net/) is a recommended source.
+Download the pre-built JAR from https://kigalisim.org/kigalisim-fat.jar. A JRE (Java 25+) is required; [Adoptium](https://adoptium.net/) is a recommended source.
 
 Before using this method, confirm with the user that you are able to download and run JAR files using Java. If you cannot, tell the user and suggest they use the web IDE at https://kigalisim.org or see the Community Cloud Endpoint below.
 
