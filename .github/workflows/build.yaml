@@ -53,8 +53,8 @@ jobs:
           git checkout ${{ github.sha }}
       - name: Setup Java
         run: |
-          echo "JAVA_HOME=$JAVA_HOME_21_X64" >> $GITHUB_ENV
-          echo "$JAVA_HOME_21_X64/bin" >> $GITHUB_PATH
+          echo "JAVA_HOME=$JAVA_HOME_25_X64" >> $GITHUB_ENV
+          echo "$JAVA_HOME_25_X64/bin" >> $GITHUB_PATH
       - name: Setup pnpm
         run: npm install -g pnpm@10.20.0
       - name: Install node deps
@@ -87,8 +87,8 @@ jobs:
           git checkout ${{ github.sha }}
       - name: Setup Java
         run: |
-          echo "JAVA_HOME=$JAVA_HOME_21_X64" >> $GITHUB_ENV
-          echo "$JAVA_HOME_21_X64/bin" >> $GITHUB_PATH
+          echo "JAVA_HOME=$JAVA_HOME_25_X64" >> $GITHUB_ENV
+          echo "$JAVA_HOME_25_X64/bin" >> $GITHUB_PATH
       - name: Build fat jar
         run: ./gradlew fatJar
       - name: Install sshpass
@@ -119,8 +119,8 @@ jobs:
           git checkout ${{ github.sha }}
       - name: Setup Java
         run: |
-          echo "JAVA_HOME=$JAVA_HOME_21_X64" >> $GITHUB_ENV
-          echo "$JAVA_HOME_21_X64/bin" >> $GITHUB_PATH
+          echo "JAVA_HOME=$JAVA_HOME_25_X64" >> $GITHUB_ENV
+          echo "$JAVA_HOME_25_X64/bin" >> $GITHUB_PATH
       - name: Check grammar
         run: ./gradlew generateGrammarSource
       - name: Check main style
@@ -143,8 +143,8 @@ jobs:
           git checkout ${{ github.sha }}
       - name: Setup Java
         run: |
-          echo "JAVA_HOME=$JAVA_HOME_21_X64" >> $GITHUB_ENV
-          echo "$JAVA_HOME_21_X64/bin" >> $GITHUB_PATH
+          echo "JAVA_HOME=$JAVA_HOME_25_X64" >> $GITHUB_ENV
+          echo "$JAVA_HOME_25_X64/bin" >> $GITHUB_PATH
       - name: Run tests
         run: ./gradlew test
   runEngineLocal:
@@ -163,8 +163,8 @@ jobs:
           git checkout ${{ github.sha }}
       - name: Setup Java
         run: |
-          echo "JAVA_HOME=$JAVA_HOME_21_X64" >> $GITHUB_ENV
-          echo "$JAVA_HOME_21_X64/bin" >> $GITHUB_PATH
+          echo "JAVA_HOME=$JAVA_HOME_25_X64" >> $GITHUB_ENV
+          echo "$JAVA_HOME_25_X64/bin" >> $GITHUB_PATH
       - name: Download fatJar
         run: |
           mkdir -p build/libs
@@ -201,8 +201,8 @@ jobs:
           git checkout ${{ github.sha }}
       - name: Setup Java
         run: |
-          echo "JAVA_HOME=$JAVA_HOME_21_X64" >> $GITHUB_ENV
-          echo "$JAVA_HOME_21_X64/bin" >> $GITHUB_PATH
+          echo "JAVA_HOME=$JAVA_HOME_25_X64" >> $GITHUB_ENV
+          echo "$JAVA_HOME_25_X64/bin" >> $GITHUB_PATH
       - name: Download fatJar
         run: |
           mkdir -p build/libs
@@ -242,8 +242,8 @@ jobs:
           git checkout ${{ github.sha }}
       - name: Setup Java
         run: |
-          echo "JAVA_HOME=$JAVA_HOME_21_X64" >> $GITHUB_ENV
-          echo "$JAVA_HOME_21_X64/bin" >> $GITHUB_PATH
+          echo "JAVA_HOME=$JAVA_HOME_25_X64" >> $GITHUB_ENV
+          echo "$JAVA_HOME_25_X64/bin" >> $GITHUB_PATH
       - name: Build war
         run: ./gradlew warUnversioned
       - name: Install sshpass
@@ -269,8 +269,8 @@ jobs:
           git checkout ${{ github.sha }}
       - name: Setup Java
         run: |
-          echo "JAVA_HOME=$JAVA_HOME_21_X64" >> $GITHUB_ENV
-          echo "$JAVA_HOME_21_X64/bin" >> $GITHUB_PATH
+          echo "JAVA_HOME=$JAVA_HOME_25_X64" >> $GITHUB_ENV
+          echo "$JAVA_HOME_25_X64/bin" >> $GITHUB_PATH
       - name: Setup pnpm
         run: npm install -g pnpm@10.20.0
       - name: Download war
@@ -307,8 +307,8 @@ jobs:
           git checkout ${{ github.sha }}
       - name: Setup Java
         run: |
-          echo "JAVA_HOME=$JAVA_HOME_21_X64" >> $GITHUB_ENV
-          echo "$JAVA_HOME_21_X64/bin" >> $GITHUB_PATH
+          echo "JAVA_HOME=$JAVA_HOME_25_X64" >> $GITHUB_ENV
+          echo "$JAVA_HOME_25_X64/bin" >> $GITHUB_PATH
       - name: Generate Javadoc
         run: ./gradlew javadoc
       - name: Install sshpass
@@ -419,8 +419,8 @@ jobs:
           git checkout ${{ github.sha }}
       - name: Setup Java
         run: |
-          echo "JAVA_HOME=$JAVA_HOME_21_X64" >> $GITHUB_ENV
-          echo "$JAVA_HOME_21_X64/bin" >> $GITHUB_PATH
+          echo "JAVA_HOME=$JAVA_HOME_25_X64" >> $GITHUB_ENV
+          echo "$JAVA_HOME_25_X64/bin" >> $GITHUB_PATH
       - name: Setup pnpm
         run: npm install -g pnpm@10.20.0
       - name: Install SSH client and sshpass
@@ -605,8 +605,8 @@ jobs:
           git checkout ${{ github.sha }}
       - name: Setup Java
         run: |
-          echo "JAVA_HOME=$JAVA_HOME_21_X64" >> $GITHUB_ENV
-          echo "$JAVA_HOME_21_X64/bin" >> $GITHUB_PATH
+          echo "JAVA_HOME=$JAVA_HOME_25_X64" >> $GITHUB_ENV
+          echo "$JAVA_HOME_25_X64/bin" >> $GITHUB_PATH
       - name: Publish
         env:
           USERNAME: ${{ github.actor }}

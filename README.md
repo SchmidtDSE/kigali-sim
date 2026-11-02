@@ -1,7 +1,7 @@
 # Kigali Sim
 Open source engine for simulating substances, applications, and policies relevant to the Montreal Protocol and the Kigali Amendment.
 
-[![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active) [![BSD Licensed](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause) [![Build](https://github.com/SchmidtDSE/kigali-sim/actions/workflows/build.yaml/badge.svg?branch=deploy)](https://github.com/SchmidtDSE/kigali-sim/actions/workflows/build.yaml) ![Temurin 21 or higher](https://img.shields.io/badge/Java-Temurin%2021%2B-blue) [![status](https://joss.theoj.org/papers/eafc95ac66aae284563f36fa60f0261d/status.svg)](https://joss.theoj.org/papers/eafc95ac66aae284563f36fa60f0261d)
+[![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active) [![BSD Licensed](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause) [![Build](https://github.com/SchmidtDSE/kigali-sim/actions/workflows/build.yaml/badge.svg?branch=deploy)](https://github.com/SchmidtDSE/kigali-sim/actions/workflows/build.yaml) ![Temurin 25 or higher](https://img.shields.io/badge/Java-Temurin%2025%2B-blue) [![status](https://joss.theoj.org/papers/eafc95ac66aae284563f36fa60f0261d/status.svg)](https://joss.theoj.org/papers/eafc95ac66aae284563f36fa60f0261d)
 
 <br>
 
@@ -179,7 +179,7 @@ This can be run using the editor tab at https://kigalisim.org/ or locally via `j
 Developers can continue their work by going to the [User Guide](https://kigalisim.org/guide/) which had information on other features. See also the [formal QubecTalk language specification](https://kigalisim.org/guide/qubectalk.pdf).
 
 ### LLM assistants
-If desired, AI coding assistants or chatbots can help in using Kigali Sim. We implement the [llms.txt specification](https://llmstxt.org), a standard that allows users to bring their own LLM assistants to the tool. Direct your AI to read `https://kigalisim.org/llms-full.txt?v=20260826` and / or `https://kigalisim.org/llms.txt?v=20260826`.
+If desired, AI coding assistants or chatbots can help in using Kigali Sim. We implement the [llms.txt specification](https://llmstxt.org), a standard that allows users to bring their own LLM assistants to the tool. Direct your AI to read `https://kigalisim.org/llms-full.txt?v=20261025` and / or `https://kigalisim.org/llms.txt?v=20261025`.
 
 <br>
 

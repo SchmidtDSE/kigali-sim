@@ -12,7 +12,7 @@ Kigali Sim is organized into three main components and most have additional READ
 
 The **Java Engine** (`engine` directory) provides the primary computational mechanism for running simulations. There are different entrypoints depending on how Kiglai Sim is running like via WASM or JVM. That said, developers may wish to review the [Engine JavaDoc](https://kigalisim.org/guide/javadoc/org/kigalisim/engine/Engine.html). The **ECMAScript Editor** (`editor` directory) may be explored via the [Editor JSDoc](https://kigalisim.org/guide/jsdoc/). At a glance:
 
-- Core simulation engine built with Java 21+
+- Core simulation engine built with Java 25+
 - Uses ANTLR4 for parsing the QubecTalk domain specific language (DSL)
 - Contains the authoritative QubecTalk.g4 grammar file
 - Compiled to WebAssembly using TeaVM for browser execution
@@ -37,7 +37,7 @@ Both dev containers and local setup are supported, per developer preference.
 
 The project includes a dev container which is compatible with IntelliJ, VS Code, and GitHub Codespaces. As described in `.devcontainer`, this provides a reproducible development environment with dependencies required for most development activities pre-installed. Indeed, this guide was written from a dev container! It uses:
 
-- Debian 12 (bookworm-slim) with Eclipse Temurin JDK 21
+- Debian 12 (bookworm-slim) with Eclipse Temurin JDK 25
 - Node.js 18.x LTS (official Debian package)
 - pnpm 10.20.0 (installed via npm)
 - Chromium browser (official Debian package) for running tests
@@ -56,7 +56,7 @@ The container configuration prioritizes security by using only official package 
 ### Local Setup
 You are very welcome to set up your own environment outside of a pre-prepared container. You will need the following:
 
-- Java JDK 21 or higher (please use only OpenJDK or similar, see [Adoptium](https://adoptium.net/))
+- Java JDK 25 or higher (please use only OpenJDK or similar, see [Adoptium](https://adoptium.net/))
 - Node.js 18.x and pnpm
 - Python 3.x (for local development server)
 
