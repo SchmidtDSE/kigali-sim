@@ -344,3 +344,5 @@ We also use colors from [ColorBrewer 2.0](https://colorbrewer2.org/) by Cynthia 
 This project's code is available under the [BSD license](https://github.com/SchmidtDSE/kigali-sim/blob/main/LICENSE.md). All documentation is available under the Creative Commons [CC-BY 4.0 International License](https://creativecommons.org/licenses/by/4.0/deed.en).
 
 This privacy-respecting simulation platform offers essential tools to assist policy and research efforts. Informed by various perspectives from across the Montreal Protocol ecosystem of actors, we believe that this project is owned by its community. It is available to the public as an optional open source resource.
+
+Public version at https://kigalisim.org.
