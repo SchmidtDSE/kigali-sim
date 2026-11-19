@@ -78,16 +78,6 @@ public class RetireExactOperation implements Operation {
   }
 
   /**
-   * Whether prior equipment is treated as a pseudo-cohort assumed to have entered service
-   * when the simulation began.
-   *
-   * @return true if the {@code assuming new} modifier is set
-   */
-  public boolean getAssumingNew() {
-    return assumingNew;
-  }
-
-  /**
    * Execute the exact retire operation on the given push-down machine.
    *
    * <p>Evaluates the amount operation to get the size of the age-N cohort, builds a year
@@ -166,5 +156,13 @@ public class RetireExactOperation implements Operation {
     }
 
     return population.subtract(tracked).max(BigDecimal.ZERO);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public OperationStaticSemantics getStaticSemantics() {
+    return new OperationStaticSemanticsBuilder(OperationType.RETIRE_EXACT)
+        .setAssumePriorNew(assumingNew)
+        .build();
   }
 }

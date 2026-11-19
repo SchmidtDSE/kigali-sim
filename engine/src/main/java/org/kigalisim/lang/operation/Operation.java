@@ -21,4 +21,15 @@ public interface Operation {
    */
   void execute(PushDownMachine machine);
 
+  /**
+   * Get a record describing this operation's semantics.
+   *
+   * <p>Get a record describing this operation's semantics that are inferrable from its static
+   * expression in code. In other words, properties and effects which do not require inspection at
+   * time of executing the operation.</p>
+   *
+   * @return Inference of common static properties found for this operation.
+   */
+  OperationStaticSemantics getStaticSemantics();
+
 }

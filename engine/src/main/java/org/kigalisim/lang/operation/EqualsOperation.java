@@ -22,6 +22,10 @@ import org.kigalisim.lang.time.ParsedDuring;
  */
 public class EqualsOperation implements Operation {
 
+  private static final OperationStaticSemantics STATIC_SEMANTICS = new OperationStaticSemantics(
+      OperationType.EQUALS
+  );
+
   private final Operation valueOperation;
   private final Optional<ParsedDuring> duringMaybe;
 
@@ -59,5 +63,11 @@ public class EqualsOperation implements Operation {
 
     Engine engine = machine.getEngine();
     engine.equals(result, yearMatcher);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public OperationStaticSemantics getStaticSemantics() {
+    return STATIC_SEMANTICS;
   }
 }

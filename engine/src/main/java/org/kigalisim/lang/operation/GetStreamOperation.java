@@ -161,4 +161,12 @@ public class GetStreamOperation implements Operation {
       return engine.getStream(streamName, Optional.empty(), Optional.empty(), yearsPast);
     }
   }
+
+  /** {@inheritDoc} */
+  @Override
+  public OperationStaticSemantics getStaticSemantics() {
+    return new OperationStaticSemanticsBuilder(OperationType.GET_STREAM)
+        .addStream(streamName)
+        .build();
+  }
 }

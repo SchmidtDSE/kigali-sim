@@ -19,6 +19,10 @@ import org.kigalisim.lang.machine.PushDownMachine;
  */
 public class ConditionalOperation implements Operation {
 
+  private static final OperationStaticSemantics STATIC_SEMANTICS = new OperationStaticSemantics(
+      OperationType.CONDITIONAL
+  );
+
   private final Operation condition;
   private final Operation trueCase;
   private final Operation falseCase;
@@ -57,9 +61,20 @@ public class ConditionalOperation implements Operation {
           falseCase.execute(m);
         }
       }
+
+      @Override
+      public OperationStaticSemantics getStaticSemantics() {
+        return STATIC_SEMANTICS;
+      }
     };
 
     // Execute the simple operation
     simpleOp.execute(machine);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public OperationStaticSemantics getStaticSemantics() {
+    return STATIC_SEMANTICS;
   }
 }

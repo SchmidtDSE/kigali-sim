@@ -17,6 +17,10 @@ import org.kigalisim.lang.machine.PushDownMachine;
  */
 public class DrawNormalOperation implements Operation {
 
+  private static final OperationStaticSemantics STATIC_SEMANTICS = new OperationStaticSemantics(
+      OperationType.DRAW_NORMAL
+  );
+
   private final Operation mean;
   private final Operation std;
 
@@ -37,5 +41,11 @@ public class DrawNormalOperation implements Operation {
     mean.execute(machine);
     std.execute(machine);
     machine.drawNormal();
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public OperationStaticSemantics getStaticSemantics() {
+    return STATIC_SEMANTICS;
   }
 }

@@ -11,8 +11,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
-import org.kigalisim.lang.operation.EnableOperation;
 import org.kigalisim.lang.operation.Operation;
+import org.kigalisim.lang.operation.OperationStaticSemantics;
+import org.kigalisim.lang.operation.OperationType;
 import org.kigalisim.lang.program.ParsedSubstance;
 
 /**
@@ -102,10 +103,9 @@ public class DuplicateValidator {
     Set<String> equipmentTypes = new HashSet<>();
 
     for (Operation operation : substance.getOperations()) {
-      if (operation instanceof EnableOperation) {
-        EnableOperation enableOp = (EnableOperation) operation;
-        String streamName = enableOp.getStream();
-        equipmentTypes.add(streamName);
+      OperationStaticSemantics staticSemantics = operation.getStaticSemantics();
+      if (staticSemantics.getOperationType() == OperationType.ENABLE) {
+        equipmentTypes.addAll(staticSemantics.getStreams());
       }
     }
 
