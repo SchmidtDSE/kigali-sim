@@ -20,7 +20,7 @@ jobs:
           journal: joss
           paper-path: paper/paper.md
       - name: Upload JOSS preview
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f  # v6 (2025-12-12)
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f  # v7.0.0 (2026-02-26)
         with:
           name: paper
           path: paper/paper.pdf
@@ -72,7 +72,6 @@ jobs:
         run: bash ./support/update_version.sh
         working-directory: ./editor
   buildEngine:
-    environment: build
     runs-on: ubuntu-latest
     name: JVM Engine Build
     defaults:
@@ -91,18 +90,12 @@ jobs:
           echo "$JAVA_HOME_25_X64/bin" >> $GITHUB_PATH
       - name: Build fat jar
         run: ./gradlew fatJar
-      - name: Install sshpass
-        run: sudo apt-get install -y sshpass
-      - name: Upload fatJar to SFTP
-        env:
-          SSHPASS: ${{ secrets.BUILDSFTPPASSWORD }}
-        run: |
-          sshpass -e ssh -o StrictHostKeyChecking=no \
-            ${{ secrets.BUILDSFTPUSER }}@${{ secrets.BUILDSFTPHOST }} \
-            "mkdir -p ./build.kigalisim.org/artifacts/${{ github.sha }}/fatJar"
-          sshpass -e scp -o StrictHostKeyChecking=no \
-            build/libs/kigalisim-fat.jar \
-            ${{ secrets.BUILDSFTPUSER }}@${{ secrets.BUILDSFTPHOST }}:./build.kigalisim.org/artifacts/${{ github.sha }}/fatJar/kigalisim-fat.jar
+      - name: Upload fatJar
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f  # v7.0.0 (2026-02-26)
+        with:
+          name: fatJar
+          path: engine/build/libs/kigalisim-fat.jar
+          if-no-files-found: error
   checkEngine:
     needs: buildEngine
     runs-on: ubuntu-latest
@@ -166,10 +159,10 @@ jobs:
           echo "JAVA_HOME=$JAVA_HOME_25_X64" >> $GITHUB_ENV
           echo "$JAVA_HOME_25_X64/bin" >> $GITHUB_PATH
       - name: Download fatJar
-        run: |
-          mkdir -p build/libs
-          curl -o build/libs/kigalisim-fat.jar \
-            https://build.kigalisim.org/artifacts/${{ github.sha }}/fatJar/kigalisim-fat.jar
+        uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3  # v8.0.0 (2026-02-26)
+        with:
+          name: fatJar
+          path: engine/build/libs
       - name: Run example QTA file with CSV export
         run: java -jar build/libs/kigalisim-fat.jar run ../examples/minimal_interpreter.qta -o /tmp/minimal_interpreter.csv
       - name: Check CSV file was created and is non-empty
@@ -204,10 +197,10 @@ jobs:
           echo "JAVA_HOME=$JAVA_HOME_25_X64" >> $GITHUB_ENV
           echo "$JAVA_HOME_25_X64/bin" >> $GITHUB_PATH
       - name: Download fatJar
-        run: |
-          mkdir -p build/libs
-          curl -o build/libs/kigalisim-fat.jar \
-            https://build.kigalisim.org/artifacts/${{ github.sha }}/fatJar/kigalisim-fat.jar
+        uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3  # v8.0.0 (2026-02-26)
+        with:
+          name: fatJar
+          path: engine/build/libs
       - name: Run Monte Carlo simulation with 100 replicates and normal distribution
         run: java -jar build/libs/kigalisim-fat.jar run ../examples/test_monte_carlo_replicates.qta -o /tmp/monte_carlo_replicates.csv -r 100
       - name: Check CSV file was created and is non-empty
@@ -226,7 +219,6 @@ jobs:
           echo "First 10 lines of CSV file:"
           head -10 /tmp/monte_carlo_replicates.csv
   buildWasm:
-    environment: build
     needs: [ checkEngine, buildEngine, testEngine, runEngineLocal ]
     runs-on: ubuntu-latest
     name: WASM Engine Build
@@ -246,18 +238,12 @@ jobs:
           echo "$JAVA_HOME_25_X64/bin" >> $GITHUB_PATH
       - name: Build war
         run: ./gradlew warUnversioned
-      - name: Install sshpass
-        run: sudo apt-get install -y sshpass
-      - name: Upload war to SFTP
-        env:
-          SSHPASS: ${{ secrets.BUILDSFTPPASSWORD }}
-        run: |
-          sshpass -e ssh -o StrictHostKeyChecking=no \
-            ${{ secrets.BUILDSFTPUSER }}@${{ secrets.BUILDSFTPHOST }} \
-            "mkdir -p ./build.kigalisim.org/artifacts/${{ github.sha }}/war"
-          sshpass -e scp -o StrictHostKeyChecking=no \
-            build/libs/KigaliSim.war \
-            ${{ secrets.BUILDSFTPUSER }}@${{ secrets.BUILDSFTPHOST }}:./build.kigalisim.org/artifacts/${{ github.sha }}/war/KigaliSim.war
+      - name: Upload war
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f  # v7.0.0 (2026-02-26)
+        with:
+          name: war
+          path: engine/build/libs/KigaliSim.war
+          if-no-files-found: error
   unitTestsBrowser:
     runs-on: ubuntu-latest
     name: Web Tests
@@ -274,9 +260,10 @@ jobs:
       - name: Setup pnpm
         run: npm install -g pnpm@10.20.0
       - name: Download war
-        run: |
-          curl -o ./KigaliSim.war \
-            https://build.kigalisim.org/artifacts/${{ github.sha }}/war/KigaliSim.war
+        uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3  # v8.0.0 (2026-02-26)
+        with:
+          name: war
+          path: .
       - name: Install node deps
         run: pnpm install
         working-directory: ./editor
@@ -292,7 +279,6 @@ jobs:
         run: node support/smoke_ide.js
         working-directory: ./editor
   generateJavadoc:
-    environment: build
     runs-on: ubuntu-latest
     name: Generate JavaDoc
     defaults:
@@ -311,28 +297,14 @@ jobs:
           echo "$JAVA_HOME_25_X64/bin" >> $GITHUB_PATH
       - name: Generate Javadoc
         run: ./gradlew javadoc
-      - name: Install sshpass
-        run: sudo apt-get install -y sshpass
-      - name: Upload javadoc to SFTP
-        env:
-          SSHPASS: ${{ secrets.BUILDSFTPPASSWORD }}
-        run: |
-          sshpass -e ssh -o StrictHostKeyChecking=no \
-            ${{ secrets.BUILDSFTPUSER }}@${{ secrets.BUILDSFTPHOST }} \
-            "mkdir -p ./build.kigalisim.org/artifacts/${{ github.sha }}/javadoc"
-          sshpass -e scp -r -o StrictHostKeyChecking=no \
-            build/docs/javadoc/. \
-            ${{ secrets.BUILDSFTPUSER }}@${{ secrets.BUILDSFTPHOST }}:./build.kigalisim.org/artifacts/${{ github.sha }}/javadoc/
-      - name: Upload javadoc zip to SFTP
-        env:
-          SSHPASS: ${{ secrets.BUILDSFTPPASSWORD }}
-        run: |
-          cd build/docs/javadoc && zip -r /tmp/javadoc.zip .
-          sshpass -e scp -o StrictHostKeyChecking=no \
-            /tmp/javadoc.zip \
-            ${{ secrets.BUILDSFTPUSER }}@${{ secrets.BUILDSFTPHOST }}:./build.kigalisim.org/artifacts/${{ github.sha }}/javadoc.zip
+      - name: Upload javadoc
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f  # v7.0.0 (2026-02-26)
+        with:
+          name: javadoc
+          path: engine/build/docs/javadoc
+          if-no-files-found: error
+          include-hidden-files: true
   generateGuideMd:
-    environment: build
     runs-on: ubuntu-latest
     name: Generate Guide Markdown
     steps:
@@ -354,21 +326,14 @@ jobs:
               --to gfm \
               -o "docs/guide/md/${filename}.md"
           done
-      - name: Install sshpass
-        run: sudo apt-get install -y sshpass
-      - name: Upload guide markdown to SFTP
-        env:
-          SSHPASS: ${{ secrets.BUILDSFTPPASSWORD }}
-        run: |
-          cd docs/guide/md && zip -r /tmp/guide-md.zip .
-          sshpass -e ssh -o StrictHostKeyChecking=no \
-            ${{ secrets.BUILDSFTPUSER }}@${{ secrets.BUILDSFTPHOST }} \
-            "mkdir -p ./build.kigalisim.org/artifacts/${{ github.sha }}"
-          sshpass -e scp -o StrictHostKeyChecking=no \
-            /tmp/guide-md.zip \
-            ${{ secrets.BUILDSFTPUSER }}@${{ secrets.BUILDSFTPHOST }}:./build.kigalisim.org/artifacts/${{ github.sha }}/guide-md.zip
+      - name: Upload guide markdown
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f  # v7.0.0 (2026-02-26)
+        with:
+          name: guide-md
+          path: docs/guide/md
+          if-no-files-found: error
+          include-hidden-files: true
   generateJsdoc:
-    environment: build
     runs-on: ubuntu-latest
     name: Generate JSDoc
     defaults:
@@ -387,28 +352,14 @@ jobs:
         run: pnpm install
       - name: Generate JSDoc
         run: pnpm exec jsdoc -c jsdoc.json
-      - name: Install sshpass
-        run: sudo apt-get install -y sshpass
-      - name: Upload jsdoc to SFTP
-        env:
-          SSHPASS: ${{ secrets.BUILDSFTPPASSWORD }}
-        run: |
-          sshpass -e ssh -o StrictHostKeyChecking=no \
-            ${{ secrets.BUILDSFTPUSER }}@${{ secrets.BUILDSFTPHOST }} \
-            "mkdir -p ./build.kigalisim.org/artifacts/${{ github.sha }}/jsdoc"
-          sshpass -e scp -r -o StrictHostKeyChecking=no \
-            build/docs/jsdoc/. \
-            ${{ secrets.BUILDSFTPUSER }}@${{ secrets.BUILDSFTPHOST }}:./build.kigalisim.org/artifacts/${{ github.sha }}/jsdoc/
-      - name: Upload jsdoc zip to SFTP
-        env:
-          SSHPASS: ${{ secrets.BUILDSFTPPASSWORD }}
-        run: |
-          cd build/docs/jsdoc && zip -r /tmp/jsdoc.zip .
-          sshpass -e scp -o StrictHostKeyChecking=no \
-            /tmp/jsdoc.zip \
-            ${{ secrets.BUILDSFTPUSER }}@${{ secrets.BUILDSFTPHOST }}:./build.kigalisim.org/artifacts/${{ github.sha }}/jsdoc.zip
+      - name: Upload jsdoc
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f  # v7.0.0 (2026-02-26)
+        with:
+          name: jsdoc
+          path: editor/build/docs/jsdoc
+          if-no-files-found: error
+          include-hidden-files: true
   deployPrep:
-    environment: build
     runs-on: ubuntu-latest
     name: Deploy Prep
     needs: [ lintJs, unitTestsBrowser, checkCacheBusters, buildWasm, runMonteCarloReplicates, generateJavadoc, generateGuideMd, generateJsdoc ]
@@ -423,18 +374,16 @@ jobs:
           echo "$JAVA_HOME_25_X64/bin" >> $GITHUB_PATH
       - name: Setup pnpm
         run: npm install -g pnpm@10.20.0
-      - name: Install SSH client and sshpass
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y openssh-client sshpass
       - name: Download war
-        run: |
-          curl -o ./KigaliSim.war \
-            https://build.kigalisim.org/artifacts/${{ github.sha }}/war/KigaliSim.war
+        uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3  # v8.0.0 (2026-02-26)
+        with:
+          name: war
+          path: .
       - name: Download fatJar
-        run: |
-          curl -o ./kigalisim-fat.jar \
-            https://build.kigalisim.org/artifacts/${{ github.sha }}/fatJar/kigalisim-fat.jar
+        uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3  # v8.0.0 (2026-02-26)
+        with:
+          name: fatJar
+          path: .
       - name: Install node deps
         run: pnpm install
         working-directory: ./editor
@@ -445,11 +394,10 @@ jobs:
         run: bash ./support/prepare_deploy.sh
         working-directory: ./editor
       - name: Download guide markdown
-        run: |
-          curl -o /tmp/guide-md.zip \
-            https://build.kigalisim.org/artifacts/${{ github.sha }}/guide-md.zip
-          mkdir -p ./docs/guide/md
-          unzip -q /tmp/guide-md.zip -d ./docs/guide/md/
+        uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3  # v8.0.0 (2026-02-26)
+        with:
+          name: guide-md
+          path: docs/guide/md
       - name: Copy guide
         run: cp -r ./docs/guide ./editor/deploy/guide
       - name: Download webm files from archive
@@ -457,17 +405,15 @@ jobs:
       - name: Copy humans.txt to deploy root
         run: cp ./humans.txt ./editor/deploy/humans.txt
       - name: Download Javadoc
-        run: |
-          curl -o /tmp/javadoc.zip \
-            https://build.kigalisim.org/artifacts/${{ github.sha }}/javadoc.zip
-          mkdir -p ./editor/deploy/guide/javadoc
-          unzip -q /tmp/javadoc.zip -d ./editor/deploy/guide/javadoc/
+        uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3  # v8.0.0 (2026-02-26)
+        with:
+          name: javadoc
+          path: editor/deploy/guide/javadoc
       - name: Download JSDoc
-        run: |
-          curl -o /tmp/jsdoc.zip \
-            https://build.kigalisim.org/artifacts/${{ github.sha }}/jsdoc.zip
-          mkdir -p ./editor/deploy/guide/jsdoc
-          unzip -q /tmp/jsdoc.zip -d ./editor/deploy/guide/jsdoc/
+        uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3  # v8.0.0 (2026-02-26)
+        with:
+          name: jsdoc
+          path: editor/deploy/guide/jsdoc
       - name: Copy case study QTA file to guide
         run: cp ./examples/case_study.qta ./editor/deploy/guide/case_study.qta
       - name: Copy tutorial QTA files to guide
@@ -495,17 +441,13 @@ jobs:
       - name: Update cache busters
         run: bash ./support/update_version.sh
         working-directory: ./editor
-      - name: Upload deploy-files to SFTP
-        env:
-          SSHPASS: ${{ secrets.BUILDSFTPPASSWORD }}
-        run: |
-          cd ./editor/deploy && zip -r /tmp/deploy-files.zip .
-          sshpass -e ssh -o StrictHostKeyChecking=no \
-            ${{ secrets.BUILDSFTPUSER }}@${{ secrets.BUILDSFTPHOST }} \
-            "mkdir -p ./build.kigalisim.org/artifacts/${{ github.sha }}"
-          sshpass -e scp -o StrictHostKeyChecking=no \
-            /tmp/deploy-files.zip \
-            ${{ secrets.BUILDSFTPUSER }}@${{ secrets.BUILDSFTPHOST }}:./build.kigalisim.org/artifacts/${{ github.sha }}/deploy-files.zip
+      - name: Upload deploy-files
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f  # v7.0.0 (2026-02-26)
+        with:
+          name: deploy-files
+          path: editor/deploy
+          if-no-files-found: error
+          include-hidden-files: true
   deployPreview:
     environment: deploy
     if: github.ref == 'refs/heads/main'
@@ -522,11 +464,10 @@ jobs:
           mkdir -p ~/.ssh
           ssh-keyscan -H -p 22 ${{ secrets.SFTPHOST }} >> ~/.ssh/known_hosts
       - name: Download deploy-files
-        run: |
-          curl -o /tmp/deploy-files.zip \
-            https://build.kigalisim.org/artifacts/${{ github.sha }}/deploy-files.zip
-          mkdir -p ./deploy
-          unzip -q /tmp/deploy-files.zip -d ./deploy/
+        uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3  # v8.0.0 (2026-02-26)
+        with:
+          name: deploy-files
+          path: deploy
       - name: Upload files via SCP
         env:
           SSHPASS: ${{ secrets.SFTPPASSWORD }}
@@ -550,11 +491,10 @@ jobs:
           mkdir -p ~/.ssh
           ssh-keyscan -H -p 22 ${{ secrets.SFTPHOST }} >> ~/.ssh/known_hosts
       - name: Download deploy-files
-        run: |
-          curl -o /tmp/deploy-files.zip \
-            https://build.kigalisim.org/artifacts/${{ github.sha }}/deploy-files.zip
-          mkdir -p ./deploy
-          unzip -q /tmp/deploy-files.zip -d ./deploy/
+        uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3  # v8.0.0 (2026-02-26)
+        with:
+          name: deploy-files
+          path: deploy
       - name: Upload files via SCP
         env:
           SSHPASS: ${{ secrets.SFTPPASSWORD }}
@@ -621,9 +561,10 @@ jobs:
     needs: [runEngineDockerSanity]
     steps:
       - name: Download fatJar
-        run: |
-          curl -o kigalisim-fat.jar \
-            https://build.kigalisim.org/artifacts/${{ github.sha }}/fatJar/kigalisim-fat.jar
+        uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3  # v8.0.0 (2026-02-26)
+        with:
+          name: fatJar
+          path: .
       - name: Deploy to Lambda
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
