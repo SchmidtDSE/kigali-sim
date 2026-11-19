@@ -219,7 +219,6 @@ jobs:
           echo "First 10 lines of CSV file:"
           head -10 /tmp/monte_carlo_replicates.csv
   buildWasm:
-    needs: [ checkEngine, buildEngine, testEngine, runEngineLocal ]
     runs-on: ubuntu-latest
     name: WASM Engine Build
     defaults:
